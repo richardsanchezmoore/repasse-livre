@@ -1,0 +1,49 @@
+export interface AnuncioOlx {
+  titulo: string;
+  marca: string | null;
+  modelo: string | null;
+  ano: string | null;
+  cambio: string | null;
+  preco: number;
+  cidade: string | null;
+  estado: string | null;
+  fotoPrincipal: string | null;
+  fotosSecundarias: string[];
+  descricao: string | null;
+  linkOrigem: string;
+}
+
+export interface ReferenciaFipe {
+  marca: string;
+  modelo: string;
+  ano: string;
+  valor: number;
+  mesReferencia: string;
+}
+
+export type Classificacao =
+  | "oportunidade"
+  | "grande_oportunidade"
+  | "oportunidade_premium"
+  | "top_oportunidade";
+
+export interface Oportunidade {
+  fonte: string;
+  link_origem: string;
+  veiculo: string;
+  versao: string | null;
+  ano: string | null;
+  cambio: string | null;
+  cidade: string | null;
+  estado: string | null;
+  preco: number;
+  fipe_valor: number;
+  fipe_data_referencia: string;
+  margem_percentual: number;
+  classificacao: Classificacao;
+  foto_principal: string | null;
+  fotos_secundarias: string[];
+  descricao: string | null;
+  origem_tipo: "descoberta";
+  status: "descoberta";
+}
