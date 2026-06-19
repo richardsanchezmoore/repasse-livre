@@ -57,6 +57,16 @@ por execução como proteção contra varredura sem fim.
   cataloga a Evoque como "Range Rover Evoque", a OLX usa "Land Rover
   Evoque"). A busca pontua candidatos por palavras em comum em vez de exigir
   substring exata, o que resolveu a maioria dos casos testados manualmente.
+- **Confirmação com o FIPE que a própria OLX já calculou**: a página
+  individual de cada anúncio embute `abuyFipePrice.fipePrice` — o valor de
+  FIPE que a OLX já associou exatamente ao veículo do anúncio, mais
+  confiável que a correspondência textual contra a API externa (que pode
+  perder informação, ex: o campo `vehicle_model` da OLX às vezes omite o
+  nome da linha do veículo, como "Gol" ou "Fusca"). Por isso, depois que um
+  anúncio passa pelo filtro inicial de elegibilidade usando a API externa,
+  o worker abre a página individual desse anúncio para confirmar/corrigir
+  o valor de FIPE antes de salvar — sem aumentar o volume de acesso para
+  todos os anúncios, só para os que já parecem elegíveis.
 
 ## Limitações conhecidas desta versão (Sprint 1)
 
