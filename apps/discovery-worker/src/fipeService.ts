@@ -1,6 +1,7 @@
 import type { ReferenciaFipe } from "./types.js";
 
-const FIPE_BASE_URL = "https://parallelum.com.br/fipe/api/v2/cars";
+const FIPE_BASE_URL = "https://fipe.parallelum.com.br/api/v2/cars";
+const FIPE_API_KEY = process.env.FIPE_API_KEY;
 
 interface FipeMarca {
   code: string;
@@ -43,7 +44,9 @@ function aguardar(ms: number): Promise<void> {
 
 /** A API pública da FIPE limita por taxa (429) sob volume; uma pequena espera com retentativas resolve a maioria dos casos. */
 async function fetchJson<T>(url: string, tentativa = 1): Promise<T> {
-  const resp = await fetch(url);
+  const resp = await fetch(url, {
+    headers: FIPE_API_KEY ? { Authorization: `Bearer ${FIPE_API_KEY}` } : undefined,
+  });
 
   if (resp.status === 429 && tentativa <= 3) {
     await aguardar(500 * tentativa);
