@@ -32,7 +32,15 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     return;
   }
 
-  const referenciaFipe = await buscarReferenciaFipe(anuncio.marca, anuncio.modelo, anuncio.ano);
+  let referenciaFipe;
+  try {
+    referenciaFipe = await buscarReferenciaFipe(anuncio.marca, anuncio.modelo, anuncio.ano);
+  } catch (erro) {
+    console.warn(`[motor-descoberta] Falha ao consultar FIPE para "${anuncio.titulo}":`, erro);
+    resultado.semFipe++;
+    return;
+  }
+
   if (!referenciaFipe) {
     resultado.semFipe++;
     return;

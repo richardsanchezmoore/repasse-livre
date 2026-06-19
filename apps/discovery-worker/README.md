@@ -67,3 +67,10 @@ por execução como proteção contra varredura sem fim.
 - O corte do modo incremental assume que a OLX nunca reordena/atrasa a
   publicação de um anúncio mais antigo para o topo da listagem; se isso
   ocorrer, esse anúncio específico pode não ser capturado.
+- **A API pública da FIPE (`parallelum.com.br`) tem limite de taxa (429)**
+  sob volume sustentado de requisições. O serviço já faz cache de
+  marcas/modelos em memória durante a execução e tenta novamente (até 3x,
+  com espera progressiva) em caso de 429, mas isso não resolve um bloqueio
+  prolongado — observado durante os testes desta sprint. Antes de produção,
+  vale avaliar um plano pago/com chave de API da FIPE, ou um throttling
+  mais agressivo entre requisições.

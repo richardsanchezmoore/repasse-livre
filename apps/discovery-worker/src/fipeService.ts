@@ -37,12 +37,43 @@ function parsePrecoFipe(precoTexto: string): number {
   return Number.parseFloat(numerico);
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
+function aguardar(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** A API pública da FIPE limita por taxa (429) sob volume; uma pequena espera com retentativas resolve a maioria dos casos. */
+async function fetchJson<T>(url: string, tentativa = 1): Promise<T> {
   const resp = await fetch(url);
+
+  if (resp.status === 429 && tentativa <= 3) {
+    await aguardar(500 * tentativa);
+    return fetchJson<T>(url, tentativa + 1);
+  }
+
   if (!resp.ok) {
     throw new Error(`Falha ao consultar FIPE (${resp.status}): ${url}`);
   }
   return resp.json() as Promise<T>;
+}
+
+const cacheModelosPorMarca = new Map<string, Promise<FipeModelo[]>>();
+let cacheMarcas: Promise<FipeMarca[]> | null = null;
+
+/** A lista de marcas e a de modelos por marca não mudam durante uma execução, então ficam em cache em memória. */
+function buscarMarcas(): Promise<FipeMarca[]> {
+  if (!cacheMarcas) {
+    cacheMarcas = fetchJson<FipeMarca[]>(`${FIPE_BASE_URL}/brands`);
+  }
+  return cacheMarcas;
+}
+
+function buscarModelos(marcaCode: string): Promise<FipeModelo[]> {
+  let promessa = cacheModelosPorMarca.get(marcaCode);
+  if (!promessa) {
+    promessa = fetchJson<FipeModelo[]>(`${FIPE_BASE_URL}/brands/${marcaCode}/models`);
+    cacheModelosPorMarca.set(marcaCode, promessa);
+  }
+  return promessa;
 }
 
 function tokenizar(texto: string): Set<string> {
@@ -96,13 +127,11 @@ export async function buscarReferenciaFipe(
   modelo: string,
   ano: string
 ): Promise<ReferenciaFipe | null> {
-  const marcas = await fetchJson<FipeMarca[]>(`${FIPE_BASE_URL}/brands`);
+  const marcas = await buscarMarcas();
   const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
   if (!marcaEncontrada) return null;
 
-  const modelos = await fetchJson<FipeModelo[]>(
-    `${FIPE_BASE_URL}/brands/${marcaEncontrada.code}/models`
-  );
+  const modelos = await buscarModelos(marcaEncontrada.code);
   const modeloEncontrado = encontrarMelhorCorrespondencia(modelos, modelo, 2);
   if (!modeloEncontrado) return null;
 
