@@ -27,7 +27,12 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
   return (
     <div className="card">
       {oportunidade.foto_principal ? (
-        <img src={oportunidade.foto_principal} alt="" className="foto-capa" />
+        <img
+          src={oportunidade.foto_principal}
+          alt=""
+          className="foto-capa"
+          referrerPolicy="no-referrer"
+        />
       ) : (
         <div className="foto-capa foto-capa-vazia" />
       )}
