@@ -5,6 +5,26 @@ import { alternarFavorito, aprovarOportunidade, rejeitarOportunidade } from "@/a
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import type { Oportunidade } from "@/lib/types";
 
+const ROTULO_CLASSIFICACAO: Record<string, string> = {
+  oportunidade: "Oportunidade",
+  grande_oportunidade: "Grande oportunidade",
+  oportunidade_premium: "Oportunidade premium",
+  top_oportunidade: "Top oportunidade",
+};
+
+const CLASSE_CLASSIFICACAO: Record<string, string> = {
+  oportunidade: "selo-classificacao-oportunidade",
+  grande_oportunidade: "selo-classificacao-grande",
+  oportunidade_premium: "selo-classificacao-premium",
+  top_oportunidade: "selo-classificacao-top",
+};
+
+const CLASSE_FONTE: Record<string, string> = {
+  OLX: "selo-fonte-olx",
+  Webmotors: "selo-fonte-webmotors",
+  "Mercado Livre": "selo-fonte-mercadolivre",
+};
+
 function formatarMoeda(valor: number | null): string {
   if (valor === null) return "—";
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -24,37 +44,43 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
     mostrarFeedback("Texto copiado!");
   }
 
+  const classeFonte = CLASSE_FONTE[oportunidade.fonte] ?? "selo-fonte-generico";
+  const classeClassificacao = oportunidade.classificacao
+    ? CLASSE_CLASSIFICACAO[oportunidade.classificacao] ?? "selo-classificacao-oportunidade"
+    : "selo-classificacao-oportunidade";
+
   return (
     <div className="card">
-      {oportunidade.foto_principal ? (
-        <img
-          src={oportunidade.foto_principal}
-          alt=""
-          className="foto-capa"
-          referrerPolicy="no-referrer"
-        />
-      ) : (
-        <div className="foto-capa foto-capa-vazia" />
-      )}
+      <div className="foto-wrapper">
+        {oportunidade.foto_principal ? (
+          <img
+            src={oportunidade.foto_principal}
+            alt=""
+            className="foto-capa"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="foto-capa foto-capa-vazia" />
+        )}
+        <span className={`selo-fonte ${classeFonte}`}>{oportunidade.fonte}</span>
+      </div>
+
+      <div className="destaque-margem">
+        <p className="destaque-margem-rotulo">Margem sobre a FIPE</p>
+        <p className="destaque-margem-valor">{oportunidade.margem_percentual?.toFixed(1)}%</p>
+        {oportunidade.classificacao && (
+          <span className={`selo-classificacao ${classeClassificacao}`}>
+            {ROTULO_CLASSIFICACAO[oportunidade.classificacao]}
+          </span>
+        )}
+      </div>
 
       <div className="card-corpo">
         <p className="titulo">{oportunidade.veiculo}</p>
         <p className="local">
           {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
+          {oportunidade.cambio ? ` · Câmbio ${oportunidade.cambio.toLowerCase()}` : ""}
         </p>
-
-        <span className="badge">{oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE</span>
-
-        <div className="detalhes-grid">
-          <div className="detalhe">
-            <p className="detalhe-rotulo">Versão</p>
-            <p className="detalhe-valor">{oportunidade.versao ?? "—"}</p>
-          </div>
-          <div className="detalhe">
-            <p className="detalhe-rotulo">Câmbio</p>
-            <p className="detalhe-valor">{oportunidade.cambio ?? "—"}</p>
-          </div>
-        </div>
 
         <div className="linha-preco">
           <span className="preco-rotulo">Anunciado por</span>
@@ -66,7 +92,7 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
         </div>
 
         <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
-          <span>Ver anúncio na OLX</span>
+          <span>Ver anúncio na {oportunidade.fonte}</span>
           <span aria-hidden="true">›</span>
         </a>
       </div>
