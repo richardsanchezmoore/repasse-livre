@@ -2,14 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { alternarFavorito, aprovarOportunidade, rejeitarOportunidade } from "@/app/actions";
+import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import type { Oportunidade } from "@/lib/types";
-
-const ROTULO_CLASSIFICACAO: Record<string, string> = {
-  oportunidade: "Oportunidade",
-  grande_oportunidade: "Grande oportunidade",
-  oportunidade_premium: "Oportunidade premium",
-  top_oportunidade: "Top oportunidade",
-};
 
 function formatarMoeda(valor: number | null): string {
   if (valor === null) return "—";
@@ -18,38 +12,58 @@ function formatarMoeda(valor: number | null): string {
 
 export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }) {
   const [pendente, iniciarTransicao] = useTransition();
-  const [copiado, setCopiado] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  function aoCopiar() {
-    navigator.clipboard.writeText(oportunidade.link_origem);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 1500);
+  function mostrarFeedback(texto: string) {
+    setFeedback(texto);
+    setTimeout(() => setFeedback(null), 1500);
+  }
+
+  async function aoCompartilhar() {
+    await navigator.clipboard.writeText(gerarTextoCompartilhamento(oportunidade));
+    mostrarFeedback("Texto copiado!");
   }
 
   return (
     <div className="card">
-      <div className="card-top">
-        {oportunidade.foto_principal ? (
-          <img src={oportunidade.foto_principal} alt="" className="thumb" />
-        ) : (
-          <div className="thumb thumb-vazio" />
-        )}
-        <div className="card-info">
-          <p className="titulo">{oportunidade.veiculo}</p>
-          <p className="local">
-            {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
-          </p>
-          <span className="badge">
-            {oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE
-            {oportunidade.classificacao ? ` · ${ROTULO_CLASSIFICACAO[oportunidade.classificacao] ?? ""}` : ""}
-          </span>
-        </div>
-        <span className="fonte">{oportunidade.fonte}</span>
-      </div>
+      {oportunidade.foto_principal ? (
+        <img src={oportunidade.foto_principal} alt="" className="foto-capa" />
+      ) : (
+        <div className="foto-capa foto-capa-vazia" />
+      )}
 
-      <div className="precos">
-        <span>{formatarMoeda(oportunidade.preco)}</span>
-        <span className="fipe">FIPE {formatarMoeda(oportunidade.fipe_valor)}</span>
+      <div className="card-corpo">
+        <p className="titulo">{oportunidade.veiculo}</p>
+        <p className="local">
+          {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
+        </p>
+
+        <span className="badge">{oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE</span>
+
+        <div className="detalhes-grid">
+          <div className="detalhe">
+            <p className="detalhe-rotulo">Versão</p>
+            <p className="detalhe-valor">{oportunidade.versao ?? "—"}</p>
+          </div>
+          <div className="detalhe">
+            <p className="detalhe-rotulo">Câmbio</p>
+            <p className="detalhe-valor">{oportunidade.cambio ?? "—"}</p>
+          </div>
+        </div>
+
+        <div className="linha-preco">
+          <span className="preco-rotulo">Anunciado por</span>
+          <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
+        </div>
+        <div className="linha-preco">
+          <span className="preco-rotulo">Tabela FIPE</span>
+          <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
+        </div>
+
+        <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
+          <span>Ver anúncio na OLX</span>
+          <span aria-hidden="true">›</span>
+        </a>
       </div>
 
       <div className="acoes">
@@ -74,8 +88,8 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
         >
           {oportunidade.favorito ? "Favoritado" : "Favoritar"}
         </button>
-        <button onClick={aoCopiar} className="acao">
-          {copiado ? "Copiado!" : "Copiar"}
+        <button onClick={aoCompartilhar} className="acao">
+          {feedback ?? "Compartilhar"}
         </button>
       </div>
     </div>

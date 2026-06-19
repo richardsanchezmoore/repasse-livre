@@ -10,13 +10,13 @@ body {
 }
 
 .pagina {
-  max-width: 960px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 24px 24px 64px;
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   margin: 0 0 20px;
 }
@@ -24,10 +24,10 @@ h1 {
 .boards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .boards {
     grid-template-columns: 1fr;
   }
@@ -44,11 +44,11 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 14px 18px;
   background: #f7f8fa;
   border-bottom: 1px solid #e0e3e7;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .contador {
@@ -61,11 +61,11 @@ h1 {
 }
 
 .board-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  max-height: 70vh;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  padding: 16px;
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -74,6 +74,7 @@ h1 {
   color: #8696a0;
   text-align: center;
   padding: 24px 0;
+  grid-column: 1 / -1;
 }
 
 .card {
@@ -81,45 +82,37 @@ h1 {
   border: 1px solid #e0e3e7;
   border-radius: 10px;
   overflow: hidden;
-}
-
-.card-top {
   display: flex;
-  gap: 10px;
-  padding: 10px;
+  flex-direction: column;
 }
 
-.thumb {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
+.foto-capa {
+  width: 100%;
+  height: 180px;
   object-fit: cover;
-  flex-shrink: 0;
+  display: block;
 }
 
-.thumb-vazio {
+.foto-capa-vazia {
   background: #e0e3e7;
 }
 
-.card-info {
+.card-corpo {
+  padding: 12px 14px;
   flex: 1;
-  min-width: 0;
 }
 
 .titulo {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   margin: 0 0 2px;
   line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .local {
   font-size: 12px;
   color: #667781;
-  margin: 0 0 4px;
+  margin: 0 0 8px;
 }
 
 .badge {
@@ -128,25 +121,63 @@ h1 {
   color: #0a5d2c;
   font-size: 11px;
   font-weight: 600;
-  padding: 1px 8px;
+  padding: 2px 9px;
   border-radius: 8px;
+  margin-bottom: 10px;
 }
 
-.fonte {
-  font-size: 11px;
+.detalhes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.detalhe {
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.detalhe-rotulo {
+  font-size: 10px;
   color: #8696a0;
-  white-space: nowrap;
+  margin: 0 0 1px;
 }
 
-.precos {
+.detalhe-valor {
+  font-size: 12px;
+  margin: 0;
+}
+
+.linha-preco {
   display: flex;
   justify-content: space-between;
-  padding: 0 10px 8px;
-  font-size: 12px;
+  font-size: 13px;
+  padding: 6px 0;
+  border-top: 1px solid #f0f2f5;
 }
 
-.fipe {
-  color: #8696a0;
+.preco-rotulo {
+  color: #667781;
+}
+
+.preco-valor {
+  font-weight: 600;
+}
+
+.link-origem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #e6f1fb;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c447c;
 }
 
 .acoes {
