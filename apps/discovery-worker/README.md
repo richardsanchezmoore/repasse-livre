@@ -68,6 +68,17 @@ por execução como proteção contra varredura sem fim.
   `fipeService.ts` (a API externa) continua no projeto para uso futuro na
   Inserção Direta, onde o formulário usa selects de marca/modelo/ano exatos
   e não depende de aproximação textual.
+- **Filtro nativo "Ofertas abaixo da FIPE" (`fpdll`), resolvido em tempo de
+  execução**: a OLX tem um filtro de listagem que já restringe o universo a
+  anúncios com preço abaixo da FIPE (de ~24.000 para ~800 anúncios no RS,
+  medido em 19/06/2026) — reduz bastante o volume da varredura incremental
+  e aumenta a taxa de acerto (de ~12% para ~45% de elegibilidade nos testes).
+  A chave de query string desse filtro (`fpdll`) não é fixada no código:
+  `resolverChaveFiltroFipe` lê a definição do filtro embutida na própria
+  página (procurando o id `fipe_price_discount_level`) e usa o que estiver
+  lá, com `fpdll` como fallback se a leitura falhar — assim, se a OLX
+  renomear esse parâmetro no futuro, a varredura se adapta sozinha em vez
+  de quebrar silenciosamente.
 
 ## Limitações conhecidas desta versão (Sprint 1)
 

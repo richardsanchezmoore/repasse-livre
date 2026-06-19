@@ -1,5 +1,10 @@
 import "dotenv/config";
-import { buscarFipeDaPaginaAnuncio, capturarAnunciosOlx, montarUrlPagina } from "./olxService.js";
+import {
+  buscarFipeDaPaginaAnuncio,
+  capturarAnunciosOlx,
+  montarUrlPagina,
+  resolverChaveFiltroFipe,
+} from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import { linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { AnuncioOlx, Oportunidade } from "./types.js";
@@ -99,10 +104,16 @@ async function executarVarredura(): Promise<void> {
   const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
 
-  console.log(`[motor-descoberta] Modo: ${MODO} | Categoria: ${CATEGORIA_URL_BASE}`);
+  const chaveFiltroFipe = await resolverChaveFiltroFipe(CATEGORIA_URL_BASE);
+  const urlComFiltro = new URL(CATEGORIA_URL_BASE);
+  urlComFiltro.searchParams.set(chaveFiltroFipe, "2");
+
+  console.log(
+    `[motor-descoberta] Modo: ${MODO} | Categoria: ${urlComFiltro.toString()} (filtro "abaixo da FIPE" via chave "${chaveFiltroFipe}")`
+  );
 
   paginas: for (let pagina = 1; pagina <= MAX_PAGINAS; pagina++) {
-    const url = montarUrlPagina(CATEGORIA_URL_BASE, pagina);
+    const url = montarUrlPagina(urlComFiltro.toString(), pagina);
     const anuncios = await capturarAnunciosOlx(url);
 
     if (anuncios.length === 0) {

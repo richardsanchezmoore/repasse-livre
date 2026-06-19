@@ -73,6 +73,31 @@ export function montarUrlPagina(categoriaUrl: string, pagina: number): string {
   return url.toString();
 }
 
+const ID_FILTRO_FIPE = "fipe_price_discount_level";
+const QS_FALLBACK_FIPE = "fpdll";
+
+/**
+ * Resolve dinamicamente a chave de query string do filtro nativo da OLX
+ * "Ofertas abaixo da FIPE" (hoje `fpdll`), lendo a definição do filtro
+ * embutida na própria página em vez de fixar a chave no código. Se a OLX
+ * renomear esse parâmetro no futuro, a varredura se adapta sozinha; se a
+ * leitura falhar por qualquer motivo, cai no valor conhecido como
+ * fallback, para nunca travar a varredura por isso.
+ */
+export async function resolverChaveFiltroFipe(categoriaUrlBase: string): Promise<string> {
+  try {
+    const html = await buscarHtml(categoriaUrlBase);
+    const idx = html.indexOf(`"id":"${ID_FILTRO_FIPE}"`);
+    if (idx === -1) return QS_FALLBACK_FIPE;
+
+    const trecho = html.slice(idx, idx + 600);
+    const match = trecho.match(/"qs":"([^"]+)"/);
+    return match ? match[1] : QS_FALLBACK_FIPE;
+  } catch {
+    return QS_FALLBACK_FIPE;
+  }
+}
+
 /**
  * Busca o HTML da página via curl.
  *
