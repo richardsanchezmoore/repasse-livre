@@ -114,19 +114,29 @@ export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx
   return anunciosValidos.map(mapearAnuncio);
 }
 
+export interface FipeDaPagina {
+  fipeValor: number;
+  mesReferencia: string;
+}
+
 /**
  * Busca o valor de FIPE que a própria OLX já calculou para o veículo do
- * anúncio (campo `abuyFipePrice.fipePrice`, embutido na página individual).
- * Esse valor é mais confiável que a correspondência por aproximação textual
- * contra a API externa, porque a OLX já identificou a marca/modelo/versão
- * exatos do anúncio — mas só está disponível na página individual, não na
- * listagem em lote. Por isso só é chamado para anúncios já filtrados como
- * elegíveis, para não multiplicar o volume de acesso à OLX por anúncio.
+ * anúncio (campos `abuyFipePrice.fipePrice` e `abuyPriceRef.year_month_ref`,
+ * embutidos na página individual). É a fonte de verdade usada pelo Motor de
+ * Descoberta: a correspondência por aproximação textual contra a API
+ * externa de FIPE (usada na Inserção Direta, onde o usuário escolhe
+ * marca/modelo/ano exatos via select) se mostrou inconsistente aqui, porque
+ * o texto livre da OLX não identifica o veículo com precisão suficiente.
  */
-export async function buscarFipeDaPaginaAnuncio(linkOrigem: string): Promise<number | null> {
+export async function buscarFipeDaPaginaAnuncio(linkOrigem: string): Promise<FipeDaPagina | null> {
   const html = await buscarHtml(linkOrigem);
   // O JSON aparece tanto com aspas literais quanto com aspas em entidade
   // HTML (&quot;), dependendo do bloco da página onde está embutido.
-  const match = html.match(/abuyFipePrice(?:"|&quot;):\{(?:"|&quot;)fipePrice(?:"|&quot;):(\d+(?:\.\d+)?)\}/);
-  return match ? Number.parseFloat(match[1]) : null;
+  const matchPreco = html.match(/abuyFipePrice(?:"|&quot;):\{(?:"|&quot;)fipePrice(?:"|&quot;):(\d+(?:\.\d+)?)\}/);
+  if (!matchPreco) return null;
+
+  const matchMes = html.match(/year_month_ref(?:"|&quot;):(\d{6})/);
+  const mesReferencia = matchMes ? `${matchMes[1].slice(0, 4)}-${matchMes[1].slice(4, 6)}` : "desconhecido";
+
+  return { fipeValor: Number.parseFloat(matchPreco[1]), mesReferencia };
 }

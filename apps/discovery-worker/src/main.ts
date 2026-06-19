@@ -1,6 +1,5 @@
 import "dotenv/config";
 import { buscarFipeDaPaginaAnuncio, capturarAnunciosOlx, montarUrlPagina } from "./olxService.js";
-import { buscarReferenciaFipe } from "./fipeService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import { linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { AnuncioOlx, Oportunidade } from "./types.js";
@@ -19,61 +18,35 @@ interface ResultadoVarredura {
   elegiveis: number;
   descartados: number;
   semFipe: number;
-  confirmadosNaPagina: number;
 }
 
+/**
+ * O FIPE usado aqui vem direto da página individual do anúncio (a OLX já
+ * calcula isso para cada veículo) — não da API externa de FIPE. Por isso
+ * todo anúncio novo precisa de uma requisição extra para sua própria
+ * página, não só os que pareceriam elegíveis por uma estimativa textual.
+ */
 async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredura): Promise<void> {
   if (await linkOrigemJaExiste(anuncio.linkOrigem)) {
     return; // já capturado em execução anterior (não deveria ocorrer no modo incremental, que já corta antes)
   }
   resultado.novos++;
 
-  if (!anuncio.marca || !anuncio.modelo || !anuncio.ano) {
-    resultado.semFipe++;
-    return;
-  }
-
-  let referenciaFipe;
+  let fipe;
   try {
-    referenciaFipe = await buscarReferenciaFipe(anuncio.marca, anuncio.modelo, anuncio.ano);
+    fipe = await buscarFipeDaPaginaAnuncio(anuncio.linkOrigem);
   } catch (erro) {
-    console.warn(`[motor-descoberta] Falha ao consultar FIPE para "${anuncio.titulo}":`, erro);
+    console.warn(`[motor-descoberta] Falha ao buscar FIPE na página de "${anuncio.titulo}":`, erro);
     resultado.semFipe++;
     return;
   }
 
-  if (!referenciaFipe) {
+  if (!fipe) {
     resultado.semFipe++;
     return;
   }
 
-  let margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
-
-  if (!ehElegivel(margemPercentual, MARGEM_MINIMA)) {
-    resultado.descartados++;
-    return;
-  }
-
-  if (!classificar(margemPercentual)) {
-    resultado.descartados++;
-    return;
-  }
-
-  // Confirmação: a OLX já calcula o FIPE exato do veículo na página
-  // individual do anúncio (mais confiável que a correspondência por
-  // aproximação textual feita acima). Só vale o custo de uma requisição
-  // extra para quem já passou no filtro inicial.
-  let fipeValorFinal = referenciaFipe.valor;
-  try {
-    const fipeDaPagina = await buscarFipeDaPaginaAnuncio(anuncio.linkOrigem);
-    if (fipeDaPagina !== null) {
-      fipeValorFinal = fipeDaPagina;
-      margemPercentual = calcularMargemPercentual(anuncio.preco, fipeValorFinal);
-      resultado.confirmadosNaPagina++;
-    }
-  } catch (erro) {
-    console.warn(`[motor-descoberta] Falha ao confirmar FIPE na página de "${anuncio.titulo}":`, erro);
-  }
+  const margemPercentual = calcularMargemPercentual(anuncio.preco, fipe.fipeValor);
 
   if (!ehElegivel(margemPercentual, MARGEM_MINIMA)) {
     resultado.descartados++;
@@ -89,15 +62,15 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
   const oportunidade: Oportunidade = {
     fonte: "OLX",
     link_origem: anuncio.linkOrigem,
-    veiculo: anuncio.modelo,
+    veiculo: anuncio.modelo ?? anuncio.titulo,
     versao: anuncio.modelo,
     ano: anuncio.ano,
     cambio: anuncio.cambio,
     cidade: anuncio.cidade,
     estado: anuncio.estado,
     preco: anuncio.preco,
-    fipe_valor: fipeValorFinal,
-    fipe_data_referencia: referenciaFipe.mesReferencia,
+    fipe_valor: fipe.fipeValor,
+    fipe_data_referencia: fipe.mesReferencia,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
     foto_principal: anuncio.fotoPrincipal,
@@ -123,13 +96,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
  *   continuar nem para reprocessar.
  */
 async function executarVarredura(): Promise<void> {
-  const resultado: ResultadoVarredura = {
-    novos: 0,
-    elegiveis: 0,
-    descartados: 0,
-    semFipe: 0,
-    confirmadosNaPagina: 0,
-  };
+  const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
 
   console.log(`[motor-descoberta] Modo: ${MODO} | Categoria: ${CATEGORIA_URL_BASE}`);
@@ -163,7 +130,7 @@ async function executarVarredura(): Promise<void> {
   }
 
   console.log(
-    `[motor-descoberta] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos (${resultado.confirmadosNaPagina} confirmados com FIPE da própria OLX) | ${resultado.descartados} descartados (margem < ${MARGEM_MINIMA}%) | ${resultado.semFipe} sem correspondência FIPE.`
+    `[motor-descoberta] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados (margem < ${MARGEM_MINIMA}%) | ${resultado.semFipe} sem FIPE na página do anúncio.`
   );
 }
 

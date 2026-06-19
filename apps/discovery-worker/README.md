@@ -52,21 +52,22 @@ por execução como proteção contra varredura sem fim.
 - **Extração via `__NEXT_DATA__`**: a listagem da OLX expõe os anúncios em
   um bloco JSON embutido no HTML, então não é necessário parsing de DOM nem
   browser headless.
-- **Correspondência com FIPE por sobreposição de palavras**: o texto livre
-  da OLX não bate exatamente com os nomes da tabela FIPE (ex: a FIPE
-  cataloga a Evoque como "Range Rover Evoque", a OLX usa "Land Rover
-  Evoque"). A busca pontua candidatos por palavras em comum em vez de exigir
-  substring exata, o que resolveu a maioria dos casos testados manualmente.
-- **Confirmação com o FIPE que a própria OLX já calculou**: a página
-  individual de cada anúncio embute `abuyFipePrice.fipePrice` — o valor de
-  FIPE que a OLX já associou exatamente ao veículo do anúncio, mais
-  confiável que a correspondência textual contra a API externa (que pode
-  perder informação, ex: o campo `vehicle_model` da OLX às vezes omite o
-  nome da linha do veículo, como "Gol" ou "Fusca"). Por isso, depois que um
-  anúncio passa pelo filtro inicial de elegibilidade usando a API externa,
-  o worker abre a página individual desse anúncio para confirmar/corrigir
-  o valor de FIPE antes de salvar — sem aumentar o volume de acesso para
-  todos os anúncios, só para os que já parecem elegíveis.
+- **FIPE direto da página individual do anúncio, não da API externa**: a
+  página de cada anúncio embute `abuyFipePrice.fipePrice` e
+  `abuyPriceRef.year_month_ref` — o FIPE que a própria OLX já calculou para
+  aquele veículo exato. Essa é a única fonte de FIPE usada pelo Motor de
+  Descoberta hoje. A versão anterior tentava primeiro uma correspondência
+  textual contra uma API externa de FIPE (por marca/modelo/ano) e só
+  confirmava com o valor da OLX depois — um backfill nos primeiros 20
+  registros salvos por esse método mostrou 4 (20%) com margem errada o
+  suficiente para mudar a decisão de aprovar ou não (ex: um Volkswagen Gol
+  calculado com 31% de margem por aproximação textual, vs. -0,8% real —
+  na prática, prejuízo, não oportunidade). Por isso o worker agora abre a
+  página individual de **todo** anúncio novo, não só dos que pareciam
+  elegíveis — mais requisições à OLX por execução, mas dado confiável.
+  `fipeService.ts` (a API externa) continua no projeto para uso futuro na
+  Inserção Direta, onde o formulário usa selects de marca/modelo/ano exatos
+  e não depende de aproximação textual.
 
 ## Limitações conhecidas desta versão (Sprint 1)
 
