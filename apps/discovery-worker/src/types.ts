@@ -11,6 +11,8 @@ export interface AnuncioOlx {
   fotosSecundarias: string[];
   descricao: string | null;
   linkOrigem: string;
+  /** Epoch em segundos da publicação/atualização do anúncio na OLX. */
+  dataPublicacao: number | null;
 }
 
 export interface ReferenciaFipe {

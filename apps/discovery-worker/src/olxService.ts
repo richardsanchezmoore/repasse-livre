@@ -21,6 +21,7 @@ interface AdOlx {
   images?: { original: string }[];
   properties?: PropriedadeOlx[];
   locationDetails?: { uf?: string; municipality?: string };
+  date?: number; // epoch em segundos
 }
 
 interface NextDataOlx {
@@ -55,7 +56,21 @@ function mapearAnuncio(ad: AdOlx): AnuncioOlx {
     fotosSecundarias: (ad.images ?? []).slice(1).map((img) => img.original),
     descricao: ad.description ?? null,
     linkOrigem: ad.url,
+    dataPublicacao: ad.date ?? null,
   };
+}
+
+/**
+ * Monta a URL de uma página de listagem ordenada por data (mais recentes
+ * primeiro, parâmetro `sf=1`), na página indicada (`o=N`). A ordenação por
+ * data é o que permite a varredura incremental parar assim que encontra um
+ * anúncio já conhecido, sem precisar reler tudo a cada execução.
+ */
+export function montarUrlPagina(categoriaUrl: string, pagina: number): string {
+  const url = new URL(categoriaUrl);
+  url.searchParams.set("sf", "1");
+  url.searchParams.set("o", String(pagina));
+  return url.toString();
 }
 
 /**
@@ -86,8 +101,8 @@ async function buscarHtml(url: string): Promise<string> {
  * JSON estruturado embutido no HTML (__NEXT_DATA__), sem precisar de
  * parsing de DOM ou browser headless.
  */
-export async function capturarAnunciosOlx(categoriaUrl: string): Promise<AnuncioOlx[]> {
-  const html = await buscarHtml(categoriaUrl);
+export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx[]> {
+  const html = await buscarHtml(paginaUrl);
 
   const match = html.match(/__NEXT_DATA__"\s*type="application\/json">(.*?)<\/script>/s);
   if (!match) {

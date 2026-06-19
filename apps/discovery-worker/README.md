@@ -21,9 +21,25 @@ no seu projeto Supabase.
 npm run discover
 ```
 
-Isso executa uma varredura única da categoria/região configurada em
-`OLX_CATEGORY_URL` e salva no Supabase as oportunidades com margem igual ou
-superior a `MARGEM_MINIMA_PERCENTUAL` (padrão: 5%).
+Executa uma varredura paginada da categoria/região configurada em
+`OLX_CATEGORY_URL`, ordenada por data (mais recentes primeiro), e salva no
+Supabase as oportunidades com margem igual ou superior a
+`MARGEM_MINIMA_PERCENTUAL` (padrão: 5%).
+
+### Modos de varredura
+
+- **`MODO_VARREDURA=inicial`** — varredura ampla de bootstrap, para popular
+  a prateleira antes do primeiro envio. Pagina até encontrar um anúncio
+  mais antigo que `JANELA_INICIAL_DIAS` (padrão: 30 dias). Rodar uma única
+  vez.
+- **`MODO_VARREDURA=incremental`** (padrão) — uso recorrente. Pagina até
+  encontrar o primeiro anúncio que já existe no banco (`link_origem`) e
+  para ali, sem reprocessar o que já foi visto em execuções anteriores.
+  Pensado para ser disparado por um cron externo a cada 6 horas (ex: cron
+  job no Railway) — este processo não tem agendador embutido.
+
+Em ambos os modos, `MAX_PAGINAS` (padrão: 50) limita o número de páginas
+por execução como proteção contra varredura sem fim.
 
 ## Decisões técnicas relevantes
 
@@ -46,7 +62,8 @@ superior a `MARGEM_MINIMA_PERCENTUAL` (padrão: 5%).
 
 - Alguns anúncios ainda podem ficar sem correspondência na FIPE
   (`semFipe` no log) quando o texto é muito diferente do catálogo.
-- Captura apenas uma página de listagem por execução (sem paginação).
-- A lógica de agendamento (varredura inicial ampla + leituras a cada 8h) e a
-  estratégia de diff incremental ainda não estão implementadas — hoje a
-  deduplicação é feita apenas por `link_origem` único no banco.
+- O agendamento em si (disparar a cada 6h) precisa de um cron externo — o
+  worker só executa uma varredura por invocação.
+- O corte do modo incremental assume que a OLX nunca reordena/atrasa a
+  publicação de um anúncio mais antigo para o topo da listagem; se isso
+  ocorrer, esse anúncio específico pode não ser capturado.
