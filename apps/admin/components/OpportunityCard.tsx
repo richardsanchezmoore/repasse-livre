@@ -1,23 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { alternarFavorito, aprovarOportunidade, rejeitarOportunidade } from "@/app/actions";
+import { alternarFavorito, apagarOportunidade, aprovarOportunidade, rejeitarOportunidade } from "@/app/actions";
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
+import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
+import { ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
 import type { Oportunidade } from "@/lib/types";
-
-const ROTULO_CLASSIFICACAO: Record<string, string> = {
-  oportunidade: "Oportunidade",
-  grande_oportunidade: "Grande oportunidade",
-  oportunidade_premium: "Oportunidade premium",
-  top_oportunidade: "Top oportunidade",
-};
-
-const CLASSE_CLASSIFICACAO: Record<string, string> = {
-  oportunidade: "selo-classificacao-oportunidade",
-  grande_oportunidade: "selo-classificacao-grande",
-  oportunidade_premium: "selo-classificacao-premium",
-  top_oportunidade: "selo-classificacao-top",
-};
 
 const CLASSE_FONTE: Record<string, string> = {
   OLX: "selo-fonte-olx",
@@ -44,9 +32,27 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
     mostrarFeedback("Texto copiado!");
   }
 
+  function executarAcao(acao: () => Promise<void>, mensagemErro: string) {
+    iniciarTransicao(async () => {
+      try {
+        await acao();
+      } catch {
+        mostrarFeedback(mensagemErro);
+      }
+    });
+  }
+
+  function aoApagar() {
+    if (!window.confirm("Apagar esta oportunidade definitivamente? A contagem fica preservada no histórico.")) {
+      return;
+    }
+    executarAcao(() => apagarOportunidade(oportunidade.id), "Falha ao apagar. Tente novamente.");
+  }
+
   const classeFonte = CLASSE_FONTE[oportunidade.fonte] ?? "selo-fonte-generico";
-  const classeClassificacao = oportunidade.classificacao
-    ? CLASSE_CLASSIFICACAO[oportunidade.classificacao] ?? "selo-classificacao-oportunidade"
+  const classificacao = oportunidade.classificacao as Classificacao | null;
+  const classeClassificacao = classificacao
+    ? CLASSE_CLASSIFICACAO[classificacao] ?? "selo-classificacao-oportunidade"
     : "selo-classificacao-oportunidade";
 
   return (
@@ -68,9 +74,9 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
       <div className="destaque-margem">
         <p className="destaque-margem-rotulo">Margem sobre a FIPE</p>
         <p className="destaque-margem-valor">{oportunidade.margem_percentual?.toFixed(1)}%</p>
-        {oportunidade.classificacao && (
+        {classificacao && (
           <span className={`selo-classificacao ${classeClassificacao}`}>
-            {ROTULO_CLASSIFICACAO[oportunidade.classificacao]}
+            {ROTULO_CLASSIFICACAO[classificacao]}
           </span>
         )}
       </div>
@@ -91,36 +97,62 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
           <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
         </div>
 
-        <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
-          <span>Ver anúncio na {oportunidade.fonte}</span>
-          <span aria-hidden="true">›</span>
-        </a>
+        {oportunidade.whatsapp && (
+          <p className="info-remetente">
+            📱 {oportunidade.whatsapp}
+            {oportunidade.perfil_remetente && ` · ${ROTULO_PERFIL_REMETENTE[oportunidade.perfil_remetente]}`}
+          </p>
+        )}
+
+        {!oportunidade.link_origem.startsWith("insercao-direta:") && (
+          <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
+            <span>🔗 Abrir anúncio original</span>
+            <span aria-hidden="true">›</span>
+          </a>
+        )}
       </div>
+
+      {feedback && <p className="card-feedback">{feedback}</p>}
 
       <div className="acoes">
         <button
           disabled={pendente}
-          onClick={() => iniciarTransicao(() => aprovarOportunidade(oportunidade.id))}
+          onClick={() =>
+            executarAcao(() => aprovarOportunidade(oportunidade.id), "Falha ao aprovar. Tente novamente.")
+          }
           className="acao acao-aprovar"
         >
           Aprovar
         </button>
+        {oportunidade.status === "rejeitada" ? (
+          <button disabled={pendente} onClick={aoApagar} className="acao acao-rejeitar">
+            Apagar
+          </button>
+        ) : (
+          <button
+            disabled={pendente}
+            onClick={() =>
+              executarAcao(() => rejeitarOportunidade(oportunidade.id), "Falha ao rejeitar. Tente novamente.")
+            }
+            className="acao acao-rejeitar"
+          >
+            Rejeitar
+          </button>
+        )}
         <button
           disabled={pendente}
-          onClick={() => iniciarTransicao(() => rejeitarOportunidade(oportunidade.id))}
-          className="acao acao-rejeitar"
-        >
-          Rejeitar
-        </button>
-        <button
-          disabled={pendente}
-          onClick={() => iniciarTransicao(() => alternarFavorito(oportunidade.id, oportunidade.favorito))}
+          onClick={() =>
+            executarAcao(
+              () => alternarFavorito(oportunidade.id, oportunidade.favorito),
+              "Falha ao favoritar. Tente novamente."
+            )
+          }
           className="acao"
         >
           {oportunidade.favorito ? "Favoritado" : "Favoritar"}
         </button>
         <button onClick={aoCompartilhar} className="acao">
-          {feedback ?? "Compartilhar"}
+          Compartilhar
         </button>
       </div>
     </div>

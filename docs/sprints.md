@@ -27,25 +27,35 @@ Objetivo: descobrir oportunidades automaticamente a partir da OLX.
 - Classificação por faixa de margem
 - Persistência da oportunidade elegível no banco
 
-## Sprint 3 — Central de Oportunidades
+## Sprint 3 — Central de Oportunidades ✅ concluída
 
 Objetivo: dar ao operador um painel funcional para revisar e agir sobre as
 oportunidades descobertas.
 
-- Box "Descobertas"
-- Box "Enviadas"
-- Card de oportunidade (foto, veículo, cidade, margem, fonte)
-- Ações de aprovar, rejeitar, favoritar e compartilhar
+- Menu lateral com 4 abas (Descobertas, Enviadas, Aprovadas, Rejeitadas),
+  combinando origem (`origem_tipo`) e ciclo de vida (`status`)
+- Card de oportunidade (foto, veículo, cidade, margem, fonte, classificação
+  Bronze/Prata/Ouro/Diamante, filtro por classificação)
+- Ações de aprovar, rejeitar, favoritar, compartilhar, apagar (rejeitadas) —
+  todas com tratamento de erro
+- Exclusão com histórico agregado preservado (`oportunidades_historico`),
+  para manter o banco operacional enxuto sem perder dados de relatório
 
-## Sprint 4 — Inserção Direta
+## Sprint 4 — Inserção Direta ✅ concluída
 
 Objetivo: permitir que usuários enviem oportunidades manualmente, com as
 mesmas garantias de qualidade do Motor de Descoberta.
 
-- Formulário de submissão manual
-- Validações obrigatórias (captcha, WhatsApp, foto)
-- Consulta FIPE automática e cálculo de margem
-- Aplicação da margem mínima de 5% como filtro de entrada no banco
+- Formulário de submissão manual (`/enviar`), com selects em cascata
+  (marca/modelo/ano) consultando a FIPE diretamente, sem fuzzy matching
+- Prévia de margem em tempo real (cálculo client-side conforme digita o
+  preço, antes de qualquer submissão)
+- Validações obrigatórias campo a campo: captcha (Cloudflare Turnstile),
+  WhatsApp com máscara, foto, perfil do remetente
+- Consulta FIPE automática e cálculo de margem, sempre revalidados no
+  servidor (validação client é só UX)
+- Aplicação da margem mínima de 5% como filtro de entrada no banco —
+  rejeição imediata na tela, sem gravar nada se não atingir o mínimo
 
 ## Sprint 5 — Distribuição e Audiência
 

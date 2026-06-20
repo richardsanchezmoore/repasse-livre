@@ -1,4 +1,7 @@
+import type { PerfilRemetente } from "./perfilRemetente";
+
 export type StatusOportunidade = "descoberta" | "aprovada" | "rejeitada" | "enviada" | "favoritada";
+export type OrigemTipo = "descoberta" | "insercao_direta";
 
 export interface Oportunidade {
   id: string;
@@ -16,6 +19,9 @@ export interface Oportunidade {
   classificacao: string | null;
   foto_principal: string | null;
   status: StatusOportunidade;
+  origem_tipo: OrigemTipo;
+  whatsapp: string | null;
+  perfil_remetente: PerfilRemetente | null;
   favorito: boolean;
   data_captura: string;
 }

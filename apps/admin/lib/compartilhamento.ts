@@ -1,11 +1,5 @@
+import { ROTULO_CLASSIFICACAO, type Classificacao } from "./classificacao";
 import type { Oportunidade } from "./types";
-
-const ROTULO_CLASSIFICACAO: Record<string, string> = {
-  oportunidade: "Oportunidade",
-  grande_oportunidade: "Grande oportunidade",
-  oportunidade_premium: "Oportunidade premium",
-  top_oportunidade: "Top oportunidade",
-};
 
 function formatarMoeda(valor: number | null): string {
   if (valor === null) return "—";
@@ -19,7 +13,9 @@ function formatarMoeda(valor: number | null): string {
  * a foto separadamente.
  */
 export function gerarTextoCompartilhamento(oportunidade: Oportunidade): string {
-  const rotulo = oportunidade.classificacao ? ROTULO_CLASSIFICACAO[oportunidade.classificacao] : null;
+  const rotulo = oportunidade.classificacao
+    ? ROTULO_CLASSIFICACAO[oportunidade.classificacao as Classificacao]
+    : null;
 
   const linhas = [
     `🚗 *${oportunidade.veiculo}*`,

@@ -1,72 +1,113 @@
 # Estado atual do projeto — Repasse Livre
 
 > Resumo de contexto para retomar o trabalho em uma conversa nova.
-> Atualizado em 19/06/2026.
+> Atualizado em 20/06/2026.
 
 ## Stack
 
 - Backend/worker: Node.js + TypeScript (`apps/discovery-worker`)
 - Admin/painel: Next.js 14 App Router (`apps/admin`)
-- Banco: Supabase (Postgres), projeto real já configurado e em uso
+- Banco: Supabase (Postgres + Storage), projeto real já configurado e em uso
+- Captcha: Cloudflare Turnstile (formulário público)
 - Hospedagem planejada: Vercel (admin) + Railway/VPS (worker)
 - Controle de versão: GitHub (`richardsanchezmoore/repasse-livre`)
+- Node não está no PATH do ambiente local por padrão — usar
+  `$env:PATH = "C:\Program Files\nodejs;$env:PATH"` antes de `npm`/`npx` no
+  PowerShell desta máquina.
 
 ## O que já está pronto
 
 ### Documentação (`docs/`)
 - `prd-funcional.md` — PRD consolidado da Fase Zero
 - `arquitetura.md`, `backlog.md`, `sprints.md` — arquitetura, backlog e
-  roadmap de 4 sprints
+  roadmap de 6 sprints (Sprints 1-4 concluídas, ver `sprints.md`)
 
-### Sprint 1 — Motor de Descoberta (`apps/discovery-worker`)
+### Sprint 1-2 — Motor de Descoberta (`apps/discovery-worker`)
 - Captura paginada da listagem da OLX (RS), ordenada por data
 - Filtro nativo da OLX "Ofertas abaixo da FIPE" aplicado automaticamente,
   com a chave de query string resolvida dinamicamente da própria página
-  (não fixada no código) — reduz o universo de ~24.000 para ~800 anúncios
 - FIPE obtido direto da página individual de cada anúncio (campo
-  `abuyFipePrice` da OLX) — **não usa mais a API externa de FIPE para
-  a Descoberta**, porque a correspondência textual por marca/modelo se
-  mostrou inconsistente (~20% de erro em teste real)
-- Dois modos: `inicial` (bootstrap, varre N dias) e `incremental` (para
-  no primeiro anúncio já conhecido — pensado para cron de 6h)
-- `fipeService.ts` (API externa `fipe.parallelum.com.br`, com suporte a
-  `FIPE_API_KEY` do fipe.online) continua no projeto, reservado para a
-  futura Inserção Direta (onde o formulário usa selects exatos)
+  `abuyFipePrice` da OLX) — não usa a API externa de FIPE para a Descoberta
+  (correspondência textual por marca/modelo é inconsistente, ~20% de erro)
+- Dois modos: `inicial` (bootstrap) e `incremental` (cron de 6h, ainda
+  configurado só para execução manual — pendência conhecida)
 
-### Sprint 2 — Central de Oportunidades (`apps/admin`)
-- App Next.js com Server Components + Server Actions, lendo/escrevendo
-  direto no Supabase (service role key, só server-side)
-- Boards "Descobertas" (status `descoberta`) e "Enviadas" (status
-  `aprovada`), grid responsivo
-- Card: foto grande, margem sobre a FIPE em destaque, classificação
-  nomeada com selo colorido, selo de fonte (OLX), câmbio discreto,
-  comparativo preço vs. FIPE, link "Ver anúncio na OLX" (com
-  `referrerPolicy="no-referrer"` por causa de bloqueio de hotlinking)
-- Ações: Aprovar, Rejeitar, Favoritar (coluna `favorito` própria, não
-  reaproveita o campo `status`), Compartilhar (gera texto formatado com
-  emojis pronto para colar no WhatsApp — `lib/compartilhamento.ts`)
+### Sprint 3 — Central de Oportunidades (`apps/admin`)
+- Menu lateral fixo estilo Gmail (`components/Sidebar.tsx`), 4 abas
+  combinando dois eixos — **origem** (`origem_tipo`) e **ciclo de vida**
+  (`status`):
+  - **Descobertas**: `origem_tipo=descoberta` + `status=descoberta`
+  - **Enviadas**: `origem_tipo=insercao_direta` + `status=descoberta`
+  - **Aprovadas**: `status=aprovada` (qualquer origem)
+  - **Rejeitadas**: `status=rejeitada` (qualquer origem)
+- Filtro por classificação (chips: Bronze/Prata/Ouro/Diamante) dentro de
+  qualquer aba, via query string (`?aba=X&classificacao=Y`)
+- Card: foto grande, margem sobre a FIPE em destaque, selo de
+  classificação (Bronze/Prata/Ouro/Diamante — `lib/classificacao.ts`,
+  fonte única de verdade dos rótulos, usado também no texto de
+  compartilhamento), selo de fonte, WhatsApp/perfil do remetente quando
+  vem de Inserção Direta, link "🔗 Abrir anúncio original" (oculto quando a
+  oportunidade não tem URL real)
+- Ações: Aprovar, Rejeitar, Favoritar, Compartilhar (texto pronto pro
+  WhatsApp) — todas com tratamento de erro (rede instável, extensões de
+  navegador interferindo em `fetch`) mostrando feedback em vez de quebrar
+  a tela
+
+### Sprint 4 — Inserção Direta (`apps/admin/app/enviar`)
+- Formulário público (`/enviar`) para qualquer pessoa (física,
+  intermediador, repassador, lojista, investidor) enviar uma oportunidade
+- Selects em cascata (marca → modelo → ano) consultando a FIPE
+  (`fipe.parallelum.com.br`, com `FIPE_API_KEY` do fipe.online — sem
+  chave, a API pública bloqueia por limite de taxa quase imediatamente)
+- **Prévia de margem em tempo real**: ao digitar o preço, calcula a
+  margem contra o valor FIPE já consultado e mostra na hora se está
+  elegível (≥5%) ou não, com o preço máximo aceito — evita gastar um
+  envio completo para descobrir isso só no fim
+- Validação campo a campo (no blur, não só no submit), com máscaras de
+  preço (milhar) e WhatsApp, e selects para UF/câmbio (não texto livre)
+- Captcha Cloudflare Turnstile (modo Managed — pode aprovar
+  automaticamente sem interação se o risco for baixo)
+- Upload de foto para o bucket público `oportunidades-fotos` no Supabase
+  Storage
+- Servidor sempre revalida margem mínima de 5% e todos os campos
+  obrigatórios antes de gravar — validação client-side é só UX, nunca a
+  única barreira
+- Oportunidade entra como `origem_tipo='insercao_direta'`,
+  `status='descoberta'`, aparece na aba "Enviadas" do painel
+
+### Exclusão de oportunidades com histórico preservado
+- Tabela `oportunidades_historico` (migration `0004`) guarda
+  `origem_tipo`, `fonte`, `classificacao`, `margem_percentual`, `status` e
+  datas de **toda** oportunidade apagada — sem WhatsApp nem foto (sem
+  valor de relatório) — para permitir relatórios mensais/anuais mesmo
+  depois de limpar o banco operacional
+- Botão "Apagar" no card (só visível quando `status='rejeitada'`) e botão
+  "Apagar tudo" no cabeçalho da aba Rejeitadas — ambos com confirmação,
+  movem pro histórico, removem a foto do Storage (se for nossa) e só
+  então apagam a linha de `opportunities`
 
 ### Banco de dados (Supabase)
-- Tabelas `opportunities` e `fipe_referencia` (migration
-  `0001_init_opportunities.sql`)
-- Coluna `favorito` (migration `0002_add_favorito.sql`)
-- RLS habilitado
-- Dados reais sendo capturados desde 18-19/06/2026
+- `opportunities`: tabela principal (migration `0001`), + `favorito`
+  (`0002`), + `whatsapp`/`perfil_remetente`/índice em `origem_tipo`
+  (`0003`)
+- `oportunidades_historico`: contagem preservada de exclusões (`0004`)
+- `fipe_referencia`: reservada, não usada ativamente ainda
+- Storage: bucket público `oportunidades-fotos` (criado manualmente via
+  UI do Supabase, não por migration — ver decisões abaixo)
+- RLS habilitado; toda escrita do app passa pela service role key
+  (`supabaseAdmin`, só server-side)
 
 ## Pendências conhecidas / próximos passos
 
-1. **Inserção Direta** (segunda metade da Sprint 2, ainda não implementada):
-   formulário público para envio manual de oportunidades, com validações
-   (captcha, WhatsApp, foto, consulta FIPE via API externa com selects
-   exatos, margem mínima 5%)
-2. **Agendamento real do worker**: hoje só roda manualmente
+1. **Agendamento real do worker**: hoje só roda manualmente
    (`npm run discover`); falta configurar cron externo no Railway para
    rodar a cada 6h em modo incremental
-3. **Sprint 3** (Distribuição + Audiência) e **Sprint 4** (atualização
+2. **Sprint 5** (Distribuição + Audiência) e **Sprint 6** (atualização
    dinâmica de FIPE + hardening) ainda não iniciadas — ver `sprints.md`
-4. Webmotors e Mercado Livre como fontes adicionais (Fase futura, fora do
+3. Webmotors e Mercado Livre como fontes adicionais (Fase futura, fora do
    escopo da Fase Zero) — o card já tem suporte visual a múltiplas fontes
-   (selo colorido), só falta implementar os scrapers
+4. Relatórios mensais/anuais usando `oportunidades_historico` ainda não
+   têm nenhuma UI — só a tabela existe, pronta para ser consultada
 
 ## Decisões importantes (não óbvias do código)
 
@@ -75,6 +116,21 @@
 - Atribuição de fonte + link de redirecionamento no card reduz risco
   reputacional, mas não elimina questão de termos de uso do scraping
   (decisão consciente: volume baixo, comportamento parecido com humano)
-- `.env` e `.env.local` de cada app contêm credenciais reais do Supabase
-  e não estão versionados (`.gitignore`) — precisam ser recriados ao
-  clonar o repo em outra máquina
+- `.env`/`.env.local` de cada app contêm credenciais reais (Supabase,
+  Turnstile, FIPE) e não estão versionados (`.gitignore`) — precisam ser
+  recriados ao clonar o repo em outra máquina; ver
+  `apps/admin/.env.local.example` para a lista completa de variáveis
+- O bucket `oportunidades-fotos` e a política de leitura pública foram
+  criados manualmente pela UI do Supabase (Storage → New bucket → Public
+  bucket), não por SQL — a UI evita problemas de permissão que o SQL
+  Editor tem para `storage.buckets`/`storage.objects` em projetos
+  hospedados
+- `apps/admin` e `apps/discovery-worker` são independentes, sem
+  workspace compartilhado — por isso `lib/margin.ts` no admin é uma
+  cópia deliberada de `discovery-worker/src/margin.ts`, não um import
+  cruzado
+- **Nunca rodar `npm run build` enquanto `npm run dev` está ativo na
+  mesma pasta** — os dois disputam a pasta `.next` e corrompem o dev
+  server em execução (`Cannot find module './948.js'` e 404s em cascata
+  nos chunks estáticos). Para validar tipos sem esse risco, usar
+  `npx tsc --noEmit`.
