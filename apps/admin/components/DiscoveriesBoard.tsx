@@ -32,12 +32,21 @@ async function buscarOportunidades(aba: Aba, classificacao?: Classificacao): Pro
     consulta = consulta.eq("classificacao", classificacao);
   }
 
-  const { data, error } = await consulta.order("margem_percentual", { ascending: false });
+  const { data, error } = await consulta;
 
   if (error) {
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
   }
-  return data as Oportunidade[];
+
+  // Ordenado pela data/hora mais relevante: a de publicação na fonte
+  // original (OLX) quando existir, senão a da nossa captura (Inserção
+  // Direta não tem data de publicação original) — a mesma data mostrada
+  // no card, para a ordem da lista bater com o que o usuário vê.
+  return (data as Oportunidade[]).sort((a, b) => {
+    const dataA = new Date(a.data_publicacao_origem ?? a.data_captura).getTime();
+    const dataB = new Date(b.data_publicacao_origem ?? b.data_captura).getTime();
+    return dataB - dataA;
+  });
 }
 
 export async function contarOportunidades(): Promise<Record<Aba, number>> {

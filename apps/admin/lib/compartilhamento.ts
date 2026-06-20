@@ -1,9 +1,17 @@
 import { ROTULO_CLASSIFICACAO, type Classificacao } from "./classificacao";
+import { formatarWhatsapp } from "./mascaras";
 import type { Oportunidade } from "./types";
 
 function formatarMoeda(valor: number | null): string {
   if (valor === null) return "—";
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function linhaContato(oportunidade: Oportunidade): string {
+  if (oportunidade.origem_tipo === "insercao_direta" && oportunidade.whatsapp) {
+    return `📲 Vendedor: https://wa.me/55${oportunidade.whatsapp} (${formatarWhatsapp(oportunidade.whatsapp)})`;
+  }
+  return `🔗 Anúncio original: ${oportunidade.link_origem}`;
 }
 
 /**
@@ -31,7 +39,7 @@ export function gerarTextoCompartilhamento(oportunidade: Oportunidade): string {
       ? `🔥 ${oportunidade.margem_percentual.toFixed(1)}% abaixo da FIPE${rotulo ? ` — ${rotulo}` : ""}`
       : null,
     "",
-    `🔗 Anúncio original: ${oportunidade.link_origem}`,
+    linhaContato(oportunidade),
   ];
 
   return linhas.filter((linha) => linha !== null).join("\n");

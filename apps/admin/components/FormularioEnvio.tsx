@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useFormState } from "react-dom";
 import Script from "next/script";
 import { enviarOportunidade, type ResultadoEnvio } from "@/app/enviar/actions";
+import { DropzoneFotos, type FotoEnviada } from "@/components/DropzoneFotos";
 import { calcularMargemPercentual, ehElegivel, classificar } from "@/lib/margin";
 import { ROTULO_CLASSIFICACAO } from "@/lib/classificacao";
 import { PERFIS_REMETENTE, ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
@@ -11,7 +12,6 @@ import { UFS, apenasDigitos, formatarMoeda, formatarWhatsapp } from "@/lib/masca
 import type { FipeOpcao } from "@/lib/fipe";
 
 const ESTADO_INICIAL: ResultadoEnvio = { erro: null, sucesso: false };
-const TAMANHO_MAXIMO_FOTO = 5 * 1024 * 1024;
 
 async function buscarFipe(query: string): Promise<FipeOpcao[]> {
   const resp = await fetch(`/api/fipe?${query}`);
@@ -48,7 +48,7 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   const [cidade, setCidade] = useState("");
   const [estadoUf, setEstadoUf] = useState("");
   const [cambio, setCambio] = useState("");
-  const [foto, setFoto] = useState<File | null>(null);
+  const [fotos, setFotos] = useState<FotoEnviada[]>([]);
   const [whatsappDigitos, setWhatsappDigitos] = useState("");
   const [perfilRemetente, setPerfilRemetente] = useState("");
 
@@ -57,6 +57,10 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   useEffect(() => {
     buscarFipe("recurso=marcas").then(setMarcas);
   }, []);
+
+  useEffect(() => {
+    if (fotos.length > 0) marcarTocado("foto");
+  }, [fotos.length]);
 
   useEffect(() => {
     setModelos([]);
@@ -109,10 +113,10 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
     anoCode: anoCode ? null : "Selecione o ano.",
     preco: preco > 0 ? null : "Informe um preço válido.",
     estadoUf: estadoUf ? null : "Selecione o estado.",
-    foto: !foto
-      ? "Envie uma foto do veículo."
-      : foto.size > TAMANHO_MAXIMO_FOTO
-        ? "A foto deve ter no máximo 5MB."
+    foto: !fotos.some((f) => f.status === "ok")
+      ? "Envie ao menos uma foto do veículo."
+      : fotos.some((f) => f.status === "enviando")
+        ? "Aguarde o envio das fotos terminar."
         : null,
     whatsapp: /^\d{10,11}$/.test(whatsappDigitos) ? null : "Informe um WhatsApp válido com DDD.",
     perfilRemetente: perfilRemetente ? null : "Selecione seu perfil.",
@@ -289,16 +293,22 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           <input type="hidden" name="cambio" value={cambio} />
 
           <label className="campo">
-            <span>Foto do veículo</span>
-            <input
-              name="foto"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
-              onBlur={() => marcarTocado("foto")}
-            />
+            <span>Fotos do veículo</span>
+            <DropzoneFotos fotos={fotos} onChange={setFotos} />
             {erroVisivel("foto") && <small className="campo-erro">{erroVisivel("foto")}</small>}
           </label>
+          <input
+            type="hidden"
+            name="fotoPrincipalUrl"
+            value={fotos.find((f) => f.status === "ok" && f.principal)?.url ?? ""}
+          />
+          <input
+            type="hidden"
+            name="fotosSecundariasJson"
+            value={JSON.stringify(
+              fotos.filter((f) => f.status === "ok" && !f.principal).map((f) => f.url)
+            )}
+          />
 
           <label className="campo">
             <span>Seu WhatsApp (com DDD)</span>

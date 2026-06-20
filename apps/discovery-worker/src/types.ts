@@ -48,4 +48,5 @@ export interface Oportunidade {
   descricao: string | null;
   origem_tipo: "descoberta";
   status: "descoberta";
+  data_publicacao_origem: string | null;
 }

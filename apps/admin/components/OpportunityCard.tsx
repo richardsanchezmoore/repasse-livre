@@ -5,6 +5,7 @@ import { alternarFavorito, apagarOportunidade, aprovarOportunidade, rejeitarOpor
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
+import { formatarWhatsapp } from "@/lib/mascaras";
 import type { Oportunidade } from "@/lib/types";
 
 const CLASSE_FONTE: Record<string, string> = {
@@ -12,6 +13,15 @@ const CLASSE_FONTE: Record<string, string> = {
   Webmotors: "selo-fonte-webmotors",
   "Mercado Livre": "selo-fonte-mercadolivre",
 };
+
+function formatarDataCaptura(dataIso: string): string {
+  return new Date(dataIso).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function formatarMoeda(valor: number | null): string {
   if (valor === null) return "—";
@@ -87,6 +97,10 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
           {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
           {oportunidade.cambio ? ` · Câmbio ${oportunidade.cambio.toLowerCase()}` : ""}
         </p>
+        <p className="data-descoberta">
+          🕒 Publicado em{" "}
+          {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
+        </p>
 
         <div className="linha-preco">
           <span className="preco-rotulo">Anunciado por</span>
@@ -99,7 +113,15 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
 
         {oportunidade.whatsapp && (
           <p className="info-remetente">
-            📱 {oportunidade.whatsapp}
+            📱{" "}
+            <a
+              href={`https://wa.me/55${oportunidade.whatsapp}`}
+              target="_blank"
+              rel="noreferrer"
+              className="link-whatsapp"
+            >
+              {formatarWhatsapp(oportunidade.whatsapp)}
+            </a>
             {oportunidade.perfil_remetente && ` · ${ROTULO_PERFIL_REMETENTE[oportunidade.perfil_remetente]}`}
           </p>
         )}

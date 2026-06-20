@@ -18,10 +18,12 @@ export interface Oportunidade {
   margem_percentual: number | null;
   classificacao: string | null;
   foto_principal: string | null;
+  fotos_secundarias: string[];
   status: StatusOportunidade;
   origem_tipo: OrigemTipo;
   whatsapp: string | null;
   perfil_remetente: PerfilRemetente | null;
   favorito: boolean;
   data_captura: string;
+  data_publicacao_origem: string | null;
 }

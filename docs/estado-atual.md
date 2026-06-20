@@ -3,7 +3,9 @@
 > Resumo de contexto para retomar o trabalho em uma conversa nova.
 > Atualizado em 20/06/2026. Sprints 1-4 e a exclusão com histórico foram
 > testadas de ponta a ponta nesta data e estão funcionando em produção
-> (banco real do Supabase).
+> (banco real do Supabase). Mesmo dia: revisão do Sprint 4 (fotos, contato
+> do vendedor, data de publicação) — ver seção "Revisão pós-Sprint 4"
+> abaixo.
 
 ## Stack
 
@@ -100,6 +102,77 @@
   UI do Supabase, não por migration — ver decisões abaixo)
 - RLS habilitado; toda escrita do app passa pela service role key
   (`supabaseAdmin`, só server-side)
+
+## Revisão pós-Sprint 4 (20/06/2026, mesma sessão)
+
+### Upload de fotos no formulário `/enviar` — Dropzone
+- `components/DropzoneFotos.tsx`: arrastar-e-soltar ou clique (via
+  `<label>` envolvendo o `<input type="file" hidden>` — usar `<label>` em
+  vez de `onClick` + `ref.click()` evita o bug do diálogo do Windows
+  abrindo em duplicidade), até **10 fotos**, preview instantâneo
+  (`URL.createObjectURL`), barra de progresso real por arquivo via
+  `XMLHttpRequest.upload.onprogress` (a Fetch API não expõe progresso de
+  upload no navegador)
+- Cada foto é enviada para o Storage assim que é solta no dropzone (não
+  espera o submit final) — rota dedicada `app/api/fotos/route.ts`
+  (POST/DELETE) faz o upload/remoção usando `supabaseAdmin`, mantendo a
+  regra de toda escrita passar pela service role key, só server-side
+- O usuário escolhe qual foto é a **principal** (selo "Principal" + botão
+  "Definir como principal" nas demais); a primeira a terminar o upload
+  vira principal por padrão; se a principal for removida, a próxima foto
+  `ok` da lista assume automaticamente
+- `enviar/actions.ts` não recebe mais o arquivo bruto: recebe
+  `fotoPrincipalUrl` e `fotosSecundariasJson` (URLs já hospedadas) via
+  campos hidden do formulário
+- Risco aceito conscientemente: o upload por foto acontece *antes* da
+  verificação do Turnstile (captcha só valida no submit final), porque a
+  foto precisa subir no momento em que é solta. Mitigado com limite de
+  tipo (`image/*`) e tamanho (5MB) no servidor; aceitável para o volume
+  baixo da Fase Zero — se virar abuso real, próximo passo é limpar
+  arquivos órfãos periodicamente
+- `fotos_secundarias` agora é gravado de fato (antes sempre `[]`), mas
+  **ainda não aparece em nenhuma tela** — só o `foto_principal` é exibido
+  no card da Central; o uso de `fotos_secundarias` é reservado para uma
+  futura página de "anúncio" (ainda não existe)
+
+### Contato do vendedor (Inserção Direta) clicável
+- `lib/compartilhamento.ts`: para oportunidades de Inserção Direta com
+  WhatsApp cadastrado, a última linha do texto copiado para o WhatsApp
+  trocou de `🔗 Anúncio original: insercao-direta:{uuid}` (link inútil,
+  não é uma URL real) para `📲 Vendedor: https://wa.me/55{numero}` — o
+  WhatsApp reconhece e deixa esse link clicável automaticamente ao colar
+- `components/OpportunityCard.tsx`: o número do WhatsApp exibido no card
+  agora é um link `https://wa.me/55{numero}` (`target="_blank"`), com o
+  número formatado (`lib/mascaras.ts:formatarWhatsapp`) em vez dos dígitos
+  crus
+
+### Data de publicação na origem (não a nossa data de captura)
+- Nova coluna `data_publicacao_origem` (`timestamptz`, nullable) — ver
+  migration `0005` abaixo. `NULL` para `origem_tipo='insercao_direta'`
+  (não existe "publicação original" nesse caso)
+- `discovery-worker`: a OLX já entrega `date` (epoch em segundos) na
+  própria página do anúncio (mesmo campo já usado para o corte de janela
+  do modo `inicial`); `main.ts` converte para ISO e grava em
+  `data_publicacao_origem` em toda oportunidade de `origem_tipo='descoberta'`
+- Card da Central mostra `🕒 Publicado em {data}`, usando
+  `data_publicacao_origem` quando existir, com fallback para
+  `data_captura` (caso de Inserção Direta, ou registros antigos salvos
+  antes dessa coluna existir)
+- **Ordenação da lista** (`components/DiscoveriesBoard.tsx`): trocada de
+  `margem_percentual` desc para a mesma data mostrada no card (publicação
+  na origem, com fallback à captura), do mais recente para o mais antigo
+  — feita em JS após a query, pois o `order()` do supabase-js não suporta
+  `COALESCE` de duas colunas diretamente
+- Registros gravados antes da migration `0005` ficam com
+  `data_publicacao_origem = NULL` para sempre (não há como recuperar
+  retroativamente sem reconsultar a página do anúncio na OLX, e a
+  oportunidade pode já não existir mais lá)
+
+### Banco de dados — migration pendente de aplicar manualmente
+- `supabase/migrations/0005_data_publicacao_origem.sql` — **já aplicada
+  manualmente no SQL Editor do Supabase nesta sessão** (`alter table
+  opportunities add column if not exists data_publicacao_origem
+  timestamptz;`)
 
 ## Pendências conhecidas / próximos passos
 

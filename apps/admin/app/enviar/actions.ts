@@ -35,7 +35,14 @@ export async function enviarOportunidade(
   const whatsapp = lerTexto(formData, "whatsapp").replace(/\D/g, "");
   const perfilRemetente = lerTexto(formData, "perfilRemetente");
   const turnstileToken = lerTexto(formData, "turnstileToken");
-  const foto = formData.get("foto");
+  const fotoPrincipalUrl = lerTexto(formData, "fotoPrincipalUrl");
+  let fotosSecundarias: string[] = [];
+  try {
+    const bruto = JSON.parse(lerTexto(formData, "fotosSecundariasJson") || "[]");
+    if (Array.isArray(bruto)) fotosSecundarias = bruto.filter((item): item is string => typeof item === "string");
+  } catch {
+    fotosSecundarias = [];
+  }
 
   if (!veiculo || !marcaCode || !modeloCode || !anoCode || !precoTexto) {
     return { erro: "Preencha veículo, marca, modelo, ano e preço.", sucesso: false };
@@ -54,8 +61,8 @@ export async function enviarOportunidade(
     return { erro: "Selecione seu perfil.", sucesso: false };
   }
 
-  if (!(foto instanceof File) || foto.size === 0) {
-    return { erro: "Envie uma foto do veículo.", sucesso: false };
+  if (!fotoPrincipalUrl) {
+    return { erro: "Envie ao menos uma foto do veículo.", sucesso: false };
   }
 
   if (!turnstileToken) {
@@ -87,17 +94,6 @@ export async function enviarOportunidade(
     return { erro: "Não foi possível classificar essa oportunidade.", sucesso: false };
   }
 
-  const nomeArquivo = `${randomUUID()}-${foto.name}`;
-  const { error: erroUpload } = await supabaseAdmin.storage
-    .from("oportunidades-fotos")
-    .upload(nomeArquivo, foto, { contentType: foto.type });
-
-  if (erroUpload) {
-    return { erro: "Falha ao enviar a foto. Tente novamente.", sucesso: false };
-  }
-
-  const { data: urlPublica } = supabaseAdmin.storage.from("oportunidades-fotos").getPublicUrl(nomeArquivo);
-
   const { error: erroInsercao } = await supabaseAdmin.from("opportunities").insert({
     fonte: "Inserção Direta",
     link_origem: `insercao-direta:${randomUUID()}`,
@@ -112,8 +108,8 @@ export async function enviarOportunidade(
     fipe_data_referencia: fipe.mesReferencia,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
-    foto_principal: urlPublica.publicUrl,
-    fotos_secundarias: [],
+    foto_principal: fotoPrincipalUrl,
+    fotos_secundarias: fotosSecundarias,
     descricao: null,
     origem_tipo: "insercao_direta",
     status: "descoberta",

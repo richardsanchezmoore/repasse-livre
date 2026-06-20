@@ -83,6 +83,8 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     descricao: anuncio.descricao,
     origem_tipo: "descoberta",
     status: "descoberta",
+    data_publicacao_origem:
+      anuncio.dataPublicacao !== null ? new Date(anuncio.dataPublicacao * 1000).toISOString() : null,
   };
 
   await salvarOportunidade(oportunidade);
