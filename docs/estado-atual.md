@@ -1,7 +1,9 @@
 # Estado atual do projeto — Repasse Livre
 
 > Resumo de contexto para retomar o trabalho em uma conversa nova.
-> Atualizado em 20/06/2026.
+> Atualizado em 20/06/2026. Sprints 1-4 e a exclusão com histórico foram
+> testadas de ponta a ponta nesta data e estão funcionando em produção
+> (banco real do Supabase).
 
 ## Stack
 
@@ -90,7 +92,9 @@
 - `opportunities`: tabela principal (migration `0001`), + `favorito`
   (`0002`), + `whatsapp`/`perfil_remetente`/índice em `origem_tipo`
   (`0003`)
-- `oportunidades_historico`: contagem preservada de exclusões (`0004`)
+- `oportunidades_historico`: contagem preservada de exclusões (`0004`,
+  aplicada manualmente no SQL Editor — migrations deste projeto não rodam
+  sozinhas, sempre exigem colar o SQL no Supabase)
 - `fipe_referencia`: reservada, não usada ativamente ainda
 - Storage: bucket público `oportunidades-fotos` (criado manualmente via
   UI do Supabase, não por migration — ver decisões abaixo)
