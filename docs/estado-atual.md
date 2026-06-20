@@ -5,7 +5,12 @@
 > testadas de ponta a ponta nesta data e estão funcionando em produção
 > (banco real do Supabase). Mesmo dia: revisão do Sprint 4 (fotos, contato
 > do vendedor, data de publicação) — ver seção "Revisão pós-Sprint 4"
-> abaixo.
+> abaixo. Depois da revisão, rodada uma varredura manual incremental
+> (`MODO_VARREDURA=incremental npm run discover` em
+> `apps/discovery-worker`): 38 anúncios novos, 13 elegíveis salvos com
+> `data_publicacao_origem` já populada, 25 descartados por margem, 0 sem
+> FIPE. Tudo commitado e enviado para `origin/main` (commit `fea1856`) —
+> working tree limpo, nada pendente de commit/push nesta sessão.
 
 ## Stack
 
