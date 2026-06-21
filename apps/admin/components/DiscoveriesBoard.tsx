@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import type { Usuario } from "@/lib/supabase-server";
 import type { Classificacao } from "@/lib/classificacao";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
@@ -7,6 +8,17 @@ import { FiltroClassificacao } from "./FiltroClassificacao";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
 export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor";
+
+// Abas exclusivas de gestão — só visíveis/consultáveis por quem tem
+// perfis.role = 'admin'. "aprovadas" (rótulo público "Oportunidades") e
+// "favoritos" são acessíveis a qualquer um (favoritos exige login, mas
+// não precisa ser admin).
+const ABAS_ADMIN: Aba[] = ["descobertas", "enviadas", "rejeitadas"];
+
+export function podeAcessarAba(aba: Aba, usuario: Usuario | null): boolean {
+  if (!ABAS_ADMIN.includes(aba)) return true;
+  return usuario?.role === "admin";
+}
 
 export interface FiltrosBoard {
   classificacao?: Classificacao;
@@ -19,7 +31,7 @@ export interface FiltrosBoard {
 const TITULO_POR_ABA: Record<Aba, string> = {
   descobertas: "Descobertas",
   enviadas: "Enviadas",
-  aprovadas: "Aprovadas",
+  aprovadas: "Oportunidades",
   rejeitadas: "Rejeitadas",
   favoritos: "Favoritos",
 };
@@ -62,17 +74,42 @@ function ordenar(oportunidades: Oportunidade[], ordem: Ordem = "recente"): Oport
   }
 }
 
-async function buscarOportunidades(aba: Aba, filtros: FiltrosBoard = {}): Promise<Oportunidade[]> {
-  let consulta = supabaseAdmin.from("opportunities").select("*");
+async function buscarIdsFavoritados(usuarioId: string): Promise<Set<string>> {
+  const { data, error } = await supabaseAdmin.from("favoritos").select("opportunity_id").eq("user_id", usuarioId);
+  if (error) {
+    throw new Error(`Falha ao buscar favoritos: ${error.message}`);
+  }
+  return new Set((data ?? []).map((linha) => linha.opportunity_id as string));
+}
+
+async function buscarOportunidades(
+  aba: Aba,
+  filtros: FiltrosBoard = {},
+  usuario: Usuario | null = null
+): Promise<Oportunidade[]> {
+  if (!podeAcessarAba(aba, usuario)) return [];
 
   if (aba === "favoritos") {
-    consulta = consulta.eq("favorito", true);
-  } else {
-    const filtro = FILTRO_POR_ABA[aba];
-    consulta = consulta.eq("status", filtro.status);
-    if (filtro.origem_tipo) {
-      consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
-    }
+    if (!usuario) return [];
+    const idsFavoritados = await buscarIdsFavoritados(usuario.id);
+    if (idsFavoritados.size === 0) return [];
+
+    let consultaFavoritos = supabaseAdmin.from("opportunities").select("*").in("id", Array.from(idsFavoritados));
+    if (filtros.classificacao) consultaFavoritos = consultaFavoritos.eq("classificacao", filtros.classificacao);
+    if (filtros.busca) consultaFavoritos = consultaFavoritos.ilike("veiculo", `%${escaparTermoIlike(filtros.busca)}%`);
+    if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
+    if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
+
+    const { data, error } = await consultaFavoritos;
+    if (error) throw new Error(`Falha ao buscar oportunidades favoritadas: ${error.message}`);
+    return ordenar(data as Oportunidade[], filtros.ordem);
+  }
+
+  let consulta = supabaseAdmin.from("opportunities").select("*");
+  const filtro = FILTRO_POR_ABA[aba];
+  consulta = consulta.eq("status", filtro.status);
+  if (filtro.origem_tipo) {
+    consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
   }
 
   if (filtros.classificacao) {
@@ -97,14 +134,27 @@ async function buscarOportunidades(aba: Aba, filtros: FiltrosBoard = {}): Promis
   return ordenar(data as Oportunidade[], filtros.ordem);
 }
 
-export async function contarOportunidades(): Promise<Record<Aba, number>> {
+export async function contarOportunidades(usuario: Usuario | null = null): Promise<Record<Aba, number>> {
   const abas: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
-  const resultados = await Promise.all(abas.map((aba) => buscarOportunidades(aba)));
+  const resultados = await Promise.all(abas.map((aba) => buscarOportunidades(aba, {}, usuario)));
   return Object.fromEntries(abas.map((aba, i) => [aba, resultados[i].length])) as Record<Aba, number>;
 }
 
-export async function Board({ aba, filtros = {} }: { aba: Aba; filtros?: FiltrosBoard }) {
-  const oportunidades = await buscarOportunidades(aba, filtros);
+export async function Board({
+  aba,
+  filtros = {},
+  usuario = null,
+}: {
+  aba: Aba;
+  filtros?: FiltrosBoard;
+  usuario?: Usuario | null;
+}) {
+  const oportunidades = await buscarOportunidades(aba, filtros, usuario);
+  const idsFavoritados = aba === "favoritos"
+    ? new Set(oportunidades.map((o) => o.id))
+    : usuario
+      ? await buscarIdsFavoritados(usuario.id)
+      : new Set<string>();
 
   return (
     <section className="board">
@@ -117,7 +167,13 @@ export async function Board({ aba, filtros = {} }: { aba: Aba; filtros?: Filtros
       <div className="board-lista">
         {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
         {oportunidades.map((oportunidade) => (
-          <OpportunityCard key={oportunidade.id} oportunidade={oportunidade} />
+          <OpportunityCard
+            key={oportunidade.id}
+            oportunidade={oportunidade}
+            favoritado={idsFavoritados.has(oportunidade.id)}
+            isAdmin={usuario?.role === "admin"}
+            usuarioLogado={Boolean(usuario)}
+          />
         ))}
       </div>
     </section>

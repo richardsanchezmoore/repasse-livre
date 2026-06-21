@@ -7,15 +7,24 @@ import type { Aba } from "./DiscoveriesBoard";
 
 const CHAVE_COLAPSADA = "repasse-livre:sidebar-colapsada";
 
-const ITENS: Array<{ aba: Aba; rotulo: string; Icone: LucideIcon }> = [
-  { aba: "descobertas", rotulo: "Descobertas", Icone: Search },
-  { aba: "enviadas", rotulo: "Enviadas", Icone: Send },
-  { aba: "aprovadas", rotulo: "Aprovadas", Icone: CheckCircle2 },
-  { aba: "rejeitadas", rotulo: "Rejeitadas", Icone: XCircle },
+const ITENS: Array<{ aba: Aba; rotulo: string; Icone: LucideIcon; soAdmin?: boolean }> = [
+  { aba: "descobertas", rotulo: "Descobertas", Icone: Search, soAdmin: true },
+  { aba: "enviadas", rotulo: "Enviadas", Icone: Send, soAdmin: true },
+  { aba: "aprovadas", rotulo: "Oportunidades", Icone: CheckCircle2 },
+  { aba: "rejeitadas", rotulo: "Rejeitadas", Icone: XCircle, soAdmin: true },
   { aba: "favoritos", rotulo: "Favoritos", Icone: Heart },
 ];
 
-export function Sidebar({ abaAtiva, contagens }: { abaAtiva: Aba; contagens: Record<Aba, number> }) {
+export function Sidebar({
+  abaAtiva,
+  contagens,
+  role,
+}: {
+  abaAtiva: Aba;
+  contagens: Record<Aba, number>;
+  role: "admin" | "publico" | null;
+}) {
+  const itensVisiveis = ITENS.filter((item) => !item.soAdmin || role === "admin");
   const { navegar } = useNavegacao();
   const [colapsada, setColapsada] = useState(false);
   const [expandidaPorHover, setExpandidaPorHover] = useState(false);
@@ -54,7 +63,7 @@ export function Sidebar({ abaAtiva, contagens }: { abaAtiva: Aba; contagens: Rec
         {!colapsadaVisualmente && <span className="sidebar-titulo">Repasse Livre</span>}
       </div>
       <ul className="sidebar-lista">
-        {ITENS.map((item) => (
+        {itensVisiveis.map((item) => (
           <li key={item.aba}>
             <button
               type="button"

@@ -1,9 +1,17 @@
-import { Board, contarOportunidades, type Aba, type FiltrosBoard, type Ordem } from "@/components/DiscoveriesBoard";
+import {
+  Board,
+  contarOportunidades,
+  podeAcessarAba,
+  type Aba,
+  type FiltrosBoard,
+  type Ordem,
+} from "@/components/DiscoveriesBoard";
 import { BoardArea } from "@/components/BoardArea";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { CLASSIFICACOES, type Classificacao } from "@/lib/classificacao";
+import { obterUsuarioAtual } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -29,8 +37,12 @@ export default async function CentralDeOportunidadesPage({
   }>;
 }) {
   const { aba, classificacao, busca, precoMin, precoMax, ordem } = await searchParams;
+  const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
-  const abaAtiva: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "descobertas";
+  const abaSolicitada: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "aprovadas";
+  // Acesso direto via URL a uma aba de gestão sem ser admin cai para a
+  // vitrine pública — defesa em profundidade além do filtro da Sidebar.
+  const abaAtiva: Aba = podeAcessarAba(abaSolicitada, usuario) ? abaSolicitada : "aprovadas";
   const classificacaoAtiva = CLASSIFICACOES.includes(classificacao as Classificacao)
     ? (classificacao as Classificacao)
     : undefined;
@@ -44,12 +56,12 @@ export default async function CentralDeOportunidadesPage({
     ordem: ordemAtiva,
   };
 
-  const contagens = await contarOportunidades();
+  const contagens = await contarOportunidades(usuario);
 
   return (
     <NavegacaoProvider>
       <div className="layout">
-        <Sidebar abaAtiva={abaAtiva} contagens={contagens} />
+        <Sidebar abaAtiva={abaAtiva} contagens={contagens} role={usuario?.role ?? null} />
         <main className="conteudo">
           <TopBar
             aba={abaAtiva}
@@ -57,9 +69,10 @@ export default async function CentralDeOportunidadesPage({
             precoMin={filtros.precoMin}
             precoMax={filtros.precoMax}
             ordem={ordemAtiva}
+            usuario={usuario}
           />
           <BoardArea>
-            <Board aba={abaAtiva} filtros={filtros} />
+            <Board aba={abaAtiva} filtros={filtros} usuario={usuario} />
           </BoardArea>
         </main>
       </div>

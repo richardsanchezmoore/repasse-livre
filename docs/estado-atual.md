@@ -1,7 +1,7 @@
 # Estado atual do projeto — Repasse Livre
 
 > Resumo de contexto para retomar o trabalho em uma conversa nova.
-> Atualizado em 20/06/2026. Sprints 1-4 e a exclusão com histórico foram
+> Atualizado em 21/06/2026. Sprints 1-4 e a exclusão com histórico foram
 > testadas de ponta a ponta nesta data e estão funcionando em produção
 > (banco real do Supabase). Mesmo dia: revisão do Sprint 4 (fotos, contato
 > do vendedor, data de publicação) — ver seção "Revisão pós-Sprint 4"
@@ -40,6 +40,13 @@
 > o nome base do modelo) e rodado um **backfill** que corrigiu o título de
 > 114 das 116 oportunidades de Descobertas já salvas — ver seção
 > "Correção de título da OLX + backfill" abaixo.
+>
+> **21/06/2026, sprint extra**: implementada **Autenticação, perfis
+> (admin x público) e favoritos por usuário** — Supabase Auth com
+> login/cadastro por e-mail+senha, Google OAuth, recuperação de senha, e
+> separação de quem pode aprovar/rejeitar oportunidades (admin) de quem só
+> vê a vitrine pública e favorita por conta própria — ver seção "Sprint
+> extra — Autenticação, perfis e favoritos por usuário" abaixo.
 
 ## Stack
 
@@ -509,6 +516,108 @@ Flex 16V 5P".
   provavelmente removido/expirado na OLX nesse meio tempo — manteve o
   título antigo, sem quebrar nada).
 
+## Sprint extra — Autenticação, perfis e favoritos por usuário (21/06/2026)
+
+Objetivo: separar "gestão da plataforma" (quem aprova/rejeita) de "demais
+usuários" (vitrine pública + favoritos próprios), inspirado visualmente em
+cadastro.adminer.pro.
+
+### Supabase Auth (`apps/admin`)
+- `@supabase/ssr` instalado; `lib/supabase-browser.ts` (client-side, anon
+  key) e `lib/supabase-server.ts` (Server Components/Actions, anon key +
+  cookie de sessão — respeita RLS, diferente do `supabaseAdmin` em
+  `lib/supabase.ts`, que é service role e continua só para as operações
+  administrativas internas já existentes)
+- `middleware.ts`: renova o cookie de sessão a cada request (padrão
+  `@supabase/ssr` para o App Router)
+- `app/auth/callback/route.ts`: troca `code` (Google OAuth, confirmação de
+  cadastro, magic link de recuperação) por sessão e redireciona para `/`
+- Env vars novas: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  (anon/public key do painel do Supabase — diferente da service role key
+  já existente)
+
+### Telas (`app/login`, `app/cadastro`, `app/redefinir-senha`)
+- `/login`: e-mail + senha (`signInWithPassword`) + Google OAuth + modo
+  "Esqueci minha senha" (toggle na mesma tela — esconde o campo senha,
+  troca o botão pra "Redefinir Senha", chama `resetPasswordForEmail`)
+- `/cadastro`: e-mail + senha + confirmar senha (`signUp`) + Google —
+  Supabase exige confirmação por e-mail antes do primeiro login (regra já
+  ativa no painel)
+- `/redefinir-senha`: recebe o link do e-mail de recuperação (que já
+  estabelece sessão), formulário de nova senha (`updateUser`), depois
+  manda direto para `/` já logado — sem pedir a senha de novo
+- Magic link "puro" foi descartado como método principal de login (só
+  sobrou disfarçado dentro do fluxo de recuperação de senha) — decisão
+  trocada no meio da sprint: o pedido original era a la adminer.pro
+  (Gmail + e-mail), e o usuário pediu explicitamente uma tela de login
+  com senha depois de ver a versão só-magic-link na prática
+
+### Perfis e roles (migration `0009_perfis_favoritos.sql`)
+- Tabela `perfis` (`user_id` FK `auth.users`, `role` `'admin'|'publico'`,
+  default `'publico'`) + trigger `on_auth_user_created` que cria o
+  perfil automaticamente no primeiro login (cobre Google e e-mail igual)
+- **Pegadinha encontrada em produção**: o Supabase passou a habilitar RLS
+  automaticamente em tabelas criadas pelo SQL Editor, mas sem nenhuma
+  política — isso bloqueava silenciosamente até o próprio usuário ler o
+  seu perfil (a role nunca chegava como `admin` no app, mesmo já promovido
+  no banco). Corrigido com uma política `perfis_select_proprio` (`user_id
+  = auth.uid()`) — já incluída na migration
+- **Promoção do primeiro admin**: como o usuário fez o primeiro
+  cadastro/login antes da migration existir, o trigger nunca rodou para
+  essa conta — precisou de um `insert` manual em `perfis` (não só
+  `update`) para criar a linha já como admin. Próximos usuários (criados
+  depois da migration) só precisam do `update`
+- Sem UI de gestão de usuários ainda — promoção continua manual no SQL
+  Editor
+
+### Favoritos por usuário (tabela `favoritos`)
+- Tabela nova `favoritos` (`user_id` + `opportunity_id`, PK composta) —
+  substitui a coluna antiga `opportunities.favorito` (boolean global),
+  que fica órfã (sem leitura/escrita pelo app, remoção fica para limpeza
+  futura)
+- `DiscoveriesBoard.tsx`: aba "favoritos" passa a filtrar pela tabela
+  nova por `user_id`; demais abas recebem um `Set` de ids favoritados
+  pelo usuário atual pra marcar o coração certo no card
+- `app/actions.ts`: nova `alternarFavoritoUsuario(opportunityId)` (usa
+  `obterUsuarioAtual()` pra saber quem é; lança erro se deslogado) —
+  substitui o antigo `alternarFavorito` baseado na coluna boolean
+- Popup do coração (antigo "popup de primeiro favorito", hoje mock) ficou
+  funcional: deslogado → abre popup com link real pra `/login`; logado →
+  favorita de fato
+
+### Controle de acesso por role
+- `DiscoveriesBoard.tsx`: `podeAcessarAba()` bloqueia Descobertas/
+  Enviadas/Rejeitadas pra quem não é admin (a query roda com
+  `supabaseAdmin`, que ignora RLS — o gate real é checado aqui, não só
+  na UI); `app/page.tsx` força a aba pra `aprovadas` se a URL pedir uma
+  aba restrita sem ser admin
+- `Sidebar.tsx`: só admin vê as 3 abas de gestão; rótulo de "Aprovadas"
+  renomeado pra **"Oportunidades"** pra todo mundo (mesmo conteúdo,
+  nome mais amigável pro público)
+- `OpportunityCard.tsx`: botões Aprovar/Rejeitar/Apagar só renderizam com
+  `isAdmin`; `app/actions.ts` tem `exigirAdmin()` checando a role no
+  servidor antes de aprovar/rejeitar/apagar (defesa em profundidade,
+  não só esconder o botão)
+- `TopBar.tsx` + `components/UserMenu.tsx` (novo): canto direito mostra
+  "Login"/"Criar Conta" deslogado, ou avatar+e-mail+"Sair" logado
+
+### RLS em `opportunities` e `favoritos` (mesma migration `0009`)
+- Proteção em profundidade — hoje o app lê/grava via `supabaseAdmin`
+  (ignora RLS), o gate real é nas Server Actions/Server Components; RLS
+  cobre o dia em que algo passar a usar o client anon direto do navegador
+- `opportunities`: select público só pra `status='aprovada'`, demais
+  abas e todo update/delete exigem `perfis.role='admin'`
+- `favoritos`: cada usuário só vê/grava as próprias linhas
+
+### E-mails transacionais — SMTP customizado (Resend)
+- Painel do Supabase configurado com SMTP do **Resend** (domínio próprio
+  `repasselivre.com` verificado) em vez do serviço de e-mail padrão do
+  Supabase — necessário porque o padrão tem um limite de envio muito
+  baixo no plano free (bateu `over_email_send_rate_limit` só de testar)
+- Visual/template dos e-mails (assunto, corpo, remetente "amigável")
+  ainda não foi customizado — usa o template padrão do Supabase, só com
+  o transporte trocado; fica pendente abaixo
+
 ## Pendências conhecidas / próximos passos
 
 1. **Agendamento real do worker**: hoje só roda manualmente
@@ -520,6 +629,17 @@ Flex 16V 5P".
    escopo da Fase Zero) — o card já tem suporte visual a múltiplas fontes
 4. Relatórios mensais/anuais usando `oportunidades_historico` ainda não
    têm nenhuma UI — só a tabela existe, pronta para ser consultada
+5. **Visual e remetente dos e-mails de autenticação** ainda usam o
+   template padrão do Supabase (só o SMTP foi trocado pro Resend) —
+   falta personalizar assunto/corpo/remetente com a marca Repasse Livre
+6. **UI de gestão de usuários** (promover/despromover admin) não existe
+   — hoje é só `insert`/`update` manual na tabela `perfis` via SQL Editor
+7. Ao subir o admin para domínio real (Vercel ou outro), atualizar
+   **Site URL** e **Redirect URLs** no Supabase (Authentication → URL
+   Configuration) — hoje só têm as versões de `localhost:3000`
+8. Coluna antiga `opportunities.favorito` (boolean global) ficou órfã
+   desde a troca pra favoritos por usuário — remoção fica para uma
+   migration futura de limpeza
 
 ## Decisões importantes (não óbvias do código)
 

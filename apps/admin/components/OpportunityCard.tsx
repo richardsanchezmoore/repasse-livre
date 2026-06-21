@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Calendar, Clock, ExternalLink, Gauge, Heart, MapPin, MessageCircle, Tag } from "lucide-react";
-import { alternarFavorito, apagarOportunidade, aprovarOportunidade, rejeitarOportunidade } from "@/app/actions";
+import {
+  alternarFavoritoUsuario,
+  apagarOportunidade,
+  aprovarOportunidade,
+  rejeitarOportunidade,
+} from "@/app/actions";
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
@@ -38,12 +44,20 @@ function formatarKm(km: number | null | undefined): string {
   return `${km.toLocaleString("pt-BR")} km`;
 }
 
-const CHAVE_POPUP_PRIMEIRO_FAVORITO = "repasse-livre:popup-primeiro-favorito-visto";
-
-export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }) {
+export function OpportunityCard({
+  oportunidade,
+  favoritado,
+  isAdmin,
+  usuarioLogado,
+}: {
+  oportunidade: Oportunidade;
+  favoritado: boolean;
+  isAdmin: boolean;
+  usuarioLogado: boolean;
+}) {
   const [pendente, iniciarTransicao] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [mostrarPopupPrimeiroFavorito, setMostrarPopupPrimeiroFavorito] = useState(false);
+  const [mostrarPopupLogin, setMostrarPopupLogin] = useState(false);
 
   function mostrarFeedback(texto: string) {
     setFeedback(texto);
@@ -66,15 +80,11 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
   }
 
   function aoFavoritar() {
-    const novoFavorito = !oportunidade.favorito;
-    executarAcao(
-      () => alternarFavorito(oportunidade.id, oportunidade.favorito),
-      "Falha ao favoritar. Tente novamente."
-    );
-    if (novoFavorito && !window.localStorage.getItem(CHAVE_POPUP_PRIMEIRO_FAVORITO)) {
-      setMostrarPopupPrimeiroFavorito(true);
-      window.localStorage.setItem(CHAVE_POPUP_PRIMEIRO_FAVORITO, "1");
+    if (!usuarioLogado) {
+      setMostrarPopupLogin(true);
+      return;
     }
+    executarAcao(() => alternarFavoritoUsuario(oportunidade.id), "Falha ao favoritar. Tente novamente.");
   }
 
   function aoApagar() {
@@ -116,44 +126,32 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
           type="button"
           disabled={pendente}
           onClick={aoFavoritar}
-          className={`botao-favorito ${oportunidade.favorito ? "botao-favorito-ativo" : ""}`}
-          aria-label={oportunidade.favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-          title={oportunidade.favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          className={`botao-favorito ${favoritado ? "botao-favorito-ativo" : ""}`}
+          aria-label={favoritado ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          title={favoritado ? "Remover dos favoritos" : "Adicionar aos favoritos"}
         >
-          <Heart
-            size={21.6}
-            strokeWidth={2}
-            fill={oportunidade.favorito ? "currentColor" : "none"}
-          />
+          <Heart size={21.6} strokeWidth={2} fill={favoritado ? "currentColor" : "none"} />
         </button>
       </div>
 
-      {mostrarPopupPrimeiroFavorito && (
-        <div className="popup-favorito-overlay" onClick={() => setMostrarPopupPrimeiroFavorito(false)}>
+      {mostrarPopupLogin && (
+        <div className="popup-favorito-overlay" onClick={() => setMostrarPopupLogin(false)}>
           <div className="popup-favorito" onClick={(evento) => evento.stopPropagation()}>
             <button
               type="button"
               className="popup-favorito-fechar"
-              onClick={() => setMostrarPopupPrimeiroFavorito(false)}
+              onClick={() => setMostrarPopupLogin(false)}
               aria-label="Fechar"
             >
               ×
             </button>
             <Heart size={32} strokeWidth={2} fill="currentColor" className="popup-favorito-icone" />
             <p className="popup-favorito-texto">
-              Este é seu primeiro favorito! Entre em sua conta para acessar seus favoritos e acompanhar
-              as negociações de onde estiver!
+              Entre em sua conta para favoritar e acompanhar as negociações de onde estiver!
             </p>
-            <button
-              type="button"
-              className="popup-favorito-login"
-              onClick={() => {
-                setMostrarPopupPrimeiroFavorito(false);
-                mostrarFeedback("Login ainda não implementado nesta fase.");
-              }}
-            >
+            <Link href="/login" className="popup-favorito-login" onClick={() => setMostrarPopupLogin(false)}>
               Fazer Login
-            </button>
+            </Link>
           </div>
         </div>
       )}
@@ -243,30 +241,33 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
       {feedback && <p className="card-feedback">{feedback}</p>}
 
       <div className="acoes">
-        <button
-          disabled={pendente}
-          onClick={() =>
-            executarAcao(() => aprovarOportunidade(oportunidade.id), "Falha ao aprovar. Tente novamente.")
-          }
-          className="acao acao-aprovar"
-        >
-          Aprovar
-        </button>
-        {oportunidade.status === "rejeitada" ? (
-          <button disabled={pendente} onClick={aoApagar} className="acao acao-rejeitar">
-            Apagar
-          </button>
-        ) : (
+        {isAdmin && (
           <button
             disabled={pendente}
             onClick={() =>
-              executarAcao(() => rejeitarOportunidade(oportunidade.id), "Falha ao rejeitar. Tente novamente.")
+              executarAcao(() => aprovarOportunidade(oportunidade.id), "Falha ao aprovar. Tente novamente.")
             }
-            className="acao acao-rejeitar"
+            className="acao acao-aprovar"
           >
-            Rejeitar
+            Aprovar
           </button>
         )}
+        {isAdmin &&
+          (oportunidade.status === "rejeitada" ? (
+            <button disabled={pendente} onClick={aoApagar} className="acao acao-rejeitar">
+              Apagar
+            </button>
+          ) : (
+            <button
+              disabled={pendente}
+              onClick={() =>
+                executarAcao(() => rejeitarOportunidade(oportunidade.id), "Falha ao rejeitar. Tente novamente.")
+              }
+              className="acao acao-rejeitar"
+            >
+              Rejeitar
+            </button>
+          ))}
         <button onClick={aoCompartilhar} className="acao">
           Compartilhar
         </button>

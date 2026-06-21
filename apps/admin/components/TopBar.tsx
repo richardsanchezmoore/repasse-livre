@@ -6,8 +6,10 @@ import { ArrowUpDown, Plus, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { IconDropdown } from "./IconDropdown";
+import { UserMenu } from "./UserMenu";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba, Ordem } from "./DiscoveriesBoard";
+import type { Usuario } from "@/lib/supabase-server";
 
 const ROTULO_ORDEM: Record<Ordem, string> = {
   recente: "Mais recente",
@@ -24,12 +26,14 @@ export function TopBar({
   precoMin,
   precoMax,
   ordem,
+  usuario,
 }: {
   aba: Aba;
   busca?: string;
   precoMin?: number;
   precoMax?: number;
   ordem: Ordem;
+  usuario: Usuario | null;
 }) {
   const { navegar } = useNavegacao();
   const searchParams = useSearchParams();
@@ -147,6 +151,8 @@ export function TopBar({
             </button>
           </div>
         </IconDropdown>
+
+        <UserMenu usuario={usuario} />
       </div>
     </div>
   );
