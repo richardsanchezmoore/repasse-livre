@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useFormState } from "react-dom";
 import Script from "next/script";
+import { AlertTriangle, BadgeCheck, Sparkles } from "lucide-react";
 import { enviarOportunidade, type ResultadoEnvio } from "@/app/enviar/actions";
 import { DropzoneFotos, type FotoEnviada } from "@/components/DropzoneFotos";
+import { EstadoEnvioFormulario } from "@/components/EstadoEnvioFormulario";
+import { BotaoEnviarFormulario } from "@/components/BotaoEnviarFormulario";
 import { calcularMargemPercentual, ehElegivel, classificar } from "@/lib/margin";
 import { ROTULO_CLASSIFICACAO } from "@/lib/classificacao";
 import { PERFIS_REMETENTE, ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
@@ -13,6 +16,24 @@ import { UFS, apenasDigitos, formatarMoeda, formatarWhatsapp } from "@/lib/masca
 import type { FipeOpcao } from "@/lib/fipe";
 
 const ESTADO_INICIAL: ResultadoEnvio = { erro: null, sucesso: false };
+
+const NIVEIS_CLASSIFICACAO = [
+  { margem: 10, rotulo: "Prata" },
+  { margem: 15, rotulo: "Ouro" },
+  { margem: 20, rotulo: "Diamante" },
+];
+
+const OPCOES_OPCIONAIS = ["Ar Condicionado", "Direção Hidráulica/Elétrica", "Vidros Elétricos", "Travas Elétricas"];
+
+const OPCOES_SINISTRO_LEILAO = ["Leilão", "Sinistro", "Não", "Não sei"];
+
+function alternarItem(lista: string[], item: string): string[] {
+  return lista.includes(item) ? lista.filter((v) => v !== item) : [...lista, item];
+}
+
+function formatarMoedaValor(valor: number): string {
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 async function buscarFipe(query: string): Promise<FipeOpcao[]> {
   const resp = await fetch(`/api/fipe?${query}`);
@@ -37,9 +58,10 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   const [modelos, setModelos] = useState<FipeOpcao[]>([]);
   const [anos, setAnos] = useState<FipeOpcao[]>([]);
 
-  const [veiculo, setVeiculo] = useState("");
   const [marcaCode, setMarcaCode] = useState("");
+  const [marcaNome, setMarcaNome] = useState("");
   const [modeloCode, setModeloCode] = useState("");
+  const [modeloNome, setModeloNome] = useState("");
   const [anoCode, setAnoCode] = useState("");
   const [anoNome, setAnoNome] = useState("");
   const [valorFipe, setValorFipe] = useState<number | null>(null);
@@ -52,8 +74,12 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   const [kmDigitos, setKmDigitos] = useState("");
   const [fotos, setFotos] = useState<FotoEnviada[]>([]);
   const [whatsappDigitos, setWhatsappDigitos] = useState("");
+  const [nomeRemetente, setNomeRemetente] = useState("");
   const [perfilRemetente, setPerfilRemetente] = useState("");
   const [motivoVenda, setMotivoVenda] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [opcionais, setOpcionais] = useState<string[]>([]);
+  const [sinistroLeilao, setSinistroLeilao] = useState<string[]>([]);
 
   const [tocado, setTocado] = useState<CampoTocado>({});
 
@@ -110,7 +136,6 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   }
 
   const erros: Erros = {
-    veiculo: veiculo.trim().length >= 3 ? null : "Informe o veículo (mínimo 3 caracteres).",
     marcaCode: marcaCode ? null : "Selecione a marca.",
     modeloCode: modeloCode ? null : "Selecione o modelo.",
     anoCode: anoCode ? null : "Selecione o ano.",
@@ -149,7 +174,6 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           className="formulario-envio"
           onSubmit={() =>
             setTocado({
-              veiculo: true,
               marcaCode: true,
               modeloCode: true,
               anoCode: true,
@@ -162,28 +186,22 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
             })
           }
         >
+          <EstadoEnvioFormulario />
+
           {estado.erro && <p className="formulario-erro">{estado.erro}</p>}
 
-          <label className="campo">
-            <span>Veículo</span>
-            <input
-              name="veiculo"
-              value={veiculo}
-              onChange={(e) => setVeiculo(e.target.value)}
-              onBlur={() => marcarTocado("veiculo")}
-              placeholder="Ex: Civic EXL 2020"
-            />
-            {erroVisivel("veiculo") && <small className="campo-erro">{erroVisivel("veiculo")}</small>}
-          </label>
+          <input type="hidden" name="veiculo" value={`${marcaNome} ${modeloNome}`.trim()} />
 
           <label className="campo">
-            <span>Marca</span>
             <select
               value={marcaCode}
-              onChange={(e) => setMarcaCode(e.target.value)}
+              onChange={(e) => {
+                setMarcaCode(e.target.value);
+                setMarcaNome(e.target.options[e.target.selectedIndex]?.text ?? "");
+              }}
               onBlur={() => marcarTocado("marcaCode")}
             >
-              <option value="">Selecione</option>
+              <option value="">Marca</option>
               {marcas.map((m) => (
                 <option key={m.code} value={m.code}>
                   {m.name}
@@ -195,14 +213,17 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           <input type="hidden" name="marcaCode" value={marcaCode} />
 
           <label className="campo">
-            <span>Modelo</span>
             <select
               value={modeloCode}
-              onChange={(e) => setModeloCode(e.target.value)}
+              onChange={(e) => {
+                setModeloCode(e.target.value);
+                setModeloNome(e.target.options[e.target.selectedIndex]?.text ?? "");
+              }}
               onBlur={() => marcarTocado("modeloCode")}
               disabled={!marcaCode}
+              title={!marcaCode ? "Selecione a marca primeiro" : undefined}
             >
-              <option value="">Selecione</option>
+              <option value="">{marcaCode ? "Modelo" : "Selecione a marca primeiro"}</option>
               {modelos.map((m) => (
                 <option key={m.code} value={m.code}>
                   {m.name}
@@ -212,9 +233,9 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
             {erroVisivel("modeloCode") && <small className="campo-erro">{erroVisivel("modeloCode")}</small>}
           </label>
           <input type="hidden" name="modeloCode" value={modeloCode} />
+          <input type="hidden" name="modeloNome" value={modeloNome} />
 
           <label className="campo">
-            <span>Ano</span>
             <select
               value={anoCode}
               onChange={(e) => {
@@ -223,8 +244,9 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
               }}
               onBlur={() => marcarTocado("anoCode")}
               disabled={!modeloCode}
+              title={!modeloCode ? "Selecione o modelo primeiro" : undefined}
             >
-              <option value="">Selecione</option>
+              <option value="">{modeloCode ? "Ano" : "Selecione o modelo primeiro"}</option>
               {anos.map((a) => (
                 <option key={a.code} value={a.code}>
                   {a.name}
@@ -236,76 +258,120 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           <input type="hidden" name="anoCode" value={anoCode} />
           <input type="hidden" name="anoNome" value={anoNome} />
 
-          <label className="campo">
-            <span>Câmbio</span>
-            <select value={cambio} onChange={(e) => setCambio(e.target.value)}>
-              <option value="">Selecione (opcional)</option>
-              <option value="Manual">Manual</option>
-              <option value="Automático">Automático</option>
-            </select>
-          </label>
-          <input type="hidden" name="cambio" value={cambio} />
-
-          <label className="campo">
-            <span>KM rodados</span>
-            <input
-              inputMode="numeric"
-              value={formatarMoeda(kmDigitos)}
-              onChange={(e) => setKmDigitos(apenasDigitos(e.target.value))}
-              placeholder="Ex: 45.000 (opcional)"
-            />
-          </label>
-          <input type="hidden" name="km" value={kmDigitos} />
-
           {carregandoFipe && <p className="formulario-fipe-carregando">Consultando a tabela FIPE…</p>}
 
-          {erroFipe && <p className="campo-erro">{erroFipe}</p>}
+          {erroFipe && <small className="campo-erro">{erroFipe}</small>}
 
           {valorFipe !== null && (
-            <p className="formulario-fipe">
-              Valor na tabela FIPE: {valorFipe.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-            </p>
+            <div className="formulario-fipe">
+              <BadgeCheck size={20} strokeWidth={2} className="formulario-fipe-icone" />
+              <span>
+                Valor na tabela FIPE:{" "}
+                <strong>{valorFipe.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+              </span>
+            </div>
           )}
 
           <label className="campo">
-            <span>Preço de venda (R$)</span>
             <input
               inputMode="numeric"
-              value={formatarMoeda(precoDigitos)}
+              value={precoDigitos ? `R$ ${formatarMoeda(precoDigitos)}` : ""}
               onChange={(e) => setPrecoDigitos(apenasDigitos(e.target.value))}
               onBlur={() => marcarTocado("preco")}
-              placeholder="Ex: 65.000"
+              placeholder="Preço de venda"
             />
             {erroVisivel("preco") && <small className="campo-erro">{erroVisivel("preco")}</small>}
           </label>
           <input type="hidden" name="preco" value={precoDigitos} />
 
           {margem !== null && (
-            <p className={`formulario-margem ${margemInsuficiente ? "formulario-margem-baixa" : "formulario-margem-ok"}`}>
-              {margemInsuficiente
-                ? `⚠️ Margem de ${margem.toFixed(1)}% — abaixo do mínimo de 5%. Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
-                : `✅ Margem de ${margem.toFixed(1)}% — classificação: ${classificacaoPreview ? ROTULO_CLASSIFICACAO[classificacaoPreview] : ""}.`}
-            </p>
+            <div className={`formulario-margem ${margemInsuficiente ? "formulario-margem-baixa" : "formulario-margem-ok"}`}>
+              {margemInsuficiente ? (
+                <AlertTriangle size={20} strokeWidth={2} className="formulario-margem-icone" />
+              ) : (
+                <BadgeCheck size={20} strokeWidth={2} className="formulario-margem-icone" />
+              )}
+              <span>
+                {margemInsuficiente
+                  ? margem < 0
+                    ? `Valor acima da FIPE! Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}. Mínimo aceito é de 5% abaixo!`
+                    : `Margem de ${margem.toFixed(1)}% — abaixo do mínimo de 5%. Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
+                  : `Margem de ${margem.toFixed(1)}% abaixo da FIPE — Sua classificação é: ${classificacaoPreview ? ROTULO_CLASSIFICACAO[classificacaoPreview] : ""}.`}
+              </span>
+            </div>
+          )}
+
+          {!margemInsuficiente && margem !== null && valorFipe !== null && (
+            <div className="formulario-incentivo">
+              <Sparkles size={20} strokeWidth={2} className="formulario-incentivo-icone" />
+              <div>
+                <p className="formulario-incentivo-titulo">
+                  Quanto maior seu desconto, mais chance de achar um comprador imediato.
+                </p>
+                <ul className="formulario-incentivo-lista">
+                  {NIVEIS_CLASSIFICACAO.filter((nivel) => nivel.margem > margem).map((nivel) => (
+                    <li key={nivel.rotulo}>
+                      Se o valor for {formatarMoedaValor(valorFipe * (1 - nivel.margem / 100))} (desconto de{" "}
+                      {nivel.margem}%) — Sua classificação será: <strong>{nivel.rotulo}</strong>.
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           )}
 
           <label className="campo">
-            <span>Cidade</span>
-            <input name="cidade" value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Ex: Porto Alegre" />
+            <input
+              inputMode="numeric"
+              value={formatarMoeda(kmDigitos)}
+              onChange={(e) => setKmDigitos(apenasDigitos(e.target.value))}
+              placeholder="KM Atual"
+            />
           </label>
+          <input type="hidden" name="km" value={kmDigitos} />
+
+          <div className="campo">
+            <span className="campo-titulo-grupo">Opcionais</span>
+            <div className="campo-checkboxes">
+              {OPCOES_OPCIONAIS.map((opcao) => (
+                <label key={opcao} className="campo-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={opcionais.includes(opcao)}
+                    onChange={() => setOpcionais((atual) => alternarItem(atual, opcao))}
+                  />
+                  {opcao}
+                </label>
+              ))}
+            </div>
+          </div>
+          <input type="hidden" name="opcionaisJson" value={JSON.stringify(opcionais)} />
+
+          <div className="campo">
+            <span className="campo-titulo-grupo">Sinistro ou Leilão?</span>
+            <div className="campo-checkboxes">
+              {OPCOES_SINISTRO_LEILAO.map((opcao) => (
+                <label key={opcao} className="campo-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={sinistroLeilao.includes(opcao)}
+                    onChange={() => setSinistroLeilao((atual) => alternarItem(atual, opcao))}
+                  />
+                  {opcao}
+                </label>
+              ))}
+            </div>
+          </div>
+          <input type="hidden" name="sinistroLeilaoJson" value={JSON.stringify(sinistroLeilao)} />
 
           <label className="campo">
-            <span>Estado (UF)</span>
-            <select value={estadoUf} onChange={(e) => setEstadoUf(e.target.value)} onBlur={() => marcarTocado("estadoUf")}>
-              <option value="">Selecione</option>
-              {UFS.map((uf) => (
-                <option key={uf} value={uf}>
-                  {uf}
-                </option>
-              ))}
+            <select value={cambio} onChange={(e) => setCambio(e.target.value)}>
+              <option value="">Câmbio</option>
+              <option value="Manual">Manual</option>
+              <option value="Automático">Automático</option>
             </select>
-            {erroVisivel("estadoUf") && <small className="campo-erro">{erroVisivel("estadoUf")}</small>}
           </label>
-          <input type="hidden" name="estado" value={estadoUf} />
+          <input type="hidden" name="cambio" value={cambio} />
 
           <label className="campo">
             <span>Fotos do veículo</span>
@@ -326,26 +392,61 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           />
 
           <label className="campo">
-            <span>Seu WhatsApp (com DDD)</span>
+            <textarea
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              placeholder="(Opcional) Descreva detalhes, pneus fracos, motor precisa revisar, lataria boa..."
+              rows={3}
+            />
+          </label>
+          <input type="hidden" name="descricao" value={descricao} />
+
+          <span className="campo-titulo-grupo">Seus Dados</span>
+          <label className="campo">
+            <input
+              name="nomeRemetente"
+              value={nomeRemetente}
+              onChange={(e) => setNomeRemetente(e.target.value)}
+              placeholder="Seu nome"
+            />
+          </label>
+
+          <label className="campo">
             <input
               inputMode="numeric"
               value={formatarWhatsapp(whatsappDigitos)}
               onChange={(e) => setWhatsappDigitos(apenasDigitos(e.target.value))}
               onBlur={() => marcarTocado("whatsapp")}
-              placeholder="(51) 99999-9999"
+              placeholder="Whats: (51) 99999-9999"
             />
             {erroVisivel("whatsapp") && <small className="campo-erro">{erroVisivel("whatsapp")}</small>}
           </label>
           <input type="hidden" name="whatsapp" value={whatsappDigitos} />
 
           <label className="campo">
-            <span>Seu perfil</span>
+            <select value={estadoUf} onChange={(e) => setEstadoUf(e.target.value)} onBlur={() => marcarTocado("estadoUf")}>
+              <option value="">Estado (UF)</option>
+              {UFS.map((uf) => (
+                <option key={uf} value={uf}>
+                  {uf}
+                </option>
+              ))}
+            </select>
+            {erroVisivel("estadoUf") && <small className="campo-erro">{erroVisivel("estadoUf")}</small>}
+          </label>
+          <input type="hidden" name="estado" value={estadoUf} />
+
+          <label className="campo">
+            <input name="cidade" value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Cidade" />
+          </label>
+
+          <label className="campo">
             <select
               value={perfilRemetente}
               onChange={(e) => setPerfilRemetente(e.target.value)}
               onBlur={() => marcarTocado("perfilRemetente")}
             >
-              <option value="">Selecione</option>
+              <option value="">Seu Perfil de Anunciante?</option>
               {PERFIS_REMETENTE.map((perfil) => (
                 <option key={perfil} value={perfil}>
                   {ROTULO_PERFIL_REMETENTE[perfil]}
@@ -357,13 +458,12 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           <input type="hidden" name="perfilRemetente" value={perfilRemetente} />
 
           <label className="campo">
-            <span>Motivo da venda</span>
             <select
               value={motivoVenda}
               onChange={(e) => setMotivoVenda(e.target.value)}
               onBlur={() => marcarTocado("motivoVenda")}
             >
-              <option value="">Selecione</option>
+              <option value="">Motivo da venda</option>
               {MOTIVOS_VENDA.map((motivo) => (
                 <option key={motivo} value={motivo}>
                   {ROTULO_MOTIVO_VENDA[motivo]}
@@ -384,9 +484,7 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
             {`function onTurnstileSuccess(token) { document.getElementById('turnstileToken').value = token; }`}
           </Script>
 
-          <button type="submit" className="formulario-enviar" disabled={!formularioValido}>
-            Enviar oportunidade
-          </button>
+          <BotaoEnviarFormulario desabilitado={!formularioValido} />
         </form>
       )}
     </>

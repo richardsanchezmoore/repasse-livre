@@ -2,7 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpDown, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDown, Plus, Search, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { IconDropdown } from "./IconDropdown";
 import { useNavegacao } from "./NavegacaoProvider";
@@ -95,6 +96,10 @@ export function TopBar({
       </div>
 
       <div className="top-bar-acoes">
+        <Link href="/enviar" className="botao-anunciar">
+          <Plus size={16} strokeWidth={2.25} />
+          Anunciar
+        </Link>
         <IconDropdown Icone={ArrowUpDown} rotulo="Ordenar" ativo={ordem !== "recente"}>
           <p className="icon-dropdown-titulo">Ordenar por</p>
           {ORDENS.map((opcao) => (

@@ -29,7 +29,7 @@ export default async function CentralDeOportunidadesPage({
   }>;
 }) {
   const { aba, classificacao, busca, precoMin, precoMax, ordem } = await searchParams;
-  const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas"];
+  const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
   const abaAtiva: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "descobertas";
   const classificacaoAtiva = CLASSIFICACOES.includes(classificacao as Classificacao)
     ? (classificacao as Classificacao)

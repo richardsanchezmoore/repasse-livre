@@ -9,14 +9,29 @@ import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO
 import { linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { AnuncioOlx, Oportunidade } from "./types.js";
 
-type ModoVarredura = "inicial" | "incremental";
+type ModoVarredura = "inicial" | "incremental" | "intervalo";
 
 const CATEGORIA_URL_BASE =
   process.env.OLX_CATEGORY_URL ?? "https://www.olx.com.br/autos-e-pecas/carros-vans-e-utilitarios/estado-rs";
 const MARGEM_MINIMA = Number(process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO);
-const MODO: ModoVarredura = process.env.MODO_VARREDURA === "inicial" ? "inicial" : "incremental";
+const MODO: ModoVarredura =
+  process.env.MODO_VARREDURA === "inicial"
+    ? "inicial"
+    : process.env.MODO_VARREDURA === "intervalo"
+      ? "intervalo"
+      : "incremental";
 const JANELA_INICIAL_DIAS = Number(process.env.JANELA_INICIAL_DIAS ?? 30);
 const MAX_PAGINAS = Number(process.env.MAX_PAGINAS ?? 50);
+
+/**
+ * Modo "intervalo": varredura avulsa para preencher uma janela de datas
+ * específica (ex.: ampliar a base de testes com um dia anterior ao início
+ * real da operação), sem o atalho do modo incremental de parar no primeiro
+ * anúncio já conhecido — aqui o objetivo é justamente revisitar uma faixa
+ * "atrás" do que já foi capturado.
+ */
+const JANELA_INICIO = process.env.JANELA_INICIO ? new Date(process.env.JANELA_INICIO) : null;
+const JANELA_FIM = process.env.JANELA_FIM ? new Date(process.env.JANELA_FIM) : null;
 
 interface ResultadoVarredura {
   novos: number;
@@ -67,7 +82,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
   const oportunidade: Oportunidade = {
     fonte: "OLX",
     link_origem: anuncio.linkOrigem,
-    veiculo: anuncio.modelo ?? anuncio.titulo,
+    veiculo: anuncio.titulo,
     versao: anuncio.modelo,
     ano: anuncio.ano,
     cambio: anuncio.cambio,
@@ -107,6 +122,14 @@ async function executarVarredura(): Promise<void> {
   const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
 
+  if (MODO === "intervalo" && (!JANELA_INICIO || !JANELA_FIM)) {
+    throw new Error(
+      "Modo 'intervalo' exige JANELA_INICIO e JANELA_FIM (datas ISO, ex.: 2026-06-18T00:00:00-03:00)."
+    );
+  }
+  const intervaloInicioEpoch = JANELA_INICIO ? Math.floor(JANELA_INICIO.getTime() / 1000) : null;
+  const intervaloFimEpoch = JANELA_FIM ? Math.floor(JANELA_FIM.getTime() / 1000) : null;
+
   const chaveFiltroFipe = await resolverChaveFiltroFipe(CATEGORIA_URL_BASE);
   const urlComFiltro = new URL(CATEGORIA_URL_BASE);
   urlComFiltro.searchParams.set(chaveFiltroFipe, "2");
@@ -137,6 +160,19 @@ async function executarVarredura(): Promise<void> {
           `[motor-descoberta] Anúncio fora da janela de ${JANELA_INICIAL_DIAS} dias, parando varredura inicial.`
         );
         break paginas;
+      }
+
+      if (MODO === "intervalo") {
+        if (anuncio.dataPublicacao === null) {
+          continue; // sem data, não dá pra saber se está na janela — pula sem parar a varredura
+        }
+        if (anuncio.dataPublicacao > intervaloFimEpoch!) {
+          continue; // ainda mais novo que o fim da janela, segue procurando os mais antigos
+        }
+        if (anuncio.dataPublicacao < intervaloInicioEpoch!) {
+          console.log(`[motor-descoberta] Anúncio anterior ao início da janela, parando varredura de intervalo.`);
+          break paginas;
+        }
       }
 
       await processarAnuncio(anuncio, resultado);

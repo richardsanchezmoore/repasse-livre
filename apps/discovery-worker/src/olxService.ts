@@ -172,3 +172,15 @@ export async function buscarFipeDaPaginaAnuncio(linkOrigem: string): Promise<Fip
 
   return { fipeValor: Number.parseFloat(matchPreco[1]), mesReferencia };
 }
+
+/**
+ * Busca o título completo (subject) direto da página individual do anúncio.
+ * Usado pelo backfill de oportunidades antigas, salvas antes da correção que
+ * passou a usar `subject` (título completo) em vez da propriedade estruturada
+ * `vehicle_model` (incompleta, sem o nome base do modelo) como `veiculo`.
+ */
+export async function buscarTituloDaPaginaAnuncio(linkOrigem: string): Promise<string | null> {
+  const html = await buscarHtml(linkOrigem);
+  const match = html.match(/(?:"|&quot;)subject(?:"|&quot;):(?:"|&quot;)([^"&]+)(?:"|&quot;)/);
+  return match ? match[1] : null;
+}

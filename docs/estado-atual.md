@@ -15,8 +15,31 @@
 > campos novos KM e Motivo da venda) — ver seção "Refinamento visual da
 > Central de Oportunidades" abaixo. Depois dela, rodada outra varredura
 > incremental: 16 anúncios novos, 2 elegíveis salvos (já com `km`
-> populado), 14 descartados por margem, 0 sem FIPE — total agora 51 em
-> Descobertas.
+> populado), 14 descartados por margem, 0 sem FIPE — total 51 em
+> Descobertas. Ainda no mesmo dia, sessão seguinte: criado o **modo
+> `intervalo`** de varredura (ver seção "Modo `intervalo`" abaixo) e usado
+> para ampliar a base de testes com os dias 18/06, 17/06 e 16/06/2026 —
+> total agora **114 oportunidades em Descobertas**. Sessão seguinte ainda
+> no mesmo dia: corrigido o scroll da Central de Oportunidades, que estava
+> preso dentro do `.board-lista` (como um "iframe" interno) — ver seção
+> "Correção de scroll" abaixo.
+>
+> **21/06/2026, sessão seguinte**: implementado o **Módulo Favoritor**
+> (ícone de coração sobre a foto, aba "Favoritos", pop-up de primeiro
+> favorito) e o botão **"Anunciar"** na TopBar levando para `/enviar`; ver
+> seção "Módulo Favoritor" abaixo. Na mesma sessão, uma rodada extensa de
+> ajustes no **formulário `/enviar`**: labels textuais trocadas por
+> máscara/placeholder nos campos e selects, reordenação de campos, cards
+> visuais para mensagens de margem/FIPE/incentivo de desconto, novos
+> campos (Descrição, Nome do anunciante, Opcionais do veículo, Sinistro ou
+> Leilão?), remoção do campo "Título" (agora gerado automaticamente a
+> partir de Marca+Modelo) e um overlay de loading durante o envio — ver
+> seção "Reforma do formulário de Inserção Direta" abaixo. Por fim,
+> **corrigido um bug de extração de título no Motor de Descoberta** (o
+> campo `veiculo` usava só a propriedade `vehicle_model`, incompleta, sem
+> o nome base do modelo) e rodado um **backfill** que corrigiu o título de
+> 114 das 116 oportunidades de Descobertas já salvas — ver seção
+> "Correção de título da OLX + backfill" abaixo.
 
 ## Stack
 
@@ -104,7 +127,9 @@
 ### Banco de dados (Supabase)
 - `opportunities`: tabela principal (migration `0001`), + `favorito`
   (`0002`), + `whatsapp`/`perfil_remetente`/índice em `origem_tipo`
-  (`0003`)
+  (`0003`), + `data_publicacao_origem` (`0005`), + `km` (`0006`), +
+  `motivo_venda` (`0007`), + `nome_remetente`/`opcionais`/
+  `sinistro_leilao` (`0008`)
 - `oportunidades_historico`: contagem preservada de exclusões (`0004`,
   aplicada manualmente no SQL Editor — migrations deste projeto não rodam
   sozinhas, sempre exigem colar o SQL no Supabase)
@@ -289,6 +314,200 @@ senão "dd/mm, HH:mm") → WhatsApp/perfil do remetente → motivo da venda
 16 anúncios novos, 2 elegíveis salvos (Hyundai Comfort Plus, BMW Sdrive
 20I — ambos já com `km` populado, confirmando a captura nova), 14
 descartados por margem, 0 sem FIPE. Total em Descobertas: 51.
+
+## Modo `intervalo` de varredura (20/06/2026, sessão seguinte)
+
+Criado em `apps/discovery-worker/src/main.ts` para ampliar a base de
+oportunidades com dias anteriores ao início real da operação (primeira
+varredura começou 19/06/2026 às 00h06) — útil para ter volume suficiente
+para testar paginação etc. Diferente do modo `incremental` (que para no
+primeiro anúncio já conhecido) e do `inicial` (que para numa janela de
+dias corridos a partir de agora), o modo `intervalo` varre uma faixa de
+datas fixa e arbitrária, ignorando se o anúncio já é conhecido até atingir
+o início da janela — necessário porque dias anteriores ficam "atrás" (mais
+antigos) de tudo que já foi capturado, então o atalho do modo incremental
+pararia antes de alcançá-los.
+
+- Uso: `MODO_VARREDURA=intervalo JANELA_INICIO=<ISO> JANELA_FIM=<ISO> npm run discover`
+  (datas com timezone explícito, ex.: `2026-06-18T00:00:00-03:00`)
+- Anúncios mais novos que `JANELA_FIM` são pulados (`continue`, segue
+  paginando); ao encontrar um anúncio mais antigo que `JANELA_INICIO`, a
+  varredura para (`break`); anúncios sem `dataPublicacao` são pulados sem
+  parar a varredura (não há como saber se estão na janela)
+- Resultados desta sessão, cada um rodado separadamente:
+  - **18/06/2026** (00:00–23:59:59): 60 novos, 22 elegíveis salvos, 38
+    descartados por margem, 0 sem FIPE
+  - **17/06/2026**: 14 novos, 8 elegíveis salvos, 6 descartados, 0 sem
+    FIPE
+  - **16/06/2026**: 65 novos, 33 elegíveis salvos, 31 descartados, 1 sem
+    FIPE
+  - Dia 15/06 não foi rodado (parada a pedido do usuário, meta de ~120 já
+    alcançada com 114)
+- Total em Descobertas após as três rodadas: **114** (era 51 antes desta
+  sessão)
+
+## Correção de scroll da Central de Oportunidades (20/06/2026, sessão seguinte)
+
+O `.board-lista` (grid de cards) tinha `max-height: 80vh` + `overflow-y:
+auto` — criava um scroll interno isolado, como se o board fosse um
+"iframe" dentro da página, em vez de a página rolar normalmente pelo
+corpo do navegador. Corrigido em
+`apps/admin/app/globals.css`:
+
+- `.board-lista`: removidos `max-height` e `overflow-y` — agora é só um
+  grid sem altura fixa, cresce com o conteúdo
+- `.top-bar` (busca/ordenar/filtrar): ganhou `position: sticky; top: 0`
+  com fundo (`#f0f2f5`, mesma cor do body) e `z-index: 6`, para ficar
+  fixa no topo da viewport ao rolar, como pedido
+- `.sidebar`: também precisou de `position: sticky; top: 0; height:
+  100vh; overflow-y: auto` — sem isso, ela rolava junto com a página e
+  desaparecia (regressão percebida só depois de testar no navegador,
+  corrigida na mesma sessão). No breakpoint mobile (`max-width: 800px`,
+  onde a sidebar vira barra horizontal no topo), o sticky é revertido
+  (`position: static; height: auto; overflow-y: visible`) pois lá ela já
+  ocupa largura total e não faz sentido fixá-la separado da topo-bar
+- Validado com `npm run dev` + Chrome MCP: rolagem de ~114 cards
+  confirmada com sidebar e top-bar fixas e o body como único container de
+  scroll
+
+## Módulo Favoritor (21/06/2026)
+
+Inspirado visualmente na OLX (ícone maior) e no pop-up de primeiro
+favorito da Webmotors.
+
+- `components/OpportunityCard.tsx`: botão de coração (`lucide-react`
+  `Heart`) sobreposto à foto (canto superior direito), `hover` fica
+  vermelho, ao marcar fixa vermelho preenchido — substitui o antigo botão
+  "Favoritar"/"Favoritado" do rodapé do card (removido)
+- Pop-up de primeiro favorito: mostrado uma única vez por navegador
+  (`localStorage`, chave `repasse-livre:popup-primeiro-favorito-visto`),
+  texto e botão "Fazer Login" iguais ao conceito da Webmotors — é só
+  visual/mock, não existe sistema de usuários ainda; o botão mostra um
+  feedback "Login ainda não implementado nesta fase"
+- Nova aba **Favoritos** na `Sidebar`, com contador — filtra
+  `favorito=true` independente de `status`/`origem_tipo` (diferente das
+  outras abas, que filtram por `status`); reaproveita toda a infra de
+  busca/filtro/ordenação já existente em `DiscoveriesBoard.tsx`
+- Reaproveita a coluna `favorito` (`boolean`) já existente desde o
+  Sprint 3 — nenhuma migration nova para isso
+
+### Botão "Anunciar"
+
+`components/TopBar.tsx`: botão verde (`#2bac60`, mesma cor do "Ganho" no
+card), cantos arredondados, `font-weight: 700`, ao lado da busca — link
+direto para `/enviar`.
+
+## Reforma do formulário de Inserção Direta (21/06/2026, sessão seguinte)
+
+Várias rodadas de ajuste fino no `FormularioEnvio.tsx` e `globals.css`,
+pedidas diretamente sobre o resultado já no ar.
+
+### Labels → máscara/placeholder
+A maioria dos labels textuais (`<span>` acima do campo) foi removida em
+favor do texto direto como placeholder (inputs) ou como primeira `option`
+em cinza (selects, via `.campo select:has(option[value=""]:checked)`,
+simulando um placeholder nativo). Mantém o label real só onde fazia
+sentido como título de grupo (`.campo-titulo-grupo`, ex.: "Opcionais",
+"Sinistro ou Leilão?", "Seus Dados").
+
+### Campo "Título" removido
+Não fazia mais sentido pedir um título livre quando já se escolhe
+Marca/Modelo/Ano via FIPE. O campo `veiculo` (coluna obrigatória no
+banco) agora é montado automaticamente como `"{Marca} {Modelo}"` a partir
+do texto das `option`s selecionadas, enviado via `<input type="hidden">` —
+o usuário não vê nem preenche mais esse campo.
+
+### Mensagens de FIPE/margem/incentivo como cards
+`.formulario-fipe`, `.formulario-margem` e `.formulario-incentivo` viraram
+cards com ícone (`lucide-react`), fundo e borda próprios, fonte ~20%
+maior — em vez de texto corrido. `.campo-erro` ganhou o mesmo tratamento
+visual (fundo vermelho claro, mais legível). A mensagem de margem
+negativa (preço acima da FIPE) deixou de mostrar o percentual negativo
+(confuso) e passou a dizer "Valor acima da FIPE! Preço máximo aceito:
+R$X. Mínimo aceito é de 5% abaixo!".
+
+`.formulario-incentivo` (novo, fundo âmbar `#fff7e6`, ícone `Sparkles` —
+visual "sugestivo", não de alerta) lista os próximos níveis de
+classificação ainda não alcançados (Prata/Ouro/Diamante) com o preço
+necessário para cada um, calculado a partir do `valorFipe` — incentiva o
+anunciante a baixar o preço.
+
+### Reordenação de campos
+Ordem final: Veículo (auto) → Marca → Modelo → Ano → mensagens FIPE →
+**Preço** → mensagem de margem/incentivo → **KM Atual** → **Opcionais**
+(checkboxes) → **Sinistro ou Leilão?** (checkboxes) → Câmbio → Fotos →
+**Descrição** (textarea) → **Seus Dados / Seu nome** → WhatsApp →
+**Estado** → **Cidade** → Seu Perfil de Anunciante? → Motivo da venda.
+
+### Campos novos
+- **Descrição** (`descricao`, coluna já existia desde o Sprint 1, só
+  não era usada na Inserção Direta): `<textarea>`, placeholder
+  "(Opcional) Descreva detalhes, pneus fracos, motor precisa revisar,
+  lataria boa..."
+- **Nome do anunciante** (`nome_remetente`, coluna nova — migration
+  `0008`): input "Seu nome", opcional, mostrado no card (substituiu o
+  rótulo de Perfil de Anunciante ao lado do WhatsApp) e no texto de
+  compartilhamento (`lib/compartilhamento.ts`)
+- **Opcionais** (`opcionais`, `jsonb`, coluna nova — migration `0008`):
+  checkboxes múltiplos (Ar Condicionado, Direção Hidráulica/Elétrica,
+  Vidros Elétricos, Travas Elétricas)
+- **Sinistro ou Leilão?** (`sinistro_leilao`, `jsonb`, coluna nova —
+  migration `0008`): checkboxes múltiplos (Leilão, Sinistro, Não, Não
+  sei) — ainda não exibidos em nenhuma tela além do formulário
+- **Modelo correto no card de Enviadas**: o nome do modelo (texto da
+  `option` selecionada na FIPE) agora é capturado e salvo na coluna
+  `versao` (já existente, mesma coluna usada pelo `discovery-worker` para
+  o modelo da OLX) — `OpportunityCard.tsx` usa `versao` como título do
+  card para `origem_tipo='insercao_direta'`, com fallback para `veiculo`
+
+### Loading durante o envio
+Sprint anterior já usava `useFormState`; agora dois componentes novos
+usam `useFormStatus` (que só funciona em componente filho do `<form>`,
+não no mesmo componente que renderiza a tag `<form>`):
+- `components/EstadoEnvioFormulario.tsx`: overlay cobrindo o formulário
+  inteiro com spinner e aviso "Não saia da página nem clique novamente."
+- `components/BotaoEnviarFormulario.tsx`: o próprio botão de envio
+  também desabilita e mostra spinner + "Enviando…"
+
+Resolve o problema de usuários impacientes clicando em "Enviar" mais de
+uma vez, já que a Server Action não dava nenhum feedback visual durante
+o `await`.
+
+### Migration `0008` — pendente de aplicar manualmente
+- `supabase/migrations/0008_campos_adicionais_envio.sql` — **já aplicada
+  manualmente pelo usuário no SQL Editor do Supabase nesta sessão**
+  (`nome_remetente text`, `opcionais jsonb default '[]'`,
+  `sinistro_leilao jsonb default '[]'`)
+
+## Correção de título da OLX + backfill (21/06/2026, sessão seguinte)
+
+Usuário reportou que buscar por "Punto" não achava um anúncio que devia
+estar elegível. Investigação: o anúncio **estava** salvo corretamente
+(margem 5.68%, Bronze), mas com título incompleto — "Fiat Essence
+Dualogic 1.6 Flex 16V 5P" em vez de "Fiat **Punto** Essence Dualogic 1.6
+Flex 16V 5P".
+
+- **Causa**: `apps/discovery-worker/src/main.ts` montava `veiculo` a
+  partir de `anuncio.modelo` (propriedade estruturada `vehicle_model` da
+  OLX), que só traz a versão/trim (ex.: "Comfort Plus"), sem o nome base
+  do modelo (ex.: "HB20"). O título completo e correto já vinha em
+  `anuncio.titulo` (`ad.subject`), só não estava sendo usado.
+- **Correção**: `veiculo: anuncio.titulo` (era
+  `anuncio.modelo ?? anuncio.titulo`). `versao` continua sendo
+  `anuncio.modelo` (usado como complemento no texto de compartilhamento,
+  só quando diferente de `veiculo`).
+- **Backfill retroativo**: `apps/discovery-worker/src/backfillTitulos.ts`
+  (novo, `npm run backfill:titulos`) — revisita a página de cada
+  oportunidade de `origem_tipo='descoberta'` já salva, extrai o título
+  completo correto (`olxService.ts`, nova função
+  `buscarTituloDaPaginaAnuncio`, mesmo padrão de regex tolerante a
+  `&quot;` usado para o FIPE) e atualiza `veiculo` se diferente. Pausa de
+  400ms entre requisições (mesma lógica de "comportamento parecido com
+  humano" já documentada nas decisões abaixo).
+- **Resultado desta sessão**: 116 oportunidades revisadas, **114
+  corrigidas**, 1 já estava certo, 1 falhou (anúncio do Toyota Hilux SW4
+  provavelmente removido/expirado na OLX nesse meio tempo — manteve o
+  título antigo, sem quebrar nada).
 
 ## Pendências conhecidas / próximos passos
 

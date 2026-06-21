@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "discover": "tsx src/main.ts",
+    "backfill:titulos": "tsx src/backfillTitulos.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Calendar, Clock, ExternalLink, Gauge, MapPin, MessageCircle } from "lucide-react";
+import { Calendar, Clock, ExternalLink, Gauge, Heart, MapPin, MessageCircle, Tag } from "lucide-react";
 import { alternarFavorito, apagarOportunidade, aprovarOportunidade, rejeitarOportunidade } from "@/app/actions";
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
-import { ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
 import type { Oportunidade } from "@/lib/types";
@@ -39,9 +38,12 @@ function formatarKm(km: number | null | undefined): string {
   return `${km.toLocaleString("pt-BR")} km`;
 }
 
+const CHAVE_POPUP_PRIMEIRO_FAVORITO = "repasse-livre:popup-primeiro-favorito-visto";
+
 export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }) {
   const [pendente, iniciarTransicao] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [mostrarPopupPrimeiroFavorito, setMostrarPopupPrimeiroFavorito] = useState(false);
 
   function mostrarFeedback(texto: string) {
     setFeedback(texto);
@@ -63,6 +65,18 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
     });
   }
 
+  function aoFavoritar() {
+    const novoFavorito = !oportunidade.favorito;
+    executarAcao(
+      () => alternarFavorito(oportunidade.id, oportunidade.favorito),
+      "Falha ao favoritar. Tente novamente."
+    );
+    if (novoFavorito && !window.localStorage.getItem(CHAVE_POPUP_PRIMEIRO_FAVORITO)) {
+      setMostrarPopupPrimeiroFavorito(true);
+      window.localStorage.setItem(CHAVE_POPUP_PRIMEIRO_FAVORITO, "1");
+    }
+  }
+
   function aoApagar() {
     if (!window.confirm("Apagar esta oportunidade definitivamente? A contagem fica preservada no histórico.")) {
       return;
@@ -79,6 +93,11 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
   const diferencaValor =
     oportunidade.fipe_valor !== null ? oportunidade.fipe_valor - oportunidade.preco : null;
 
+  const titulo =
+    oportunidade.origem_tipo === "insercao_direta" && oportunidade.versao
+      ? oportunidade.versao
+      : oportunidade.veiculo;
+
   return (
     <div className="card">
       <div className="foto-wrapper">
@@ -93,7 +112,51 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
           <div className="foto-capa foto-capa-vazia" />
         )}
         <span className={`selo-fonte ${classeFonte}`}>{oportunidade.fonte}</span>
+        <button
+          type="button"
+          disabled={pendente}
+          onClick={aoFavoritar}
+          className={`botao-favorito ${oportunidade.favorito ? "botao-favorito-ativo" : ""}`}
+          aria-label={oportunidade.favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          title={oportunidade.favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+        >
+          <Heart
+            size={21.6}
+            strokeWidth={2}
+            fill={oportunidade.favorito ? "currentColor" : "none"}
+          />
+        </button>
       </div>
+
+      {mostrarPopupPrimeiroFavorito && (
+        <div className="popup-favorito-overlay" onClick={() => setMostrarPopupPrimeiroFavorito(false)}>
+          <div className="popup-favorito" onClick={(evento) => evento.stopPropagation()}>
+            <button
+              type="button"
+              className="popup-favorito-fechar"
+              onClick={() => setMostrarPopupPrimeiroFavorito(false)}
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+            <Heart size={32} strokeWidth={2} fill="currentColor" className="popup-favorito-icone" />
+            <p className="popup-favorito-texto">
+              Este é seu primeiro favorito! Entre em sua conta para acessar seus favoritos e acompanhar
+              as negociações de onde estiver!
+            </p>
+            <button
+              type="button"
+              className="popup-favorito-login"
+              onClick={() => {
+                setMostrarPopupPrimeiroFavorito(false);
+                mostrarFeedback("Login ainda não implementado nesta fase.");
+              }}
+            >
+              Fazer Login
+            </button>
+          </div>
+        </div>
+      )}
 
       {classificacao && (
         <span className={`selo-classificacao ${classeClassificacao}`}>
@@ -102,7 +165,7 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
       )}
 
       <div className="card-corpo">
-        <p className="titulo">{oportunidade.veiculo}</p>
+        <p className="titulo">{titulo}</p>
 
         <div className="destaque-margem">
           <p className="destaque-margem-valor-rotulo">Ganho</p>
@@ -147,7 +210,7 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
 
         {oportunidade.whatsapp && (
           <p className="info-remetente">
-            <MessageCircle size={12} strokeWidth={1.75} className="icone-inline" />{" "}
+            <MessageCircle size={14} strokeWidth={1.75} className="icone-inline" />{" "}
             <a
               href={`https://wa.me/55${oportunidade.whatsapp}`}
               target="_blank"
@@ -156,12 +219,15 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
             >
               {formatarWhatsapp(oportunidade.whatsapp)}
             </a>
-            {oportunidade.perfil_remetente && ` · ${ROTULO_PERFIL_REMETENTE[oportunidade.perfil_remetente]}`}
+            {oportunidade.nome_remetente && ` · ${oportunidade.nome_remetente}`}
           </p>
         )}
 
         {oportunidade.motivo_venda && (
-          <p className="motivo-venda">Motivo da venda: {ROTULO_MOTIVO_VENDA[oportunidade.motivo_venda]}</p>
+          <p className="motivo-venda">
+            <Tag size={14} strokeWidth={1.75} className="icone-inline" /> Motivo da venda:{" "}
+            {ROTULO_MOTIVO_VENDA[oportunidade.motivo_venda]}
+          </p>
         )}
 
         {!oportunidade.link_origem.startsWith("insercao-direta:") && (
@@ -201,18 +267,6 @@ export function OpportunityCard({ oportunidade }: { oportunidade: Oportunidade }
             Rejeitar
           </button>
         )}
-        <button
-          disabled={pendente}
-          onClick={() =>
-            executarAcao(
-              () => alternarFavorito(oportunidade.id, oportunidade.favorito),
-              "Falha ao favoritar. Tente novamente."
-            )
-          }
-          className="acao"
-        >
-          {oportunidade.favorito ? "Favoritado" : "Favoritar"}
-        </button>
         <button onClick={aoCompartilhar} className="acao">
           Compartilhar
         </button>

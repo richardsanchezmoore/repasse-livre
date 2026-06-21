@@ -9,7 +9,8 @@ function formatarMoeda(valor: number | null): string {
 
 function linhaContato(oportunidade: Oportunidade): string {
   if (oportunidade.origem_tipo === "insercao_direta" && oportunidade.whatsapp) {
-    return `📲 Vendedor: https://wa.me/55${oportunidade.whatsapp} (${formatarWhatsapp(oportunidade.whatsapp)})`;
+    const nome = oportunidade.nome_remetente ? `${oportunidade.nome_remetente} — ` : "";
+    return `📲 Vendedor: ${nome}https://wa.me/55${oportunidade.whatsapp} (${formatarWhatsapp(oportunidade.whatsapp)})`;
   }
   return `🔗 Anúncio original: ${oportunidade.link_origem}`;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Menu, Search, Send, XCircle, type LucideIcon } from "lucide-react";
+import { CheckCircle2, Heart, Menu, Search, Send, XCircle, type LucideIcon } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
 
@@ -12,6 +12,7 @@ const ITENS: Array<{ aba: Aba; rotulo: string; Icone: LucideIcon }> = [
   { aba: "enviadas", rotulo: "Enviadas", Icone: Send },
   { aba: "aprovadas", rotulo: "Aprovadas", Icone: CheckCircle2 },
   { aba: "rejeitadas", rotulo: "Rejeitadas", Icone: XCircle },
+  { aba: "favoritos", rotulo: "Favoritos", Icone: Heart },
 ];
 
 export function Sidebar({ abaAtiva, contagens }: { abaAtiva: Aba; contagens: Record<Aba, number> }) {

@@ -27,6 +27,7 @@ export async function enviarOportunidade(
   const veiculo = lerTexto(formData, "veiculo");
   const marcaCode = lerTexto(formData, "marcaCode");
   const modeloCode = lerTexto(formData, "modeloCode");
+  const modeloNome = lerTexto(formData, "modeloNome");
   const anoCode = lerTexto(formData, "anoCode");
   const anoNome = lerTexto(formData, "anoNome");
   const cidade = lerTexto(formData, "cidade");
@@ -35,17 +36,25 @@ export async function enviarOportunidade(
   const kmTexto = lerTexto(formData, "km");
   const precoTexto = lerTexto(formData, "preco");
   const whatsapp = lerTexto(formData, "whatsapp").replace(/\D/g, "");
+  const nomeRemetente = lerTexto(formData, "nomeRemetente");
   const perfilRemetente = lerTexto(formData, "perfilRemetente");
   const motivoVenda = lerTexto(formData, "motivoVenda");
+  const descricao = lerTexto(formData, "descricao");
   const turnstileToken = lerTexto(formData, "turnstileToken");
   const fotoPrincipalUrl = lerTexto(formData, "fotoPrincipalUrl");
-  let fotosSecundarias: string[] = [];
-  try {
-    const bruto = JSON.parse(lerTexto(formData, "fotosSecundariasJson") || "[]");
-    if (Array.isArray(bruto)) fotosSecundarias = bruto.filter((item): item is string => typeof item === "string");
-  } catch {
-    fotosSecundarias = [];
+
+  function lerListaJson(campo: string): string[] {
+    try {
+      const bruto = JSON.parse(lerTexto(formData, campo) || "[]");
+      return Array.isArray(bruto) ? bruto.filter((item): item is string => typeof item === "string") : [];
+    } catch {
+      return [];
+    }
   }
+
+  const fotosSecundarias = lerListaJson("fotosSecundariasJson");
+  const opcionais = lerListaJson("opcionaisJson");
+  const sinistroLeilao = lerListaJson("sinistroLeilaoJson");
 
   if (!veiculo || !marcaCode || !modeloCode || !anoCode || !precoTexto) {
     return { erro: "Preencha veículo, marca, modelo, ano e preço.", sucesso: false };
@@ -105,7 +114,7 @@ export async function enviarOportunidade(
     fonte: "Inserção Direta",
     link_origem: `insercao-direta:${randomUUID()}`,
     veiculo,
-    versao: null,
+    versao: modeloNome || null,
     ano: anoNome || anoCode,
     cambio: cambio || null,
     km: kmTexto ? Number(kmTexto) : null,
@@ -118,12 +127,15 @@ export async function enviarOportunidade(
     classificacao,
     foto_principal: fotoPrincipalUrl,
     fotos_secundarias: fotosSecundarias,
-    descricao: null,
+    descricao: descricao || null,
     origem_tipo: "insercao_direta",
     status: "descoberta",
     whatsapp,
+    nome_remetente: nomeRemetente || null,
     perfil_remetente: perfilRemetente,
     motivo_venda: motivoVenda,
+    opcionais,
+    sinistro_leilao: sinistroLeilao,
   });
 
   if (erroInsercao) {

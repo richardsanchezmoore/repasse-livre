@@ -5,7 +5,7 @@ import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
 
-export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas";
+export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
 export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor";
 
 export interface FiltrosBoard {
@@ -21,9 +21,13 @@ const TITULO_POR_ABA: Record<Aba, string> = {
   enviadas: "Enviadas",
   aprovadas: "Aprovadas",
   rejeitadas: "Rejeitadas",
+  favoritos: "Favoritos",
 };
 
-const FILTRO_POR_ABA: Record<Aba, { origem_tipo?: OrigemTipo; status: StatusOportunidade }> = {
+const FILTRO_POR_ABA: Record<
+  Exclude<Aba, "favoritos">,
+  { origem_tipo?: OrigemTipo; status: StatusOportunidade }
+> = {
   descobertas: { origem_tipo: "descoberta", status: "descoberta" },
   enviadas: { origem_tipo: "insercao_direta", status: "descoberta" },
   aprovadas: { status: "aprovada" },
@@ -59,12 +63,18 @@ function ordenar(oportunidades: Oportunidade[], ordem: Ordem = "recente"): Oport
 }
 
 async function buscarOportunidades(aba: Aba, filtros: FiltrosBoard = {}): Promise<Oportunidade[]> {
-  const filtro = FILTRO_POR_ABA[aba];
-  let consulta = supabaseAdmin.from("opportunities").select("*").eq("status", filtro.status);
+  let consulta = supabaseAdmin.from("opportunities").select("*");
 
-  if (filtro.origem_tipo) {
-    consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
+  if (aba === "favoritos") {
+    consulta = consulta.eq("favorito", true);
+  } else {
+    const filtro = FILTRO_POR_ABA[aba];
+    consulta = consulta.eq("status", filtro.status);
+    if (filtro.origem_tipo) {
+      consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
+    }
   }
+
   if (filtros.classificacao) {
     consulta = consulta.eq("classificacao", filtros.classificacao);
   }
@@ -88,7 +98,7 @@ async function buscarOportunidades(aba: Aba, filtros: FiltrosBoard = {}): Promis
 }
 
 export async function contarOportunidades(): Promise<Record<Aba, number>> {
-  const abas: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas"];
+  const abas: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
   const resultados = await Promise.all(abas.map((aba) => buscarOportunidades(aba)));
   return Object.fromEntries(abas.map((aba, i) => [aba, resultados[i].length])) as Record<Aba, number>;
 }

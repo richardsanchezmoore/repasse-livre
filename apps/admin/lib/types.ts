@@ -24,8 +24,11 @@ export interface Oportunidade {
   status: StatusOportunidade;
   origem_tipo: OrigemTipo;
   whatsapp: string | null;
+  nome_remetente: string | null;
   perfil_remetente: PerfilRemetente | null;
   motivo_venda: MotivoVenda | null;
+  opcionais: string[];
+  sinistro_leilao: string[];
   favorito: boolean;
   data_captura: string;
   data_publicacao_origem: string | null;
