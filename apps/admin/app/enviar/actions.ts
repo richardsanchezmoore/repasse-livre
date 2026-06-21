@@ -7,6 +7,7 @@ import { buscarValorFipe } from "@/lib/fipe";
 import { calcularMargemPercentual, classificar, ehElegivel } from "@/lib/margin";
 import { verificarTurnstileToken } from "@/lib/turnstile";
 import { PERFIS_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
+import { MOTIVOS_VENDA, type MotivoVenda } from "@/lib/motivoVenda";
 
 export interface ResultadoEnvio {
   erro: string | null;
@@ -31,9 +32,11 @@ export async function enviarOportunidade(
   const cidade = lerTexto(formData, "cidade");
   const estado = lerTexto(formData, "estado");
   const cambio = lerTexto(formData, "cambio");
+  const kmTexto = lerTexto(formData, "km");
   const precoTexto = lerTexto(formData, "preco");
   const whatsapp = lerTexto(formData, "whatsapp").replace(/\D/g, "");
   const perfilRemetente = lerTexto(formData, "perfilRemetente");
+  const motivoVenda = lerTexto(formData, "motivoVenda");
   const turnstileToken = lerTexto(formData, "turnstileToken");
   const fotoPrincipalUrl = lerTexto(formData, "fotoPrincipalUrl");
   let fotosSecundarias: string[] = [];
@@ -59,6 +62,10 @@ export async function enviarOportunidade(
 
   if (!PERFIS_REMETENTE.includes(perfilRemetente as PerfilRemetente)) {
     return { erro: "Selecione seu perfil.", sucesso: false };
+  }
+
+  if (!MOTIVOS_VENDA.includes(motivoVenda as MotivoVenda)) {
+    return { erro: "Selecione o motivo da venda.", sucesso: false };
   }
 
   if (!fotoPrincipalUrl) {
@@ -101,6 +108,7 @@ export async function enviarOportunidade(
     versao: null,
     ano: anoNome || anoCode,
     cambio: cambio || null,
+    km: kmTexto ? Number(kmTexto) : null,
     cidade: cidade || null,
     estado: estado || null,
     preco,
@@ -115,6 +123,7 @@ export async function enviarOportunidade(
     status: "descoberta",
     whatsapp,
     perfil_remetente: perfilRemetente,
+    motivo_venda: motivoVenda,
   });
 
   if (erroInsercao) {

@@ -1,30 +1,76 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState } from "react";
+import { CheckCircle2, Menu, Search, Send, XCircle, type LucideIcon } from "lucide-react";
+import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
 
-const ITENS: Array<{ aba: Aba; rotulo: string; icone: string }> = [
-  { aba: "descobertas", rotulo: "Descobertas", icone: "🔎" },
-  { aba: "enviadas", rotulo: "Enviadas", icone: "📤" },
-  { aba: "aprovadas", rotulo: "Aprovadas", icone: "✅" },
-  { aba: "rejeitadas", rotulo: "Rejeitadas", icone: "❌" },
+const CHAVE_COLAPSADA = "repasse-livre:sidebar-colapsada";
+
+const ITENS: Array<{ aba: Aba; rotulo: string; Icone: LucideIcon }> = [
+  { aba: "descobertas", rotulo: "Descobertas", Icone: Search },
+  { aba: "enviadas", rotulo: "Enviadas", Icone: Send },
+  { aba: "aprovadas", rotulo: "Aprovadas", Icone: CheckCircle2 },
+  { aba: "rejeitadas", rotulo: "Rejeitadas", Icone: XCircle },
 ];
 
 export function Sidebar({ abaAtiva, contagens }: { abaAtiva: Aba; contagens: Record<Aba, number> }) {
+  const { navegar } = useNavegacao();
+  const [colapsada, setColapsada] = useState(false);
+  const [expandidaPorHover, setExpandidaPorHover] = useState(false);
+
+  useEffect(() => {
+    const salva = window.localStorage.getItem(CHAVE_COLAPSADA);
+    if (salva === "1") setColapsada(true);
+  }, []);
+
+  function alternar() {
+    setColapsada((atual) => {
+      const novo = !atual;
+      window.localStorage.setItem(CHAVE_COLAPSADA, novo ? "1" : "0");
+      return novo;
+    });
+  }
+
+  const colapsadaVisualmente = colapsada && !expandidaPorHover;
+
   return (
-    <nav className="sidebar">
-      <div className="sidebar-titulo">Repasse Livre</div>
+    <nav
+      className={`sidebar ${colapsadaVisualmente ? "sidebar-colapsada" : ""}`}
+      onMouseEnter={() => colapsada && setExpandidaPorHover(true)}
+      onMouseLeave={() => setExpandidaPorHover(false)}
+    >
+      <div className="sidebar-topo">
+        <button
+          type="button"
+          onClick={alternar}
+          className="sidebar-hamburguer"
+          aria-label={colapsada ? "Expandir menu" : "Recolher menu"}
+          title={colapsada ? "Expandir menu" : "Recolher menu"}
+        >
+          <Menu size={20} strokeWidth={1.75} />
+        </button>
+        {!colapsadaVisualmente && <span className="sidebar-titulo">Repasse Livre</span>}
+      </div>
       <ul className="sidebar-lista">
         {ITENS.map((item) => (
           <li key={item.aba}>
-            <Link
-              href={`/?aba=${item.aba}`}
+            <button
+              type="button"
+              onClick={() => navegar(`/?aba=${item.aba}`)}
               className={`sidebar-item ${item.aba === abaAtiva ? "sidebar-item-ativo" : ""}`}
+              title={colapsadaVisualmente ? item.rotulo : undefined}
             >
               <span className="sidebar-icone" aria-hidden="true">
-                {item.icone}
+                <item.Icone size={18} strokeWidth={1.75} />
               </span>
-              <span className="sidebar-rotulo">{item.rotulo}</span>
-              <span className="sidebar-contador">{contagens[item.aba]}</span>
-            </Link>
+              {!colapsadaVisualmente && (
+                <>
+                  <span className="sidebar-rotulo">{item.rotulo}</span>
+                  <span className="sidebar-contador">{contagens[item.aba]}</span>
+                </>
+              )}
+            </button>
           </li>
         ))}
       </ul>

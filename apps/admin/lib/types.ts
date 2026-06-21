@@ -1,4 +1,5 @@
 import type { PerfilRemetente } from "./perfilRemetente";
+import type { MotivoVenda } from "./motivoVenda";
 
 export type StatusOportunidade = "descoberta" | "aprovada" | "rejeitada" | "enviada" | "favoritada";
 export type OrigemTipo = "descoberta" | "insercao_direta";
@@ -11,6 +12,7 @@ export interface Oportunidade {
   versao: string | null;
   ano: string | null;
   cambio: string | null;
+  km: number | null;
   cidade: string | null;
   estado: string | null;
   preco: number;
@@ -23,6 +25,7 @@ export interface Oportunidade {
   origem_tipo: OrigemTipo;
   whatsapp: string | null;
   perfil_remetente: PerfilRemetente | null;
+  motivo_venda: MotivoVenda | null;
   favorito: boolean;
   data_captura: string;
   data_publicacao_origem: string | null;

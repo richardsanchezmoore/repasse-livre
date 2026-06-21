@@ -9,8 +9,14 @@
 > (`MODO_VARREDURA=incremental npm run discover` em
 > `apps/discovery-worker`): 38 anúncios novos, 13 elegíveis salvos com
 > `data_publicacao_origem` já populada, 25 descartados por margem, 0 sem
-> FIPE. Tudo commitado e enviado para `origin/main` (commit `fea1856`) —
-> working tree limpo, nada pendente de commit/push nesta sessão.
+> FIPE. Mesmo dia, mais tarde: rodada uma segunda sessão de **refinamento
+> visual da Central de Oportunidades** (menu colapsável, ícones modernos,
+> busca/filtro/ordenação, skeleton de loading, redesenho completo do card,
+> campos novos KM e Motivo da venda) — ver seção "Refinamento visual da
+> Central de Oportunidades" abaixo. Depois dela, rodada outra varredura
+> incremental: 16 anúncios novos, 2 elegíveis salvos (já com `km`
+> populado), 14 descartados por margem, 0 sem FIPE — total agora 51 em
+> Descobertas.
 
 ## Stack
 
@@ -178,6 +184,111 @@
   manualmente no SQL Editor do Supabase nesta sessão** (`alter table
   opportunities add column if not exists data_publicacao_origem
   timestamptz;`)
+
+## Refinamento visual da Central de Oportunidades (20/06/2026, sessão seguinte)
+
+Sessão inteiramente de UI/UX no `apps/admin`, guiada por uma referência
+visual externa (painel de outro produto, Deeptube — só a home pôde ser
+vista, plano gratuito bloqueava o resto) e depois por rodadas de ajuste
+fino pedidas diretamente sobre o resultado já no ar. Tudo testado em
+`npm run dev` via Chrome MCP, sem rodar `npm run build` (regra do
+projeto). `npx tsc --noEmit` validado a cada mudança.
+
+### Ícones e navegação
+- Trocados todos os emojis por `lucide-react` (outline, monocromático,
+  acompanha a cor do texto via `currentColor`).
+- `components/Sidebar.tsx`: client component, colapsa para só ícones ao
+  clicar no hambúrguer (estado persistido em `localStorage`,
+  `repasse-livre:sidebar-colapsada`). Além disso, **expande
+  temporariamente ao passar o mouse por cima quando está colapsada**
+  (`expandidaPorHover`, estado local que não persiste) — só o clique no
+  hambúrguer muda a preferência salva.
+- Itens da sidebar viraram `<button>` (antes `<Link>`) para participar do
+  `NavegacaoProvider` (ver "Skeleton de loading" abaixo).
+
+### Busca, ordenação e filtro de preço
+- `components/TopBar.tsx` (novo): barra "slim" de busca por nome do
+  veículo (`busca`, debounce de 400ms, `ilike` no Supabase) + dois
+  ícones com `IconDropdown` (novo, `components/IconDropdown.tsx` —
+  hover ou clique abrem um "box" de opções, fecha ao clicar fora ou ao
+  sair do hover com pequeno delay):
+  - **Ordenar**: Mais recente (padrão) / Maior Margem / Menor valor /
+    Maior Valor (`ordem` na querystring).
+  - **Filtrar**: Faixa de Preço, dois campos com máscara de moeda
+    (reaproveita `lib/mascaras.ts`), botões Aplicar/Limpar
+    (`precoMin`/`precoMax`).
+- `components/DiscoveriesBoard.tsx`: `buscarOportunidades` agora aceita
+  `{ classificacao, busca, precoMin, precoMax, ordem }`; a ordenação por
+  margem/menor valor/maior valor é feita em JS (mesmo motivo do sort por
+  data já documentado: `order()` do supabase-js não cobre esses casos
+  direto na query combinada).
+- `components/FiltroClassificacao.tsx` (extraído do `DiscoveriesBoard`):
+  chips de classificação virou client component para participar do
+  mesmo estado de loading compartilhado.
+
+### Skeleton de loading
+- `components/NavegacaoProvider.tsx` (novo): contexto compartilhado com
+  `navegar(url)` (= `router.push` dentro de `startTransition`) e
+  `pendente` (= `isPending`), usado por `Sidebar`, `TopBar` e
+  `FiltroClassificacao` em vez de cada um ter seu próprio
+  `useRouter`/`useTransition`.
+- `components/BoardArea.tsx` + `components/BoardSkeleton.tsx` (novos):
+  envolvem o `<Board>` (server component); quando `pendente` é true,
+  mostram um grid de placeholders com animação de gradiente
+  (`@keyframes skeleton-shimmer`) por cima, escondendo o conteúdo real
+  (`opacity: 0`) até o novo RSC payload terminar de carregar.
+
+### Redesenho do card (`components/OpportunityCard.tsx`)
+Ordem final, de cima para baixo: foto → **selo de classificação** (cor
+sólida escura por nível, texto branco, sem gradiente — testado com
+gradiente antes e revertido a pedido) → título (maior, 17px/700) →
+"GANHO" (rótulo pequeno, centralizado) → valor da diferença em R$
+(`#2bac60`) → "Margem de **X%** abaixo da FIPE" (rótulo 13px, percentual
+18px/700) → Ano + KM (ícones `Calendar`/`Gauge`) → `.precos-grupo` com
+"Preço" (`.linha-preco-anuncio`, 700) e "FIPE" (`.linha-preco-fipe`,
+600, era "Tabela FIPE") → data de publicação + localização lado a lado
+(`.data-local`, mesmo alinhamento — "Hoje, HH:mm" quando é o dia atual,
+senão "dd/mm, HH:mm") → WhatsApp/perfil do remetente → motivo da venda
+(só Inserção Direta) → link do anúncio original.
+
+- Câmbio removido da exibição do card (estava na linha de localização).
+- `.board` e `.board-header` perderam fundo/borda (estilo "flat"), para o
+  card se destacar sozinho contra o fundo cinza da página — decisão
+  consciente do usuário após ver o board com caixa branca + cards
+  brancos ficando sem contraste.
+- `.filtro-chip`: removidos os emojis de medalha e o "(%+)" entre
+  parênteses do rótulo (`lib/classificacao.ts`,
+  `ROTULO_CLASSIFICACAO_FILTRO`), cantos levemente arredondados (8px, não
+  mais pill) e fundo no mesmo tom do hover anterior (para não desaparecer
+  no fundo flat do board).
+
+### Campos novos: KM e Motivo da venda
+- **KM** (`km`, `integer`, migration `0006_km.sql`): a OLX já expõe esse
+  dado na própria listagem (propriedade `mileage`, mesmo lugar de onde
+  já vinham marca/modelo/ano/câmbio) — confirmado inspecionando o HTML
+  real da listagem, **sem precisar de requisição extra** por anúncio.
+  Capturado em `discovery-worker/src/olxService.ts`
+  (`parseKm`/`buscarPropriedade(..., "mileage")`) e propagado em
+  `main.ts`. Na Inserção Direta o campo é opcional, preenchido manualmente
+  (`FormularioEnvio.tsx`, logo depois de Câmbio, ambos reordenados para
+  ficar logo após o select de Ano).
+- **Motivo da venda** (`motivo_venda`, `text` livre, migration
+  `0007_motivo_venda.sql`): só relevante para `origem_tipo='insercao_direta'`
+  (a OLX não expõe esse dado) — `lib/motivoVenda.ts`, mesmo padrão de
+  `lib/perfilRemetente.ts`. Select obrigatório no formulário `/enviar`.
+  Opções atuais: Liquidez imediata, Troca de veículo, Já tenho outro,
+  Encomendei um zero, Encerramento de atividade, Outro (passou por duas
+  rodadas de ajuste a pedido do usuário antes de chegar nesta lista).
+- Câmbio do formulário `/enviar` perdeu a opção "CVT" (a pedido do
+  usuário — "Automático" já cobre o caso).
+- **Migrations `0006` e `0007` já aplicadas manualmente pelo usuário no
+  SQL Editor do Supabase nesta sessão** (confirmado por ele no chat).
+
+### Varredura rodada após o refinamento
+`npm run discover` (modo incremental, padrão) em `apps/discovery-worker`:
+16 anúncios novos, 2 elegíveis salvos (Hyundai Comfort Plus, BMW Sdrive
+20I — ambos já com `km` populado, confirmando a captura nova), 14
+descartados por margem, 0 sem FIPE. Total em Descobertas: 51.
 
 ## Pendências conhecidas / próximos passos
 

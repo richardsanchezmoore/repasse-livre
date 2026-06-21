@@ -42,6 +42,12 @@ function parsePreco(precoTexto: string | undefined): number {
   return Number.parseFloat(numerico) || 0;
 }
 
+function parseKm(kmTexto: string | null): number | null {
+  if (!kmTexto) return null;
+  const numerico = Number.parseInt(kmTexto, 10);
+  return Number.isFinite(numerico) ? numerico : null;
+}
+
 function mapearAnuncio(ad: AdOlx): AnuncioOlx {
   return {
     titulo: ad.subject,
@@ -49,6 +55,7 @@ function mapearAnuncio(ad: AdOlx): AnuncioOlx {
     modelo: buscarPropriedade(ad.properties, "vehicle_model"),
     ano: buscarPropriedade(ad.properties, "regdate"),
     cambio: buscarPropriedade(ad.properties, "gearbox"),
+    km: parseKm(buscarPropriedade(ad.properties, "mileage")),
     preco: parsePreco(ad.price),
     cidade: ad.locationDetails?.municipality ?? ad.location ?? null,
     estado: ad.locationDetails?.uf ?? null,

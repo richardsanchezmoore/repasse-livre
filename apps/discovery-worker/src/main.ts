@@ -71,6 +71,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     versao: anuncio.modelo,
     ano: anuncio.ano,
     cambio: anuncio.cambio,
+    km: anuncio.km,
     cidade: anuncio.cidade,
     estado: anuncio.estado,
     preco: anuncio.preco,

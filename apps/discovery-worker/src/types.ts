@@ -4,6 +4,7 @@ export interface AnuncioOlx {
   modelo: string | null;
   ano: string | null;
   cambio: string | null;
+  km: number | null;
   preco: number;
   cidade: string | null;
   estado: string | null;
@@ -36,6 +37,7 @@ export interface Oportunidade {
   versao: string | null;
   ano: string | null;
   cambio: string | null;
+  km: number | null;
   cidade: string | null;
   estado: string | null;
   preco: number;

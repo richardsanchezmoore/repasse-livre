@@ -8,6 +8,7 @@ import { DropzoneFotos, type FotoEnviada } from "@/components/DropzoneFotos";
 import { calcularMargemPercentual, ehElegivel, classificar } from "@/lib/margin";
 import { ROTULO_CLASSIFICACAO } from "@/lib/classificacao";
 import { PERFIS_REMETENTE, ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
+import { MOTIVOS_VENDA, ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { UFS, apenasDigitos, formatarMoeda, formatarWhatsapp } from "@/lib/mascaras";
 import type { FipeOpcao } from "@/lib/fipe";
 
@@ -48,9 +49,11 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   const [cidade, setCidade] = useState("");
   const [estadoUf, setEstadoUf] = useState("");
   const [cambio, setCambio] = useState("");
+  const [kmDigitos, setKmDigitos] = useState("");
   const [fotos, setFotos] = useState<FotoEnviada[]>([]);
   const [whatsappDigitos, setWhatsappDigitos] = useState("");
   const [perfilRemetente, setPerfilRemetente] = useState("");
+  const [motivoVenda, setMotivoVenda] = useState("");
 
   const [tocado, setTocado] = useState<CampoTocado>({});
 
@@ -120,6 +123,7 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
         : null,
     whatsapp: /^\d{10,11}$/.test(whatsappDigitos) ? null : "Informe um WhatsApp válido com DDD.",
     perfilRemetente: perfilRemetente ? null : "Selecione seu perfil.",
+    motivoVenda: motivoVenda ? null : "Selecione o motivo da venda.",
   };
 
   const margemInsuficiente = margem !== null && !ehElegivel(margem);
@@ -154,6 +158,7 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
               foto: true,
               whatsapp: true,
               perfilRemetente: true,
+              motivoVenda: true,
             })
           }
         >
@@ -231,6 +236,27 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           <input type="hidden" name="anoCode" value={anoCode} />
           <input type="hidden" name="anoNome" value={anoNome} />
 
+          <label className="campo">
+            <span>Câmbio</span>
+            <select value={cambio} onChange={(e) => setCambio(e.target.value)}>
+              <option value="">Selecione (opcional)</option>
+              <option value="Manual">Manual</option>
+              <option value="Automático">Automático</option>
+            </select>
+          </label>
+          <input type="hidden" name="cambio" value={cambio} />
+
+          <label className="campo">
+            <span>KM rodados</span>
+            <input
+              inputMode="numeric"
+              value={formatarMoeda(kmDigitos)}
+              onChange={(e) => setKmDigitos(apenasDigitos(e.target.value))}
+              placeholder="Ex: 45.000 (opcional)"
+            />
+          </label>
+          <input type="hidden" name="km" value={kmDigitos} />
+
           {carregandoFipe && <p className="formulario-fipe-carregando">Consultando a tabela FIPE…</p>}
 
           {erroFipe && <p className="campo-erro">{erroFipe}</p>}
@@ -282,17 +308,6 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
           <input type="hidden" name="estado" value={estadoUf} />
 
           <label className="campo">
-            <span>Câmbio</span>
-            <select value={cambio} onChange={(e) => setCambio(e.target.value)}>
-              <option value="">Selecione (opcional)</option>
-              <option value="Manual">Manual</option>
-              <option value="Automático">Automático</option>
-              <option value="CVT">CVT</option>
-            </select>
-          </label>
-          <input type="hidden" name="cambio" value={cambio} />
-
-          <label className="campo">
             <span>Fotos do veículo</span>
             <DropzoneFotos fotos={fotos} onChange={setFotos} />
             {erroVisivel("foto") && <small className="campo-erro">{erroVisivel("foto")}</small>}
@@ -340,6 +355,24 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
             {erroVisivel("perfilRemetente") && <small className="campo-erro">{erroVisivel("perfilRemetente")}</small>}
           </label>
           <input type="hidden" name="perfilRemetente" value={perfilRemetente} />
+
+          <label className="campo">
+            <span>Motivo da venda</span>
+            <select
+              value={motivoVenda}
+              onChange={(e) => setMotivoVenda(e.target.value)}
+              onBlur={() => marcarTocado("motivoVenda")}
+            >
+              <option value="">Selecione</option>
+              {MOTIVOS_VENDA.map((motivo) => (
+                <option key={motivo} value={motivo}>
+                  {ROTULO_MOTIVO_VENDA[motivo]}
+                </option>
+              ))}
+            </select>
+            {erroVisivel("motivoVenda") && <small className="campo-erro">{erroVisivel("motivoVenda")}</small>}
+          </label>
+          <input type="hidden" name="motivoVenda" value={motivoVenda} />
 
           <div
             className="cf-turnstile"

@@ -15,10 +15,10 @@ export const ROTULO_CLASSIFICACAO: Record<Classificacao, string> = {
 };
 
 export const ROTULO_CLASSIFICACAO_FILTRO: Record<Classificacao, string> = {
-  oportunidade: "🥉 Bronze (5%+)",
-  grande_oportunidade: "🥈 Prata (10%+)",
-  oportunidade_premium: "🥇 Ouro (15%+)",
-  top_oportunidade: "💎 Diamante (20%+)",
+  oportunidade: "Bronze 5%+",
+  grande_oportunidade: "Prata 10%+",
+  oportunidade_premium: "Ouro 15%+",
+  top_oportunidade: "Diamante 20%+",
 };
 
 export const CLASSE_CLASSIFICACAO: Record<Classificacao, string> = {

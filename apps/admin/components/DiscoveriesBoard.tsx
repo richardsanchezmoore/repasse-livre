@@ -1,11 +1,20 @@
-import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
-import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
+import type { Classificacao } from "@/lib/classificacao";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
+import { FiltroClassificacao } from "./FiltroClassificacao";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas";
+export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor";
+
+export interface FiltrosBoard {
+  classificacao?: Classificacao;
+  busca?: string;
+  precoMin?: number;
+  precoMax?: number;
+  ordem?: Ordem;
+}
 
 const TITULO_POR_ABA: Record<Aba, string> = {
   descobertas: "Descobertas",
@@ -21,15 +30,52 @@ const FILTRO_POR_ABA: Record<Aba, { origem_tipo?: OrigemTipo; status: StatusOpor
   rejeitadas: { status: "rejeitada" },
 };
 
-async function buscarOportunidades(aba: Aba, classificacao?: Classificacao): Promise<Oportunidade[]> {
+function escaparTermoIlike(termo: string): string {
+  return termo.replace(/[%_]/g, (caractere) => `\\${caractere}`);
+}
+
+function ordenar(oportunidades: Oportunidade[], ordem: Ordem = "recente"): Oportunidade[] {
+  const lista = [...oportunidades];
+
+  switch (ordem) {
+    case "margem":
+      return lista.sort((a, b) => (b.margem_percentual ?? 0) - (a.margem_percentual ?? 0));
+    case "menor_valor":
+      return lista.sort((a, b) => a.preco - b.preco);
+    case "maior_valor":
+      return lista.sort((a, b) => b.preco - a.preco);
+    case "recente":
+    default:
+      // Ordenado pela data/hora mais relevante: a de publicação na fonte
+      // original (OLX) quando existir, senão a da nossa captura (Inserção
+      // Direta não tem data de publicação original) — a mesma data mostrada
+      // no card, para a ordem da lista bater com o que o usuário vê.
+      return lista.sort((a, b) => {
+        const dataA = new Date(a.data_publicacao_origem ?? a.data_captura).getTime();
+        const dataB = new Date(b.data_publicacao_origem ?? b.data_captura).getTime();
+        return dataB - dataA;
+      });
+  }
+}
+
+async function buscarOportunidades(aba: Aba, filtros: FiltrosBoard = {}): Promise<Oportunidade[]> {
   const filtro = FILTRO_POR_ABA[aba];
   let consulta = supabaseAdmin.from("opportunities").select("*").eq("status", filtro.status);
 
   if (filtro.origem_tipo) {
     consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
   }
-  if (classificacao) {
-    consulta = consulta.eq("classificacao", classificacao);
+  if (filtros.classificacao) {
+    consulta = consulta.eq("classificacao", filtros.classificacao);
+  }
+  if (filtros.busca) {
+    consulta = consulta.ilike("veiculo", `%${escaparTermoIlike(filtros.busca)}%`);
+  }
+  if (filtros.precoMin !== undefined) {
+    consulta = consulta.gte("preco", filtros.precoMin);
+  }
+  if (filtros.precoMax !== undefined) {
+    consulta = consulta.lte("preco", filtros.precoMax);
   }
 
   const { data, error } = await consulta;
@@ -38,15 +84,7 @@ async function buscarOportunidades(aba: Aba, classificacao?: Classificacao): Pro
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
   }
 
-  // Ordenado pela data/hora mais relevante: a de publicação na fonte
-  // original (OLX) quando existir, senão a da nossa captura (Inserção
-  // Direta não tem data de publicação original) — a mesma data mostrada
-  // no card, para a ordem da lista bater com o que o usuário vê.
-  return (data as Oportunidade[]).sort((a, b) => {
-    const dataA = new Date(a.data_publicacao_origem ?? a.data_captura).getTime();
-    const dataB = new Date(b.data_publicacao_origem ?? b.data_captura).getTime();
-    return dataB - dataA;
-  });
+  return ordenar(data as Oportunidade[], filtros.ordem);
 }
 
 export async function contarOportunidades(): Promise<Record<Aba, number>> {
@@ -55,27 +93,8 @@ export async function contarOportunidades(): Promise<Record<Aba, number>> {
   return Object.fromEntries(abas.map((aba, i) => [aba, resultados[i].length])) as Record<Aba, number>;
 }
 
-function FiltroClassificacao({ aba, ativa }: { aba: Aba; ativa?: Classificacao }) {
-  return (
-    <div className="filtro-classificacao">
-      <Link href={`/?aba=${aba}`} className={`filtro-chip ${!ativa ? "filtro-chip-ativo" : ""}`}>
-        Todas
-      </Link>
-      {CLASSIFICACOES.map((classificacao) => (
-        <Link
-          key={classificacao}
-          href={`/?aba=${aba}&classificacao=${classificacao}`}
-          className={`filtro-chip ${ativa === classificacao ? "filtro-chip-ativo" : ""}`}
-        >
-          {ROTULO_CLASSIFICACAO_FILTRO[classificacao]}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-export async function Board({ aba, classificacao }: { aba: Aba; classificacao?: Classificacao }) {
-  const oportunidades = await buscarOportunidades(aba, classificacao);
+export async function Board({ aba, filtros = {} }: { aba: Aba; filtros?: FiltrosBoard }) {
+  const oportunidades = await buscarOportunidades(aba, filtros);
 
   return (
     <section className="board">
@@ -84,7 +103,7 @@ export async function Board({ aba, classificacao }: { aba: Aba; classificacao?: 
         <span className="contador">{oportunidades.length}</span>
         {aba === "rejeitadas" && oportunidades.length > 0 && <BotaoApagarTudo />}
       </header>
-      <FiltroClassificacao aba={aba} ativa={classificacao} />
+      <FiltroClassificacao aba={aba} ativa={filtros.classificacao} />
       <div className="board-lista">
         {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
         {oportunidades.map((oportunidade) => (
