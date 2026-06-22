@@ -12,7 +12,7 @@ export function LoginForm() {
   const [entrando, setEntrando] = useState(false);
   const [enviandoGoogle, setEnviandoGoogle] = useState(false);
   const [enviandoRecuperacao, setEnviandoRecuperacao] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
 
   async function aoEntrar(evento: React.FormEvent) {
     evento.preventDefault();
@@ -23,7 +23,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email: emailAtual, password: senha });
     setEntrando(false);
     if (error) {
-      setFeedback("E-mail ou senha incorretos.");
+      setFeedback({ tipo: "erro", texto: "E-mail ou senha incorretos." });
       return;
     }
     window.location.href = "/";
@@ -36,7 +36,7 @@ export function LoginForm() {
     // como fonte de verdade, não só o state.
     const emailAtual = emailInputRef.current?.value || email;
     if (!emailAtual) {
-      setFeedback("Digite seu e-mail acima para receber o link de redefinição.");
+      setFeedback({ tipo: "erro", texto: "Digite seu e-mail acima para receber o link de redefinição." });
       return;
     }
     setEnviandoRecuperacao(true);
@@ -47,7 +47,9 @@ export function LoginForm() {
     });
     setEnviandoRecuperacao(false);
     setFeedback(
-      error ? "Falha ao enviar o link de redefinição." : "Link de redefinição enviado! Confira seu e-mail."
+      error
+        ? { tipo: "erro", texto: "Falha ao enviar o link de redefinição." }
+        : { tipo: "sucesso", texto: "Link de redefinição enviado! Confira seu e-mail." }
     );
   }
 
@@ -142,7 +144,11 @@ export function LoginForm() {
         </button>
       )}
 
-      {feedback && <p className="login-feedback">{feedback}</p>}
+      {feedback && (
+        <p className={feedback.tipo === "erro" ? "formulario-erro" : "formulario-sucesso"}>
+          {feedback.texto}
+        </p>
+      )}
     </div>
   );
 }

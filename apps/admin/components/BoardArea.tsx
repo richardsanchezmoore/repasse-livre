@@ -2,10 +2,13 @@
 
 import type { ReactNode } from "react";
 import { useNavegacao } from "./NavegacaoProvider";
+import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import { BoardSkeleton } from "./BoardSkeleton";
 
 export function BoardArea({ children }: { children: ReactNode }) {
-  const { pendente } = useNavegacao();
+  const { pendente: navegacaoPendente } = useNavegacao();
+  const { processando } = useSelecaoMultipla();
+  const pendente = navegacaoPendente || processando;
 
   return (
     <div className="board-area">

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Calendar, Clock, ExternalLink, Gauge, Heart, MapPin, MessageCircle, Tag } from "lucide-react";
+import { Calendar, Check, Clock, ExternalLink, Gauge, Heart, MapPin, MessageCircle, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
   apagarOportunidade,
@@ -13,6 +13,7 @@ import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
+import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
 
 const CLASSE_FONTE: Record<string, string> = {
@@ -58,6 +59,8 @@ export function OpportunityCard({
   const [pendente, iniciarTransicao] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [mostrarPopupLogin, setMostrarPopupLogin] = useState(false);
+  const { modoSelecao, selecionados, alternarSelecionado } = useSelecaoMultipla();
+  const selecionado = selecionados.has(oportunidade.id);
 
   function mostrarFeedback(texto: string) {
     setFeedback(texto);
@@ -121,7 +124,20 @@ export function OpportunityCard({
         ) : (
           <div className="foto-capa foto-capa-vazia" />
         )}
-        <span className={`selo-fonte ${classeFonte}`}>{oportunidade.fonte}</span>
+        {!(isAdmin && modoSelecao) && (
+          <span className={`selo-fonte ${classeFonte}`}>{oportunidade.fonte}</span>
+        )}
+        {isAdmin && modoSelecao && (
+          <button
+            type="button"
+            onClick={() => alternarSelecionado(oportunidade.id)}
+            className={`checkbox-selecao ${selecionado ? "checkbox-selecao-marcado" : ""}`}
+            aria-label={selecionado ? "Remover da seleção" : "Adicionar à seleção"}
+            title={selecionado ? "Remover da seleção" : "Adicionar à seleção"}
+          >
+            {selecionado && <Check size={16} strokeWidth={2.5} />}
+          </button>
+        )}
         <button
           type="button"
           disabled={pendente}
@@ -240,6 +256,7 @@ export function OpportunityCard({
 
       {feedback && <p className="card-feedback">{feedback}</p>}
 
+      {!(isAdmin && modoSelecao) && (
       <div className="acoes">
         {isAdmin && (
           <button
@@ -272,6 +289,7 @@ export function OpportunityCard({
           Compartilhar
         </button>
       </div>
+      )}
     </div>
   );
 }

@@ -11,16 +11,16 @@ export function RedefinirSenhaForm() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [salvando, setSalvando] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
 
   async function aoSalvar(evento: React.FormEvent) {
     evento.preventDefault();
     if (senha !== confirmarSenha) {
-      setFeedback("As senhas não coincidem.");
+      setFeedback({ tipo: "erro", texto: "As senhas não coincidem." });
       return;
     }
     if (senha.length < 6) {
-      setFeedback("A senha precisa ter pelo menos 6 caracteres.");
+      setFeedback({ tipo: "erro", texto: "A senha precisa ter pelo menos 6 caracteres." });
       return;
     }
     setSalvando(true);
@@ -29,7 +29,7 @@ export function RedefinirSenhaForm() {
     const { error } = await supabase.auth.updateUser({ password: senha });
     setSalvando(false);
     if (error) {
-      setFeedback("Falha ao salvar a nova senha. Peça um novo link de redefinição.");
+      setFeedback({ tipo: "erro", texto: "Falha ao salvar a nova senha. Peça um novo link de redefinição." });
       return;
     }
     // O link de redefinição já estabelece sessão (é assim que o updateUser
@@ -74,7 +74,11 @@ export function RedefinirSenhaForm() {
         {salvando ? "Salvando…" : "Salvar nova senha"}
       </button>
 
-      {feedback && <p className="login-feedback">{feedback}</p>}
+      {feedback && (
+        <p className={feedback.tipo === "erro" ? "formulario-erro" : "formulario-sucesso"}>
+          {feedback.texto}
+        </p>
+      )}
     </form>
   );
 }

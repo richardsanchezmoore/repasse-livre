@@ -10,16 +10,16 @@ export function CadastroForm() {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [criando, setCriando] = useState(false);
   const [enviandoGoogle, setEnviandoGoogle] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
 
   async function aoCriarConta(evento: React.FormEvent) {
     evento.preventDefault();
     if (senha !== confirmarSenha) {
-      setFeedback("As senhas não coincidem.");
+      setFeedback({ tipo: "erro", texto: "As senhas não coincidem." });
       return;
     }
     if (senha.length < 6) {
-      setFeedback("A senha precisa ter pelo menos 6 caracteres.");
+      setFeedback({ tipo: "erro", texto: "A senha precisa ter pelo menos 6 caracteres." });
       return;
     }
     setCriando(true);
@@ -33,10 +33,13 @@ export function CadastroForm() {
     setCriando(false);
     setFeedback(
       error
-        ? error.message.includes("already registered")
-          ? "Esse e-mail já tem conta. Faça login."
-          : "Falha ao criar conta. Tente novamente."
-        : "Conta criada! Confira seu e-mail para confirmar antes de entrar."
+        ? {
+            tipo: "erro",
+            texto: error.message.includes("already registered")
+              ? "Esse e-mail já tem conta. Faça login."
+              : "Falha ao criar conta. Tente novamente.",
+          }
+        : { tipo: "sucesso", texto: "Conta criada! Confira seu e-mail para confirmar antes de entrar." }
     );
   }
 
@@ -115,7 +118,11 @@ export function CadastroForm() {
         </button>
       </form>
 
-      {feedback && <p className="login-feedback">{feedback}</p>}
+      {feedback && (
+        <p className={feedback.tipo === "erro" ? "formulario-erro" : "formulario-sucesso"}>
+          {feedback.texto}
+        </p>
+      )}
     </div>
   );
 }

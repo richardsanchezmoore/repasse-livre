@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Heart, Menu, Search, Send, XCircle, type LucideIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { CheckCircle2, Heart, Menu, Search, Send, Users, XCircle, type LucideIcon } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
 
@@ -26,6 +27,7 @@ export function Sidebar({
 }) {
   const itensVisiveis = ITENS.filter((item) => !item.soAdmin || role === "admin");
   const { navegar } = useNavegacao();
+  const pathname = usePathname();
   const [colapsada, setColapsada] = useState(false);
   const [expandidaPorHover, setExpandidaPorHover] = useState(false);
 
@@ -68,7 +70,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => navegar(`/?aba=${item.aba}`)}
-              className={`sidebar-item ${item.aba === abaAtiva ? "sidebar-item-ativo" : ""}`}
+              className={`sidebar-item ${pathname === "/" && item.aba === abaAtiva ? "sidebar-item-ativo" : ""}`}
               title={colapsadaVisualmente ? item.rotulo : undefined}
             >
               <span className="sidebar-icone" aria-hidden="true">
@@ -84,6 +86,21 @@ export function Sidebar({
           </li>
         ))}
       </ul>
+      {role === "admin" && (
+        <div className="sidebar-rodape">
+          <button
+            type="button"
+            onClick={() => navegar("/usuarios")}
+            className={`sidebar-item ${pathname === "/usuarios" ? "sidebar-item-ativo" : ""}`}
+            title={colapsadaVisualmente ? "Usuários" : undefined}
+          >
+            <span className="sidebar-icone" aria-hidden="true">
+              <Users size={18} strokeWidth={1.75} />
+            </span>
+            {!colapsadaVisualmente && <span className="sidebar-rotulo">Usuários</span>}
+          </button>
+        </div>
+      )}
     </nav>
   );
 }

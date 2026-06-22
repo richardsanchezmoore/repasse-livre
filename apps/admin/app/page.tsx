@@ -1,5 +1,6 @@
 import {
   Board,
+  buscarEstadosDisponiveis,
   contarOportunidades,
   podeAcessarAba,
   type Aba,
@@ -8,9 +9,11 @@ import {
 } from "@/components/DiscoveriesBoard";
 import { BoardArea } from "@/components/BoardArea";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
+import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { CLASSIFICACOES, type Classificacao } from "@/lib/classificacao";
+import { UFS } from "@/lib/mascaras";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
@@ -31,12 +34,13 @@ export default async function CentralDeOportunidadesPage({
     aba?: string;
     classificacao?: string;
     busca?: string;
+    estado?: string;
     precoMin?: string;
     precoMax?: string;
     ordem?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, precoMin, precoMax, ordem } = await searchParams;
+  const { aba, classificacao, busca, estado, precoMin, precoMax, ordem } = await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
   const abaSolicitada: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "aprovadas";
@@ -47,33 +51,42 @@ export default async function CentralDeOportunidadesPage({
     ? (classificacao as Classificacao)
     : undefined;
   const ordemAtiva = ORDENS_VALIDAS.includes(ordem as Ordem) ? (ordem as Ordem) : "recente";
+  const estadoAtivo = UFS.includes(estado ?? "") ? estado : undefined;
 
   const filtros: FiltrosBoard = {
     classificacao: classificacaoAtiva,
     busca: busca || undefined,
+    estado: estadoAtivo,
     precoMin: paraNumero(precoMin),
     precoMax: paraNumero(precoMax),
     ordem: ordemAtiva,
   };
 
-  const contagens = await contarOportunidades(usuario);
+  const [contagens, estadosDisponiveis] = await Promise.all([
+    contarOportunidades(usuario),
+    buscarEstadosDisponiveis(),
+  ]);
 
   return (
     <NavegacaoProvider>
       <div className="layout">
         <Sidebar abaAtiva={abaAtiva} contagens={contagens} role={usuario?.role ?? null} />
         <main className="conteudo">
-          <TopBar
-            aba={abaAtiva}
-            busca={filtros.busca}
-            precoMin={filtros.precoMin}
-            precoMax={filtros.precoMax}
-            ordem={ordemAtiva}
-            usuario={usuario}
-          />
-          <BoardArea>
-            <Board aba={abaAtiva} filtros={filtros} usuario={usuario} />
-          </BoardArea>
+          <SelecaoMultiplaProvider>
+            <TopBar
+              aba={abaAtiva}
+              busca={filtros.busca}
+              estado={filtros.estado}
+              estadosDisponiveis={estadosDisponiveis}
+              precoMin={filtros.precoMin}
+              precoMax={filtros.precoMax}
+              ordem={ordemAtiva}
+              usuario={usuario}
+            />
+            <BoardArea>
+              <Board aba={abaAtiva} filtros={filtros} usuario={usuario} />
+            </BoardArea>
+          </SelecaoMultiplaProvider>
         </main>
       </div>
     </NavegacaoProvider>

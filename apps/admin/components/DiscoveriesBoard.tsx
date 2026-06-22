@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
 import type { Classificacao } from "@/lib/classificacao";
+import { UFS } from "@/lib/mascaras";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
@@ -23,6 +24,7 @@ export function podeAcessarAba(aba: Aba, usuario: Usuario | null): boolean {
 export interface FiltrosBoard {
   classificacao?: Classificacao;
   busca?: string;
+  estado?: string;
   precoMin?: number;
   precoMax?: number;
   ordem?: Ordem;
@@ -97,6 +99,7 @@ async function buscarOportunidades(
     let consultaFavoritos = supabaseAdmin.from("opportunities").select("*").in("id", Array.from(idsFavoritados));
     if (filtros.classificacao) consultaFavoritos = consultaFavoritos.eq("classificacao", filtros.classificacao);
     if (filtros.busca) consultaFavoritos = consultaFavoritos.ilike("veiculo", `%${escaparTermoIlike(filtros.busca)}%`);
+    if (filtros.estado) consultaFavoritos = consultaFavoritos.eq("estado", filtros.estado);
     if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
     if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
 
@@ -118,6 +121,9 @@ async function buscarOportunidades(
   if (filtros.busca) {
     consulta = consulta.ilike("veiculo", `%${escaparTermoIlike(filtros.busca)}%`);
   }
+  if (filtros.estado) {
+    consulta = consulta.eq("estado", filtros.estado);
+  }
   if (filtros.precoMin !== undefined) {
     consulta = consulta.gte("preco", filtros.precoMin);
   }
@@ -132,6 +138,16 @@ async function buscarOportunidades(
   }
 
   return ordenar(data as Oportunidade[], filtros.ordem);
+}
+
+/** UFs com pelo menos uma oportunidade salva (qualquer aba/status) — usado para não listar estados onde o Motor de Descoberta ainda não opera. */
+export async function buscarEstadosDisponiveis(): Promise<string[]> {
+  const { data, error } = await supabaseAdmin.from("opportunities").select("estado").not("estado", "is", null);
+  if (error) {
+    throw new Error(`Falha ao buscar estados disponíveis: ${error.message}`);
+  }
+  const presentes = new Set((data ?? []).map((linha) => linha.estado as string));
+  return UFS.filter((uf) => presentes.has(uf));
 }
 
 export async function contarOportunidades(usuario: Usuario | null = null): Promise<Record<Aba, number>> {

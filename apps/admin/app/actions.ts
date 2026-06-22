@@ -75,9 +75,20 @@ export async function apagarTodasRejeitadas(): Promise<void> {
   await moverParaHistoricoEApagar(data as Oportunidade[]);
 }
 
-async function atualizarStatus(id: string, status: StatusOportunidade): Promise<void> {
+export async function apagarOportunidades(ids: string[]): Promise<void> {
   await exigirAdmin();
-  const { error } = await supabaseAdmin.from("opportunities").update({ status }).eq("id", id);
+  if (ids.length === 0) return;
+  const { data, error } = await supabaseAdmin.from("opportunities").select("*").in("id", ids);
+  if (error) {
+    throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
+  }
+  await moverParaHistoricoEApagar(data as Oportunidade[]);
+}
+
+async function atualizarStatusEmMassa(ids: string[], status: StatusOportunidade): Promise<void> {
+  await exigirAdmin();
+  if (ids.length === 0) return;
+  const { error } = await supabaseAdmin.from("opportunities").update({ status }).in("id", ids);
   if (error) {
     throw new Error(`Falha ao atualizar status: ${error.message}`);
   }
@@ -85,11 +96,33 @@ async function atualizarStatus(id: string, status: StatusOportunidade): Promise<
 }
 
 export async function aprovarOportunidade(id: string): Promise<void> {
-  await atualizarStatus(id, "aprovada");
+  await atualizarStatusEmMassa([id], "aprovada");
 }
 
 export async function rejeitarOportunidade(id: string): Promise<void> {
-  await atualizarStatus(id, "rejeitada");
+  await atualizarStatusEmMassa([id], "rejeitada");
+}
+
+export async function aprovarOportunidades(ids: string[]): Promise<void> {
+  await atualizarStatusEmMassa(ids, "aprovada");
+}
+
+export async function rejeitarOportunidades(ids: string[]): Promise<void> {
+  await atualizarStatusEmMassa(ids, "rejeitada");
+}
+
+export async function alterarRolePerfil(userId: string, novaRole: "admin" | "publico"): Promise<void> {
+  await exigirAdmin();
+  const usuarioAtual = await obterUsuarioAtual();
+  if (usuarioAtual?.id === userId) {
+    throw new Error("Você não pode alterar sua própria permissão.");
+  }
+
+  const { error } = await supabaseAdmin.from("perfis").update({ role: novaRole }).eq("user_id", userId);
+  if (error) {
+    throw new Error(`Falha ao alterar permissão: ${error.message}`);
+  }
+  revalidatePath("/usuarios");
 }
 
 export async function alternarFavoritoUsuario(opportunityId: string): Promise<void> {

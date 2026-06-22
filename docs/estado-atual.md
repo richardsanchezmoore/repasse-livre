@@ -47,6 +47,30 @@
 > separação de quem pode aprovar/rejeitar oportunidades (admin) de quem só
 > vê a vitrine pública e favorita por conta própria — ver seção "Sprint
 > extra — Autenticação, perfis e favoritos por usuário" abaixo.
+>
+> **21/06/2026, sessão seguinte**: criada a **UI de gestão de usuários**
+> (rota `/usuarios`, só admin) para promover/despromover admin direto pelo
+> painel, sem precisar do SQL Editor — pensada como base para futuros
+> tiers de permissão ligados a planos pagos (ainda não definidos); ver
+> seção "UI de gestão de usuários" abaixo. Na sessão seguinte, implementado
+> o mecanismo de **aprovação/rejeição/exclusão em massa**: botão
+> "Selecionar Vários" na TopBar, checkbox por card, e barra de ações em
+> lote — testado ao vivo aprovando 2 oportunidades de uma vez; ver seção
+> "Aprovação/rejeição/exclusão em massa" abaixo.
+>
+> **21/06/2026, sessão seguinte**: rodada de ajustes finos pedidos sobre o
+> que já estava no ar — selo de fonte escondido durante o modo de seleção
+> (estava sobrepondo o checkbox), skeleton de loading durante o
+> processamento das ações em massa (reaproveitando `BoardSkeleton`),
+> padronização visual das mensagens de erro/sucesso de Login/Cadastro/
+> Redefinir Senha (usavam texto verde simples mesmo para erro — agora usam
+> os mesmos cards `.formulario-erro`/`.formulario-sucesso` do formulário
+> `/enviar`), botões "Login"/"Criar Conta" redesenhados no tamanho do
+> "Anunciar" (um com contorno, outro com fundo sólido), e **redesenho da
+> busca da TopBar + novo filtro de Estado (UF)** embutido na mesma caixa,
+> no espírito do cabeçalho da OLX — preparando o painel para quando o
+> Motor de Descoberta passar a varrer SC além do RS; ver seção "Ajustes
+> finos pós-seleção em massa" abaixo.
 
 ## Stack
 
@@ -601,6 +625,24 @@ cadastro.adminer.pro.
 - `TopBar.tsx` + `components/UserMenu.tsx` (novo): canto direito mostra
   "Login"/"Criar Conta" deslogado, ou avatar+e-mail+"Sair" logado
 
+### UI de gestão de usuários (21/06/2026, sessão seguinte)
+Pendência #6 resolvida: nova rota `/usuarios` (`apps/admin/app/usuarios/page.tsx`),
+só acessível por admin (`redirect("/")` se não for), lista todos os usuários
+(e-mail via `supabaseAdmin.auth.admin.listUsers()` + `role` da tabela `perfis`)
+com botão para promover (`publico`→`admin`) ou remover admin
+(`admin`→`publico`) — `alterarRolePerfil` em `app/actions.ts`, bloqueada para
+o próprio usuário logado (defesa em profundidade além do botão desabilitado
+no client). Reaproveita o mesmo layout (`Sidebar`+`NavegacaoProvider`) da
+Central de Oportunidades — item novo "Usuários" na `Sidebar`, fora do array
+de abas (não é uma `Aba` do `DiscoveriesBoard`, é uma rota própria), visível
+só para admin, destacado via `usePathname` (e não via `abaAtiva`, que só
+reflete a URL `/`). Não precisou de migration nova.
+
+Base pensada para evoluir: hoje `perfis.role` é só `'admin'|'publico'`, mas a
+intenção é ter mais tipos de permissão no futuro, ligados a planos pagos
+(ainda não definidos) — quando isso acontecer, vai exigir trocar o toggle
+binário atual por um seletor de múltiplos tiers.
+
 ### RLS em `opportunities` e `favoritos` (mesma migration `0009`)
 - Proteção em profundidade — hoje o app lê/grava via `supabaseAdmin`
   (ignora RLS), o gate real é nas Server Actions/Server Components; RLS
@@ -618,6 +660,106 @@ cadastro.adminer.pro.
   ainda não foi customizado — usa o template padrão do Supabase, só com
   o transporte trocado; fica pendente abaixo
 
+## Aprovação/rejeição/exclusão em massa (21/06/2026, sessão seguinte)
+
+Hoje aprovar/rejeitar/apagar só existia um a um no rodapé do card. Novo
+mecanismo de seleção múltipla pedido pelo usuário, pensando em perfis admin
+que vão precisar processar lotes maiores conforme o volume de oportunidades
+cresce.
+
+- `components/SelecaoMultiplaProvider.tsx` (novo): contexto compartilhado
+  (mesmo padrão de `NavegacaoProvider`) com `modoSelecao` (boolean) e
+  `selecionados` (`Set<string>` de ids) — sem mudança de schema
+- `components/TopBar.tsx`: botão **"Selecionar Vários"** (só admin, exceto
+  aba Favoritos) liga o modo; com o modo ativo, a barra de busca/ordenar/
+  filtrar é substituída por `components/BarraSelecaoMultipla.tsx`
+  (contador + botões contextuais: Aprovar/Rejeitar nas abas de gestão,
+  Apagar na aba Rejeitadas, sempre com Cancelar); `useEffect` zera a
+  seleção ao trocar de aba
+- `components/OpportunityCard.tsx`: com o modo ativo, mostra um checkbox no
+  canto superior esquerdo da foto (simétrico ao coração de favorito) e
+  esconde a linha de ações individuais (Aprovar/Rejeitar/Apagar/
+  Compartilhar)
+- `app/actions.ts`: novas `aprovarOportunidades(ids)`,
+  `rejeitarOportunidades(ids)` e `apagarOportunidades(ids)` — reaproveitam
+  `atualizarStatusEmMassa` (refatorada de `atualizarStatus`, agora usa
+  `.in("id", ids)`) e `moverParaHistoricoEApagar` (já existente, mesma
+  função usada por "Apagar tudo" das Rejeitadas — preserva o histórico)
+- Testado ao vivo via Chrome MCP: selecionar 2 itens em Descobertas e
+  aprovar em lote moveu os 2 para "Oportunidades" e a contagem caiu de 114
+  para 112 corretamente; modo de seleção desliga automaticamente após a
+  ação
+
+## Ajustes finos pós-seleção em massa (21/06/2026, sessão seguinte)
+
+Rodada de pequenos ajustes pedidos diretamente sobre o que já estava no ar.
+
+### Selo de fonte escondido durante a seleção
+`components/OpportunityCard.tsx`: o selo `.selo-fonte` ("OLX"/"Inserção
+Direta", canto superior esquerdo da foto) se sobrepunha visualmente ao novo
+checkbox de seleção (mesmo canto). Corrigido escondendo o selo quando
+`isAdmin && modoSelecao` — só o checkbox fica visível nesse modo.
+
+### Skeleton de loading durante ações em massa
+`components/SelecaoMultiplaProvider.tsx`: o `useTransition` que processa as
+ações em massa (antes local em `BarraSelecaoMultipla`) subiu pro contexto
+(`processando` + `executarEmMassa`), pra poder ser lido também por
+`components/BoardArea.tsx` — que já mostrava o `BoardSkeleton` durante
+navegação (`useNavegacao().pendente`) e agora mostra o mesmo skeleton
+também durante `processando` (aprovar/rejeitar/apagar em massa).
+
+### Mensagens de erro/sucesso padronizadas (Login/Cadastro/Redefinir Senha)
+`app/login/LoginForm.tsx`, `app/cadastro/CadastroForm.tsx`,
+`app/redefinir-senha/RedefinirSenhaForm.tsx`: o feedback era só texto verde
+simples (`.login-feedback`, classe removida) — inclusive erros apareciam em
+verde, o que confundia. Agora o estado guarda `{ tipo: "erro" | "sucesso",
+texto }` e renderiza com as mesmas classes já usadas no formulário
+`/enviar` (`.formulario-erro` vermelho, `.formulario-sucesso` verde),
+mantendo um único padrão visual de feedback em todo o painel.
+
+### Botões "Login"/"Criar Conta" redesenhados
+`app/globals.css` (`.top-bar-login`, `.top-bar-cadastro`): tamanho igualado
+ao `.botao-anunciar` (padding, font-size 14px, font-weight 700,
+border-radius 8px), com cores distintas e harmoniosas — "Login" com
+contorno verde (`#2bac60`) e fundo transparente, "Criar Conta" com fundo
+sólido verde-escuro (`#0a5d2c`, mesmo tom do selo de classificação Diamante
+e do estado ativo da sidebar).
+
+### Redesenho da busca + filtro de Estado (UF), depois refinado no estilo OLX
+Pedido pensando na expansão do Motor de Descoberta para SC (hoje só varre
+RS) — seguindo o espírito do cabeçalho da OLX (busca + seletor de
+localização integrados, lupa clicável de verdade).
+- `components/DiscoveriesBoard.tsx`: `FiltrosBoard` ganhou `estado?: string`,
+  aplicado com `.eq("estado", filtros.estado)` nas duas ramificações de
+  `buscarOportunidades` (normal e favoritos) — mesmo padrão de
+  `precoMin`/`precoMax`. Nova `buscarEstadosDisponiveis()`: consulta
+  `opportunities.estado` (sem filtro de aba/status — é a UF de qualquer
+  anúncio já salvo) e filtra `UFS` (`lib/mascaras.ts`) pelas UFs realmente
+  presentes — o `<select>` só lista quem tem anúncio de verdade, hoje só
+  "RS"; quando o Motor de Descoberta passar a varrer SC, a opção aparece
+  sozinha, sem precisar editar código
+- `app/page.tsx`: chama `buscarEstadosDisponiveis()` em paralelo com
+  `contarOportunidades`, passa a lista pra `TopBar`; lê `estado` da
+  querystring, valida contra `UFS`
+- `components/TopBar.tsx` + `app/globals.css` (`.busca-slim`): reordenado
+  pra bater com o padrão da OLX — **campo de texto → `<select>` de UF →
+  botão de lupa**, cada um separado por um divisor sutil dentro da mesma
+  caixa (antes era select→ícone-decorativo→input, com a lupa só
+  visual). Caixa maior (`max-width` 420px, leve sombra), input com
+  `font-size` 15px (era 13px)
+- A lupa (`.busca-slim-botao`) virou um `<button>` real, com efeito de
+  clique (`hover` verde claro, `scale(0.96)` ao pressionar) — dispara a
+  busca na hora (cancela o debounce de 400ms), e Enter no campo de texto
+  faz o mesmo; atende quem prefere clicar em algo em vez de confiar que a
+  busca já é "ao vivo"
+- Testado ao vivo: `<select>` mostra só "RS" (única UF com dados); buscar
+  "Onix" + clicar na lupa filtrou pra 9 resultados
+
+### Fonte dos chips de classificação
+`.filtro-chip` ("Todas"/"Bronze 5%+"/"Prata 10%+"/etc., `globals.css`):
+`font-size` de 12px para 14.4px (+20%, pedido direto) — mais legível ao
+lado da busca redesenhada.
+
 ## Pendências conhecidas / próximos passos
 
 1. **Agendamento real do worker**: hoje só roda manualmente
@@ -632,14 +774,18 @@ cadastro.adminer.pro.
 5. **Visual e remetente dos e-mails de autenticação** ainda usam o
    template padrão do Supabase (só o SMTP foi trocado pro Resend) —
    falta personalizar assunto/corpo/remetente com a marca Repasse Livre
-6. **UI de gestão de usuários** (promover/despromover admin) não existe
-   — hoje é só `insert`/`update` manual na tabela `perfis` via SQL Editor
+6. ~~**UI de gestão de usuários**~~ — resolvida em 21/06/2026, ver seção
+   "UI de gestão de usuários" acima (rota `/usuarios`)
 7. Ao subir o admin para domínio real (Vercel ou outro), atualizar
    **Site URL** e **Redirect URLs** no Supabase (Authentication → URL
    Configuration) — hoje só têm as versões de `localhost:3000`
 8. Coluna antiga `opportunities.favorito` (boolean global) ficou órfã
    desde a troca pra favoritos por usuário — remoção fica para uma
    migration futura de limpeza
+9. **Múltiplos tiers de permissão** ligados a planos pagos (futuro,
+   ainda não definido) — vai exigir expandir `perfis.role` além de
+   `'admin'|'publico'` e trocar o toggle binário de `/usuarios` por um
+   seletor de múltiplas opções
 
 ## Decisões importantes (não óbvias do código)
 
