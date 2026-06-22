@@ -71,6 +71,19 @@
 > no espírito do cabeçalho da OLX — preparando o painel para quando o
 > Motor de Descoberta passar a varrer SC além do RS; ver seção "Ajustes
 > finos pós-seleção em massa" abaixo.
+>
+> **22/06/2026, sessão seguinte**: identidade visual oficial da marca
+> inserida no projeto — logo real (SVG vetorial, fundo transparente) no
+> lugar do texto "Repasse Livre" e favicon usando o mesmo ícone "RL".
+> Sidebar reformulada para um **menu overlay no estilo r7.com** (carril
+> fino de ícones sempre visível + painel que sobrepõe o conteúdo ao abrir,
+> com o logo no topo). TopBar reorganizada: "Ordenar"/"Filtrar Preço"
+> saíram da TopBar e foram pro lado dos chips de classificação (com label
+> "Ordenar por:"), "Anunciar" ficou ao lado da busca, e corrigido um bug de
+> overflow/sobreposição no layout responsivo (logo+busca de um lado,
+> botões do outro, quebrando linha corretamente em telas estreitas) — ver
+> seção "Identidade visual + menu overlay + reorganização da TopBar"
+> abaixo.
 
 ## Stack
 
@@ -759,6 +772,77 @@ localização integrados, lupa clicável de verdade).
 `.filtro-chip` ("Todas"/"Bronze 5%+"/"Prata 10%+"/etc., `globals.css`):
 `font-size` de 12px para 14.4px (+20%, pedido direto) — mais legível ao
 lado da busca redesenhada.
+
+## Identidade visual + menu overlay + reorganização da TopBar (22/06/2026)
+
+### Logo e favicon reais
+- `apps/admin/public/logo.svg` — arquivo vetorial oficial da marca (ícone
+  "RL" em gradiente verde + wordmark "REPASSE LIVRE"), enviado pelo usuário
+  como SVG traçado (não PNG) e inserido sem fundo (a versão original trazia
+  uma camada de fundo branco com recortes no formato das letras — removida
+  pra manter transparência real em qualquer fundo)
+- `apps/admin/app/icon.svg` — favicon usando o mesmo path do ícone "RL",
+  centralizado, também sem fundo branco (convenção do Next.js App Router:
+  arquivo `app/icon.svg` é detectado automaticamente, sem precisar tocar em
+  `layout.tsx`)
+- Passou por duas rodadas de recriação manual (tentativas de desenhar o
+  ícone à mão em SVG, sem sucesso — ficou parecendo "K") até o usuário
+  enviar a arte vetorial real; lição: pedir o arquivo fonte antes de tentar
+  recriar um logo de marca à mão
+
+### Logo movido da Sidebar pra TopBar
+O logo começou na sidebar (substituindo o texto "Repasse Livre"), mas o
+usuário pediu pra mover pra TopBar, ao lado da busca — ali ocupa a altura
+cheia da barra (44px, depois ajustado para 40px = -10% a pedido) e é um
+link (`next/link`) pra `/`.
+
+### Menu lateral virou overlay (estilo r7.com)
+`components/Sidebar.tsx` reescrito: antes era um painel que colapsava
+(256px ↔ 64px, com hover-peek e preferência salva em `localStorage`).
+Agora:
+- Carril fino (64px) **sempre visível** e fixo no layout (não desloca o
+  conteúdo), só com ícones de navegação — sem localStorage, sem hover-peek
+- Clicar no hambúrguer abre um **painel overlay** (`position: fixed`,
+  280px, com fundo escurecido por trás) que sobrepõe o conteúdo sem mudar
+  o layout geral, fecha ao clicar fora ou apertar Esc
+- O logo completo (`/logo.svg`) aparece no topo desse painel — já que não
+  cabe no carril fino, e é exatamente o lugar "bonito" pra ele nesse modo,
+  como o usuário observou
+- Painel tem os itens com label+contador; carril só tem os ícones
+
+### Reorganização da TopBar
+- **Ordenar/Filtrar Preço** saíram da TopBar e foram pra
+  `components/FiltroClassificacao.tsx`, ao lado dos chips de classificação
+  (empurrados pra direita com `margin-left: auto`) — fica tudo que filtra
+  a lista numa linha só, separado da busca/navegação
+- Label **"Ordenar por:"** adicionado antes do dropdown de ordenação
+  (`.filtro-ordenacao-label`)
+- **"Anunciar"** saiu do grupo de botões da direita (`top-bar-acoes`) e
+  passou pra `top-bar-linha-principal`, ao lado da busca — o grupo da
+  direita ficou só com "Selecionar Vários" (admin) e o `UserMenu`
+  (Login/Criar Conta ou avatar)
+
+### Correção de overflow/sobreposição no layout responsivo
+Bug real encontrado: em larguras intermediárias (~590-720px), o botão
+"Anunciar" ficava sobreposto ao "Criar Conta" em vez de quebrar linha.
+Causa raiz: `.top-bar-linha-principal` usava `flex: 1` (= `flex-basis: 0%`),
+o que faz o navegador calcular o tamanho "ideal" do item como zero,
+escondendo do algoritmo de quebra de linha (`flex-wrap`) que o conteúdo
+real (logo + busca + Anunciar) precisava de mais espaço — resultado: nunca
+quebrava, só sobrepunha. Corrigido trocando para `flex: 1 1 auto` (basis
+baseado no conteúdo real) + `min-width: 0` (permite encolher além do
+conteúdo, já que a busca tem seu próprio piso de `min-width`) +
+`flex-wrap: wrap` como rede de segurança. Validado via
+`document.body.style.width` forçado (não foi possível redimensionar a
+janela real do Chrome neste ambiente) em 320px/375px/591px/722px — sem
+sobreposição em nenhum caso.
+
+Também corrigido: o `<select>` de Estado (UF) tinha `flex-shrink: 0`
+(nunca encolhia), forçando a busca a ficar espremida. Agora encolhe
+(`flex-shrink: 1`, `max-width: 130px`) e troca o rótulo padrão de "Todos
+os estados" para **"UF"** abaixo de 640px (`matchMedia` + `useState` em
+`TopBar.tsx`), liberando espaço real pro campo de busca em telas
+estreitas.
 
 ## Pendências conhecidas / próximos passos
 

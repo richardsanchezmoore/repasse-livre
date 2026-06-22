@@ -179,7 +179,13 @@ export async function Board({
         <span className="contador">{oportunidades.length}</span>
         {aba === "rejeitadas" && oportunidades.length > 0 && <BotaoApagarTudo />}
       </header>
-      <FiltroClassificacao aba={aba} ativa={filtros.classificacao} />
+      <FiltroClassificacao
+        aba={aba}
+        ativa={filtros.classificacao}
+        ordem={filtros.ordem}
+        precoMin={filtros.precoMin}
+        precoMax={filtros.precoMax}
+      />
       <div className="board-lista">
         {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
         {oportunidades.map((oportunidade) => (

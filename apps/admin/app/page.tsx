@@ -78,9 +78,6 @@ export default async function CentralDeOportunidadesPage({
               busca={filtros.busca}
               estado={filtros.estado}
               estadosDisponiveis={estadosDisponiveis}
-              precoMin={filtros.precoMin}
-              precoMax={filtros.precoMax}
-              ordem={ordemAtiva}
               usuario={usuario}
             />
             <BoardArea>

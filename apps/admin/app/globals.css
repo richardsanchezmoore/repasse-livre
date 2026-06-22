@@ -393,12 +393,11 @@ body {
 }
 
 .sidebar {
-  width: 256px;
+  width: 64px;
   flex-shrink: 0;
   background: #ffffff;
   border-right: 1px solid #e0e3e7;
   padding: 16px 8px;
-  transition: width 0.15s;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -407,13 +406,54 @@ body {
   flex-direction: column;
 }
 
-.sidebar-colapsada {
-  width: 64px;
-}
-
 .sidebar-topo {
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0 20px;
+}
+
+.sidebar-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 40;
+}
+
+.sidebar-overlay-backdrop.sidebar-overlay-aberto {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-overlay-painel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+  background: #ffffff;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.18);
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  z-index: 50;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-overlay-painel.sidebar-overlay-aberto {
+  transform: translateX(0);
+}
+
+.sidebar-overlay-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 4px 8px 20px;
 }
@@ -437,12 +477,18 @@ body {
   color: #111b21;
 }
 
-.sidebar-titulo {
-  font-size: 17px;
-  font-weight: 700;
-  color: #111b21;
-  white-space: nowrap;
-  overflow: hidden;
+.logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.logo-img {
+  display: block;
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .sidebar-lista {
@@ -489,7 +535,8 @@ body {
   flex-shrink: 0;
 }
 
-.sidebar-colapsada .sidebar-item {
+.sidebar > .sidebar-lista .sidebar-item,
+.sidebar > .sidebar-rodape .sidebar-item {
   justify-content: center;
   padding: 10px 0;
   border-radius: 8px;
@@ -648,12 +695,54 @@ body {
   .sidebar-item {
     border-radius: 8px;
   }
+
+  .sidebar-overlay-painel {
+    width: 85vw;
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .conteudo {
+    padding: 16px 12px 48px;
+  }
+
+  .top-bar {
+    gap: 8px;
+  }
+
+  .logo-img {
+    height: 30px;
+  }
+
+  .logo-link {
+    margin-right: 4px;
+  }
+
+  .busca-slim {
+    min-width: 0;
+    padding-left: 10px;
+  }
+
+  .busca-slim-input {
+    font-size: 14px;
+  }
+
+  .busca-slim-uf {
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .top-bar-acoes {
+    width: 100%;
+  }
 }
 
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
   position: sticky;
@@ -663,10 +752,20 @@ body {
   padding: 12px 0;
 }
 
+.top-bar-linha-principal {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .busca-slim {
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 160px;
   max-width: 420px;
   padding-left: 16px;
   background: #ffffff;
@@ -684,11 +783,14 @@ body {
   font-weight: 600;
   color: #111b21;
   background: transparent;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 130px;
   height: 44px;
   padding: 0 12px;
   border-left: 1px solid #e0e3e7;
   cursor: pointer;
+  text-overflow: ellipsis;
 }
 
 .busca-slim-botao {
@@ -718,8 +820,11 @@ body {
 .botao-anunciar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 7px 16px;
+  height: 44px;
+  padding: 0 16px;
+  box-sizing: border-box;
   background: #2bac60;
   color: #ffffff;
   font-weight: 700;
@@ -750,6 +855,8 @@ body {
 
 .top-bar-acoes {
   display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -1035,8 +1142,23 @@ body {
 .filtro-classificacao {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   padding: 12px 0px;
+}
+
+.filtro-ordenacao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.filtro-ordenacao-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #54656f;
+  white-space: nowrap;
 }
 
 .filtro-chip {
