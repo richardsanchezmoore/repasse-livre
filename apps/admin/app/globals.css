@@ -2089,6 +2089,14 @@ body {
   }
 
   .botao-selecionar-varios {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  .botao-selecionar-varios span {
     display: none;
   }
 

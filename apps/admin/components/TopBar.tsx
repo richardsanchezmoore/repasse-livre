@@ -147,9 +147,15 @@ export function TopBar({
 
       <div className="top-bar-acoes">
         {podeSelecionarVarios && !modoSelecao && (
-          <button type="button" className="botao-selecionar-varios" onClick={alternarModoSelecao}>
+          <button
+            type="button"
+            className="botao-selecionar-varios"
+            onClick={alternarModoSelecao}
+            aria-label="Selecionar vários"
+            title="Selecionar vários"
+          >
             <ListChecks size={16} strokeWidth={1.75} />
-            Selecionar Vários
+            <span>Selecionar Vários</span>
           </button>
         )}
         {!modoSelecao && !buscaAberta && (
