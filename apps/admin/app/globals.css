@@ -2073,7 +2073,8 @@ body {
   }
 
   .top-bar-linha-principal {
-    justify-content: center;
+    justify-content: flex-start;
+    padding-left: 4px;
   }
 
   .botao-anunciar,
