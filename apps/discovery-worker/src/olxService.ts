@@ -145,6 +145,9 @@ export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx
 
   const match = html.match(/__NEXT_DATA__"\s*type="application\/json">(.*?)<\/script>/s);
   if (!match) {
+    console.warn(
+      `[diagnostico] __NEXT_DATA__ não encontrado. Tamanho do HTML: ${html.length}. Trecho inicial: ${html.slice(0, 500)}`
+    );
     throw new Error("Não foi possível localizar __NEXT_DATA__ na página da OLX.");
   }
 
