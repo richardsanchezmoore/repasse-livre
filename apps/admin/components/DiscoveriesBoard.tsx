@@ -208,13 +208,24 @@ export async function Board({
       ? await buscarIdsFavoritados(usuario.id)
       : new Set<string>();
   const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
+  const inicioIntervalo = total === 0 ? 0 : (pagina - 1) * ITENS_POR_PAGINA + 1;
+  const fimIntervalo = Math.min(pagina * ITENS_POR_PAGINA, total);
 
   return (
     <section className="board">
       <header className="board-header">
-        <span>{TITULO_POR_ABA[aba]}</span>
-        <span className="contador">{total}</span>
-        {aba === "rejeitadas" && total > 0 && <BotaoApagarTudo />}
+        <div className="board-header-titulo">
+          <span className="contador">{total}</span>
+          <span>
+            {TITULO_POR_ABA[aba]} no <strong>{filtros.estado || "Brasil"}</strong>
+          </span>
+          {aba === "rejeitadas" && total > 0 && <BotaoApagarTudo />}
+        </div>
+        {total > 0 && (
+          <span className="board-header-resultados">
+            {inicioIntervalo} - {fimIntervalo} de {total} resultados
+          </span>
+        )}
       </header>
       <FiltroClassificacao
         aba={aba}

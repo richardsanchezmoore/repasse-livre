@@ -1046,14 +1046,29 @@ body {
 
 .board-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 8px 16px;
   padding: 0 0 8px;
   background: transparent;
   border-bottom: none;
+}
+
+.board-header-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
   font-size: 19px;
   color: #111b21;
+}
+
+.board-header-resultados {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8696a0;
+  white-space: nowrap;
 }
 
 .contador {
