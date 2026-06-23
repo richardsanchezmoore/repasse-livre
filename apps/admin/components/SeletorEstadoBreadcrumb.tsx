@@ -13,10 +13,12 @@ import type { Aba } from "./DiscoveriesBoard";
  */
 export function SeletorEstadoBreadcrumb({
   aba,
+  titulo,
   estadoAtivo,
   estadosDisponiveis,
 }: {
   aba: Aba;
+  titulo: string;
   estadoAtivo?: string;
   estadosDisponiveis: string[];
 }) {
@@ -57,7 +59,7 @@ export function SeletorEstadoBreadcrumb({
         aria-expanded={aberto}
         aria-label="Filtrar por estado"
       >
-        <strong>{estadoAtivo || "Brasil"}</strong>
+        {titulo} no <strong>{estadoAtivo || "Brasil"}</strong>
         <ChevronDown size={15} strokeWidth={2.5} className={aberto ? "seletor-estado-seta-aberta" : ""} />
       </button>
 

@@ -1080,14 +1080,16 @@ body {
 .seletor-estado-gatilho {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 4px 0;
+  margin: -4px 0;
   font: inherit;
-  font-weight: 700;
+  font-weight: 500;
   color: #111b21;
   cursor: pointer;
+  text-align: left;
 }
 
 .seletor-estado-gatilho:hover {

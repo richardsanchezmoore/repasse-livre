@@ -219,10 +219,12 @@ export async function Board({
       <header className="board-header">
         <div className="board-header-titulo">
           <span className="contador">{total}</span>
-          <span className="board-header-titulo-texto">
-            {TITULO_POR_ABA[aba]} no{" "}
-            <SeletorEstadoBreadcrumb aba={aba} estadoAtivo={filtros.estado} estadosDisponiveis={estadosDisponiveis} />
-          </span>
+          <SeletorEstadoBreadcrumb
+            aba={aba}
+            titulo={TITULO_POR_ABA[aba]}
+            estadoAtivo={filtros.estado}
+            estadosDisponiveis={estadosDisponiveis}
+          />
           {aba === "rejeitadas" && total > 0 && <BotaoApagarTudo />}
         </div>
         {total > 0 && (
