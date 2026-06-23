@@ -11,8 +11,17 @@ import type { AnuncioOlx, Oportunidade } from "./types.js";
 
 type ModoVarredura = "inicial" | "incremental" | "intervalo";
 
-const CATEGORIA_URL_BASE =
-  process.env.OLX_CATEGORY_URL ?? "https://www.olx.com.br/autos-e-pecas/carros-vans-e-utilitarios/estado-rs";
+/**
+ * Aceita uma ou mais URLs de categoria separadas por vírgula (uma por
+ * estado) — a varredura roda para cada uma, em sequência, na mesma
+ * execução do worker.
+ */
+const CATEGORIAS_URL_BASE = (
+  process.env.OLX_CATEGORY_URL ?? "https://www.olx.com.br/autos-e-pecas/carros-vans-e-utilitarios/estado-rs"
+)
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
 const MARGEM_MINIMA = Number(process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO);
 const MODO: ModoVarredura =
   process.env.MODO_VARREDURA === "inicial"
@@ -118,7 +127,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
  *   já foi visto em uma varredura anterior, então não há motivo para
  *   continuar nem para reprocessar.
  */
-async function executarVarredura(): Promise<void> {
+async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVarredura> {
   const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
 
@@ -130,8 +139,8 @@ async function executarVarredura(): Promise<void> {
   const intervaloInicioEpoch = JANELA_INICIO ? Math.floor(JANELA_INICIO.getTime() / 1000) : null;
   const intervaloFimEpoch = JANELA_FIM ? Math.floor(JANELA_FIM.getTime() / 1000) : null;
 
-  const chaveFiltroFipe = await resolverChaveFiltroFipe(CATEGORIA_URL_BASE);
-  const urlComFiltro = new URL(CATEGORIA_URL_BASE);
+  const chaveFiltroFipe = await resolverChaveFiltroFipe(categoriaUrlBase);
+  const urlComFiltro = new URL(categoriaUrlBase);
   urlComFiltro.searchParams.set(chaveFiltroFipe, "2");
 
   console.log(
@@ -180,11 +189,19 @@ async function executarVarredura(): Promise<void> {
   }
 
   console.log(
-    `[motor-descoberta] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados (margem < ${MARGEM_MINIMA}%) | ${resultado.semFipe} sem FIPE na página do anúncio.`
+    `[motor-descoberta] Resultado (${categoriaUrlBase}): ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados (margem < ${MARGEM_MINIMA}%) | ${resultado.semFipe} sem FIPE na página do anúncio.`
   );
+
+  return resultado;
 }
 
-executarVarredura().catch((erro) => {
+async function executarTodasCategorias(): Promise<void> {
+  for (const categoriaUrlBase of CATEGORIAS_URL_BASE) {
+    await executarVarredura(categoriaUrlBase);
+  }
+}
+
+executarTodasCategorias().catch((erro) => {
   console.error("[motor-descoberta] Falha na execução:", erro);
   process.exitCode = 1;
 });

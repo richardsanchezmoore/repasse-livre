@@ -115,7 +115,7 @@ export async function resolverChaveFiltroFipe(categoriaUrlBase: string): Promise
  * o ambiente de execução (Railway/VPS) tenha curl disponível.
  */
 async function buscarHtml(url: string): Promise<string> {
-  const { stdout } = await execFileAsync("curl", [
+  const args = [
     "-s",
     "-A",
     USER_AGENT,
@@ -123,8 +123,15 @@ async function buscarHtml(url: string): Promise<string> {
     "Accept-Language: pt-BR,pt;q=0.9",
     "-H",
     "Referer: https://www.olx.com.br/",
-    url,
-  ], { maxBuffer: 1024 * 1024 * 20 });
+  ];
+
+  if (process.env.PROXY_URL) {
+    args.push("-x", process.env.PROXY_URL);
+  }
+
+  args.push(url);
+
+  const { stdout } = await execFileAsync("curl", args, { maxBuffer: 1024 * 1024 * 20 });
   return stdout;
 }
 
