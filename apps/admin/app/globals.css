@@ -2215,4 +2215,12 @@ body {
   .filtro-chips-aberto {
     display: flex;
   }
+
+  /* No mobile o card ocupa a largura toda da tela, então a altura em vw
+     do desktop (pensada pra grid de colunas) fica baixa e a foto parece
+     achatada. Usa aspect-ratio pra dar mais presença à imagem. */
+  .foto-capa {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
 }
