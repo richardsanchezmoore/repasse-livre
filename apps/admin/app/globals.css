@@ -1694,6 +1694,27 @@ body {
   font-weight: 700;
 }
 
+.login-logo {
+  display: block;
+  height: 36px;
+  width: auto;
+  margin: 0 auto 16px;
+}
+
+/* Mantém o elemento no HTML (bom pra SEO/leitores de tela) sem ocupar
+   espaço visual nem alterar o layout. */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .login-subtitulo {
   margin: 0 0 24px;
   font-size: 14px;

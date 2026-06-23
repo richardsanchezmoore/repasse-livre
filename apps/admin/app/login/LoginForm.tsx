@@ -88,9 +88,6 @@ export function LoginForm() {
       </div>
 
       <form onSubmit={modo === "login" ? aoEntrar : aoRedefinirSenha} className="login-form-email">
-        <label htmlFor="email" className="campo-titulo-grupo">
-          Seu e-mail
-        </label>
         <div className="login-campo-email">
           <Mail size={16} strokeWidth={1.75} />
           <input
@@ -98,6 +95,7 @@ export function LoginForm() {
             id="email"
             type="email"
             required
+            aria-label="Seu e-mail"
             placeholder="seuemail@exemplo.com"
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
@@ -106,15 +104,13 @@ export function LoginForm() {
 
         {modo === "login" && (
           <>
-            <label htmlFor="senha" className="campo-titulo-grupo">
-              Senha
-            </label>
             <div className="login-campo-email">
               <Lock size={16} strokeWidth={1.75} />
               <input
                 id="senha"
                 type="password"
                 required
+                aria-label="Senha"
                 placeholder="Sua senha"
                 value={senha}
                 onChange={(evento) => setSenha(evento.target.value)}

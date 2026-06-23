@@ -68,45 +68,39 @@ export function CadastroForm() {
       </div>
 
       <form onSubmit={aoCriarConta} className="login-form-email">
-        <label htmlFor="email" className="campo-titulo-grupo">
-          Seu e-mail
-        </label>
         <div className="login-campo-email">
           <Mail size={16} strokeWidth={1.75} />
           <input
             id="email"
             type="email"
             required
+            aria-label="Seu e-mail"
             placeholder="seuemail@exemplo.com"
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
           />
         </div>
 
-        <label htmlFor="senha" className="campo-titulo-grupo">
-          Senha
-        </label>
         <div className="login-campo-email">
           <Lock size={16} strokeWidth={1.75} />
           <input
             id="senha"
             type="password"
             required
+            aria-label="Senha"
             placeholder="Mínimo 6 caracteres"
             value={senha}
             onChange={(evento) => setSenha(evento.target.value)}
           />
         </div>
 
-        <label htmlFor="confirmar-senha" className="campo-titulo-grupo">
-          Confirmar senha
-        </label>
         <div className="login-campo-email">
           <Lock size={16} strokeWidth={1.75} />
           <input
             id="confirmar-senha"
             type="password"
             required
+            aria-label="Confirmar senha"
             placeholder="Repita a senha"
             value={confirmarSenha}
             onChange={(evento) => setConfirmarSenha(evento.target.value)}

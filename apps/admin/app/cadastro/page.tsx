@@ -5,7 +5,9 @@ export default function CadastroPage() {
   return (
     <div className="login-pagina">
       <div className="login-card">
-        <h1 className="login-titulo">Criar conta</h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="Repasse Livre" className="login-logo" />
+        <h1 className="visualmente-oculto">Criar conta</h1>
         <p className="login-subtitulo">Crie sua conta para favoritar oportunidades e acompanhar de onde estiver.</p>
         <CadastroForm />
         <p className="login-rodape">
