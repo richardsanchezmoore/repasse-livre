@@ -1,9 +1,14 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 import { supabaseAdmin } from "@/lib/supabase";
+
+export const runtime = "nodejs";
 
 const TAMANHO_MAXIMO_FOTO = 5 * 1024 * 1024;
 const BUCKET = "oportunidades-fotos";
+const LARGURA_MAXIMA = 1280;
+const ALTURA_MAXIMA = 960;
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -19,9 +24,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ erro: "A foto deve ter no máximo 5MB." }, { status: 400 });
   }
 
-  const caminho = `${randomUUID()}-${foto.name}`;
-  const { error } = await supabaseAdmin.storage.from(BUCKET).upload(caminho, foto, {
-    contentType: foto.type,
+  // Limita a resolução armazenada — fotos de celular frequentemente vêm em
+  // 4000px+ e pesam vários MB, o que deixa os cards lentos pra carregar.
+  const bufferOriginal = Buffer.from(await foto.arrayBuffer());
+  const bufferRedimensionado = await sharp(bufferOriginal)
+    .rotate()
+    .resize({ width: LARGURA_MAXIMA, height: ALTURA_MAXIMA, fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 82, mozjpeg: true })
+    .toBuffer();
+
+  const caminho = `${randomUUID()}.jpg`;
+  const { error } = await supabaseAdmin.storage.from(BUCKET).upload(caminho, bufferRedimensionado, {
+    contentType: "image/jpeg",
   });
   if (error) {
     return NextResponse.json({ erro: "Falha ao enviar a foto. Tente novamente." }, { status: 500 });
