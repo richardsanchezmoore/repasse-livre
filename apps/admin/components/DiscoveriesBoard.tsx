@@ -152,6 +152,20 @@ async function buscarOportunidades(
   return { itens: (data ?? []) as Oportunidade[], total: count ?? 0 };
 }
 
+/** Busca uma oportunidade pública (aprovada) pra página individual — null se não existir, não estiver aprovada ou tiver sido apagada. */
+export async function buscarOportunidadePorId(id: string): Promise<Oportunidade | null> {
+  const { data, error } = await supabaseAdmin
+    .from("opportunities")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "aprovada")
+    .maybeSingle();
+  if (error) {
+    throw new Error(`Falha ao buscar oportunidade: ${error.message}`);
+  }
+  return (data as Oportunidade | null) ?? null;
+}
+
 /** UFs com pelo menos uma oportunidade salva (qualquer aba/status) — usado para não listar estados onde o Motor de Descoberta ainda não opera. */
 export async function buscarEstadosDisponiveis(): Promise<string[]> {
   const { data, error } = await supabaseAdmin.from("opportunities").select("estado").not("estado", "is", null);

@@ -1,25 +1,15 @@
 import { ROTULO_CLASSIFICACAO, type Classificacao } from "./classificacao";
-import { formatarWhatsapp } from "./mascaras";
+import { formatarMoeda } from "./formatadores";
+import { urlOportunidade } from "./site";
 import type { Oportunidade } from "./types";
-
-function formatarMoeda(valor: number | null): string {
-  if (valor === null) return "—";
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function linhaContato(oportunidade: Oportunidade): string {
-  if (oportunidade.origem_tipo === "insercao_direta" && oportunidade.whatsapp) {
-    const nome = oportunidade.nome_remetente ? `${oportunidade.nome_remetente} — ` : "";
-    return `📲 Vendedor: ${nome}https://wa.me/55${oportunidade.whatsapp} (${formatarWhatsapp(oportunidade.whatsapp)})`;
-  }
-  return `🔗 Anúncio original: ${oportunidade.link_origem}`;
-}
 
 /**
  * Texto pronto para colar no WhatsApp (canal/comunidade) junto com a foto
  * principal do anúncio. O WhatsApp não renderiza HTML, então o card visual
  * da Central não é o que é compartilhado — o operador copia este texto e
- * a foto separadamente.
+ * a foto separadamente. O link da página própria substitui a linha de
+ * contato solta (WhatsApp do vendedor / link da OLX) — quem recebe já vê
+ * essa informação dentro da página.
  */
 export function gerarTextoCompartilhamento(oportunidade: Oportunidade): string {
   const rotulo = oportunidade.classificacao
@@ -40,7 +30,7 @@ export function gerarTextoCompartilhamento(oportunidade: Oportunidade): string {
       ? `🔥 ${oportunidade.margem_percentual.toFixed(1)}% abaixo da FIPE${rotulo ? ` — ${rotulo}` : ""}`
       : null,
     "",
-    linhaContato(oportunidade),
+    `🔗 ${urlOportunidade(oportunidade.id)}`,
   ];
 
   return linhas.filter((linha) => linha !== null).join("\n");

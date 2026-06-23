@@ -2224,3 +2224,253 @@ body {
     aspect-ratio: 4 / 3;
   }
 }
+
+/* Página individual de oportunidade */
+
+.pagina-oportunidade-conteudo {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.pagina-oportunidade-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #54656f;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+.pagina-oportunidade-voltar:hover {
+  color: #111b21;
+}
+
+.pagina-oportunidade {
+  background: #ffffff;
+  border: 1px solid #e0e3e7;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pagina-oportunidade-corpo {
+  padding: 16px;
+}
+
+.pagina-oportunidade-selos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.selo-classificacao-inline {
+  margin: 0;
+}
+
+.selo-fonte-inline {
+  position: static;
+}
+
+.pagina-oportunidade-titulo {
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.pagina-oportunidade-subtitulo {
+  font-size: 14px;
+  color: #667781;
+  margin: 2px 0 0;
+}
+
+.pagina-oportunidade-ficha {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
+  margin: 16px 0;
+  padding: 12px 0;
+  border-top: 1px solid #f0f2f5;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.pagina-oportunidade-ficha-item dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #8696a0;
+  margin: 0 0 2px;
+}
+
+.pagina-oportunidade-ficha-item dd {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111b21;
+  margin: 0;
+}
+
+.pagina-oportunidade-secao {
+  margin-top: 14px;
+}
+
+.pagina-oportunidade-secao h2 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8696a0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 6px;
+}
+
+.pagina-oportunidade-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pagina-oportunidade-chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111b21;
+  background: #f0f2f5;
+  border-radius: 6px;
+  padding: 4px 9px;
+}
+
+.pagina-oportunidade-data {
+  font-size: 12px;
+  color: #8696a0;
+  margin: 14px 0 0;
+}
+
+.botao-whatsapp-pagina {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: #2bac60;
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: center;
+}
+
+.botao-whatsapp-pagina:hover {
+  background: #239751;
+}
+
+.botao-whatsapp-pagina-numero {
+  font-weight: 500;
+  opacity: 0.85;
+  font-size: 13px;
+}
+
+.botao-compartilhar-pagina {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #e0e3e7;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #111b21;
+  cursor: pointer;
+}
+
+.botao-compartilhar-pagina:hover {
+  background: #f0f2f5;
+}
+
+.titulo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.galeria {
+  position: relative;
+  background: #e0e3e7;
+}
+
+.galeria-trilha {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.galeria-trilha::-webkit-scrollbar {
+  display: none;
+}
+
+.galeria-foto {
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  scroll-snap-align: start;
+  display: block;
+}
+
+.galeria-foto-vazia {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #e0e3e7;
+}
+
+.galeria-contador {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+}
+
+.galeria-pontos {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.galeria-ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+}
+
+.galeria-ponto-ativo {
+  background: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .pagina-oportunidade-ficha {
+    grid-template-columns: 1fr 1fr;
+  }
+}

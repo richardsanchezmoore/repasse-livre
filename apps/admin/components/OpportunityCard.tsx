@@ -13,6 +13,7 @@ import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
+import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
 
@@ -21,29 +22,6 @@ const CLASSE_FONTE: Record<string, string> = {
   Webmotors: "selo-fonte-webmotors",
   "Mercado Livre": "selo-fonte-mercadolivre",
 };
-
-function formatarDataCaptura(dataIso: string): string {
-  const data = new Date(dataIso);
-  const horario = data.toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  const hoje = new Date();
-  const ehHoje =
-    data.getDate() === hoje.getDate() &&
-    data.getMonth() === hoje.getMonth() &&
-    data.getFullYear() === hoje.getFullYear();
-
-  if (ehHoje) return `Hoje, ${horario}`;
-  return `${data.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit" })}, ${horario}`;
-}
-
-function formatarMoeda(valor: number | null): string {
-  if (valor === null) return "—";
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function formatarKm(km: number | null | undefined): string {
-  if (km === null || km === undefined) return "—";
-  return `${km.toLocaleString("pt-BR")} km`;
-}
 
 export function OpportunityCard({
   oportunidade,
@@ -179,7 +157,9 @@ export function OpportunityCard({
       )}
 
       <div className="card-corpo">
-        <p className="titulo">{titulo}</p>
+        <Link href={`/oportunidade/${oportunidade.id}`} className="titulo-link">
+          <p className="titulo">{titulo}</p>
+        </Link>
 
         <div className="destaque-margem">
           <p className="destaque-margem-valor-rotulo">Ganho</p>
