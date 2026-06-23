@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowUpDown, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { IconDropdown } from "./IconDropdown";
@@ -35,6 +35,7 @@ export function FiltroClassificacao({
   const searchParams = useSearchParams();
   const [minDigitos, setMinDigitos] = useState(precoMin ? String(precoMin) : "");
   const [maxDigitos, setMaxDigitos] = useState(precoMax ? String(precoMax) : "");
+  const [chipsAbertos, setChipsAbertos] = useState(false);
 
   function atualizarParams(alteracoes: Record<string, string | undefined>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -73,21 +74,33 @@ export function FiltroClassificacao({
     <div className="filtro-classificacao">
       <button
         type="button"
-        onClick={() => selecionar(undefined)}
-        className={`filtro-chip ${!ativa ? "filtro-chip-ativo" : ""}`}
+        className="filtro-toggle-mobile"
+        onClick={() => setChipsAbertos((aberto) => !aberto)}
+        aria-expanded={chipsAbertos}
       >
-        Todas
+        <span>{ativa ? ROTULO_CLASSIFICACAO_FILTRO[ativa] : "Filtrar por Margem FIPE"}</span>
+        <ChevronDown size={16} strokeWidth={2.25} className={chipsAbertos ? "filtro-toggle-seta-aberta" : ""} />
       </button>
-      {CLASSIFICACOES.map((classificacao) => (
+
+      <div className={`filtro-chips ${chipsAbertos ? "filtro-chips-aberto" : ""}`}>
         <button
           type="button"
-          key={classificacao}
-          onClick={() => selecionar(classificacao)}
-          className={`filtro-chip ${ativa === classificacao ? "filtro-chip-ativo" : ""}`}
+          onClick={() => selecionar(undefined)}
+          className={`filtro-chip ${!ativa ? "filtro-chip-ativo" : ""}`}
         >
-          {ROTULO_CLASSIFICACAO_FILTRO[classificacao]}
+          Todas
         </button>
-      ))}
+        {CLASSIFICACOES.map((classificacao) => (
+          <button
+            type="button"
+            key={classificacao}
+            onClick={() => selecionar(classificacao)}
+            className={`filtro-chip ${ativa === classificacao ? "filtro-chip-ativo" : ""}`}
+          >
+            {ROTULO_CLASSIFICACAO_FILTRO[classificacao]}
+          </button>
+        ))}
+      </div>
 
       <div className="filtro-ordenacao">
         <span className="filtro-ordenacao-label">Ordenar por:</span>

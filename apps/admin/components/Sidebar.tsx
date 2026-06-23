@@ -2,7 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { CheckCircle2, Heart, Menu, Search, Send, Users, X, XCircle, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  CheckCircle2,
+  Heart,
+  LogIn,
+  Menu,
+  Plus,
+  Search,
+  Send,
+  UserPlus,
+  Users,
+  X,
+  XCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
 
@@ -18,10 +32,12 @@ export function Sidebar({
   abaAtiva,
   contagens,
   role,
+  usuarioLogado = false,
 }: {
   abaAtiva: Aba;
   contagens: Record<Aba, number>;
   role: "admin" | "publico" | null;
+  usuarioLogado?: boolean;
 }) {
   const itensVisiveis = ITENS.filter((item) => !item.soAdmin || role === "admin");
   const { navegar } = useNavegacao();
@@ -140,6 +156,31 @@ export function Sidebar({
             </button>
           </div>
         )}
+
+        <div className="sidebar-rodape">
+          <Link href="/enviar" onClick={() => setAberto(false)} className="sidebar-item">
+            <span className="sidebar-icone" aria-hidden="true">
+              <Plus size={18} strokeWidth={1.75} />
+            </span>
+            <span className="sidebar-rotulo">Anunciar</span>
+          </Link>
+          {!usuarioLogado && (
+            <>
+              <Link href="/login" onClick={() => setAberto(false)} className="sidebar-item">
+                <span className="sidebar-icone" aria-hidden="true">
+                  <LogIn size={18} strokeWidth={1.75} />
+                </span>
+                <span className="sidebar-rotulo">Login</span>
+              </Link>
+              <Link href="/cadastro" onClick={() => setAberto(false)} className="sidebar-item">
+                <span className="sidebar-icone" aria-hidden="true">
+                  <UserPlus size={18} strokeWidth={1.75} />
+                </span>
+                <span className="sidebar-rotulo">Criar Conta</span>
+              </Link>
+            </>
+          )}
+        </div>
       </nav>
     </>
   );

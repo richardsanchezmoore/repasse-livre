@@ -399,8 +399,8 @@ body {
   border-right: 1px solid #e0e3e7;
   padding: 16px 8px;
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: 69px;
+  height: calc(100vh - 69px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -674,82 +674,20 @@ body {
   background: #f9c9c7;
 }
 
-@media (max-width: 800px) {
-  .layout {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #e0e3e7;
-    position: static;
-    height: auto;
-    overflow-y: visible;
-  }
-
-  .sidebar-lista {
-    flex-direction: row;
-  }
-
-  .sidebar-item {
-    border-radius: 8px;
-  }
-
-  .sidebar-overlay-painel {
-    width: 85vw;
-    max-width: 320px;
-  }
-}
-
-@media (max-width: 480px) {
-  .conteudo {
-    padding: 16px 12px 48px;
-  }
-
-  .top-bar {
-    gap: 8px;
-  }
-
-  .logo-img {
-    height: 30px;
-  }
-
-  .logo-link {
-    margin-right: 4px;
-  }
-
-  .busca-slim {
-    min-width: 0;
-    padding-left: 10px;
-  }
-
-  .busca-slim-input {
-    font-size: 14px;
-  }
-
-  .busca-slim-uf {
-    font-size: 13px;
-    padding: 0 8px;
-  }
-
-  .top-bar-acoes {
-    width: 100%;
-  }
-}
-
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
   position: sticky;
   top: 0;
-  z-index: 6;
-  background: #f0f2f5;
-  padding: 12px 0;
+  z-index: 30;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e3e7;
+  padding: 12px 32px;
+  box-sizing: border-box;
 }
 
 .top-bar-linha-principal {
@@ -817,6 +755,10 @@ body {
   transform: scale(0.96);
 }
 
+.busca-slim-fechar {
+  display: none;
+}
+
 .botao-anunciar {
   display: flex;
   align-items: center;
@@ -837,6 +779,13 @@ body {
 
 .botao-anunciar:hover {
   background: #239751;
+}
+
+/* Versões mobile do gatilho de busca e do "Anunciar" — escondidas no
+   desktop, ativadas em @media (max-width: 480px). */
+.busca-icone-botao,
+.botao-anunciar-compacto {
+  display: none;
 }
 
 .busca-slim-input {
@@ -1145,6 +1094,18 @@ body {
   align-items: center;
   gap: 8px;
   padding: 12px 0px;
+}
+
+.filtro-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Substitui os chips soltos no mobile — ver @media (max-width: 480px) */
+.filtro-toggle-mobile {
+  display: none;
 }
 
 .filtro-ordenacao {
@@ -1866,4 +1827,224 @@ body {
 
 .usuario-menu-sair:hover {
   background: #f0f2f5;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  /* No mobile o hambúrguer já abre o painel completo com rótulos, então a
+     barra inteira da Sidebar (que antes ocupava uma linha própria, com a
+     fileira de ícones sem rótulo) sai do fluxo — só o botão fica, flutuando
+     sobre o canto esquerdo do cabeçalho, na mesma "linha" visual da logo. */
+  .sidebar {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    border: none;
+    background: transparent;
+    padding: 0;
+    z-index: 40;
+    overflow: visible;
+  }
+
+  /* Importante: .sidebar-lista/.sidebar-rodape também existem dentro do
+     painel overlay completo (.sidebar-overlay-painel) — o seletor precisa
+     ser restrito à trilha colapsada (.sidebar), senão esconde os itens do
+     painel também, deixando-o em branco ao abrir. */
+  .sidebar > .sidebar-lista,
+  .sidebar > .sidebar-rodape {
+    display: none;
+  }
+
+  .sidebar-topo {
+    padding: 0;
+  }
+
+  .sidebar-overlay-painel {
+    width: 85vw;
+    max-width: 320px;
+  }
+
+  .top-bar {
+    padding-left: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .conteudo {
+    padding: 16px 12px 48px;
+  }
+
+  .top-bar {
+    gap: 8px;
+  }
+
+  .logo-img {
+    height: 30px;
+  }
+
+  .logo-link {
+    margin-right: 4px;
+  }
+
+  .busca-slim {
+    min-width: 0;
+    padding-left: 10px;
+  }
+
+  .busca-slim-input {
+    font-size: 14px;
+  }
+
+  .busca-slim-uf {
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  /* No mobile o cabeçalho fica minimalista, no espírito do header do
+     YouTube: hambúrguer (flutuante, ver Sidebar) + logo na linha principal;
+     busca, "Anunciar" e usuário agrupados e compactos à direita. A busca
+     vira só uma lupa — ao clicar, expande em overlay sobre toda a barra. */
+  .top-bar {
+    padding-right: 48px;
+  }
+
+  .top-bar-linha-principal {
+    justify-content: center;
+  }
+
+  .botao-anunciar,
+  .busca-slim {
+    display: none;
+  }
+
+  .top-bar-acoes {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .botao-selecionar-varios {
+    display: none;
+  }
+
+  .busca-icone-botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e0e3e7;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #54656f;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .busca-slim-aberta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    /* padding-left reserva espaço pro hambúrguer fixo da Sidebar, que fica
+       por cima (z-index mais alto) e não pode ser coberto pelo input. */
+    padding: 0 8px 0 56px;
+  }
+
+  .busca-slim-fechar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: #54656f;
+    cursor: pointer;
+  }
+
+  .botao-anunciar-compacto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    background: #2bac60;
+    color: #ffffff;
+    border-radius: 8px;
+  }
+
+  .botao-anunciar-compacto:active {
+    background: #239751;
+  }
+
+  /* .board tinha overflow:hidden, o que vira a âncora do position:sticky em
+     vez da viewport — o "top" passa a ser medido a partir do topo do board,
+     empurrando os chips pra baixo mesmo no topo da página. */
+  .board {
+    overflow: visible;
+  }
+
+  /* Chips de classificação fixos embaixo do cabeçalho — 55px é a altura
+     real do .top-bar no mobile (12px padding + 36px do menor conteúdo + 1px
+     de borda ≈ 54,8px arredondado). */
+  .filtro-classificacao {
+    position: sticky;
+    top: 55px;
+    z-index: 5;
+    background: #f0f2f5;
+    padding: 8px 12px;
+    margin: 0 -12px;
+  }
+
+  /* No mobile os chips ficam soltos demais — escondidos atrás de um botão
+     "Filtrar por Margem FIPE", que abre o painel com as opções ao tocar. */
+  .filtro-toggle-mobile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1px solid #e0e3e7;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #111b21;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .filtro-toggle-mobile svg {
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .filtro-toggle-seta-aberta {
+    transform: rotate(180deg);
+  }
+
+  .filtro-chips {
+    display: none;
+    order: 3;
+    flex-basis: 100%;
+    margin-top: 8px;
+  }
+
+  .filtro-chips-aberto {
+    display: flex;
+  }
 }

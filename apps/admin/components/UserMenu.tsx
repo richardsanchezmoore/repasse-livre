@@ -12,14 +12,14 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
 
   if (!usuario) {
     return (
-      <div className="top-bar-usuario">
+      <IconDropdown Icone={UserRound} rotulo="Entrar ou criar conta">
         <Link href="/login" className="top-bar-login">
           Login
         </Link>
         <Link href="/cadastro" className="top-bar-cadastro">
           Criar Conta
         </Link>
-      </div>
+      </IconDropdown>
     );
   }
 

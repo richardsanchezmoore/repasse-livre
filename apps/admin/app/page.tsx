@@ -69,23 +69,28 @@ export default async function CentralDeOportunidadesPage({
 
   return (
     <NavegacaoProvider>
-      <div className="layout">
-        <Sidebar abaAtiva={abaAtiva} contagens={contagens} role={usuario?.role ?? null} />
-        <main className="conteudo">
-          <SelecaoMultiplaProvider>
-            <TopBar
-              aba={abaAtiva}
-              busca={filtros.busca}
-              estado={filtros.estado}
-              estadosDisponiveis={estadosDisponiveis}
-              usuario={usuario}
-            />
+      <SelecaoMultiplaProvider>
+        <TopBar
+          aba={abaAtiva}
+          busca={filtros.busca}
+          estado={filtros.estado}
+          estadosDisponiveis={estadosDisponiveis}
+          usuario={usuario}
+        />
+        <div className="layout">
+          <Sidebar
+            abaAtiva={abaAtiva}
+            contagens={contagens}
+            role={usuario?.role ?? null}
+            usuarioLogado={Boolean(usuario)}
+          />
+          <main className="conteudo">
             <BoardArea>
               <Board aba={abaAtiva} filtros={filtros} usuario={usuario} />
             </BoardArea>
-          </SelecaoMultiplaProvider>
-        </main>
-      </div>
+          </main>
+        </div>
+      </SelecaoMultiplaProvider>
     </NavegacaoProvider>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ListChecks, Plus, Search } from "lucide-react";
+import { ListChecks, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { BarraSelecaoMultipla } from "./BarraSelecaoMultipla";
 import { UserMenu } from "./UserMenu";
@@ -29,6 +29,7 @@ export function TopBar({
   const searchParams = useSearchParams();
   const [termoBusca, setTermoBusca] = useState(busca ?? "");
   const [rotuloEstadoCompacto, setRotuloEstadoCompacto] = useState(false);
+  const [buscaAberta, setBuscaAberta] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -90,14 +91,18 @@ export function TopBar({
         {modoSelecao ? (
           <BarraSelecaoMultipla aba={aba} />
         ) : (
-          <div className="busca-slim">
+          <div className={`busca-slim ${buscaAberta ? "busca-slim-aberta" : ""}`}>
             <input
               type="text"
               value={termoBusca}
               onChange={(evento) => aoDigitarBusca(evento.target.value)}
-              onKeyDown={(evento) => evento.key === "Enter" && aoClicarBuscar()}
+              onKeyDown={(evento) => {
+                if (evento.key === "Enter") aoClicarBuscar();
+                if (evento.key === "Escape") setBuscaAberta(false);
+              }}
               placeholder="Buscar veículo..."
               className="busca-slim-input"
+              autoFocus={buscaAberta}
             />
             <select
               value={estado ?? ""}
@@ -121,6 +126,15 @@ export function TopBar({
             >
               <Search size={18} strokeWidth={2.25} />
             </button>
+            <button
+              type="button"
+              onClick={() => setBuscaAberta(false)}
+              className="busca-slim-fechar"
+              aria-label="Fechar busca"
+              title="Fechar busca"
+            >
+              <X size={18} strokeWidth={2.25} />
+            </button>
           </div>
         )}
         <Link href="/enviar" className="botao-anunciar">
@@ -136,6 +150,20 @@ export function TopBar({
             Selecionar Vários
           </button>
         )}
+        {!modoSelecao && !buscaAberta && (
+          <button
+            type="button"
+            className="busca-icone-botao"
+            onClick={() => setBuscaAberta(true)}
+            aria-label="Buscar"
+            title="Buscar"
+          >
+            <Search size={18} strokeWidth={2.25} />
+          </button>
+        )}
+        <Link href="/enviar" className="botao-anunciar-compacto" aria-label="Anunciar" title="Anunciar">
+          <Plus size={18} strokeWidth={2.25} />
+        </Link>
         <UserMenu usuario={usuario} />
       </div>
     </div>
