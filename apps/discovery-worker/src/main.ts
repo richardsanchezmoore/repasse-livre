@@ -6,7 +6,7 @@ import {
   resolverChaveFiltroFipe,
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
-import { linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
+import { avancarCheckpoint, linkOrigemJaExiste, obterCheckpoint, salvarOportunidade } from "./supabaseClient.js";
 import type { AnuncioOlx, Oportunidade } from "./types.js";
 
 type ModoVarredura = "inicial" | "incremental" | "intervalo";
@@ -57,7 +57,7 @@ interface ResultadoVarredura {
  */
 async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredura): Promise<void> {
   if (await linkOrigemJaExiste(anuncio.linkOrigem)) {
-    return; // já capturado em execução anterior (não deveria ocorrer no modo incremental, que já corta antes)
+    return; // já capturado antes (ex.: anúncio "renovado" pela OLX, reaparecendo no topo da listagem)
   }
   resultado.novos++;
 
@@ -121,15 +121,20 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
  *
  * - Modo "inicial": pagina até encontrar um anúncio mais antigo que
  *   JANELA_INICIAL_DIAS, populando a "prateleira" antes do primeiro envio.
- * - Modo "incremental" (execução recorrente, a cada 6h): pagina até
- *   encontrar o primeiro anúncio já salvo no banco — como a listagem está
- *   ordenada da mais nova para a mais antiga, a partir daquele ponto tudo
- *   já foi visto em uma varredura anterior, então não há motivo para
- *   continuar nem para reprocessar.
+ * - Modo "incremental" (execução recorrente, a cada 6h): pagina até a data
+ *   de publicação cair no ou antes do checkpoint da varredura anterior
+ *   (não mais "até achar um anúncio já salvo" — a OLX reposiciona no topo
+ *   anúncios antigos "renovados" pelo anunciante, com data aparente recente;
+ *   parar nesse ponto faria a varredura ignorar anúncios genuinamente novos
+ *   posicionados abaixo dele). Anúncios já conhecidos pelo caminho são só
+ *   pulados (o upsert por link_origem em salvarOportunidade já evita
+ *   duplicar), não interrompem mais a varredura.
  */
 async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVarredura> {
   const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
+  const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
+  let maiorDataVistaEpoch: number | null = null;
 
   if (MODO === "intervalo" && (!JANELA_INICIO || !JANELA_FIM)) {
     throw new Error(
@@ -159,8 +164,17 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
     console.log(`[motor-descoberta] Página ${pagina}: ${anuncios.length} anúncios.`);
 
     for (const anuncio of anuncios) {
-      if (MODO === "incremental" && (await linkOrigemJaExiste(anuncio.linkOrigem))) {
-        console.log(`[motor-descoberta] Anúncio já conhecido encontrado, parando varredura incremental.`);
+      if (anuncio.dataPublicacao !== null && (maiorDataVistaEpoch === null || anuncio.dataPublicacao > maiorDataVistaEpoch)) {
+        maiorDataVistaEpoch = anuncio.dataPublicacao;
+      }
+
+      if (
+        MODO === "incremental" &&
+        checkpointAnteriorEpoch !== null &&
+        anuncio.dataPublicacao !== null &&
+        anuncio.dataPublicacao <= checkpointAnteriorEpoch
+      ) {
+        console.log(`[motor-descoberta] Checkpoint alcançado, parando varredura incremental.`);
         break paginas;
       }
 
@@ -186,6 +200,10 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
 
       await processarAnuncio(anuncio, resultado);
     }
+  }
+
+  if (MODO === "incremental" && maiorDataVistaEpoch !== null) {
+    await avancarCheckpoint(categoriaUrlBase, maiorDataVistaEpoch);
   }
 
   console.log(

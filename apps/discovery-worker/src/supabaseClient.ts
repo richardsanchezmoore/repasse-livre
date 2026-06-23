@@ -34,3 +34,43 @@ export async function linkOrigemJaExiste(linkOrigem: string): Promise<boolean> {
 
   return data !== null;
 }
+
+/**
+ * Epoch (segundos) do anúncio mais recente já alcançado numa varredura
+ * anterior dessa categoria, usado como referência de parada da varredura
+ * incremental (em vez de "já existe no banco" — ver migration 0010).
+ */
+export async function obterCheckpoint(categoriaUrl: string): Promise<number | null> {
+  const { data, error } = await supabase
+    .from("discovery_checkpoints")
+    .select("ultimo_anuncio_em")
+    .eq("categoria_url", categoriaUrl)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Falha ao consultar checkpoint de descoberta: ${error.message}`);
+  }
+
+  return data ? Math.floor(new Date(data.ultimo_anuncio_em).getTime() / 1000) : null;
+}
+
+/** Nunca regride o checkpoint — só avança se o novo valor for mais recente. */
+export async function avancarCheckpoint(categoriaUrl: string, epochSegundos: number): Promise<void> {
+  const checkpointAtual = await obterCheckpoint(categoriaUrl);
+  if (checkpointAtual !== null && epochSegundos <= checkpointAtual) {
+    return;
+  }
+
+  const { error } = await supabase.from("discovery_checkpoints").upsert(
+    {
+      categoria_url: categoriaUrl,
+      ultimo_anuncio_em: new Date(epochSegundos * 1000).toISOString(),
+      atualizado_em: new Date().toISOString(),
+    },
+    { onConflict: "categoria_url" }
+  );
+
+  if (error) {
+    throw new Error(`Falha ao avançar checkpoint de descoberta: ${error.message}`);
+  }
+}
