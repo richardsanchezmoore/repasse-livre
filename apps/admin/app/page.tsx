@@ -88,7 +88,13 @@ export default async function CentralDeOportunidadesPage({
           />
           <main className="conteudo">
             <BoardArea>
-              <Board aba={abaAtiva} filtros={filtros} usuario={usuario} pagina={paginaAtiva} />
+              <Board
+                aba={abaAtiva}
+                filtros={filtros}
+                usuario={usuario}
+                pagina={paginaAtiva}
+                estadosDisponiveis={estadosDisponiveis}
+              />
             </BoardArea>
           </main>
         </div>

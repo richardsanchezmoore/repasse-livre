@@ -1072,6 +1072,79 @@ body {
   white-space: nowrap;
 }
 
+.seletor-estado-breadcrumb {
+  position: relative;
+  display: inline-flex;
+}
+
+.seletor-estado-gatilho {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: #111b21;
+  cursor: pointer;
+}
+
+.seletor-estado-gatilho:hover {
+  color: #0a5d2c;
+}
+
+.seletor-estado-gatilho svg {
+  flex-shrink: 0;
+  color: #54656f;
+  transition: transform 0.15s;
+}
+
+.seletor-estado-seta-aberta {
+  transform: rotate(180deg);
+}
+
+.seletor-estado-lista {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  min-width: 160px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e0e3e7;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(17, 27, 33, 0.12);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.seletor-estado-opcao {
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: #111b21;
+}
+
+.seletor-estado-opcao:hover {
+  background: #f0f2f5;
+}
+
+.seletor-estado-opcao-ativa {
+  background: #d9fdd3;
+  color: #0a5d2c;
+  font-weight: 700;
+}
+
 .contador {
   background: #e0e3e7;
   color: #54656f;

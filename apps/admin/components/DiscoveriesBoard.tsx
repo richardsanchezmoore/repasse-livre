@@ -7,6 +7,7 @@ import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
 import { Paginacao } from "./Paginacao";
+import { SeletorEstadoBreadcrumb } from "./SeletorEstadoBreadcrumb";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
 export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor";
@@ -195,11 +196,13 @@ export async function Board({
   filtros = {},
   usuario = null,
   pagina = 1,
+  estadosDisponiveis = [],
 }: {
   aba: Aba;
   filtros?: FiltrosBoard;
   usuario?: Usuario | null;
   pagina?: number;
+  estadosDisponiveis?: string[];
 }) {
   const { itens: oportunidades, total } = await buscarOportunidades(aba, filtros, usuario, pagina);
   const idsFavoritados = aba === "favoritos"
@@ -216,8 +219,9 @@ export async function Board({
       <header className="board-header">
         <div className="board-header-titulo">
           <span className="contador">{total}</span>
-          <span>
-            {TITULO_POR_ABA[aba]} no <strong>{filtros.estado || "Brasil"}</strong>
+          <span className="board-header-titulo-texto">
+            {TITULO_POR_ABA[aba]} no{" "}
+            <SeletorEstadoBreadcrumb aba={aba} estadoAtivo={filtros.estado} estadosDisponiveis={estadosDisponiveis} />
           </span>
           {aba === "rejeitadas" && total > 0 && <BotaoApagarTudo />}
         </div>
