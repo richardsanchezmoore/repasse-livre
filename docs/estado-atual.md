@@ -1,6 +1,16 @@
 # Estado atual do projeto — Repasse Livre
 
 > Resumo de contexto para retomar o trabalho em uma conversa nova.
+> **23/06/2026, sessão mais recente**: refino completo do layout responsivo
+> do admin (mobile-first, já que ~75% do tráfego é celular), implementação
+> de **paginação real** na Central de Oportunidades (até então carregava
+> todas as linhas do banco de uma vez) e um **cabeçalho-breadcrumb** com
+> filtro de estado imediato — ver seção "Refino responsivo + paginação +
+> breadcrumb (23/06/2026)" abaixo, a mais detalhada e a que reflete o estado
+> real do código hoje. **Próximo passo já definido pelo usuário: tratamento
+> de imagens nas oportunidades "Enviadas" (Inserção Direta)** — ver
+> "Pendências conhecidas" no final.
+>
 > Atualizado em 21/06/2026. Sprints 1-4 e a exclusão com histórico foram
 > testadas de ponta a ponta nesta data e estão funcionando em produção
 > (banco real do Supabase). Mesmo dia: revisão do Sprint 4 (fotos, contato
@@ -844,6 +854,159 @@ os estados" para **"UF"** abaixo de 640px (`matchMedia` + `useState` em
 `TopBar.tsx`), liberando espaço real pro campo de busca em telas
 estreitas.
 
+## Refino responsivo + paginação + breadcrumb (23/06/2026)
+
+Sessão longa, guiada por testes diretos no responsive viewer (extensão do
+Chrome) e depois pela ferramenta de preview interna (MCP `Claude_Preview`,
+que sobe o `next dev` e permite screenshot/click/eval — precisou de
+`.claude/launch.json` na raiz `C:\claude` com `runtimeExecutable` apontando
+pro `node.exe` direto, já que `node`/`npm` não estão no PATH dos shells
+sandboxados desta máquina; comando completo:
+`node node_modules/next/dist/bin/next dev <pasta>`). O preview server travou
+(`preview_screenshot` em timeout) várias vezes ao longo da sessão — sempre
+resolvido com `preview_stop` + `preview_start` de novo, sem precisar
+investigar a causa.
+
+### Ambiente local mais rápido
+- Exclusão do Windows Defender pra pasta `C:\claude` (precisa de PowerShell
+  administrador, `Add-MpPreference -ExclusionPath "C:\claude"`)
+- Tentativa de usar Turbopack (`next dev --turbo`) **revertida**: o Next
+  14.2.35 com Turbopack quebra a resolução de um `import()` dinâmico dentro
+  de `@supabase/supabase-js` (`@opentelemetry/api`, pacote opcional não
+  instalado) — Webpack (padrão) ignora isso de boa, Turbopack não. Script
+  `dev` voltou a ser só `next dev`
+- Política de execução do PowerShell (`Set-ExecutionPolicy RemoteSigned
+  -Scope CurrentUser`) precisou ser ajustada na máquina do usuário pra
+  `npm run dev` funcionar sem usar `npm.cmd` toda hora
+
+### TopBar virou cabeçalho global full-width
+`app/page.tsx`: `<TopBar>` saiu de dentro de `.layout`/`.conteudo` e passou
+a ser renderizado **antes**, como uma barra branca fixa (`position:
+sticky`) que ocupa a largura inteira da viewport, com `border-bottom`
+separando do conteúdo cinza — antes ficava confinada dentro do padding do
+`.conteudo`, do lado da Sidebar. `Sidebar` ganhou `top`/`height` ajustados
+(`calc(100vh - 69px)`) pra não ficar embaixo da nova barra.
+
+### Sidebar no mobile: hambúrguer flutuante, sem fileira de ícones
+No mobile (`≤800px`), a fileira de ícones sem rótulo da Sidebar colapsada
+(redundante com o hambúrguer, que já abre o painel completo com rótulos)
+foi escondida — só sobra o botão hambúrguer, agora `position: fixed` no
+canto superior esquerdo, sobre a TopBar (`z-index` mais alto), na mesma
+"linha" visual da logo.
+
+**Bug encontrado e corrigido**: a regra `.sidebar-lista, .sidebar-rodape {
+display: none }` usava uma classe compartilhada entre a fileira colapsada
+*e* o painel overlay completo (mesma classe, dois lugares) — escondia os
+itens dos dois, deixando o painel em branco ao abrir. Corrigido escopando
+pra `.sidebar > .sidebar-lista, .sidebar > .sidebar-rodape` (só o carril,
+não o overlay).
+
+**Bug de cascata CSS encontrado duas vezes nesta sessão**: os blocos
+`@media` do `globals.css` ficavam *antes* das regras base no arquivo — uma
+regra incondicional definida depois de um `@media` no código-fonte sempre
+vence no empate de especificidade, **mesmo que o media query bata** com o
+viewport atual. Resolvido movendo os dois blocos `@media (max-width:
+800px)` e `@media (max-width: 480px)` pro **final** do arquivo. Lição: em
+`globals.css`, media queries específicas sempre devem vir depois das
+regras gerais que sobrescrevem.
+
+### Busca colapsa em lupa no mobile (estilo YouTube)
+`components/TopBar.tsx`: no mobile, a caixa de busca completa
+(texto+UF+lupa) some, sobra só um ícone de lupa no grupo de ações (junto
+com "Anunciar" compacto e o ícone de usuário). Ao clicar, expande em
+overlay branco cobrindo a barra inteira (`position: absolute; inset: 0`),
+com `padding-left: 56px` reservando espaço pro hambúrguer fixo (que continua
+visível por cima) e um botão "X" pra fechar.
+
+### "Anunciar" e Login/Criar Conta também no menu mobile
+- `components/UserMenu.tsx`: Login/Criar Conta deslogado deixaram de ser
+  dois botões fixos na TopBar — agora ficam dentro do dropdown do ícone de
+  usuário (clique único), liberando espaço
+- `components/Sidebar.tsx`: painel overlay ganhou um rodapé com **Anunciar**
+  (sempre) e **Login**/**Criar Conta** (só deslogado) — `usuarioLogado`
+  como prop nova
+
+### Chips de classificação: sticky + colapsam em botão no mobile
+- `.filtro-classificacao` fica `position: sticky` colado embaixo da TopBar
+  ao rolar (`top: 55px`, a altura real da TopBar no mobile)
+- **Bug encontrado**: `.board` tinha `overflow: hidden`, o que vira a
+  "âncora" do `position: sticky` (em vez da viewport) — o `top` passava a
+  ser medido a partir do topo do `.board`, empurrando os chips pra baixo
+  mesmo no topo da página (~30px de vão vazio). Corrigido com `.board {
+  overflow: visible }` no mobile
+- No mobile, os chips soltos (`Todas`/`Bronze 5%+`/etc.) ficavam "bagunçados"
+  — escondidos atrás de um botão **"Filtrar por Margem FIPE"** (com seta que
+  gira), que revela os chips ao tocar (`FiltroClassificacao.tsx`, novo state
+  `chipsAbertos`)
+
+### Paginação real (SQL, não mais carregar tudo)
+A base já passa de 100+ oportunidades; a ordenação ("Mais recente"/"Maior
+Margem"/etc.) era feita **em JavaScript depois de buscar todas as linhas**
+— não escalava.
+
+- **Migration `0011_data_ordenacao_paginacao.sql`** (aplicada manualmente
+  pelo usuário no SQL Editor): coluna gerada `data_ordenacao = coalesce(
+  data_publicacao_origem, data_captura)` (permite `ORDER BY` no SQL, já que
+  `supabase-js` não expõe `COALESCE` direto) + índices `(status,
+  data_ordenacao desc)`, `(status, margem_percentual desc)`, `(status,
+  preco)`
+- `components/DiscoveriesBoard.tsx`: `buscarOportunidades` agora usa
+  `.order()` + `.range()` do Supabase (`ITENS_POR_PAGINA = 40`, igual à
+  ordem de grandeza da OLX/WebMotors) e retorna `{ itens, total }`
+  (`count: "exact"` do PostgREST). `contarOportunidades` (badges da
+  Sidebar) também deixou de carregar tudo só pra contar — usa `count:
+  "exact", head: true`
+- **Paginação numerada** (`components/Paginacao.tsx`, novo), estilo
+  OLX/WebMotors (ambos usam página numerada, não scroll infinito —
+  confirmado por inspeção, já que os dois bloqueiam scraping direto) — `1 2
+  … 5` com setas, `?pagina=N` na URL preservando todos os filtros. Mudar
+  busca/estado/classificação/ordem **reseta pra página 1**
+  (`params.delete("pagina")` nos `atualizarParams` de `TopBar.tsx` e
+  `FiltroClassificacao.tsx`)
+- Decisão consciente registrada: paginação por número (não scroll
+  infinito) pra resolver o caso de uso "achei um anúncio na página 3, saí e
+  quero voltar direto nela" — scroll infinito "ingênuo" reintroduziria esse
+  problema. Se entrar scroll infinito no futuro (cogitado só pro mobile,
+  ver Pendências), precisa manter a URL sincronizada com a posição
+  (`?pagina=N` indo subindo conforme carrega mais lotes), não substituir a
+  paginação
+
+### Cabeçalho-breadcrumb com filtro de estado imediato
+Layout de referência: badge com total + "`{Aba}` no `{Estado}`" (estado em
+negrito) à esquerda, "`{início}-{fim}` de `{total}` resultados" à direita,
+mesma linha (`.board-header` virou `flex` com `justify-content:
+space-between`, filhos `.board-header-titulo`/`.board-header-resultados`).
+"Todos os estados" mostra **"Brasil"** em vez de omitir.
+
+Depois, a pedido do usuário (testando como usuário real no celular): o
+`{Estado}` do breadcrumb virou um **seletor clicável** (`components/
+SeletorEstadoBreadcrumb.tsx`, novo, client component) com seta ao lado —
+filtra na hora, sem precisar abrir a lupa primeiro. Motivação: no mobile
+(75% do tráfego) o seletor de UF só existia dentro da busca expansível,
+exigindo um clique extra só pra descobrir que o filtro existe. Reaproveita
+`estadosDisponiveis` (já calculado em `page.tsx` pra TopBar) e o mesmo
+padrão de dropdown com clique-fora-fecha do `IconDropdown.tsx`.
+
+### Login/Cadastro: visual mais limpo
+- `app/login/LoginForm.tsx` e `app/cadastro/CadastroForm.tsx`: labels
+  visíveis acima dos campos (`campo-titulo-grupo`) removidos — só
+  placeholder + ícone, com `aria-label` no input preservando
+  acessibilidade
+- Título textual ("Repasse Livre"/"Criar conta") trocado pelo **logo**
+  (`/logo.svg`) no topo do card. O `<h1>` continua no HTML (bom pra
+  SEO/leitores de tela) mas visualmente oculto via nova classe utilitária
+  `.visualmente-oculto` (técnica clip-rect, sem `display:none` —
+  leitores de tela ainda leem, mas não ocupa espaço/não aparece)
+
+### Commits desta sessão (em ordem)
+1. Refino layout responsivo do admin para mobile
+2. Adiciona paginação numerada na Central de Oportunidades
+3. Cabeçalho da lista vira breadcrumb com total, estado e intervalo de
+   resultados
+4. Ajustes de fonte do título (16px → 15px)
+5. Simplifica formulários de login/cadastro e troca título pelo logo
+6. Filtro de estado imediato no título da lista (breadcrumb)
+
 ## Pendências conhecidas / próximos passos
 
 1. **Agendamento real do worker**: hoje só roda manualmente
@@ -860,9 +1023,9 @@ estreitas.
    falta personalizar assunto/corpo/remetente com a marca Repasse Livre
 6. ~~**UI de gestão de usuários**~~ — resolvida em 21/06/2026, ver seção
    "UI de gestão de usuários" acima (rota `/usuarios`)
-7. Ao subir o admin para domínio real (Vercel ou outro), atualizar
-   **Site URL** e **Redirect URLs** no Supabase (Authentication → URL
-   Configuration) — hoje só têm as versões de `localhost:3000`
+7. ~~Ao subir o admin para domínio real, atualizar Site URL/Redirect URLs~~
+   — resolvida em 22/06/2026: admin em produção na Vercel
+   (`repasselivre.com`), Supabase Auth já atualizado
 8. Coluna antiga `opportunities.favorito` (boolean global) ficou órfã
    desde a troca pra favoritos por usuário — remoção fica para uma
    migration futura de limpeza
@@ -870,6 +1033,18 @@ estreitas.
    ainda não definido) — vai exigir expandir `perfis.role` além de
    `'admin'|'publico'` e trocar o toggle binário de `/usuarios` por um
    seletor de múltiplas opções
+10. **[PRÓXIMO PASSO] Tratamento de imagens nas oportunidades "Enviadas"
+    (Inserção Direta)** — pedido explicitamente pelo usuário ao final da
+    sessão de 23/06/2026, ainda sem escopo detalhado. Pontos de partida
+    pra próxima sessão investigar: `components/DropzoneFotos.tsx` e
+    `app/api/fotos/route.ts` (upload atual, sem nenhum tratamento/
+    redimensionamento/compressão hoje — sobe o arquivo bruto pro Storage);
+    perguntar ao usuário se é sobre compressão/redimensionamento antes do
+    upload, recorte/orientação, ou validação de qualidade/conteúdo
+11. **Scroll infinito no mobile** (cogitado, não decidido) — ver nota em
+    "Paginação real" acima sobre manter a URL sincronizada com a posição
+    se for implementado, pra não regredir o caso de uso "voltar pra
+    página 3"
 
 ## Decisões importantes (não óbvias do código)
 
