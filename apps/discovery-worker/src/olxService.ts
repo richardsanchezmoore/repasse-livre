@@ -4,9 +4,6 @@ import type { AnuncioOlx } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-
 interface PropriedadeOlx {
   name: string;
   value: string;
@@ -106,24 +103,19 @@ export async function resolverChaveFiltroFipe(categoriaUrlBase: string): Promise
 }
 
 /**
- * Busca o HTML da página via curl.
+ * Busca o HTML da página via curl-impersonate (curl_chrome116), não o curl
+ * comum.
  *
- * O fetch nativo do Node (undici) recebe 403 da proteção anti-bot da OLX,
- * mesmo enviando os mesmos headers que o curl envia com sucesso (200) —
- * a barreira filtra por fingerprint de TLS/HTTP do cliente, não só pelos
- * headers. Por isso o transporte usa curl como subprocesso. Isso exige que
- * o ambiente de execução (Railway/VPS) tenha curl disponível.
+ * O fetch nativo do Node (undici) e o curl padrão (vinculado ao OpenSSL)
+ * recebem 403/bloqueio da Cloudflare mesmo com os headers certos — a
+ * barreira filtra pela "impressão digital" do handshake TLS do cliente, que
+ * é diferente da de um navegador real. O curl_chrome116 reproduz essa
+ * assinatura de um Chrome real (e já define seu próprio conjunto de headers
+ * coerente com ela), por isso não definimos headers manualmente aqui — só
+ * o Referer, que o script não fixa por ser específico da OLX.
  */
 async function buscarHtml(url: string): Promise<string> {
-  const args = [
-    "-s",
-    "-A",
-    USER_AGENT,
-    "-H",
-    "Accept-Language: pt-BR,pt;q=0.9",
-    "-H",
-    "Referer: https://www.olx.com.br/",
-  ];
+  const args = ["-s", "-H", "Referer: https://www.olx.com.br/"];
 
   if (process.env.PROXY_URL) {
     args.push("-x", process.env.PROXY_URL);
@@ -131,7 +123,7 @@ async function buscarHtml(url: string): Promise<string> {
 
   args.push(url);
 
-  const { stdout } = await execFileAsync("curl", args, { maxBuffer: 1024 * 1024 * 20 });
+  const { stdout } = await execFileAsync("curl_chrome116", args, { maxBuffer: 1024 * 1024 * 20 });
   return stdout;
 }
 
