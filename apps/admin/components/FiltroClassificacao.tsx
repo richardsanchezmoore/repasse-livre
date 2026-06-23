@@ -40,6 +40,8 @@ export function FiltroClassificacao({
   function atualizarParams(alteracoes: Record<string, string | undefined>) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("aba", aba);
+    // Mudar classificação/ordem/faixa de preço invalida a paginação atual.
+    params.delete("pagina");
     for (const [chave, valor] of Object.entries(alteracoes)) {
       if (valor) {
         params.set(chave, valor);

@@ -38,9 +38,10 @@ export default async function CentralDeOportunidadesPage({
     precoMin?: string;
     precoMax?: string;
     ordem?: string;
+    pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, ordem } = await searchParams;
+  const { aba, classificacao, busca, estado, precoMin, precoMax, ordem, pagina } = await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
   const abaSolicitada: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "aprovadas";
@@ -52,6 +53,7 @@ export default async function CentralDeOportunidadesPage({
     : undefined;
   const ordemAtiva = ORDENS_VALIDAS.includes(ordem as Ordem) ? (ordem as Ordem) : "recente";
   const estadoAtivo = UFS.includes(estado ?? "") ? estado : undefined;
+  const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
 
   const filtros: FiltrosBoard = {
     classificacao: classificacaoAtiva,
@@ -86,7 +88,7 @@ export default async function CentralDeOportunidadesPage({
           />
           <main className="conteudo">
             <BoardArea>
-              <Board aba={abaAtiva} filtros={filtros} usuario={usuario} />
+              <Board aba={abaAtiva} filtros={filtros} usuario={usuario} pagina={paginaAtiva} />
             </BoardArea>
           </main>
         </div>

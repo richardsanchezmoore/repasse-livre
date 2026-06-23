@@ -6,9 +6,12 @@ import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
+import { Paginacao } from "./Paginacao";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
 export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor";
+
+export const ITENS_POR_PAGINA = 40;
 
 // Abas exclusivas de gestão — só visíveis/consultáveis por quem tem
 // perfis.role = 'admin'. "aprovadas" (rótulo público "Oportunidades") e
@@ -48,32 +51,19 @@ const FILTRO_POR_ABA: Record<
   rejeitadas: { status: "rejeitada" },
 };
 
+// Ordenação resolvida no SQL (não mais em JS) para permitir paginação real
+// via LIMIT/OFFSET. "recente" usa a coluna gerada data_ordenacao — ver
+// migration 0011 (coalesce de data_publicacao_origem e data_captura). O
+// segundo critério (id) é só pra manter a ordem estável entre páginas.
+const ORDEM_SQL: Record<Ordem, { coluna: string; ascendente: boolean }> = {
+  recente: { coluna: "data_ordenacao", ascendente: false },
+  margem: { coluna: "margem_percentual", ascendente: false },
+  menor_valor: { coluna: "preco", ascendente: true },
+  maior_valor: { coluna: "preco", ascendente: false },
+};
+
 function escaparTermoIlike(termo: string): string {
   return termo.replace(/[%_]/g, (caractere) => `\\${caractere}`);
-}
-
-function ordenar(oportunidades: Oportunidade[], ordem: Ordem = "recente"): Oportunidade[] {
-  const lista = [...oportunidades];
-
-  switch (ordem) {
-    case "margem":
-      return lista.sort((a, b) => (b.margem_percentual ?? 0) - (a.margem_percentual ?? 0));
-    case "menor_valor":
-      return lista.sort((a, b) => a.preco - b.preco);
-    case "maior_valor":
-      return lista.sort((a, b) => b.preco - a.preco);
-    case "recente":
-    default:
-      // Ordenado pela data/hora mais relevante: a de publicação na fonte
-      // original (OLX) quando existir, senão a da nossa captura (Inserção
-      // Direta não tem data de publicação original) — a mesma data mostrada
-      // no card, para a ordem da lista bater com o que o usuário vê.
-      return lista.sort((a, b) => {
-        const dataA = new Date(a.data_publicacao_origem ?? a.data_captura).getTime();
-        const dataB = new Date(b.data_publicacao_origem ?? b.data_captura).getTime();
-        return dataB - dataA;
-      });
-  }
 }
 
 async function buscarIdsFavoritados(usuarioId: string): Promise<Set<string>> {
@@ -84,31 +74,48 @@ async function buscarIdsFavoritados(usuarioId: string): Promise<Set<string>> {
   return new Set((data ?? []).map((linha) => linha.opportunity_id as string));
 }
 
+interface ResultadoBusca {
+  itens: Oportunidade[];
+  total: number;
+}
+
 async function buscarOportunidades(
   aba: Aba,
   filtros: FiltrosBoard = {},
-  usuario: Usuario | null = null
-): Promise<Oportunidade[]> {
-  if (!podeAcessarAba(aba, usuario)) return [];
+  usuario: Usuario | null = null,
+  pagina: number = 1
+): Promise<ResultadoBusca> {
+  if (!podeAcessarAba(aba, usuario)) return { itens: [], total: 0 };
+
+  const { coluna, ascendente } = ORDEM_SQL[filtros.ordem ?? "recente"];
+  const inicio = (pagina - 1) * ITENS_POR_PAGINA;
+  const fim = inicio + ITENS_POR_PAGINA - 1;
 
   if (aba === "favoritos") {
-    if (!usuario) return [];
+    if (!usuario) return { itens: [], total: 0 };
     const idsFavoritados = await buscarIdsFavoritados(usuario.id);
-    if (idsFavoritados.size === 0) return [];
+    if (idsFavoritados.size === 0) return { itens: [], total: 0 };
 
-    let consultaFavoritos = supabaseAdmin.from("opportunities").select("*").in("id", Array.from(idsFavoritados));
+    let consultaFavoritos = supabaseAdmin
+      .from("opportunities")
+      .select("*", { count: "exact" })
+      .in("id", Array.from(idsFavoritados));
     if (filtros.classificacao) consultaFavoritos = consultaFavoritos.eq("classificacao", filtros.classificacao);
     if (filtros.busca) consultaFavoritos = consultaFavoritos.ilike("veiculo", `%${escaparTermoIlike(filtros.busca)}%`);
     if (filtros.estado) consultaFavoritos = consultaFavoritos.eq("estado", filtros.estado);
     if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
     if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
+    consultaFavoritos = consultaFavoritos
+      .order(coluna, { ascending: ascendente, nullsFirst: false })
+      .order("id", { ascending: true })
+      .range(inicio, fim);
 
-    const { data, error } = await consultaFavoritos;
+    const { data, error, count } = await consultaFavoritos;
     if (error) throw new Error(`Falha ao buscar oportunidades favoritadas: ${error.message}`);
-    return ordenar(data as Oportunidade[], filtros.ordem);
+    return { itens: (data ?? []) as Oportunidade[], total: count ?? 0 };
   }
 
-  let consulta = supabaseAdmin.from("opportunities").select("*");
+  let consulta = supabaseAdmin.from("opportunities").select("*", { count: "exact" });
   const filtro = FILTRO_POR_ABA[aba];
   consulta = consulta.eq("status", filtro.status);
   if (filtro.origem_tipo) {
@@ -130,14 +137,18 @@ async function buscarOportunidades(
   if (filtros.precoMax !== undefined) {
     consulta = consulta.lte("preco", filtros.precoMax);
   }
+  consulta = consulta
+    .order(coluna, { ascending: ascendente, nullsFirst: false })
+    .order("id", { ascending: true })
+    .range(inicio, fim);
 
-  const { data, error } = await consulta;
+  const { data, error, count } = await consulta;
 
   if (error) {
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
   }
 
-  return ordenar(data as Oportunidade[], filtros.ordem);
+  return { itens: (data ?? []) as Oportunidade[], total: count ?? 0 };
 }
 
 /** UFs com pelo menos uma oportunidade salva (qualquer aba/status) — usado para não listar estados onde o Motor de Descoberta ainda não opera. */
@@ -150,34 +161,60 @@ export async function buscarEstadosDisponiveis(): Promise<string[]> {
   return UFS.filter((uf) => presentes.has(uf));
 }
 
+/** Contagem por aba pros badges da Sidebar — só conta, não carrega as linhas. */
 export async function contarOportunidades(usuario: Usuario | null = null): Promise<Record<Aba, number>> {
   const abas: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
-  const resultados = await Promise.all(abas.map((aba) => buscarOportunidades(aba, {}, usuario)));
-  return Object.fromEntries(abas.map((aba, i) => [aba, resultados[i].length])) as Record<Aba, number>;
+  const resultados = await Promise.all(
+    abas.map(async (aba) => {
+      if (!podeAcessarAba(aba, usuario)) return 0;
+
+      if (aba === "favoritos") {
+        if (!usuario) return 0;
+        const idsFavoritados = await buscarIdsFavoritados(usuario.id);
+        return idsFavoritados.size;
+      }
+
+      const filtro = FILTRO_POR_ABA[aba];
+      let consulta = supabaseAdmin
+        .from("opportunities")
+        .select("*", { count: "exact", head: true })
+        .eq("status", filtro.status);
+      if (filtro.origem_tipo) {
+        consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
+      }
+      const { count, error } = await consulta;
+      if (error) throw new Error(`Falha ao contar oportunidades (${aba}): ${error.message}`);
+      return count ?? 0;
+    })
+  );
+  return Object.fromEntries(abas.map((aba, i) => [aba, resultados[i]])) as Record<Aba, number>;
 }
 
 export async function Board({
   aba,
   filtros = {},
   usuario = null,
+  pagina = 1,
 }: {
   aba: Aba;
   filtros?: FiltrosBoard;
   usuario?: Usuario | null;
+  pagina?: number;
 }) {
-  const oportunidades = await buscarOportunidades(aba, filtros, usuario);
+  const { itens: oportunidades, total } = await buscarOportunidades(aba, filtros, usuario, pagina);
   const idsFavoritados = aba === "favoritos"
     ? new Set(oportunidades.map((o) => o.id))
     : usuario
       ? await buscarIdsFavoritados(usuario.id)
       : new Set<string>();
+  const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
 
   return (
     <section className="board">
       <header className="board-header">
         <span>{TITULO_POR_ABA[aba]}</span>
-        <span className="contador">{oportunidades.length}</span>
-        {aba === "rejeitadas" && oportunidades.length > 0 && <BotaoApagarTudo />}
+        <span className="contador">{total}</span>
+        {aba === "rejeitadas" && total > 0 && <BotaoApagarTudo />}
       </header>
       <FiltroClassificacao
         aba={aba}
@@ -198,6 +235,7 @@ export async function Board({
           />
         ))}
       </div>
+      <Paginacao aba={aba} filtros={filtros} paginaAtual={pagina} totalPaginas={totalPaginas} />
     </section>
   );
 }
