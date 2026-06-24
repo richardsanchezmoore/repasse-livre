@@ -1007,6 +1007,118 @@ padrão de dropdown com clique-fora-fecha do `IconDropdown.tsx`.
 5. Simplifica formulários de login/cadastro e troca título pelo logo
 6. Filtro de estado imediato no título da lista (breadcrumb)
 
+## Página individual de oportunidade + ajustes de mobile e fotos (23/06/2026, sessão seguinte)
+
+### Breadcrumb do filtro de estado — área de toque maior
+- `components/SeletorEstadoBreadcrumb.tsx`: antes só a UF (2 letras) era
+  clicável pra abrir o seletor; agora o componente recebe `titulo` e
+  renderiza "Oportunidades no **Brasil/UF**" inteiro dentro do
+  `<button>`, ampliando a área de toque no mobile.
+
+### "Selecionar Vários" sumindo no mobile
+- Bug: `app/globals.css` tinha um `display:none` em
+  `.botao-selecionar-varios` dentro do breakpoint mobile, sobrando do
+  refino responsivo da sessão anterior — só admin via esse botão, e no
+  mobile ele desaparecia por completo.
+- Corrigido pra virar ícone (igual aos outros botões da TopBar no
+  mobile) em vez de esconder. Texto (`<span>`) escondido via CSS,
+  ícone (`ListChecks`) continua visível.
+- Efeito colateral: com 4 ícones na TopBar (admin), o grupo passou a
+  sobrepor a logo centralizada — `.top-bar-linha-principal` trocou de
+  `justify-content: center` pra `flex-start`, removendo a dependência
+  de um cálculo implícito de largura que mudava conforme o usuário
+  (admin vs. público).
+
+### Altura da foto de capa no mobile
+- `.foto-capa` usava `clamp(170px, 22vw, 210px)` — pensado pro grid de
+  colunas do desktop. No mobile (card ocupa a tela toda), isso resultava
+  numa foto baixa/larga (~2:1). Override no breakpoint mobile pra
+  `aspect-ratio: 4/3`, acompanhando a largura real do card.
+
+### Redimensionamento de fotos no upload
+- Problema: `app/api/fotos/route.ts` salvava o arquivo original direto
+  no Storage — celulares tiram fotos de 4000px+/vários MB, o que deixava
+  os cards lentos pra carregar.
+- Adicionado `sharp` (`npm install sharp` em `apps/admin`) — resize pra
+  no máximo 1280×960 (`fit: "inside"`, `withoutEnlargement: true`, não
+  aumenta fotos menores) + reencode JPEG qualidade 82 antes do upload.
+  `export const runtime = "nodejs"` explícito (sharp precisa de binário
+  nativo, não funciona em runtime edge).
+- **Importante**: isso só corrige uploads novos. Fotos já enviadas antes
+  continuam no tamanho original no Storage — reprocessar as existentes
+  ficou pendente (precisaria de um script varrendo o bucket).
+
+### Página individual de oportunidade (`/oportunidade/[id]`)
+- Motivação: a Inserção Direta não tinha link próprio pra compartilhar
+  — só texto+foto copiados, com o WhatsApp do vendedor solto no texto.
+  OLX também ganhou página própria pra consistência.
+- `app/oportunidade/[id]/page.tsx`: rota pública (mesma regra de acesso
+  da aba "Oportunidades" — qualquer `status='aprovada'`), com
+  `generateMetadata` (title/description/og:image) pro preview do link
+  no WhatsApp. `buscarOportunidadePorId()` nova em
+  `components/DiscoveriesBoard.tsx` (`maybeSingle`, filtra por
+  `status='aprovada'` — não expõe descobertas/rejeitadas por id).
+- `components/PaginaOportunidade.tsx`: mostra **tudo** que existe no
+  banco (diferente do card, que mostra um resumo) — câmbio, opcionais,
+  sinistro/leilão, perfil do vendedor, além do que já aparecia no card.
+- `components/GaleriaFotos.tsx`: carrossel client-side com
+  scroll-snap (sem lib nova) — `foto_principal` + `fotos_secundarias`,
+  contador "N/total" e dots de navegação.
+- `components/BotaoCompartilharPagina.tsx`: Web Share API com fallback
+  pra clipboard.
+- `lib/site.ts`: `URL_BASE_SITE` (env `NEXT_PUBLIC_SITE_URL`, fallback
+  `https://repasselivre.com`) + `urlOportunidade(id)`.
+- `lib/formatadores.ts`: extraído de dentro de `OpportunityCard.tsx`
+  (moeda/km/data) pra reaproveitar na página nova.
+- `lib/compartilhamento.ts`: `gerarTextoCompartilhamento` agora inclui
+  o link da página própria no lugar da linha de contato solta
+  (WhatsApp do vendedor / link da OLX) — quem recebe já vê essa
+  informação dentro da página.
+
+### Card da Central — simplificação (pedido explícito do usuário: "ficou pesado visualmente")
+- Card chegou a ganhar uma ficha Ano/KM/Câmbio/Local (grid 2 colunas,
+  estilo da página individual) + linha classificação/data abaixo da
+  foto — **desfeito** a pedido do usuário, card é pra ser resumo rápido,
+  detalhe fica na página individual.
+- Decisão final do card: **Ano e KM removidos** (ano já aparece no
+  título, KM fica só na página individual — usuário interessado clica
+  pra ver mais).
+- **Card inteiro ficou clicável** (`onClick` no `div.card`, navega via
+  `useRouter().push`), removendo o link "Abrir anúncio original" do
+  rodapé (agora redundante com a página individual). Botões internos
+  (favoritar, checkbox de seleção em massa, ações Aprovar/Rejeitar/
+  Apagar/Compartilhar, link do WhatsApp) usam `evento.stopPropagation()`
+  pra não disparar a navegação. No modo de seleção em massa (admin),
+  clicar no card alterna a seleção em vez de navegar.
+- Título limitado a 2 linhas com `-webkit-line-clamp` (`.titulo`) —
+  títulos longos (ex: "Volkswagen Taos Highline 1.4 250 TSI Flex AUT
+  2022") quebravam em 3 linhas e desalinhavam os cards da mesma fileira.
+- Botão "Compartilhar" ganhou ícone (`Share2`) e mensagem de feedback
+  melhor: "Você já pode colar as informações direto no WhatsApp!"
+  (2,5s, antes era "Texto copiado!" por 1,5s) — também passou a tratar
+  falha de clipboard (`try/catch`), que antes não existia.
+
+### Nota de ambiente (preview local)
+- `preview_screenshot` trava com frequência nesta máquina — solução
+  rápida é `preview_stop` + `preview_start` de novo, não precisa
+  investigar (já documentado em sessões anteriores).
+- O navegador headless do `Claude_Preview` nega permissão de
+  `navigator.clipboard.writeText` (`NotAllowedError`) — ao testar o
+  botão "Compartilhar" por lá, o fallback de erro é esperado e não
+  indica bug real; em navegador de usuário real (com gesto de clique)
+  funciona.
+
+### Commits desta sessão (em ordem)
+1. Amplia área clicável do filtro de estado no breadcrumb da lista
+2. Mostra "Selecionar Vários" como ícone no mobile em vez de esconder
+3. Alinha logo à esquerda no mobile em vez de centralizar
+4. Aumenta altura da foto de capa no mobile (aspect-ratio 4:3)
+5. Redimensiona fotos de oportunidades para no máximo 1280×960 no upload
+6. Cria página individual de oportunidade (`/oportunidade/[id]`)
+7. (a comitar) Simplifica o card da Central: remove Ano/KM e link de
+   anúncio original, card inteiro clicável, título em 2 linhas, botão
+   Compartilhar com ícone e mensagem melhor
+
 ## Pendências conhecidas / próximos passos
 
 1. **Agendamento real do worker**: hoje só roda manualmente
@@ -1033,18 +1145,19 @@ padrão de dropdown com clique-fora-fecha do `IconDropdown.tsx`.
    ainda não definido) — vai exigir expandir `perfis.role` além de
    `'admin'|'publico'` e trocar o toggle binário de `/usuarios` por um
    seletor de múltiplas opções
-10. **[PRÓXIMO PASSO] Tratamento de imagens nas oportunidades "Enviadas"
-    (Inserção Direta)** — pedido explicitamente pelo usuário ao final da
-    sessão de 23/06/2026, ainda sem escopo detalhado. Pontos de partida
-    pra próxima sessão investigar: `components/DropzoneFotos.tsx` e
-    `app/api/fotos/route.ts` (upload atual, sem nenhum tratamento/
-    redimensionamento/compressão hoje — sobe o arquivo bruto pro Storage);
-    perguntar ao usuário se é sobre compressão/redimensionamento antes do
-    upload, recorte/orientação, ou validação de qualidade/conteúdo
+10. ~~Tratamento de imagens nas oportunidades "Enviadas"~~ — resolvida em
+    23/06/2026 (sessão seguinte): redimensionamento/compressão via
+    `sharp` em `app/api/fotos/route.ts` (máx. 1280×960, JPEG qualidade
+    82). **Falta**: reprocessar fotos já enviadas antes dessa mudança
+    (continuam no tamanho original no Storage) — precisaria de um
+    script varrendo o bucket `oportunidades-fotos`.
 11. **Scroll infinito no mobile** (cogitado, não decidido) — ver nota em
     "Paginação real" acima sobre manter a URL sincronizada com a posição
     se for implementado, pra não regredir o caso de uso "voltar pra
     página 3"
+12. **[PRÓXIMO PASSO]** Nenhum pedido explícito em aberto ao final da
+    sessão de 23/06/2026 (parte 2) — última mudança foi a simplificação
+    do card (ver seção acima). Perguntar ao usuário o que vem a seguir.
 
 ## Decisões importantes (não óbvias do código)
 

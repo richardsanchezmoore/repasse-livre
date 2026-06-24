@@ -1306,6 +1306,10 @@ body {
   flex-direction: column;
 }
 
+.card-clicavel {
+  cursor: pointer;
+}
+
 .foto-wrapper {
   position: relative;
 }
@@ -1524,6 +1528,11 @@ body {
   font-size: 17px;
   margin: 0 0 6px;
   line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .ano-km {
@@ -1640,8 +1649,9 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: #54656f;
-  padding: 6px 0 0;
+  padding: 8px 14px;
   margin: 0;
+  line-height: 1.4;
 }
 
 .acoes {
@@ -1675,6 +1685,13 @@ body {
 
 .acao-rejeitar {
   color: #b91c1c;
+}
+
+.acao-compartilhar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .board-area {
@@ -2395,11 +2412,6 @@ body {
 
 .botao-compartilhar-pagina:hover {
   background: #f0f2f5;
-}
-
-.titulo-link {
-  text-decoration: none;
-  color: inherit;
 }
 
 .galeria {

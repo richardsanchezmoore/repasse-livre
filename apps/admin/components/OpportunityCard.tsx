@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Calendar, Check, Clock, ExternalLink, Gauge, Heart, MapPin, MessageCircle, Tag } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, Clock, Heart, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
   apagarOportunidade,
@@ -13,7 +14,7 @@ import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
-import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
+import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
 
@@ -34,20 +35,34 @@ export function OpportunityCard({
   isAdmin: boolean;
   usuarioLogado: boolean;
 }) {
+  const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [mostrarPopupLogin, setMostrarPopupLogin] = useState(false);
   const { modoSelecao, selecionados, alternarSelecionado } = useSelecaoMultipla();
   const selecionado = selecionados.has(oportunidade.id);
 
-  function mostrarFeedback(texto: string) {
-    setFeedback(texto);
-    setTimeout(() => setFeedback(null), 1500);
+  function aoClicarCard() {
+    if (isAdmin && modoSelecao) {
+      alternarSelecionado(oportunidade.id);
+      return;
+    }
+    router.push(`/oportunidade/${oportunidade.id}`);
   }
 
-  async function aoCompartilhar() {
-    await navigator.clipboard.writeText(gerarTextoCompartilhamento(oportunidade));
-    mostrarFeedback("Texto copiado!");
+  function mostrarFeedback(texto: string, duracaoMs = 1500) {
+    setFeedback(texto);
+    setTimeout(() => setFeedback(null), duracaoMs);
+  }
+
+  async function aoCompartilhar(evento: React.MouseEvent) {
+    evento.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(gerarTextoCompartilhamento(oportunidade));
+      mostrarFeedback("Você já pode colar as informações direto no WhatsApp!", 2500);
+    } catch {
+      mostrarFeedback("Não foi possível copiar. Tente novamente.", 2500);
+    }
   }
 
   function executarAcao(acao: () => Promise<void>, mensagemErro: string) {
@@ -90,7 +105,7 @@ export function OpportunityCard({
       : oportunidade.veiculo;
 
   return (
-    <div className="card">
+    <div className="card card-clicavel" onClick={aoClicarCard}>
       <div className="foto-wrapper">
         {oportunidade.foto_principal ? (
           <img
@@ -108,7 +123,10 @@ export function OpportunityCard({
         {isAdmin && modoSelecao && (
           <button
             type="button"
-            onClick={() => alternarSelecionado(oportunidade.id)}
+            onClick={(evento) => {
+              evento.stopPropagation();
+              alternarSelecionado(oportunidade.id);
+            }}
             className={`checkbox-selecao ${selecionado ? "checkbox-selecao-marcado" : ""}`}
             aria-label={selecionado ? "Remover da seleção" : "Adicionar à seleção"}
             title={selecionado ? "Remover da seleção" : "Adicionar à seleção"}
@@ -119,7 +137,10 @@ export function OpportunityCard({
         <button
           type="button"
           disabled={pendente}
-          onClick={aoFavoritar}
+          onClick={(evento) => {
+            evento.stopPropagation();
+            aoFavoritar();
+          }}
           className={`botao-favorito ${favoritado ? "botao-favorito-ativo" : ""}`}
           aria-label={favoritado ? "Remover dos favoritos" : "Adicionar aos favoritos"}
           title={favoritado ? "Remover dos favoritos" : "Adicionar aos favoritos"}
@@ -129,7 +150,13 @@ export function OpportunityCard({
       </div>
 
       {mostrarPopupLogin && (
-        <div className="popup-favorito-overlay" onClick={() => setMostrarPopupLogin(false)}>
+        <div
+          className="popup-favorito-overlay"
+          onClick={(evento) => {
+            evento.stopPropagation();
+            setMostrarPopupLogin(false);
+          }}
+        >
           <div className="popup-favorito" onClick={(evento) => evento.stopPropagation()}>
             <button
               type="button"
@@ -157,9 +184,7 @@ export function OpportunityCard({
       )}
 
       <div className="card-corpo">
-        <Link href={`/oportunidade/${oportunidade.id}`} className="titulo-link">
-          <p className="titulo">{titulo}</p>
-        </Link>
+        <p className="titulo">{titulo}</p>
 
         <div className="destaque-margem">
           <p className="destaque-margem-valor-rotulo">Ganho</p>
@@ -170,15 +195,6 @@ export function OpportunityCard({
             <span className="destaque-margem-percentual-rotulo">abaixo da FIPE</span>
           </p>
         </div>
-
-        <p className="ano-km">
-          <span className="ano-km-item">
-            <Calendar size={13} strokeWidth={1.75} className="icone-inline" /> {oportunidade.ano ?? "—"}
-          </span>
-          <span className="ano-km-item">
-            <Gauge size={13} strokeWidth={1.75} className="icone-inline" /> {formatarKm(oportunidade.km)}
-          </span>
-        </p>
 
         <div className="precos-grupo">
           <div className="linha-preco linha-preco-anuncio">
@@ -210,6 +226,7 @@ export function OpportunityCard({
               target="_blank"
               rel="noreferrer"
               className="link-whatsapp"
+              onClick={(evento) => evento.stopPropagation()}
             >
               {formatarWhatsapp(oportunidade.whatsapp)}
             </a>
@@ -223,21 +240,12 @@ export function OpportunityCard({
             {ROTULO_MOTIVO_VENDA[oportunidade.motivo_venda]}
           </p>
         )}
-
-        {!oportunidade.link_origem.startsWith("insercao-direta:") && (
-          <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
-            <span className="link-origem-texto">
-              <ExternalLink size={14} strokeWidth={1.75} className="icone-inline" /> Abrir anúncio original
-            </span>
-            <span aria-hidden="true">›</span>
-          </a>
-        )}
       </div>
 
       {feedback && <p className="card-feedback">{feedback}</p>}
 
       {!(isAdmin && modoSelecao) && (
-      <div className="acoes">
+      <div className="acoes" onClick={(evento) => evento.stopPropagation()}>
         {isAdmin && (
           <button
             disabled={pendente}
@@ -265,8 +273,8 @@ export function OpportunityCard({
               Rejeitar
             </button>
           ))}
-        <button onClick={aoCompartilhar} className="acao">
-          Compartilhar
+        <button onClick={aoCompartilhar} className="acao acao-compartilhar">
+          <Share2 size={14} strokeWidth={2} className="icone-inline" /> Compartilhar
         </button>
       </div>
       )}
