@@ -1,6 +1,6 @@
 import "dotenv/config";
 import {
-  buscarFipeDaPaginaAnuncio,
+  buscarDetalhesDaPaginaAnuncio,
   capturarAnunciosOlx,
   montarUrlPagina,
   resolverChaveFiltroFipe,
@@ -61,19 +61,28 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
   }
   resultado.novos++;
 
-  let fipe;
+  let detalhes;
   try {
-    fipe = await buscarFipeDaPaginaAnuncio(anuncio.linkOrigem);
+    detalhes = await buscarDetalhesDaPaginaAnuncio(anuncio.linkOrigem);
   } catch (erro) {
     console.warn(`[motor-descoberta] Falha ao buscar FIPE na página de "${anuncio.titulo}":`, erro);
     resultado.semFipe++;
     return;
   }
 
+  const { fipe, fotos } = detalhes;
   if (!fipe) {
     resultado.semFipe++;
     return;
   }
+
+  // Só substitui a foto principal e usa fotos secundárias quando a página
+  // do anúncio realmente trouxe uma galeria (mais de 1 foto). Caso
+  // contrário, mantém a foto de capa da listagem e nenhuma secundária —
+  // não há link de mais fotos para mostrar, então não preenchemos o
+  // slider com nada que possa quebrá-lo.
+  const fotoPrincipal = fotos[0] ?? anuncio.fotoPrincipal;
+  const fotosSecundarias = fotos.length > 1 ? fotos.slice(1) : [];
 
   const margemPercentual = calcularMargemPercentual(anuncio.preco, fipe.fipeValor);
 
@@ -103,8 +112,8 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     fipe_data_referencia: fipe.mesReferencia,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
-    foto_principal: anuncio.fotoPrincipal,
-    fotos_secundarias: anuncio.fotosSecundarias,
+    foto_principal: fotoPrincipal,
+    fotos_secundarias: fotosSecundarias,
     descricao: anuncio.descricao,
     origem_tipo: "descoberta",
     status: "descoberta",

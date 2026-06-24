@@ -150,17 +150,7 @@ export interface FipeDaPagina {
   mesReferencia: string;
 }
 
-/**
- * Busca o valor de FIPE que a própria OLX já calculou para o veículo do
- * anúncio (campos `abuyFipePrice.fipePrice` e `abuyPriceRef.year_month_ref`,
- * embutidos na página individual). É a fonte de verdade usada pelo Motor de
- * Descoberta: a correspondência por aproximação textual contra a API
- * externa de FIPE (usada na Inserção Direta, onde o usuário escolhe
- * marca/modelo/ano exatos via select) se mostrou inconsistente aqui, porque
- * o texto livre da OLX não identifica o veículo com precisão suficiente.
- */
-export async function buscarFipeDaPaginaAnuncio(linkOrigem: string): Promise<FipeDaPagina | null> {
-  const html = await buscarHtml(linkOrigem);
+function extrairFipeDoHtml(html: string): FipeDaPagina | null {
   // O JSON aparece tanto com aspas literais quanto com aspas em entidade
   // HTML (&quot;), dependendo do bloco da página onde está embutido.
   const matchPreco = html.match(/abuyFipePrice(?:"|&quot;):\{(?:"|&quot;)fipePrice(?:"|&quot;):(\d+(?:\.\d+)?)\}/);
@@ -170,6 +160,60 @@ export async function buscarFipeDaPaginaAnuncio(linkOrigem: string): Promise<Fip
   const mesReferencia = matchMes ? `${matchMes[1].slice(0, 4)}-${matchMes[1].slice(4, 6)}` : "desconhecido";
 
   return { fipeValor: Number.parseFloat(matchPreco[1]), mesReferencia };
+}
+
+/**
+ * Extrai o bloco `"images":[...]` do HTML, respeitando colchetes aninhados
+ * (cada item da galeria já é um objeto `{...}`), e parando exatamente no
+ * fechamento do array — para não vazar "original" de outros blocos da
+ * página (ex.: anúncios relacionados) na extração de fotos.
+ */
+function extrairBlocoImagens(html: string): string | null {
+  const marcador = html.includes('"images":[') ? '"images":[' : '&quot;images&quot;:[';
+  const inicio = html.indexOf(marcador);
+  if (inicio === -1) return null;
+
+  const inicioConteudo = inicio + marcador.length;
+  let profundidade = 1;
+  let i = inicioConteudo;
+  for (; i < html.length && profundidade > 0; i++) {
+    if (html[i] === "[") profundidade++;
+    else if (html[i] === "]") profundidade--;
+  }
+  return html.slice(inicioConteudo, i - 1);
+}
+
+function extrairFotosDoHtml(html: string): string[] {
+  const bloco = extrairBlocoImagens(html);
+  if (!bloco) return [];
+
+  const regexOriginal = /(?:"|&quot;)original(?:"|&quot;):(?:"|&quot;)([^"&]+)(?:"|&quot;)/g;
+  const urls: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = regexOriginal.exec(bloco)) !== null) {
+    if (!urls.includes(match[1])) urls.push(match[1]);
+  }
+  return urls;
+}
+
+export interface DetalhesPaginaAnuncio {
+  fipe: FipeDaPagina | null;
+  fotos: string[];
+}
+
+/**
+ * Busca FIPE e galeria completa de fotos da página individual do anúncio,
+ * numa única requisição. A listagem (capturarAnunciosOlx) já traz fotos,
+ * mas o JSON embutido ali costuma vir truncado — em muitos anúncios só com
+ * a foto de capa, o que quebrava o slider na página individual por faltar
+ * o restante da galeria. A página do próprio anúncio tem a galeria
+ * completa, então essa é a fonte de verdade para fotos (e por isso só é
+ * usada para anúncios novos, que já provocam essa requisição extra para
+ * buscar o FIPE).
+ */
+export async function buscarDetalhesDaPaginaAnuncio(linkOrigem: string): Promise<DetalhesPaginaAnuncio> {
+  const html = await buscarHtml(linkOrigem);
+  return { fipe: extrairFipeDoHtml(html), fotos: extrairFotosDoHtml(html) };
 }
 
 /**

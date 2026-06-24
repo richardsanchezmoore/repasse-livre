@@ -16,9 +16,12 @@ const CLASSE_FONTE: Record<string, string> = {
 };
 
 export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
-  const fotos = [oportunidade.foto_principal, ...oportunidade.fotos_secundarias].filter(
-    (url): url is string => !!url
-  );
+  // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
+  // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
+  // slider mostraria "fotos" repetidas em vez de só a foto captada.
+  const fotos = [...new Set(
+    [oportunidade.foto_principal, ...oportunidade.fotos_secundarias].filter((url): url is string => !!url)
+  )];
   const classificacao = oportunidade.classificacao as Classificacao | null;
   const classeFonte = CLASSE_FONTE[oportunidade.fonte] ?? "selo-fonte-generico";
   const classeClassificacao = classificacao
@@ -59,9 +62,9 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
           </p>
         </div>
 
-        <div className="precos-grupo">
+        <div className="precos-grupo precos-grupo-pagina">
           <div className="linha-preco linha-preco-anuncio">
-            <span className="preco-rotulo">Preço</span>
+            <span className="preco-rotulo">Oferta</span>
             <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
           </div>
           <div className="linha-preco linha-preco-fipe">

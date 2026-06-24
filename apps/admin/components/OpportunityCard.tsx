@@ -198,7 +198,7 @@ export function OpportunityCard({
 
         <div className="precos-grupo">
           <div className="linha-preco linha-preco-anuncio">
-            <span className="preco-rotulo">Preço</span>
+            <span className="preco-rotulo">Oferta</span>
             <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
           </div>
           <div className="linha-preco linha-preco-fipe">

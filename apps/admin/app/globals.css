@@ -1625,6 +1625,30 @@ body {
   font-weight: 700;
 }
 
+/* Desktop: na página individual (não no card da Central, que mantém o
+   padrão rótulo-à-esquerda/valor-à-direita em qualquer tela), Preço e FIPE
+   passam a dividir a largura em duas colunas de 50%, cada uma com rótulo em
+   cima e valor embaixo, centralizados — pedido explícito do usuário para
+   aproveitar melhor o espaço horizontal. */
+@media (min-width: 768px) {
+  .precos-grupo-pagina {
+    flex-direction: row;
+  }
+
+  .precos-grupo-pagina .linha-preco {
+    flex: 1 1 50%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .precos-grupo-pagina .linha-preco-anuncio {
+    border-right: 1px solid #f0f2f5;
+  }
+}
+
 .link-origem {
   display: flex;
   align-items: center;
@@ -2249,6 +2273,12 @@ body {
   margin: 0 auto;
 }
 
+@media (min-width: 768px) {
+  .pagina-oportunidade-conteudo {
+    max-width: 1040px;
+  }
+}
+
 .pagina-oportunidade-voltar {
   display: inline-flex;
   align-items: center;
@@ -2437,6 +2467,7 @@ body {
   object-fit: cover;
   scroll-snap-align: start;
   display: block;
+  cursor: zoom-in;
 }
 
 .galeria-foto-vazia {
@@ -2464,25 +2495,247 @@ body {
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
+}
+
+/* Área de toque maior que o ponto visível (acessibilidade/precisão em
+   touch), sem aumentar o tamanho visual dos pontos no mobile. */
+.galeria-ponto-area {
+  width: 28px;
+  height: 28px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .galeria-ponto {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  border: none;
-  padding: 0;
   background: rgba(255, 255, 255, 0.55);
-  cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
 .galeria-ponto-ativo {
   background: #ffffff;
 }
 
+/* Setas de navegação: ocultas no mobile (a galeria já é arrastável por
+   toque) e visíveis a partir de telas de desktop, onde não há gesto de
+   arrastar nativo com o mouse. */
+.galeria-seta {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.galeria-seta:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.galeria-seta-anterior {
+  left: 14px;
+}
+
+.galeria-seta-proxima {
+  right: 14px;
+}
+
 @media (max-width: 480px) {
   .pagina-oportunidade-ficha {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* Desktop: a ficha (Ano/KM/Câmbio/Local) ficava alinhada à esquerda, meio
+   "perdida" depois da caixa centralizada de Oferta/FIPE acima — aqui ela
+   ganha o mesmo tratamento (centralizada, com divisórias), pra manter o
+   mesmo ritmo visual em vez de quebrar pra uma lista crua. */
+@media (min-width: 768px) {
+  .pagina-oportunidade-ficha {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 14px;
+    column-gap: 0;
+  }
+
+  .pagina-oportunidade-ficha-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .pagina-oportunidade-ficha-item:nth-child(odd) {
+    border-right: 1px solid #f0f2f5;
+  }
+}
+
+.galeria-mosaico {
+  display: none;
+}
+
+/* Mosaico (foto grande + grade de miniaturas), modelo OLX — substitui o
+   slider no desktop, onde uma única foto em pé (4:3) esticada na largura
+   inteira ficava alta e desproporcional. */
+.galeria-mosaico-principal {
+  border: none;
+  padding: 0;
+  background: #e0e3e7;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.galeria-mosaico-principal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.galeria-mosaico-principal-unica {
+  grid-column: 1 / -1;
+}
+
+.galeria-mosaico-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  height: 100%;
+  gap: 6px;
+}
+
+.galeria-mosaico-thumb {
+  position: relative;
+  border: none;
+  padding: 0;
+  background: #e0e3e7;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.galeria-mosaico-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.galeria-mosaico-mais {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .galeria-mobile {
+    display: none;
+  }
+
+  .galeria-mosaico {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 6px;
+    height: 420px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+}
+
+/* Visualizador em tela cheia (lightbox), aberto ao clicar numa foto da
+   galeria — inspirado em modelos como o da Webmotors: foto grande,
+   navegação por setas, fecha com X/Esc/clique no fundo. */
+.visualizador-fotos {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visualizador-fotos-imagem {
+  max-width: 92vw;
+  max-height: 88vh;
+  object-fit: contain;
+  cursor: default;
+}
+
+.visualizador-fotos-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.visualizador-fotos-fechar:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.visualizador-fotos-seta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.visualizador-fotos-seta:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.visualizador-fotos-seta-anterior {
+  left: 16px;
+}
+
+.visualizador-fotos-seta-proxima {
+  right: 16px;
+}
+
+.visualizador-fotos-contador {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
 }

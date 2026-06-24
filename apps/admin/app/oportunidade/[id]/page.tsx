@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { buscarOportunidadePorId, contarOportunidades } from "@/components/DiscoveriesBoard";
+import { buscarEstadosDisponiveis, buscarOportunidadePorId, contarOportunidades } from "@/components/DiscoveriesBoard";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
+import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { urlOportunidade } from "@/lib/site";
 
@@ -45,24 +47,34 @@ export default async function PaginaOportunidadeRoute({ params }: { params: Prom
     notFound();
   }
 
-  const contagens = await contarOportunidades(usuario);
+  const [contagens, estadosDisponiveis] = await Promise.all([
+    contarOportunidades(usuario),
+    buscarEstadosDisponiveis(),
+  ]);
 
   return (
     <NavegacaoProvider>
-      <div className="layout">
-        <Sidebar
-          abaAtiva="aprovadas"
-          contagens={contagens}
-          role={usuario?.role ?? null}
-          usuarioLogado={Boolean(usuario)}
+      <SelecaoMultiplaProvider>
+        <TopBar
+          aba="aprovadas"
+          estadosDisponiveis={estadosDisponiveis}
+          usuario={usuario}
         />
-        <main className="conteudo pagina-oportunidade-conteudo">
-          <Link href="/" className="pagina-oportunidade-voltar">
-            <ArrowLeft size={16} strokeWidth={2} /> Voltar para as oportunidades
-          </Link>
-          <PaginaOportunidade oportunidade={oportunidade} />
-        </main>
-      </div>
+        <div className="layout">
+          <Sidebar
+            abaAtiva="aprovadas"
+            contagens={contagens}
+            role={usuario?.role ?? null}
+            usuarioLogado={Boolean(usuario)}
+          />
+          <main className="conteudo pagina-oportunidade-conteudo">
+            <Link href="/" className="pagina-oportunidade-voltar">
+              <ArrowLeft size={16} strokeWidth={2} /> Voltar para as oportunidades
+            </Link>
+            <PaginaOportunidade oportunidade={oportunidade} />
+          </main>
+        </div>
+      </SelecaoMultiplaProvider>
     </NavegacaoProvider>
   );
 }

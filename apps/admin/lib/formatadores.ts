@@ -5,7 +5,7 @@ export function formatarMoeda(valor: number | null): string {
 
 export function formatarKm(km: number | null | undefined): string {
   if (km === null || km === undefined) return "—";
-  return `${km.toLocaleString("pt-BR")} km`;
+  return km.toLocaleString("pt-BR");
 }
 
 export function formatarDataCaptura(dataIso: string): string {
