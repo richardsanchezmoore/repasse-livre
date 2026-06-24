@@ -1,3 +1,5 @@
+import type { AtributosOlx } from "./olxService.js";
+
 export interface AnuncioOlx {
   titulo: string;
   marca: string | null;
@@ -51,4 +53,5 @@ export interface Oportunidade {
   origem_tipo: "descoberta";
   status: "descoberta";
   data_publicacao_origem: string | null;
+  atributos_olx: AtributosOlx;
 }

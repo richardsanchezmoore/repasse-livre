@@ -196,24 +196,90 @@ function extrairFotosDoHtml(html: string): string[] {
   return urls;
 }
 
+export interface AtributoOlx {
+  label: string;
+  value: string;
+}
+
+export type AtributosOlx = Record<string, AtributoOlx>;
+
+/**
+ * Chaves de `properties[].name` (bloco `id="initial-data"` da página do
+ * anúncio) que valem a pena exibir na ficha técnica. A OLX expõe dezenas de
+ * outras (categoria, marca, modelo, ano, câmbio, km — já capturadas por
+ * outros campos — e várias específicas de lojas/concessionárias), por isso
+ * a extração é feita por allowlist, não capturando tudo que aparece.
+ */
+const CHAVES_ATRIBUTOS_RELEVANTES = [
+  "cartype",
+  "carcolor",
+  "fuel",
+  "doors",
+  "car_steering",
+  "motorpower",
+  "owner",
+  "exchange",
+  "owner_manual",
+  "extra_key",
+  "dealership_review",
+  "warranty",
+  "has_gnv_kit",
+  "has_auction",
+  "has_paid_ipva",
+  "has_with_fine",
+  "is_settled",
+  "is_funded",
+  "on_autos_fair",
+] as const;
+
+/**
+ * Extrai o array `"properties":[...]` do bloco `id="initial-data"` da
+ * página do anúncio (mesmo padrão de aspas literais/entidade `&quot;` do
+ * resto do parsing nesse arquivo) e filtra só as chaves em
+ * `CHAVES_ATRIBUTOS_RELEVANTES`. Cada propriedade preenchida vem com seu
+ * próprio rótulo em português já traduzido pela OLX (`label`), por isso não
+ * precisamos manter um dicionário de tradução aqui.
+ */
+function extrairAtributosDoHtml(html: string): AtributosOlx {
+  const regex =
+    /(?:"|&quot;)name(?:"|&quot;):(?:"|&quot;)([a-z_]+)(?:"|&quot;),(?:"|&quot;)label(?:"|&quot;):(?:"|&quot;)([^"&]*)(?:"|&quot;),(?:"|&quot;)value(?:"|&quot;):(?:"|&quot;)([^"&]*)(?:"|&quot;)/g;
+
+  const chavesRelevantes = new Set<string>(CHAVES_ATRIBUTOS_RELEVANTES);
+  const atributos: AtributosOlx = {};
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const [, name, label, value] = match;
+    if (chavesRelevantes.has(name) && value) {
+      atributos[name] = { label, value };
+    }
+  }
+  return atributos;
+}
+
 export interface DetalhesPaginaAnuncio {
   fipe: FipeDaPagina | null;
   fotos: string[];
+  atributos: AtributosOlx;
 }
 
 /**
- * Busca FIPE e galeria completa de fotos da página individual do anúncio,
- * numa única requisição. A listagem (capturarAnunciosOlx) já traz fotos,
- * mas o JSON embutido ali costuma vir truncado — em muitos anúncios só com
- * a foto de capa, o que quebrava o slider na página individual por faltar
- * o restante da galeria. A página do próprio anúncio tem a galeria
- * completa, então essa é a fonte de verdade para fotos (e por isso só é
- * usada para anúncios novos, que já provocam essa requisição extra para
- * buscar o FIPE).
+ * Busca FIPE, galeria completa de fotos e atributos opcionais (cor,
+ * combustível, portas etc.) da página individual do anúncio, numa única
+ * requisição. A listagem (capturarAnunciosOlx) já traz fotos, mas o JSON
+ * embutido ali costuma vir truncado — em muitos anúncios só com a foto de
+ * capa, o que quebrava o slider na página individual por faltar o restante
+ * da galeria. A página do próprio anúncio tem a galeria completa e também é
+ * a única fonte desses atributos opcionais, então essa é a fonte de verdade
+ * para ambos (e por isso só é usada para anúncios novos, que já provocam
+ * essa requisição extra para buscar o FIPE).
  */
 export async function buscarDetalhesDaPaginaAnuncio(linkOrigem: string): Promise<DetalhesPaginaAnuncio> {
   const html = await buscarHtml(linkOrigem);
-  return { fipe: extrairFipeDoHtml(html), fotos: extrairFotosDoHtml(html) };
+  return {
+    fipe: extrairFipeDoHtml(html),
+    fotos: extrairFotosDoHtml(html),
+    atributos: extrairAtributosDoHtml(html),
+  };
 }
 
 /**

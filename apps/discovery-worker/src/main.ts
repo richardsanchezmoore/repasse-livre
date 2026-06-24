@@ -70,7 +70,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     return;
   }
 
-  const { fipe, fotos } = detalhes;
+  const { fipe, fotos, atributos } = detalhes;
   if (!fipe) {
     resultado.semFipe++;
     return;
@@ -119,6 +119,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     status: "descoberta",
     data_publicacao_origem:
       anuncio.dataPublicacao !== null ? new Date(anuncio.dataPublicacao * 1000).toISOString() : null,
+    atributos_olx: atributos,
   };
 
   await salvarOportunidade(oportunidade);

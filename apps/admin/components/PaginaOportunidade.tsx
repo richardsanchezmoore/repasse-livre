@@ -33,6 +33,15 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
   const titulo =
     ehInsercaoDireta && oportunidade.versao ? oportunidade.versao : oportunidade.veiculo;
 
+  // Atributos opcionais da OLX (cor, combustível, portas etc.) — só os que
+  // o anunciante preencheu chegam aqui (ver olxService.ts no worker).
+  // Os mais "ficha técnica" (tipo, cor, combustível, portas, direção,
+  // potência) entram na <dl> ao lado de ano/km/câmbio; o resto (único dono,
+  // troca, documentação) entra como chips na seção "Detalhes".
+  const atributos = oportunidade.atributos_olx ?? {};
+  const CHAVES_FICHA: readonly string[] = ["cartype", "carcolor", "fuel", "doors", "car_steering", "motorpower"];
+  const detalhesExtras = Object.entries(atributos).filter(([chave]) => !CHAVES_FICHA.includes(chave));
+
   return (
     <article className="pagina-oportunidade">
       <GaleriaFotos fotos={fotos} alt={titulo} />
@@ -102,7 +111,30 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
               {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
             </dd>
           </div>
+          {CHAVES_FICHA.map((chave) => {
+            const atributo = atributos[chave];
+            if (!atributo) return null;
+            return (
+              <div key={chave} className="pagina-oportunidade-ficha-item">
+                <dt>{atributo.label}</dt>
+                <dd>{atributo.value}</dd>
+              </div>
+            );
+          })}
         </dl>
+
+        {detalhesExtras.length > 0 && (
+          <div className="pagina-oportunidade-secao">
+            <h2>Detalhes</h2>
+            <div className="pagina-oportunidade-chips">
+              {detalhesExtras.map(([chave, atributo]) => (
+                <span key={chave} className="pagina-oportunidade-chip">
+                  {atributo.label}: {atributo.value}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {oportunidade.opcionais.length > 0 && (
           <div className="pagina-oportunidade-secao">
