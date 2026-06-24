@@ -164,6 +164,13 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
           </div>
         )}
 
+        {oportunidade.descricao && (
+          <div className="pagina-oportunidade-secao">
+            <h2>Descrição</h2>
+            <p className="pagina-oportunidade-descricao">{oportunidade.descricao}</p>
+          </div>
+        )}
+
         {oportunidade.motivo_venda && (
           <p className="motivo-venda">
             <Tag size={14} strokeWidth={1.75} className="icone-inline" /> Motivo da venda:{" "}

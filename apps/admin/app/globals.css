@@ -2497,6 +2497,14 @@ body {
   padding: 4px 9px;
 }
 
+.pagina-oportunidade-descricao {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #111b21;
+  white-space: pre-line;
+  margin: 0;
+}
+
 .pagina-oportunidade-data {
   font-size: 12px;
   color: #8696a0;

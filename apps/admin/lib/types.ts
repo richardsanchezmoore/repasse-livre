@@ -29,6 +29,7 @@ export interface Oportunidade {
   motivo_venda: MotivoVenda | null;
   opcionais: string[];
   sinistro_leilao: string[];
+  descricao: string | null;
   favorito: boolean;
   data_captura: string;
   data_publicacao_origem: string | null;
