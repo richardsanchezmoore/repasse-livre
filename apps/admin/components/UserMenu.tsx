@@ -29,17 +29,21 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
     router.refresh();
   }
 
-  const inicial = (usuario.email ?? "?").charAt(0).toUpperCase();
+  const inicial = (usuario.nome ?? usuario.email ?? "?").charAt(0).toUpperCase();
+  const primeiroNome = (usuario.nome ?? usuario.email ?? "").split(" ")[0].split("@")[0];
 
   return (
-    <IconDropdown Icone={UserRound} rotulo={usuario.email ?? "Usuário"}>
-      <div className="usuario-menu-botao">
-        <span className="usuario-menu-avatar">{inicial}</span>
-        <span className="usuario-menu-email">{usuario.email}</span>
-      </div>
-      <button type="button" className="usuario-menu-sair" onClick={aoSair}>
-        Sair
-      </button>
-    </IconDropdown>
+    <div className="usuario-saudacao-grupo">
+      {primeiroNome && <span className="usuario-saudacao">Olá, {primeiroNome}</span>}
+      <IconDropdown Icone={UserRound} rotulo={usuario.nome ?? usuario.email ?? "Usuário"}>
+        <div className="usuario-menu-botao">
+          <span className="usuario-menu-avatar">{inicial}</span>
+          <span className="usuario-menu-email">{usuario.nome ?? usuario.email}</span>
+        </div>
+        <button type="button" className="usuario-menu-sair" onClick={aoSair}>
+          Sair
+        </button>
+      </IconDropdown>
+    </div>
   );
 }

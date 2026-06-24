@@ -36,6 +36,7 @@ export async function criarSupabaseServer() {
 export interface Usuario {
   id: string;
   email: string | null;
+  nome: string | null;
   role: "admin" | "publico";
 }
 
@@ -48,9 +49,14 @@ export async function obterUsuarioAtual(): Promise<Usuario | null> {
 
   const { data: perfil } = await supabase.from("perfis").select("role").eq("user_id", user.id).single();
 
+  // Login com Google traz nome em user_metadata (full_name/name); login por
+  // e-mail/senha não tem esse dado — usa o e-mail mesmo nesse caso.
+  const nomeGoogle = user.user_metadata?.full_name ?? user.user_metadata?.name ?? null;
+
   return {
     id: user.id,
     email: user.email ?? null,
+    nome: typeof nomeGoogle === "string" ? nomeGoogle : null,
     role: perfil?.role === "admin" ? "admin" : "publico",
   };
 }

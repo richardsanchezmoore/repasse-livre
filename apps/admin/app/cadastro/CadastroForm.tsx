@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import { criarSupabaseBrowser } from "@/lib/supabase-browser";
+import { IconeGoogle } from "@/components/IconeGoogle";
+import { ModalConfirmarGoogle } from "@/components/ModalConfirmarGoogle";
 
 export function CadastroForm() {
   const [email, setEmail] = useState("");
@@ -10,6 +12,7 @@ export function CadastroForm() {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [criando, setCriando] = useState(false);
   const [enviandoGoogle, setEnviandoGoogle] = useState(false);
+  const [modalGoogleAberto, setModalGoogleAberto] = useState(false);
   const [feedback, setFeedback] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
 
   async function aoCriarConta(evento: React.FormEvent) {
@@ -43,7 +46,7 @@ export function CadastroForm() {
     );
   }
 
-  async function aoEntrarComGoogle() {
+  async function aoConfirmarGoogle() {
     setEnviandoGoogle(true);
     const supabase = criarSupabaseBrowser();
     await supabase.auth.signInWithOAuth({
@@ -57,11 +60,19 @@ export function CadastroForm() {
       <button
         type="button"
         className="login-botao-google"
-        onClick={aoEntrarComGoogle}
+        onClick={() => setModalGoogleAberto(true)}
         disabled={enviandoGoogle}
       >
+        <IconeGoogle size={18} />
         Continuar com Google
       </button>
+
+      <ModalConfirmarGoogle
+        aberto={modalGoogleAberto}
+        enviando={enviandoGoogle}
+        onCancelar={() => setModalGoogleAberto(false)}
+        onConfirmar={aoConfirmarGoogle}
+      />
 
       <div className="login-divisor">
         <span>ou</span>
