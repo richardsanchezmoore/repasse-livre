@@ -74,3 +74,74 @@ export async function avancarCheckpoint(categoriaUrl: string, epochSegundos: num
     throw new Error(`Falha ao avançar checkpoint de descoberta: ${error.message}`);
   }
 }
+
+/**
+ * Config do worker editável pelo painel admin (tabela worker_config), com
+ * fallback pro valor padrão de hoje (env var/constante) quando a chave
+ * ainda não foi configurada pelo painel.
+ */
+export async function lerConfig(chave: string): Promise<string | null> {
+  const { data, error } = await supabase.from("worker_config").select("valor").eq("chave", chave).maybeSingle();
+
+  if (error) {
+    throw new Error(`Falha ao ler config "${chave}": ${error.message}`);
+  }
+
+  return data?.valor ?? null;
+}
+
+export interface ResultadoVarreduraRegistro {
+  novos: number;
+  elegiveis: number;
+  descartados: number;
+  semFipe: number;
+}
+
+/** Abre o registro de uma varredura em discovery_runs, retorna o id da linha. */
+export async function iniciarRegistroVarredura(categoriaUrl: string, modo: string): Promise<string> {
+  const { data, error } = await supabase
+    .from("discovery_runs")
+    .insert({ categoria_url: categoriaUrl, modo, status: "em_andamento" })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(`Falha ao registrar início de varredura: ${error.message}`);
+  }
+
+  return data.id as string;
+}
+
+/** Fecha o registro de uma varredura como sucesso, com os contadores finais. */
+export async function finalizarRegistroVarreduraComSucesso(
+  id: string,
+  resultado: ResultadoVarreduraRegistro
+): Promise<void> {
+  const { error } = await supabase
+    .from("discovery_runs")
+    .update({
+      status: "sucesso",
+      finalizado_em: new Date().toISOString(),
+      novos: resultado.novos,
+      elegiveis: resultado.elegiveis,
+      descartados: resultado.descartados,
+      sem_fipe: resultado.semFipe,
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Falha ao finalizar registro de varredura: ${error.message}`);
+  }
+}
+
+/** Fecha o registro de uma varredura como erro, guardando a mensagem da falha. */
+export async function finalizarRegistroVarreduraComErro(id: string, erroMensagem: string): Promise<void> {
+  const { error } = await supabase
+    .from("discovery_runs")
+    .update({ status: "erro", finalizado_em: new Date().toISOString(), erro_mensagem: erroMensagem })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Falha ao registrar erro da varredura: ${error.message}`);
+  }
+}

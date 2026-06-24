@@ -690,6 +690,134 @@ body {
   background: #fde2e1;
 }
 
+.worker-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.worker-mensagem {
+  font-size: 13px;
+  color: #0a5d2c;
+  background: #d9fdd3;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.worker-secao-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.worker-secao-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.worker-secao-cabecalho .worker-secao-titulo {
+  margin: 0;
+}
+
+.worker-botao-disparar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #0a5d2c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.worker-botao-disparar:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.worker-config-grade {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worker-config-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.worker-config-rotulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #54656f;
+}
+
+.worker-config-linha {
+  display: flex;
+  gap: 8px;
+}
+
+.worker-config-input {
+  flex: 1;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d4d8dd;
+}
+
+.worker-config-salvar {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: #e7e9eb;
+  color: #1c1e21;
+  cursor: pointer;
+}
+
+.worker-config-salvar:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.worker-config-ajuda {
+  font-size: 12px;
+  color: #8a8d91;
+  margin: 0;
+}
+
+.worker-selo {
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.worker-selo-sucesso {
+  background: #d9fdd3;
+  color: #0a5d2c;
+}
+
+.worker-selo-erro {
+  background: #fde2e1;
+  color: #b91c1c;
+}
+
+.worker-selo-andamento {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .top-bar {
   display: flex;
   align-items: center;

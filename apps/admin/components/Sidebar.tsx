@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
+  Activity,
   CheckCircle2,
   Heart,
   LogIn,
@@ -93,6 +94,16 @@ export function Sidebar({
           <div className="sidebar-rodape">
             <button
               type="button"
+              onClick={() => navegar("/worker")}
+              className={`sidebar-item ${pathname === "/worker" ? "sidebar-item-ativo" : ""}`}
+              title="Motor de Descoberta"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Activity size={18} strokeWidth={1.75} />
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => navegar("/usuarios")}
               className={`sidebar-item ${pathname === "/usuarios" ? "sidebar-item-ativo" : ""}`}
               title="Usuários"
@@ -144,6 +155,16 @@ export function Sidebar({
         </ul>
         {role === "admin" && (
           <div className="sidebar-rodape">
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/worker")}
+              className={`sidebar-item ${pathname === "/worker" ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Activity size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Motor de Descoberta</span>
+            </button>
             <button
               type="button"
               onClick={() => navegarEFechar("/usuarios")}

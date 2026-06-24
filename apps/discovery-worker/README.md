@@ -13,13 +13,21 @@ cp .env.example .env
 ```
 
 Antes de rodar, aplique a migration em `supabase/migrations/0001_init_opportunities.sql`
-no seu projeto Supabase.
+no seu projeto Supabase. As tabelas `discovery_runs` (histórico de varreduras,
+exibido no painel `/worker` do admin) e `worker_config` (config editável pelo
+mesmo painel) ficam em `supabase/migrations/0013_discovery_runs_config.sql`.
 
 ## Uso
 
 ```bash
 npm run discover
 ```
+
+As configs abaixo (`OLX_CATEGORY_URL`, `MODO_VARREDURA`, `MARGEM_MINIMA_PERCENTUAL`,
+`JANELA_INICIAL_DIAS`, `MAX_PAGINAS`) são lidas primeiro da tabela `worker_config`
+no Supabase — editável pelo painel `/worker` do `apps/admin`, sem redeploy — e
+só caem nas env vars abaixo quando a chave correspondente não existe na tabela.
+Útil pra rodar local sem nenhuma linha em `worker_config` ainda.
 
 Executa uma varredura paginada da categoria/região configurada em
 `OLX_CATEGORY_URL`, ordenada por data (mais recentes primeiro), e salva no

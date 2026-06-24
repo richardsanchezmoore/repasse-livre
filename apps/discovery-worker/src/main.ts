@@ -6,31 +6,64 @@ import {
   resolverChaveFiltroFipe,
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
-import { avancarCheckpoint, linkOrigemJaExiste, obterCheckpoint, salvarOportunidade } from "./supabaseClient.js";
+import {
+  avancarCheckpoint,
+  finalizarRegistroVarreduraComErro,
+  finalizarRegistroVarreduraComSucesso,
+  iniciarRegistroVarredura,
+  lerConfig,
+  linkOrigemJaExiste,
+  obterCheckpoint,
+  salvarOportunidade,
+} from "./supabaseClient.js";
 import type { AnuncioOlx, Oportunidade } from "./types.js";
 
 type ModoVarredura = "inicial" | "incremental" | "intervalo";
 
+interface Config {
+  categoriasUrlBase: string[];
+  margemMinima: number;
+  modo: ModoVarredura;
+  janelaInicialDias: number;
+  maxPaginas: number;
+}
+
+let config: Config | undefined;
+
 /**
- * Aceita uma ou mais URLs de categoria separadas por vírgula (uma por
- * estado) — a varredura roda para cada uma, em sequência, na mesma
- * execução do worker.
+ * Config do worker é editável pelo painel admin (tabela worker_config no
+ * Supabase) — lida no início de cada execução, com fallback pro env var/
+ * default de hoje quando a chave ainda não foi configurada pelo painel.
+ * O processo é short-lived (uma execução por invocação do cron), então não
+ * há necessidade de releitura durante a varredura.
  */
-const CATEGORIAS_URL_BASE = (
-  process.env.OLX_CATEGORY_URL ?? "https://www.olx.com.br/autos-e-pecas/carros-vans-e-utilitarios/estado-rs"
-)
-  .split(",")
-  .map((url) => url.trim())
-  .filter(Boolean);
-const MARGEM_MINIMA = Number(process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO);
-const MODO: ModoVarredura =
-  process.env.MODO_VARREDURA === "inicial"
-    ? "inicial"
-    : process.env.MODO_VARREDURA === "intervalo"
-      ? "intervalo"
-      : "incremental";
-const JANELA_INICIAL_DIAS = Number(process.env.JANELA_INICIAL_DIAS ?? 30);
-const MAX_PAGINAS = Number(process.env.MAX_PAGINAS ?? 50);
+async function carregarConfig(): Promise<Config> {
+  const olxCategoryUrl =
+    (await lerConfig("OLX_CATEGORY_URL")) ??
+    process.env.OLX_CATEGORY_URL ??
+    "https://www.olx.com.br/autos-e-pecas/carros-vans-e-utilitarios/estado-rs";
+
+  const modoBruto = (await lerConfig("MODO_VARREDURA")) ?? process.env.MODO_VARREDURA;
+  const modo: ModoVarredura = modoBruto === "inicial" ? "inicial" : modoBruto === "intervalo" ? "intervalo" : "incremental";
+
+  return {
+    categoriasUrlBase: olxCategoryUrl
+      .split(",")
+      .map((url) => url.trim())
+      .filter(Boolean),
+    margemMinima: Number((await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO),
+    modo,
+    janelaInicialDias: Number((await lerConfig("JANELA_INICIAL_DIAS")) ?? process.env.JANELA_INICIAL_DIAS ?? 30),
+    maxPaginas: Number((await lerConfig("MAX_PAGINAS")) ?? process.env.MAX_PAGINAS ?? 50),
+  };
+}
+
+function obterConfig(): Config {
+  if (!config) {
+    throw new Error("Config ainda não carregada — carregarConfig() precisa rodar antes.");
+  }
+  return config;
+}
 
 /**
  * Modo "intervalo": varredura avulsa para preencher uma janela de datas
@@ -55,7 +88,11 @@ interface ResultadoVarredura {
  * todo anúncio novo precisa de uma requisição extra para sua própria
  * página, não só os que pareceriam elegíveis por uma estimativa textual.
  */
-async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredura): Promise<void> {
+async function processarAnuncio(
+  anuncio: AnuncioOlx,
+  resultado: ResultadoVarredura,
+  margemMinima: number
+): Promise<void> {
   if (await linkOrigemJaExiste(anuncio.linkOrigem)) {
     return; // já capturado antes (ex.: anúncio "renovado" pela OLX, reaparecendo no topo da listagem)
   }
@@ -86,7 +123,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
 
   const margemPercentual = calcularMargemPercentual(anuncio.preco, fipe.fipeValor);
 
-  if (!ehElegivel(margemPercentual, MARGEM_MINIMA)) {
+  if (!ehElegivel(margemPercentual, margemMinima)) {
     resultado.descartados++;
     return;
   }
@@ -143,6 +180,8 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
  *   duplicar), não interrompem mais a varredura.
  */
 async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVarredura> {
+  const { modo: MODO, margemMinima: MARGEM_MINIMA, janelaInicialDias: JANELA_INICIAL_DIAS, maxPaginas: MAX_PAGINAS } =
+    obterConfig();
   const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
   const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
@@ -210,7 +249,7 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
         }
       }
 
-      await processarAnuncio(anuncio, resultado);
+      await processarAnuncio(anuncio, resultado, MARGEM_MINIMA);
     }
   }
 
@@ -225,9 +264,22 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
   return resultado;
 }
 
+async function executarVarreduraComRegistro(categoriaUrlBase: string, modo: string): Promise<void> {
+  const registroId = await iniciarRegistroVarredura(categoriaUrlBase, modo);
+  try {
+    const resultado = await executarVarredura(categoriaUrlBase);
+    await finalizarRegistroVarreduraComSucesso(registroId, resultado);
+  } catch (erro) {
+    const mensagem = erro instanceof Error ? erro.message : String(erro);
+    await finalizarRegistroVarreduraComErro(registroId, mensagem);
+    throw erro;
+  }
+}
+
 async function executarTodasCategorias(): Promise<void> {
-  for (const categoriaUrlBase of CATEGORIAS_URL_BASE) {
-    await executarVarredura(categoriaUrlBase);
+  config = await carregarConfig();
+  for (const categoriaUrlBase of config.categoriasUrlBase) {
+    await executarVarreduraComRegistro(categoriaUrlBase, config.modo);
   }
 }
 
