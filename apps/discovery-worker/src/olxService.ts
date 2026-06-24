@@ -256,22 +256,37 @@ function extrairAtributosDoHtml(html: string): AtributosOlx {
   return atributos;
 }
 
+/**
+ * Extrai a descrição completa (campo `body` do bloco `id="initial-data"`).
+ * A listagem (__NEXT_DATA__) não traz mais `description` no objeto de cada
+ * anúncio — só a página individual tem esse texto, por isso a extração
+ * acontece aqui e não em `mapearAnuncio`. A OLX formata o texto com `<br>`
+ * para quebra de linha (não `\n`), que convertemos para preservar os
+ * parágrafos originais do anunciante.
+ */
+function extrairDescricaoDoHtml(html: string): string | null {
+  const match = html.match(/(?:"|&quot;)body(?:"|&quot;):(?:"|&quot;)([^"&]*)(?:"|&quot;)/);
+  if (!match || !match[1]) return null;
+  return match[1].replace(/<br\s*\/?>/gi, "\n").trim() || null;
+}
+
 export interface DetalhesPaginaAnuncio {
   fipe: FipeDaPagina | null;
   fotos: string[];
   atributos: AtributosOlx;
+  descricao: string | null;
 }
 
 /**
- * Busca FIPE, galeria completa de fotos e atributos opcionais (cor,
- * combustível, portas etc.) da página individual do anúncio, numa única
- * requisição. A listagem (capturarAnunciosOlx) já traz fotos, mas o JSON
- * embutido ali costuma vir truncado — em muitos anúncios só com a foto de
- * capa, o que quebrava o slider na página individual por faltar o restante
- * da galeria. A página do próprio anúncio tem a galeria completa e também é
- * a única fonte desses atributos opcionais, então essa é a fonte de verdade
- * para ambos (e por isso só é usada para anúncios novos, que já provocam
- * essa requisição extra para buscar o FIPE).
+ * Busca FIPE, galeria completa de fotos, atributos opcionais (cor,
+ * combustível, portas etc.) e a descrição completa da página individual do
+ * anúncio, numa única requisição. A listagem (capturarAnunciosOlx) já traz
+ * fotos, mas o JSON embutido ali costuma vir truncado — em muitos anúncios
+ * só com a foto de capa, o que quebrava o slider na página individual por
+ * faltar o restante da galeria; também não traz mais a descrição nem os
+ * atributos opcionais. A página do próprio anúncio é a fonte de verdade
+ * para os quatro (e por isso só é usada para anúncios novos, que já
+ * provocam essa requisição extra para buscar o FIPE).
  */
 export async function buscarDetalhesDaPaginaAnuncio(linkOrigem: string): Promise<DetalhesPaginaAnuncio> {
   const html = await buscarHtml(linkOrigem);
@@ -279,6 +294,7 @@ export async function buscarDetalhesDaPaginaAnuncio(linkOrigem: string): Promise
     fipe: extrairFipeDoHtml(html),
     fotos: extrairFotosDoHtml(html),
     atributos: extrairAtributosDoHtml(html),
+    descricao: extrairDescricaoDoHtml(html),
   };
 }
 

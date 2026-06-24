@@ -70,7 +70,7 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     return;
   }
 
-  const { fipe, fotos, atributos } = detalhes;
+  const { fipe, fotos, atributos, descricao } = detalhes;
   if (!fipe) {
     resultado.semFipe++;
     return;
@@ -114,7 +114,9 @@ async function processarAnuncio(anuncio: AnuncioOlx, resultado: ResultadoVarredu
     classificacao,
     foto_principal: fotoPrincipal,
     fotos_secundarias: fotosSecundarias,
-    descricao: anuncio.descricao,
+    // A listagem (__NEXT_DATA__) não traz mais `description` por anúncio —
+    // só a página individual tem o texto completo (ver olxService.ts).
+    descricao: descricao ?? anuncio.descricao,
     origem_tipo: "descoberta",
     status: "descoberta",
     data_publicacao_origem:
