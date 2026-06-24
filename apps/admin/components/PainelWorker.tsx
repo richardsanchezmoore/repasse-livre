@@ -29,6 +29,16 @@ const CAMPOS_CONFIG: Array<{ chave: string; rotulo: string; ajuda: string }> = [
   { chave: "MARGEM_MINIMA_PERCENTUAL", rotulo: "Margem mínima (%)", ajuda: "Abaixo da FIPE para ser elegível." },
   { chave: "JANELA_INICIAL_DIAS", rotulo: "Janela inicial (dias)", ajuda: "Usado só no modo inicial." },
   { chave: "MAX_PAGINAS", rotulo: "Máx. de páginas por execução", ajuda: "Limite de proteção contra varredura sem fim." },
+  {
+    chave: "JANELA_INICIO",
+    rotulo: "Intervalo — início",
+    ajuda: 'Usado só no modo intervalo. Data ISO, ex.: 2026-06-18T00:00:00-03:00.',
+  },
+  {
+    chave: "JANELA_FIM",
+    rotulo: "Intervalo — fim",
+    ajuda: "Usado só no modo intervalo. Data ISO, mesma coisa.",
+  },
 ];
 
 function extrairEstado(categoriaUrl: string): string {

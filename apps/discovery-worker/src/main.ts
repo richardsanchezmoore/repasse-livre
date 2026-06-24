@@ -26,6 +26,8 @@ interface Config {
   modo: ModoVarredura;
   janelaInicialDias: number;
   maxPaginas: number;
+  janelaIntervaloInicio: Date | null;
+  janelaIntervaloFim: Date | null;
 }
 
 let config: Config | undefined;
@@ -46,6 +48,9 @@ async function carregarConfig(): Promise<Config> {
   const modoBruto = (await lerConfig("MODO_VARREDURA")) ?? process.env.MODO_VARREDURA;
   const modo: ModoVarredura = modoBruto === "inicial" ? "inicial" : modoBruto === "intervalo" ? "intervalo" : "incremental";
 
+  const janelaIntervaloInicioBruta = (await lerConfig("JANELA_INICIO")) ?? process.env.JANELA_INICIO;
+  const janelaIntervaloFimBruta = (await lerConfig("JANELA_FIM")) ?? process.env.JANELA_FIM;
+
   return {
     categoriasUrlBase: olxCategoryUrl
       .split(",")
@@ -55,6 +60,8 @@ async function carregarConfig(): Promise<Config> {
     modo,
     janelaInicialDias: Number((await lerConfig("JANELA_INICIAL_DIAS")) ?? process.env.JANELA_INICIAL_DIAS ?? 30),
     maxPaginas: Number((await lerConfig("MAX_PAGINAS")) ?? process.env.MAX_PAGINAS ?? 50),
+    janelaIntervaloInicio: janelaIntervaloInicioBruta ? new Date(janelaIntervaloInicioBruta) : null,
+    janelaIntervaloFim: janelaIntervaloFimBruta ? new Date(janelaIntervaloFimBruta) : null,
   };
 }
 
@@ -64,16 +71,6 @@ function obterConfig(): Config {
   }
   return config;
 }
-
-/**
- * Modo "intervalo": varredura avulsa para preencher uma janela de datas
- * específica (ex.: ampliar a base de testes com um dia anterior ao início
- * real da operação), sem o atalho do modo incremental de parar no primeiro
- * anúncio já conhecido — aqui o objetivo é justamente revisitar uma faixa
- * "atrás" do que já foi capturado.
- */
-const JANELA_INICIO = process.env.JANELA_INICIO ? new Date(process.env.JANELA_INICIO) : null;
-const JANELA_FIM = process.env.JANELA_FIM ? new Date(process.env.JANELA_FIM) : null;
 
 interface ResultadoVarredura {
   novos: number;
@@ -180,8 +177,14 @@ async function processarAnuncio(
  *   duplicar), não interrompem mais a varredura.
  */
 async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVarredura> {
-  const { modo: MODO, margemMinima: MARGEM_MINIMA, janelaInicialDias: JANELA_INICIAL_DIAS, maxPaginas: MAX_PAGINAS } =
-    obterConfig();
+  const {
+    modo: MODO,
+    margemMinima: MARGEM_MINIMA,
+    janelaInicialDias: JANELA_INICIAL_DIAS,
+    maxPaginas: MAX_PAGINAS,
+    janelaIntervaloInicio: JANELA_INICIO,
+    janelaIntervaloFim: JANELA_FIM,
+  } = obterConfig();
   const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
   const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
@@ -253,7 +256,12 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
     }
   }
 
-  if (MODO === "incremental" && maiorDataVistaEpoch !== null) {
+  // Atualiza o checkpoint em "inicial" e "incremental" — qualquer varredura
+  // recorrente (não "intervalo", que deliberadamente revisita uma janela
+  // passada) precisa deixar marcado até onde chegou, senão a próxima
+  // execução incremental não tem de onde partir e teria que reprocessar
+  // tudo (ou, sem checkpoint nenhum, paginar sem critério de parada).
+  if (MODO !== "intervalo" && maiorDataVistaEpoch !== null) {
     await avancarCheckpoint(categoriaUrlBase, maiorDataVistaEpoch);
   }
 
