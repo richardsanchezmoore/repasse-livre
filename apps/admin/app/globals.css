@@ -2070,17 +2070,21 @@ body {
   background: #094d24;
 }
 
-.usuario-saudacao-grupo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.usuario-icone-wrapper {
+  position: relative;
+  display: inline-flex;
 }
 
-.usuario-saudacao {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #111b21;
-  white-space: nowrap;
+.usuario-status-online {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2bac60;
+  border: 2px solid #ffffff;
+  pointer-events: none;
 }
 
 .usuario-menu-botao {
@@ -2223,10 +2227,6 @@ body {
 
   .botao-anunciar,
   .busca-slim {
-    display: none;
-  }
-
-  .usuario-saudacao {
     display: none;
   }
 

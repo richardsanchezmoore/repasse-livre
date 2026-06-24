@@ -30,11 +30,9 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
   }
 
   const inicial = (usuario.nome ?? usuario.email ?? "?").charAt(0).toUpperCase();
-  const primeiroNome = (usuario.nome ?? usuario.email ?? "").split(" ")[0].split("@")[0];
 
   return (
-    <div className="usuario-saudacao-grupo">
-      {primeiroNome && <span className="usuario-saudacao">Olá, {primeiroNome}</span>}
+    <div className="usuario-icone-wrapper">
       <IconDropdown Icone={UserRound} rotulo={usuario.nome ?? usuario.email ?? "Usuário"}>
         <div className="usuario-menu-botao">
           <span className="usuario-menu-avatar">{inicial}</span>
@@ -44,6 +42,7 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
           Sair
         </button>
       </IconDropdown>
+      <span className="usuario-status-online" title="Logado" />
     </div>
   );
 }
