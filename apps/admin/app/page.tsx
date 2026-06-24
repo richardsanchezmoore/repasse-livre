@@ -66,7 +66,7 @@ export default async function CentralDeOportunidadesPage({
 
   const [contagens, estadosDisponiveis] = await Promise.all([
     contarOportunidades(usuario),
-    buscarEstadosDisponiveis(),
+    buscarEstadosDisponiveis(abaAtiva, usuario),
   ]);
 
   return (

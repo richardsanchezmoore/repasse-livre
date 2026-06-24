@@ -166,9 +166,39 @@ export async function buscarOportunidadePorId(id: string): Promise<Oportunidade 
   return (data as Oportunidade | null) ?? null;
 }
 
-/** UFs com pelo menos uma oportunidade salva (qualquer aba/status) — usado para não listar estados onde o Motor de Descoberta ainda não opera. */
-export async function buscarEstadosDisponiveis(): Promise<string[]> {
-  const { data, error } = await supabaseAdmin.from("opportunities").select("estado").not("estado", "is", null);
+/**
+ * UFs com pelo menos uma oportunidade na aba/status pedido — escopado pra
+ * não listar, por exemplo, um estado na vitrine pública (aba "aprovadas")
+ * onde só existem anúncios ainda em "descobertas": o usuário escolhia o
+ * estado e a lista vinha vazia, mesmo a UF aparecendo como opção.
+ */
+export async function buscarEstadosDisponiveis(
+  aba: Aba = "aprovadas",
+  usuario: Usuario | null = null
+): Promise<string[]> {
+  if (aba === "favoritos") {
+    if (!usuario) return [];
+    const idsFavoritados = await buscarIdsFavoritados(usuario.id);
+    if (idsFavoritados.size === 0) return [];
+    const { data, error } = await supabaseAdmin
+      .from("opportunities")
+      .select("estado")
+      .in("id", Array.from(idsFavoritados))
+      .not("estado", "is", null);
+    if (error) {
+      throw new Error(`Falha ao buscar estados disponíveis: ${error.message}`);
+    }
+    const presentes = new Set((data ?? []).map((linha) => linha.estado as string));
+    return UFS.filter((uf) => presentes.has(uf));
+  }
+
+  const filtro = FILTRO_POR_ABA[aba];
+  let consulta = supabaseAdmin.from("opportunities").select("estado").eq("status", filtro.status).not("estado", "is", null);
+  if (filtro.origem_tipo) {
+    consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
+  }
+
+  const { data, error } = await consulta;
   if (error) {
     throw new Error(`Falha ao buscar estados disponíveis: ${error.message}`);
   }
