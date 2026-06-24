@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Play } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { Loader2, Play } from "lucide-react";
 import { dispararVarreduraManual, salvarConfigWorker } from "@/app/actions";
 
 export interface RunWorker {
@@ -50,9 +50,17 @@ function formatarDuracao(inicio: string, fim: string | null): string {
 export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: ConfigWorker[] }) {
   const [pendente, iniciarTransicao] = useTransition();
   const [disparando, setDisparando] = useState(false);
+  const [segundosDecorridos, setSegundosDecorridos] = useState(0);
   const [salvandoChave, setSalvandoChave] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!disparando) return;
+    setSegundosDecorridos(0);
+    const intervalo = setInterval(() => setSegundosDecorridos((s) => s + 1), 1000);
+    return () => clearInterval(intervalo);
+  }, [disparando]);
 
   const valorAtual = (chave: string): string => configs.find((c) => c.chave === chave)?.valor ?? "";
   const [valores, setValores] = useState<Record<string, string>>(
@@ -100,8 +108,12 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
         <div className="worker-secao-cabecalho">
           <h2 className="worker-secao-titulo">Disparo manual</h2>
           <button type="button" className="worker-botao-disparar" disabled={disparando} onClick={dispararAgora}>
-            <Play size={16} strokeWidth={1.75} />
-            {disparando ? "Disparando…" : "Disparar varredura agora"}
+            {disparando ? (
+              <Loader2 size={16} strokeWidth={1.75} className="worker-spinner" />
+            ) : (
+              <Play size={16} strokeWidth={1.75} />
+            )}
+            {disparando ? `Disparando… (${segundosDecorridos}s)` : "Disparar varredura agora"}
           </button>
         </div>
       </section>

@@ -739,7 +739,20 @@ body {
 
 .worker-botao-disparar:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.8;
+}
+
+.worker-spinner {
+  animation: worker-girar 0.8s linear infinite;
+}
+
+@keyframes worker-girar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .worker-config-grade {
