@@ -2097,11 +2097,12 @@ body {
   }
 
   .busca-slim-input {
-    font-size: 14px;
+    /* 16px é o mínimo para o iOS Safari não disparar zoom automático ao focar o input */
+    font-size: 16px;
   }
 
   .busca-slim-uf {
-    font-size: 13px;
+    font-size: 16px;
     padding: 0 8px;
   }
 
