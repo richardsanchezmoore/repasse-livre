@@ -674,6 +674,22 @@ body {
   background: #f9c9c7;
 }
 
+.usuarios-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.usuarios-botao-apagar {
+  background: transparent;
+  color: #b91c1c;
+  border-color: #f3a6a4;
+}
+
+.usuarios-botao-apagar:hover:not(:disabled) {
+  background: #fde2e1;
+}
+
 .top-bar {
   display: flex;
   align-items: center;

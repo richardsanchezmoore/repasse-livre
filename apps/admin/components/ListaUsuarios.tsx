@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ShieldCheck, ShieldOff } from "lucide-react";
-import { alterarRolePerfil } from "@/app/actions";
+import { ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
+import { alterarRolePerfil, apagarUsuario } from "@/app/actions";
 
 export interface UsuarioComRole {
   userId: string;
@@ -38,6 +38,27 @@ export function ListaUsuarios({
     });
   }
 
+  function excluirUsuario(userId: string, email: string | null) {
+    if (
+      !confirm(
+        `Excluir a conta de ${email ?? "este usuário"}? Essa ação não pode ser desfeita — login, perfil e favoritos serão apagados.`
+      )
+    ) {
+      return;
+    }
+    setErro(null);
+    setIdEmAlteracao(userId);
+    iniciarTransicao(async () => {
+      try {
+        await apagarUsuario(userId);
+      } catch (erroCapturado) {
+        setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao excluir usuário.");
+      } finally {
+        setIdEmAlteracao(null);
+      }
+    });
+  }
+
   return (
     <div className="usuarios-tabela-container">
       {erro && <p className="campo-erro">{erro}</p>}
@@ -61,7 +82,7 @@ export function ListaUsuarios({
                     {usuario.role === "admin" ? "Admin" : "Público"}
                   </span>
                 </td>
-                <td>
+                <td className="usuarios-acoes">
                   {usuario.role === "admin" ? (
                     <button
                       type="button"
@@ -84,6 +105,16 @@ export function ListaUsuarios({
                       {carregando ? "Promovendo…" : "Promover a admin"}
                     </button>
                   )}
+                  <button
+                    type="button"
+                    className="usuarios-botao usuarios-botao-apagar"
+                    disabled={ehVoceMesmo || carregando}
+                    title={ehVoceMesmo ? "Você não pode excluir sua própria conta por aqui" : "Excluir conta"}
+                    onClick={() => excluirUsuario(usuario.userId, usuario.email)}
+                  >
+                    <Trash2 size={16} strokeWidth={1.75} />
+                    {carregando ? "Excluindo…" : "Excluir conta"}
+                  </button>
                 </td>
               </tr>
             );

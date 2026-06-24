@@ -125,6 +125,22 @@ export async function alterarRolePerfil(userId: string, novaRole: "admin" | "pub
   revalidatePath("/usuarios");
 }
 
+export async function apagarUsuario(userId: string): Promise<void> {
+  await exigirAdmin();
+  const usuarioAtual = await obterUsuarioAtual();
+  if (usuarioAtual?.id === userId) {
+    throw new Error("Você não pode excluir sua própria conta por aqui.");
+  }
+
+  // Apaga em auth.users; `perfis` e `favoritos` têm FK com ON DELETE CASCADE
+  // (migration 0009), removidos automaticamente junto.
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+  if (error) {
+    throw new Error(`Falha ao excluir usuário: ${error.message}`);
+  }
+  revalidatePath("/usuarios");
+}
+
 export async function alternarFavoritoUsuario(opportunityId: string): Promise<void> {
   const usuario = await obterUsuarioAtual();
   if (!usuario) {
