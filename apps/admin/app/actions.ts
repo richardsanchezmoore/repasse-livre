@@ -169,46 +169,29 @@ async function chamarRailwayGraphQL<T>(token: string, query: string, variables: 
 
 /**
  * Dispara uma varredura avulsa do discovery-worker (serviço cron no
- * Railway) sem precisar entrar no painel da Railway. O worker não tem
- * endpoint próprio — usa-se o mesmo caminho do botão "Run Now" do
- * dashboard da Railway: buscar o último deployment do serviço e mandar
- * refazê-lo (deploymentRedeploy). Serviços cron não criam um deployment
- * novo ao refazer, só uma execução avulsa fora do agendamento.
+ * Railway) sem precisar entrar no painel da Railway. `deploymentRedeploy`
+ * (testado primeiro) não funciona pra isso — só reconstrói o container sem
+ * forçar a corrida do comando agendado. `serviceInstanceDeployV2` é a
+ * mutation que o próprio botão "Run Now" do dashboard da Railway usa: pra
+ * serviços cron, ela dispara uma execução avulsa sem criar um deployment
+ * completo novo (Railway otimiza esse caminho internamente).
  */
 export async function dispararVarreduraManual(): Promise<void> {
   await exigirAdmin();
 
   const token = process.env.RAILWAY_API_TOKEN;
-  const projectId = process.env.RAILWAY_PROJECT_ID;
   const serviceId = process.env.RAILWAY_SERVICE_ID;
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID;
-  if (!token || !projectId || !serviceId || !environmentId) {
-    throw new Error(
-      "Integração com a Railway não configurada (RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_SERVICE_ID, RAILWAY_ENVIRONMENT_ID)."
-    );
-  }
-
-  const dadosUltimoDeploy = await chamarRailwayGraphQL<{
-    deployments: { edges: Array<{ node: { id: string } }> };
-  }>(
-    token,
-    `query($input: DeploymentListInput!) {
-      deployments(input: $input, first: 1) {
-        edges { node { id } }
-      }
-    }`,
-    { input: { projectId, serviceId, environmentId } }
-  );
-
-  const deploymentId = dadosUltimoDeploy.deployments.edges[0]?.node.id;
-  if (!deploymentId) {
-    throw new Error("Nenhum deployment encontrado para o serviço do worker na Railway.");
+  if (!token || !serviceId || !environmentId) {
+    throw new Error("Integração com a Railway não configurada (RAILWAY_API_TOKEN, RAILWAY_SERVICE_ID, RAILWAY_ENVIRONMENT_ID).");
   }
 
   await chamarRailwayGraphQL(
     token,
-    `mutation($id: String!) { deploymentRedeploy(id: $id) { id status } }`,
-    { id: deploymentId }
+    `mutation($serviceId: String!, $environmentId: String!) {
+      serviceInstanceDeployV2(serviceId: $serviceId, environmentId: $environmentId)
+    }`,
+    { serviceId, environmentId }
   );
 }
 
