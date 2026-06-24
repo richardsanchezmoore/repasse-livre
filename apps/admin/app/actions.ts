@@ -169,12 +169,18 @@ async function chamarRailwayGraphQL<T>(token: string, query: string, variables: 
 
 /**
  * Dispara uma varredura avulsa do discovery-worker (serviço cron no
- * Railway) sem precisar entrar no painel da Railway. `deploymentRedeploy`
- * (testado primeiro) não funciona pra isso — só reconstrói o container sem
- * forçar a corrida do comando agendado. `serviceInstanceDeployV2` é a
- * mutation que o próprio botão "Run Now" do dashboard da Railway usa: pra
- * serviços cron, ela dispara uma execução avulsa sem criar um deployment
- * completo novo (Railway otimiza esse caminho internamente).
+ * Railway) sem precisar entrar no painel da Railway.
+ *
+ * Tentativas anteriores que não funcionam pra serviços cron:
+ * - `deploymentRedeploy`: só reconstrói o container atual, não força a
+ *   corrida do comando agendado.
+ * - `serviceInstanceDeployV2`: a Railway otimiza o caminho de "nada mudou,
+ *   nada a fazer" quando o commit já é o vigente — não dispara execução.
+ *
+ * `deploymentInstanceExecutionCreate` é a mutation que o botão "Run Now" do
+ * dashboard realmente chama (capturada via DevTools/Network ao clicar no
+ * botão) — recebe um `serviceInstanceId` (não o `serviceId`/`environmentId`
+ * direto), buscado antes via a query pública `serviceInstance`.
  */
 export async function dispararVarreduraManual(): Promise<void> {
   await exigirAdmin();
@@ -186,12 +192,25 @@ export async function dispararVarreduraManual(): Promise<void> {
     throw new Error("Integração com a Railway não configurada (RAILWAY_API_TOKEN, RAILWAY_SERVICE_ID, RAILWAY_ENVIRONMENT_ID).");
   }
 
-  await chamarRailwayGraphQL(
+  const dadosInstancia = await chamarRailwayGraphQL<{ serviceInstance: { id: string } }>(
     token,
-    `mutation($serviceId: String!, $environmentId: String!) {
-      serviceInstanceDeployV2(serviceId: $serviceId, environmentId: $environmentId)
+    `query($serviceId: String!, $environmentId: String!) {
+      serviceInstance(serviceId: $serviceId, environmentId: $environmentId) { id }
     }`,
     { serviceId, environmentId }
+  );
+
+  const serviceInstanceId = dadosInstancia.serviceInstance?.id;
+  if (!serviceInstanceId) {
+    throw new Error("Não encontrei o serviceInstance do worker na Railway (serviceId/environmentId podem estar errados).");
+  }
+
+  await chamarRailwayGraphQL(
+    token,
+    `mutation($input: DeploymentInstanceExecutionCreateInput!) {
+      deploymentInstanceExecutionCreate(input: $input)
+    }`,
+    { input: { serviceInstanceId } }
   );
 }
 
