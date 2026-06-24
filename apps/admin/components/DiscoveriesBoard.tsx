@@ -7,6 +7,7 @@ import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
 import { Paginacao } from "./Paginacao";
+import { RegistradorIdsVisiveis } from "./RegistradorIdsVisiveis";
 import { SeletorEstadoBreadcrumb } from "./SeletorEstadoBreadcrumb";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
@@ -284,6 +285,7 @@ export async function Board({
         precoMin={filtros.precoMin}
         precoMax={filtros.precoMax}
       />
+      <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />
       <div className="board-lista">
         {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
         {oportunidades.map((oportunidade) => (

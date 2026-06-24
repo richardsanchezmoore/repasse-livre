@@ -1047,6 +1047,14 @@ body {
   cursor: default;
 }
 
+.acao-selecao-todos {
+  color: #1c1e21;
+}
+
+.acao-selecao-todos:hover:not(:disabled) {
+  background: #f0f2f5;
+}
+
 .acao-selecao-aprovar {
   color: #0a5d2c;
 }

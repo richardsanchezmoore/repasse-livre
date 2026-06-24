@@ -5,11 +5,14 @@ import { createContext, useCallback, useContext, useState, useTransition, type R
 interface SelecaoMultiplaContexto {
   modoSelecao: boolean;
   selecionados: Set<string>;
+  idsVisiveis: string[];
   processando: boolean;
   alternarModoSelecao: () => void;
   alternarSelecionado: (id: string) => void;
   limparSelecao: () => void;
   executarEmMassa: (acao: () => Promise<void>) => void;
+  registrarIdsVisiveis: (ids: string[]) => void;
+  selecionarTodos: () => void;
 }
 
 const SelecaoMultiplaContext = createContext<SelecaoMultiplaContexto | null>(null);
@@ -17,6 +20,7 @@ const SelecaoMultiplaContext = createContext<SelecaoMultiplaContexto | null>(nul
 export function SelecaoMultiplaProvider({ children }: { children: ReactNode }) {
   const [modoSelecao, setModoSelecao] = useState(false);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [idsVisiveis, setIdsVisiveis] = useState<string[]>([]);
   const [processando, iniciarProcessamento] = useTransition();
 
   const alternarModoSelecao = useCallback(() => {
@@ -47,16 +51,29 @@ export function SelecaoMultiplaProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Registrado pelo Board (server component) com os ids da página/filtro
+  // atual, pra "Selecionar todos" não depender de clicar item por item.
+  const registrarIdsVisiveis = useCallback((ids: string[]) => {
+    setIdsVisiveis(ids);
+  }, []);
+
+  const selecionarTodos = useCallback(() => {
+    setSelecionados(new Set(idsVisiveis));
+  }, [idsVisiveis]);
+
   return (
     <SelecaoMultiplaContext.Provider
       value={{
         modoSelecao,
         selecionados,
+        idsVisiveis,
         processando,
         alternarModoSelecao,
         alternarSelecionado,
         limparSelecao,
         executarEmMassa,
+        registrarIdsVisiveis,
+        selecionarTodos,
       }}
     >
       {children}
