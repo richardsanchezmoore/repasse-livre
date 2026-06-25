@@ -1,4 +1,4 @@
-import { Calendar, Gauge, MapPin, MessageCircle, ExternalLink, Tag, ShieldAlert, Settings2 } from "lucide-react";
+import { Calendar, Check, Gauge, MapPin, MessageCircle, ExternalLink, Tag, ShieldAlert, Settings2 } from "lucide-react";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
@@ -40,7 +40,13 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
   // troca, documentação) entra como chips na seção "Detalhes".
   const atributos = oportunidade.atributos_olx ?? {};
   const CHAVES_FICHA: readonly string[] = ["cartype", "carcolor", "fuel", "doors", "car_steering", "motorpower"];
-  const detalhesExtras = Object.entries(atributos).filter(([chave]) => !CHAVES_FICHA.includes(chave));
+  // Os atributos fora da ficha técnica são todos booleanos (único dono,
+  // aceita troca, documentação etc.) — só vale mostrar os "Sim": um "Não"
+  // pra cada um deles é ruído (ex.: "Com multas: Não"), não informação que
+  // ajuda a decisão de compra.
+  const detalhesExtras = Object.entries(atributos).filter(
+    ([chave, atributo]) => !CHAVES_FICHA.includes(chave) && atributo.value === "Sim"
+  );
 
   return (
     <article className="pagina-oportunidade">
@@ -129,7 +135,7 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
             <div className="pagina-oportunidade-chips">
               {detalhesExtras.map(([chave, atributo]) => (
                 <span key={chave} className="pagina-oportunidade-chip">
-                  {atributo.label}: {atributo.value}
+                  <Check size={14} strokeWidth={2.5} className="icone-inline" /> {atributo.label}
                 </span>
               ))}
             </div>
