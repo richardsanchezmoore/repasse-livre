@@ -1688,12 +1688,12 @@ body {
 
 .destaque-margem {
   text-align: center;
-  padding: 6px 0 12px;
-  margin-bottom: 4px;
+  padding: 8px 0 12px;
+  margin: 6px 0 4px;
 }
 
 .destaque-margem-valor {
-  font-size: 26px;
+  font-size: clamp(26px, 5vw, 32px);
   font-weight: 700;
   line-height: 1.1;
   margin: 0;
@@ -1710,10 +1710,10 @@ body {
 }
 
 .destaque-margem-percentual {
-  font-size: 18px;
+  font-size: clamp(15px, 2.2vw, 17px);
   font-weight: 700;
   color: #0a5d2c;
-  margin: 2px 0 0;
+  margin: 6px 0 0;
 }
 
 .destaque-margem-percentual-rotulo {
@@ -1858,6 +1858,11 @@ body {
 
 .preco-valor {
   font-weight: 700;
+}
+
+.precos-grupo-pagina .linha-preco {
+  font-size: clamp(17px, 2.2vw, 20px);
+  padding: 8px 0;
 }
 
 /* Desktop: na página individual (não no card da Central, que mantém o
@@ -2565,8 +2570,14 @@ body {
 .pagina-oportunidade-selos {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pagina-oportunidade-selos .selo-fonte-inline,
+.pagina-oportunidade-selos .selo-classificacao-inline {
+  font-size: clamp(12px, 1.6vw, 14px);
+  padding: 3px 10px;
 }
 
 .selo-classificacao-inline {
@@ -2588,6 +2599,32 @@ body {
   font-size: 14px;
   color: #667781;
   margin: 2px 0 0;
+}
+
+.pagina-oportunidade-local {
+  margin: 10px 0 0;
+}
+
+.pagina-oportunidade-local-rotulo {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8696a0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 2px;
+}
+
+.pagina-oportunidade-local-valor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: clamp(15px, 2vw, 17px);
+  font-weight: 700;
+  color: #111b21;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
 }
 
 .pagina-oportunidade-ficha {

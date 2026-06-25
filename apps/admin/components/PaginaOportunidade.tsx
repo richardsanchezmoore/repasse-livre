@@ -67,6 +67,14 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
           <p className="pagina-oportunidade-subtitulo">{oportunidade.veiculo}</p>
         )}
 
+        <div className="pagina-oportunidade-local">
+          <p className="pagina-oportunidade-local-rotulo">Cidade</p>
+          <p className="pagina-oportunidade-local-valor">
+            <MapPin size={15} strokeWidth={1.75} className="icone-inline" />
+            {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
+          </p>
+        </div>
+
         <div className="destaque-margem">
           <p className="destaque-margem-valor-rotulo">Ganho</p>
           <p className="destaque-margem-valor">{formatarMoeda(diferencaValor)}</p>
@@ -109,14 +117,6 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
               <dd>{oportunidade.cambio}</dd>
             </div>
           )}
-          <div className="pagina-oportunidade-ficha-item">
-            <dt>
-              <MapPin size={13} strokeWidth={1.75} className="icone-inline" /> Local
-            </dt>
-            <dd>
-              {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
-            </dd>
-          </div>
           {CHAVES_FICHA.map((chave) => {
             const atributo = atributos[chave];
             if (!atributo) return null;
