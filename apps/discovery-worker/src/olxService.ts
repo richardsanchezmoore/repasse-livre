@@ -265,18 +265,22 @@ function extrairAtributosDoHtml(html: string): AtributosOlx {
  * parágrafos originais do anunciante.
  */
 function extrairDescricaoDoHtml(html: string): string | null {
-  // O valor não pode excluir "&" do conjunto capturado: a descrição costuma
-  // trazer entidades HTML (&nbsp;, &amp; etc.) ou o símbolo "&" no próprio
-  // texto do anunciante, e excluí-lo cortava o match antes do fechamento,
-  // fazendo a extração falhar (regex sem match nenhum) pra maioria dos anúncios.
-  const match = html.match(/(?:"|&quot;)body(?:"|&quot;):(?:"|&quot;)([^"]*)(?:"|&quot;)/);
-  if (!match || !match[1]) return null;
+  // O delimitador de abertura ("\"" ou "&quot;") é capturado num grupo e
+  // reusado via backreference pra achar o fechamento: usar um conjunto fixo
+  // de caracteres excluídos (como nas outras extrações deste arquivo) falha
+  // quando a página usa "&quot;" como delimitador — esses 6 caracteres não
+  // contêm aspas literal nenhuma, então um "[^\"]*" não para ali e a captura
+  // vaza pro resto do JSON até achar a próxima aspa literal de verdade
+  // (ex.: a do campo "subject" mais adiante), trazendo lixo de JSON na
+  // descrição.
+  const match = html.match(/(?:"|&quot;)body(?:"|&quot;):("|&quot;)([\s\S]*?)\1/);
+  if (!match || !match[2]) return null;
 
   // Quando o bloco "initial-data" inteiro vem entity-encoded (variante
   // "&quot;" das aspas), os "<br>" da descrição também vêm como
   // "&lt;br&gt;" em vez de literais — por isso decodifica as entidades
   // antes de converter quebras de linha, senão sobra "&lt;br&gt;" no texto.
-  const textoDecodificado = match[1]
+  const textoDecodificado = match[2]
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
