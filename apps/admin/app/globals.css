@@ -2564,7 +2564,7 @@ body {
 }
 
 .pagina-oportunidade-corpo {
-  padding: 16px;
+  padding: clamp(16px, 4vw, 30px);
 }
 
 .pagina-oportunidade-selos {
@@ -2635,7 +2635,7 @@ body {
 }
 
 .pagina-oportunidade-secao {
-  margin-top: 14px;
+  margin-top: clamp(14px, 3vw, 20px);
 }
 
 .pagina-oportunidade-secao h2 {
