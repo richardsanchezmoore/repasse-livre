@@ -1861,7 +1861,7 @@ body {
 }
 
 .precos-grupo-pagina .linha-preco {
-  font-size: clamp(17px, 2.2vw, 20px);
+  font-size: clamp(20px, 2.7vw, 24px);
   padding: 8px 0;
 }
 
@@ -2601,32 +2601,6 @@ body {
   margin: 2px 0 0;
 }
 
-.pagina-oportunidade-local {
-  margin: 10px 0 0;
-}
-
-.pagina-oportunidade-local-rotulo {
-  font-size: 11px;
-  font-weight: 500;
-  color: #8696a0;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 0 0 2px;
-}
-
-.pagina-oportunidade-local-valor {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: clamp(15px, 2vw, 17px);
-  font-weight: 700;
-  color: #111b21;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-}
-
 .pagina-oportunidade-ficha {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2651,6 +2625,13 @@ body {
   font-weight: 600;
   color: #111b21;
   margin: 0;
+}
+
+.pagina-oportunidade-ficha-item-linha {
+  grid-column: 1 / -1;
+  border-right: none !important;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
 .pagina-oportunidade-secao {
