@@ -1504,6 +1504,7 @@ body {
   background: #ffffff;
   color: #000000;
   font-weight: bold;
+  border: 1px solid #d9d9d9;
 }
 
 .selo-fonte-webmotors {
@@ -2603,13 +2604,13 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: #8696a0;
   margin: 0 0 2px;
 }
 
 .pagina-oportunidade-ficha-item dd {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #111b21;
   margin: 0;
@@ -2623,12 +2624,10 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 17px;
   font-weight: 600;
-  color: #8696a0;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin: 0 0 6px;
+  color: #111b21;
+  margin: 0 0 8px;
 }
 
 .pagina-oportunidade-chips {
@@ -2650,8 +2649,8 @@ body {
 }
 
 .pagina-oportunidade-descricao {
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   color: #111b21;
   white-space: pre-line;
   margin: 0;
@@ -2834,9 +2833,9 @@ body {
    mesmo ritmo visual em vez de quebrar pra uma lista crua. */
 @media (min-width: 768px) {
   .pagina-oportunidade-ficha {
-    grid-template-columns: 1fr 1fr;
-    row-gap: 14px;
-    column-gap: 0;
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: 18px;
+    column-gap: 16px;
   }
 
   .pagina-oportunidade-ficha-item {
@@ -2846,7 +2845,7 @@ body {
     text-align: center;
   }
 
-  .pagina-oportunidade-ficha-item:nth-child(odd) {
+  .pagina-oportunidade-ficha-item:not(:nth-child(4n)) {
     border-right: 1px solid #f0f2f5;
   }
 }
