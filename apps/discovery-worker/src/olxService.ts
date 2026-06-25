@@ -265,7 +265,11 @@ function extrairAtributosDoHtml(html: string): AtributosOlx {
  * parágrafos originais do anunciante.
  */
 function extrairDescricaoDoHtml(html: string): string | null {
-  const match = html.match(/(?:"|&quot;)body(?:"|&quot;):(?:"|&quot;)([^"&]*)(?:"|&quot;)/);
+  // O valor não pode excluir "&" do conjunto capturado: a descrição costuma
+  // trazer entidades HTML (&nbsp;, &amp; etc.) ou o símbolo "&" no próprio
+  // texto do anunciante, e excluí-lo cortava o match antes do fechamento,
+  // fazendo a extração falhar (regex sem match nenhum) pra maioria dos anúncios.
+  const match = html.match(/(?:"|&quot;)body(?:"|&quot;):(?:"|&quot;)([^"]*)(?:"|&quot;)/);
   if (!match || !match[1]) return null;
   return match[1].replace(/<br\s*\/?>/gi, "\n").trim() || null;
 }

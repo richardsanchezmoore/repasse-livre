@@ -7,6 +7,7 @@
   "scripts": {
     "discover": "tsx src/main.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
+    "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

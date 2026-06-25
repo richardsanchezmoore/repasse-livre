@@ -110,6 +110,15 @@ async function processarAnuncio(
     return;
   }
 
+  // Preço 0 (ou negativo) é anúncio "sob consulta"/sem preço informado na
+  // OLX, não uma oportunidade real — calcularMargemPercentual trataria isso
+  // como 100% de margem (preço 0 vs. qualquer FIPE), inflando o anúncio pra
+  // "top_oportunidade" indevidamente.
+  if (anuncio.preco <= 0) {
+    resultado.descartados++;
+    return;
+  }
+
   // Só substitui a foto principal e usa fotos secundárias quando a página
   // do anúncio realmente trouxe uma galeria (mais de 1 foto). Caso
   // contrário, mantém a foto de capa da listagem e nenhuma secundária —
