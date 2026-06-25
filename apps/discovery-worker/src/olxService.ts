@@ -271,7 +271,20 @@ function extrairDescricaoDoHtml(html: string): string | null {
   // fazendo a extração falhar (regex sem match nenhum) pra maioria dos anúncios.
   const match = html.match(/(?:"|&quot;)body(?:"|&quot;):(?:"|&quot;)([^"]*)(?:"|&quot;)/);
   if (!match || !match[1]) return null;
-  return match[1].replace(/<br\s*\/?>/gi, "\n").trim() || null;
+
+  // Quando o bloco "initial-data" inteiro vem entity-encoded (variante
+  // "&quot;" das aspas), os "<br>" da descrição também vêm como
+  // "&lt;br&gt;" em vez de literais — por isso decodifica as entidades
+  // antes de converter quebras de linha, senão sobra "&lt;br&gt;" no texto.
+  const textoDecodificado = match[1]
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
+
+  return textoDecodificado.replace(/<br\s*\/?>/gi, "\n").trim() || null;
 }
 
 export interface DetalhesPaginaAnuncio {
