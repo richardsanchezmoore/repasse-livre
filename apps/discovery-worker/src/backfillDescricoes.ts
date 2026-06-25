@@ -4,19 +4,25 @@ import { supabase } from "./supabaseClient.js";
 
 /**
  * Corrige retroativamente a descrição das oportunidades de Descobertas
- * salvas antes da correção em `extrairDescricaoDoHtml` — a regex excluía
- * "&" do valor capturado, então qualquer descrição com entidade HTML
- * (&nbsp;, &amp; etc.) ou o símbolo "&" no texto do anunciante ficava nula.
+ * salvas antes de três correções em `extrairDescricaoDoHtml`:
+ * - regex excluía "&" do valor capturado, ficando nula sempre que a
+ *   descrição tinha entidade HTML (&nbsp;, &amp; etc.) ou "&" no texto;
+ * - "<br>" não convertido quando vinha como entidade ("&lt;br&gt;"),
+ *   sobrando esse lixo visível no texto;
+ * - captura sem limite até a próxima aspa literal, vazando o JSON da
+ *   página (campos como "subject", "priceLabel") pro fim da descrição
+ *   quando o delimitador real era a entidade "&quot;".
  *
- * Revisita a página de cada oportunidade de origem OLX sem descrição pra
- * extrair o texto correto. Uso: npm run backfill:descricoes
+ * Revisita a página de cada oportunidade de origem OLX afetada por
+ * qualquer um desses três casos pra extrair o texto correto. Uso:
+ * npm run backfill:descricoes
  */
 async function executarBackfill(): Promise<void> {
   const { data, error } = await supabase
     .from("opportunities")
     .select("id, link_origem")
     .eq("origem_tipo", "descoberta")
-    .is("descricao", null);
+    .or("descricao.is.null,descricao.like.%priceLabel%,descricao.like.%&lt;br&gt;%");
 
   if (error) {
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
