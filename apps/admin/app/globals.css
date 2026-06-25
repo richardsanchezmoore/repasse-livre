@@ -1693,7 +1693,7 @@ body {
 }
 
 .destaque-margem-valor {
-  font-size: clamp(26px, 5vw, 32px);
+  font-size: clamp(28px, 7vw, 34px);
   font-weight: 700;
   line-height: 1.1;
   margin: 0;
@@ -1710,7 +1710,7 @@ body {
 }
 
 .destaque-margem-percentual {
-  font-size: clamp(15px, 2.2vw, 17px);
+  font-size: clamp(17px, 3vw, 19px);
   font-weight: 700;
   color: #0a5d2c;
   margin: 6px 0 0;
