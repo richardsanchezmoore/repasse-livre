@@ -16,13 +16,27 @@ import { supabase } from "./supabaseClient.js";
  * Revisita a página de cada oportunidade de origem OLX afetada por
  * qualquer um desses três casos pra extrair o texto correto. Uso:
  * npm run backfill:descricoes
+ *
+ * `BACKFILL_LIMITE` (opcional) processa só os N primeiros registros
+ * encontrados — útil pra rodar em lotes (ex.: dois disparos de ~600 com
+ * uma pausa maior entre eles) em vez de martelar a OLX numa sessão única
+ * e longa. A query já busca só quem ainda está quebrado, então cada lote
+ * subsequente automaticamente pega de onde o anterior parou.
  */
 async function executarBackfill(): Promise<void> {
-  const { data, error } = await supabase
+  const limite = Number(process.env.BACKFILL_LIMITE) || undefined;
+
+  let consulta = supabase
     .from("opportunities")
     .select("id, link_origem")
     .eq("origem_tipo", "descoberta")
     .or("descricao.is.null,descricao.like.%priceLabel%,descricao.like.%&lt;br&gt;%");
+
+  if (limite) {
+    consulta = consulta.limit(limite);
+  }
+
+  const { data, error } = await consulta;
 
   if (error) {
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
