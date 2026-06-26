@@ -49,8 +49,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
         {children}
 
+        {/* beforeInteractive (só permitido no root layout) faz o Next injetar
+            este script no <head>, antes de qualquer outro JS — é o que a
+            Google pede ("o mais alto possível no <head>"). afterInteractive
+            carregaria só depois da página ficar interativa, tarde demais
+            pra capturar visitantes que saem rápido. */}
         {rastreio.gtm_id && (
-          <Script id="gtm" strategy="afterInteractive">
+          <Script id="gtm" strategy="beforeInteractive">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${rastreio.gtm_id}');`}
           </Script>
         )}
