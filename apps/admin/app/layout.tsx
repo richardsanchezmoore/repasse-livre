@@ -35,15 +35,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="pt-BR">
       <body>
+        {/* dangerouslySetInnerHTML aqui (em vez de filhos React normais)
+            evita erro de hidratação #418/#423/#425: com JS habilitado o
+            navegador trata conteúdo de <noscript> como texto puro e não
+            cria o <iframe>, mas o React tentaria hidratar como se tivesse
+            criado — diff trava a página inteira. */}
         {rastreio.gtm_id && (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${rastreio.gtm_id}`}
-              height="0"
-              width="0"
-              style={{ display: "none", visibility: "hidden" }}
-            />
-          </noscript>
+          <noscript
+            dangerouslySetInnerHTML={{
+              __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${rastreio.gtm_id}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
+            }}
+          />
         )}
         {children}
 
@@ -71,15 +73,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script id="meta-pixel" strategy="afterInteractive">
               {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${rastreio.meta_pixel_id}');fbq('track','PageView');`}
             </Script>
-            <noscript>
-              <img
-                height="1"
-                width="1"
-                style={{ display: "none" }}
-                src={`https://www.facebook.com/tr?id=${rastreio.meta_pixel_id}&ev=PageView&noscript=1`}
-                alt=""
-              />
-            </noscript>
+            <noscript
+              dangerouslySetInnerHTML={{
+                __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${rastreio.meta_pixel_id}&ev=PageView&noscript=1" alt="" />`,
+              }}
+            />
           </>
         )}
 

@@ -47,7 +47,9 @@ function extrairEstado(categoriaUrl: string): string {
 }
 
 function formatarData(iso: string): string {
-  return new Date(iso).toLocaleString("pt-BR");
+  // timeZone fixo evita mismatch de hidratação entre server (UTC na Vercel)
+  // e cliente (horário de Brasília) — mesmo bug corrigido em formatadores.ts.
+  return new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
 function formatarDuracao(inicio: string, fim: string | null): string {
