@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { supabaseAdmin } from "@/lib/supabase";
-import { URL_BASE_SITE, urlCidade, urlOportunidade } from "@/lib/site";
-import { gerarSlugCidade } from "@/lib/slug";
+import { URL_BASE_SITE, urlCidade, urlEstado, urlMarca, urlOportunidade } from "@/lib/site";
+import { extrairMarca } from "@/lib/marca";
+import { gerarSlugCidade, slugify } from "@/lib/slug";
 import type { Oportunidade } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -48,15 +49,73 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const cidadesVistas = new Set<string>();
   const cidades: MetadataRoute.Sitemap = [];
+  const estadosVistos = new Set<string>();
+  const estados: MetadataRoute.Sitemap = [];
+  // Marca tem 3 níveis de URL (nacional, por estado, por cidade — ver
+  // caminhoMarca em lib/site.ts), cada um deduplicado pela própria chave.
+  const marcasNacionalVistas = new Set<string>();
+  const marcasNacional: MetadataRoute.Sitemap = [];
+  const marcasEstadoVistas = new Set<string>();
+  const marcasEstado: MetadataRoute.Sitemap = [];
+  const marcasCidadeVistas = new Set<string>();
+  const marcasCidade: MetadataRoute.Sitemap = [];
+
   for (const oportunidade of data) {
     const slugCidade = gerarSlugCidade(oportunidade);
-    if (slugCidade === "sem-localizacao" || cidadesVistas.has(slugCidade)) continue;
-    cidadesVistas.add(slugCidade);
-    cidades.push({
-      url: urlCidade(oportunidade),
-      lastModified: oportunidade.data_captura,
-      changeFrequency: "daily",
-    });
+    if (slugCidade !== "sem-localizacao" && !cidadesVistas.has(slugCidade)) {
+      cidadesVistas.add(slugCidade);
+      cidades.push({
+        url: urlCidade(oportunidade),
+        lastModified: oportunidade.data_captura,
+        changeFrequency: "daily",
+      });
+    }
+
+    if (oportunidade.estado && !estadosVistos.has(oportunidade.estado)) {
+      estadosVistos.add(oportunidade.estado);
+      estados.push({
+        url: urlEstado(oportunidade.estado),
+        lastModified: oportunidade.data_captura,
+        changeFrequency: "daily",
+      });
+    }
+
+    const marca = extrairMarca(oportunidade.veiculo);
+    if (!marca) continue;
+    const slugMarca = slugify(marca);
+
+    if (!marcasNacionalVistas.has(slugMarca)) {
+      marcasNacionalVistas.add(slugMarca);
+      marcasNacional.push({
+        url: urlMarca({}, marca),
+        lastModified: oportunidade.data_captura,
+        changeFrequency: "daily",
+      });
+    }
+
+    if (oportunidade.estado) {
+      const chaveEstadoMarca = `${oportunidade.estado}:${slugMarca}`;
+      if (!marcasEstadoVistas.has(chaveEstadoMarca)) {
+        marcasEstadoVistas.add(chaveEstadoMarca);
+        marcasEstado.push({
+          url: urlMarca({ estado: oportunidade.estado }, marca),
+          lastModified: oportunidade.data_captura,
+          changeFrequency: "daily",
+        });
+      }
+    }
+
+    if (oportunidade.cidade && oportunidade.estado) {
+      const chaveCidadeMarca = `${slugCidade}:${slugMarca}`;
+      if (!marcasCidadeVistas.has(chaveCidadeMarca)) {
+        marcasCidadeVistas.add(chaveCidadeMarca);
+        marcasCidade.push({
+          url: urlMarca({ cidade: oportunidade.cidade, estado: oportunidade.estado }, marca),
+          lastModified: oportunidade.data_captura,
+          changeFrequency: "daily",
+        });
+      }
+    }
   }
 
   return [
@@ -66,7 +125,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 1,
     },
+    ...estados,
     ...cidades,
+    ...marcasNacional,
+    ...marcasEstado,
+    ...marcasCidade,
     ...oportunidades,
   ];
 }
