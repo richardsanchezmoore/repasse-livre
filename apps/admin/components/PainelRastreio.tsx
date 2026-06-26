@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { salvarConfigRastreio } from "@/app/actions";
-import { CHAVES_RASTREIO, type ChaveRastreio } from "@/lib/rastreio";
+import { CHAVES_RASTREIO, type ChaveRastreio } from "@/lib/rastreioVariaveis";
 
 const CAMPOS: Array<{ chave: ChaveRastreio; rotulo: string; ajuda: string; multilinha?: boolean }> = [
   {

@@ -1,7 +1,8 @@
 import { supabaseAdmin } from "./supabase";
+import { CHAVES_RASTREIO, type ChaveRastreio } from "./rastreioVariaveis";
 
-export const CHAVES_RASTREIO = ["ga_measurement_id", "gtm_id", "meta_pixel_id", "scripts_extra"] as const;
-export type ChaveRastreio = (typeof CHAVES_RASTREIO)[number];
+export { CHAVES_RASTREIO } from "./rastreioVariaveis";
+export type { ChaveRastreio } from "./rastreioVariaveis";
 
 export interface ConfigRastreio {
   chave: string;
