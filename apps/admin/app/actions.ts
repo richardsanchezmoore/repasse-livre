@@ -55,6 +55,7 @@ async function moverParaHistoricoEApagar(oportunidades: Oportunidade[]): Promise
   }
 
   revalidatePath("/");
+  revalidatePath("/sitemap.xml");
 }
 
 export async function apagarOportunidade(id: string): Promise<void> {
@@ -93,6 +94,7 @@ async function atualizarStatusEmMassa(ids: string[], status: StatusOportunidade)
     throw new Error(`Falha ao atualizar status: ${error.message}`);
   }
   revalidatePath("/");
+  revalidatePath("/sitemap.xml");
 }
 
 export async function aprovarOportunidade(id: string): Promise<void> {
