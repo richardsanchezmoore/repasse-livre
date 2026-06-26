@@ -170,6 +170,18 @@ export async function salvarConfigSeo(chave: string, dados: { titulo: string; de
   revalidatePath("/");
 }
 
+export async function salvarConfigRastreio(chave: string, valor: string): Promise<void> {
+  await exigirAdmin();
+  const { error } = await supabaseAdmin
+    .from("config_rastreio")
+    .upsert({ chave, valor, atualizado_em: new Date().toISOString() }, { onConflict: "chave" });
+  if (error) {
+    throw new Error(`Falha ao salvar rastreio "${chave}": ${error.message}`);
+  }
+  revalidatePath("/seo");
+  revalidatePath("/");
+}
+
 const RAILWAY_GRAPHQL_URL = "https://backboard.railway.com/graphql/v2";
 
 async function chamarRailwayGraphQL<T>(token: string, query: string, variables: Record<string, unknown>): Promise<T> {

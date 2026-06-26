@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { contarOportunidades } from "@/components/DiscoveriesBoard";
 import { ListaUsuarios, type UsuarioComRole } from "@/components/ListaUsuarios";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
@@ -11,9 +10,7 @@ export const fetchCache = "force-no-store";
 
 export default async function UsuariosPage() {
   const usuarioAtual = await obterUsuarioAtual();
-  if (usuarioAtual?.role !== "admin") {
-    redirect("/");
-  }
+  if (!usuarioAtual) return null; // guarda real já em app/(painel)/layout.tsx — isto só estreita o tipo p/ TS
 
   const [{ data: perfis, error: erroPerfis }, { data: listaAuth, error: erroAuth }] = await Promise.all([
     supabaseAdmin.from("perfis").select("user_id, role"),

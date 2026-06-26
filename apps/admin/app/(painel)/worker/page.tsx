@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { contarOportunidades } from "@/components/DiscoveriesBoard";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { PainelWorker, type ConfigWorker, type RunWorker } from "@/components/PainelWorker";
@@ -13,9 +12,7 @@ const LIMITE_HISTORICO = 20;
 
 export default async function WorkerPage() {
   const usuarioAtual = await obterUsuarioAtual();
-  if (usuarioAtual?.role !== "admin") {
-    redirect("/");
-  }
+  if (!usuarioAtual) return null; // guarda real já em app/(painel)/layout.tsx — isto só estreita o tipo p/ TS
 
   const [{ data: runs, error: erroRuns }, { data: configs, error: erroConfigs }] = await Promise.all([
     supabaseAdmin
