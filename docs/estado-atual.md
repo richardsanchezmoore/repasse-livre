@@ -1304,6 +1304,22 @@ backfill/infra do worker no início.
   Gerenciador de Tarefas (aba Detalhes, buscar pelo PID) é o caminho que
   funciona.
 
+### Incidente Railway: Start Command com erro de digitação (26/06/2026)
+- Usuário foi trocar o Start Command do worker no painel do Railway pra
+  voltar de `npm run backfill:descricoes` pra varredura normal, e digitou
+  `npm run discovery` (script não existe — o certo é `npm run discover`,
+  sem "y"). Deploy ficou `CRASHED`, sem relação com o commit de SEO que
+  tinha acabado de subir (coincidência de timing).
+- Corrigido apontando o Start Command de volta pra `npm run discover`.
+  A interrupção do cron (3h em 3h) por algumas horas foi coberta rodando
+  o **modo `intervalo`** (`MODO_VARREDURA=intervalo`,
+  `JANELA_INICIO=2026-06-26T00:00:00-03:00`,
+  `JANELA_FIM=2026-06-26T06:00:00-03:00`, variáveis adicionadas direto no
+  painel do Railway) — removidas depois de rodar, pra voltar ao
+  `incremental` padrão do cron.
+- Nenhuma mudança de código nesta correção — só configuração no painel
+  do Railway, nada pra commitar.
+
 ### Pesquisa futura levantada pelo usuário (ainda não implementada)
 - **Painel de busca/edição de páginas individuais** além das 5
   páginas-âncora — ideia mencionada como "talvez o mais lógico", não
