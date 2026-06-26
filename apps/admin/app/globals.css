@@ -808,6 +808,34 @@ body {
   margin: 0;
 }
 
+.seo-variaveis-tabela {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.seo-variaveis-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.seo-variaveis-linha code {
+  flex-shrink: 0;
+  min-width: 130px;
+  font-weight: 600;
+  color: #0b6e4f;
+  background: #e3f6ed;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.seo-variaveis-linha span {
+  color: #54656f;
+}
+
 .worker-selo {
   display: inline-flex;
   font-size: 12px;
@@ -1889,6 +1917,45 @@ body {
   }
 }
 
+/* Breadcrumb (Carros > Estado > Cidade > Marca) só no desktop — no mobile
+   ocupa espaço sem ganho real de uso, mas ajuda SEO/navegação interna em
+   tela grande (pedido explícito do usuário). */
+.breadcrumb-pagina {
+  display: none;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 13px;
+  color: #8696a0;
+  margin: 0 0 12px;
+}
+
+.breadcrumb-pagina-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-pagina-item a {
+  color: #54656f;
+  text-decoration: none;
+}
+
+.breadcrumb-pagina-item a:hover {
+  color: #0b6e4f;
+  text-decoration: underline;
+}
+
+.breadcrumb-pagina-separador {
+  color: #c5cbd1;
+}
+
+@media (min-width: 768px) {
+  .breadcrumb-pagina {
+    display: flex;
+  }
+}
+
 .link-origem {
   display: flex;
   align-items: center;
@@ -2541,6 +2608,17 @@ body {
   }
 }
 
+.pagina-oportunidade-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.pagina-oportunidade-topo .breadcrumb-pagina {
+  margin: 0;
+}
+
 .pagina-oportunidade-voltar {
   display: inline-flex;
   align-items: center;
@@ -2549,7 +2627,7 @@ body {
   font-weight: 600;
   color: #54656f;
   text-decoration: none;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .pagina-oportunidade-voltar:hover {
@@ -2672,6 +2750,21 @@ body {
   color: #111b21;
   white-space: pre-line;
   margin: 0;
+}
+
+.telefone-oculto {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  font-style: normal;
+  color: #8696a0;
+  background: #f0f2f5;
+  border: 1px solid #e3e6e8;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+  cursor: help;
 }
 
 .pagina-oportunidade-data {

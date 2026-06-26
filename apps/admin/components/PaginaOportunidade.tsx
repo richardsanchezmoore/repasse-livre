@@ -3,7 +3,7 @@ import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
-import { formatarWhatsapp } from "@/lib/mascaras";
+import { formatarWhatsapp, ocultarTelefonesNaDescricao } from "@/lib/mascaras";
 import { urlOportunidade } from "@/lib/site";
 import { GaleriaFotos } from "./GaleriaFotos";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
@@ -173,7 +173,23 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
         {oportunidade.descricao && (
           <div className="pagina-oportunidade-secao">
             <h2>Descrição</h2>
-            <p className="pagina-oportunidade-descricao">{oportunidade.descricao}</p>
+            <p className="pagina-oportunidade-descricao">
+              {ehInsercaoDireta
+                ? oportunidade.descricao
+                : ocultarTelefonesNaDescricao(oportunidade.descricao).map((segmento, indice) =>
+                    segmento.tipo === "telefone" ? (
+                      <span
+                        key={indice}
+                        className="telefone-oculto"
+                        title="Contato disponível apenas no anúncio original"
+                      >
+                        telefone oculto
+                      </span>
+                    ) : (
+                      <span key={indice}>{segmento.valor}</span>
+                    )
+                  )}
+            </p>
           </div>
         )}
 
@@ -217,7 +233,7 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
           </a>
         )}
 
-        <BotaoCompartilharPagina oportunidade={oportunidade} url={urlOportunidade(oportunidade.id)} />
+        <BotaoCompartilharPagina oportunidade={oportunidade} url={urlOportunidade(oportunidade)} />
       </div>
     </article>
   );

@@ -1,7 +1,21 @@
 # Estado atual do projeto — Repasse Livre
 
 > Resumo de contexto para retomar o trabalho em uma conversa nova.
-> **23/06/2026, sessão mais recente**: refino completo do layout responsivo
+> **25-26/06/2026, sessão mais recente**: rodada extensa de **SEO** —
+> máscara de telefone na descrição de anúncios captados, base técnica
+> (robots/sitemap/metadata/JSON-LD), **URLs amigáveis** com cidade/estado
+> no path (`/carros/{cidade-uf}/{slug}`), páginas reais de **cidade,
+> estado e marca** (3 níveis: cidade+marca, estado+marca, Brasil+marca),
+> breadcrumb na página individual, e um **painel `/seo` completo** com 5
+> páginas-âncora (Home/Cidade/Estado/Marca/Individual) e mapa de
+> variáveis (`$title_ad`, `$description_ad`, `$tag`, `$tags`, `$estado`,
+> `$cidade`) — ver seção "SEO: máscara de telefone, URLs amigáveis,
+> páginas de cidade/estado/marca e painel de variáveis (25-26/06/2026)"
+> abaixo, a mais detalhada. **Pendências em aberto ao final: backfill
+> residual de descrições (278 registros, aguardando janela livre de cron
+> no Railway), decisão cron 2h vs 4h, analytics/BI, Google AI Overview.**
+>
+> **23/06/2026, sessão anterior**: refino completo do layout responsivo
 > do admin (mobile-first, já que ~75% do tráfego é celular), implementação
 > de **paginação real** na Central de Oportunidades (até então carregava
 > todas as linhas do banco de uma vez) e um **cabeçalho-breadcrumb** com
@@ -1119,6 +1133,200 @@ padrão de dropdown com clique-fora-fecha do `IconDropdown.tsx`.
    anúncio original, card inteiro clicável, título em 2 linhas, botão
    Compartilhar com ícone e mensagem melhor
 
+## SEO: máscara de telefone, URLs amigáveis, páginas de cidade/estado/marca e painel de variáveis (25-26/06/2026)
+
+Sessão longa, dividida em várias rodadas guiadas por pedidos diretos do
+usuário em cima do que já estava no ar, mais um trabalho avulso de
+backfill/infra do worker no início.
+
+### Backfill residual de descrições + infra do worker
+- Confirmado via query direta no Supabase: **278 oportunidades** ainda
+  com descrição quebrada (regressão parcial do backfill de 25/06
+  anterior). Tentativa de rodar `npm run backfill:descricoes` localmente
+  no Windows falhou: `curl_chrome116` (curl-impersonate) é um binário
+  Linux instalado só dentro da imagem Docker do worker (ver `Dockerfile`
+  de `apps/discovery-worker`), não existe nativamente no Windows.
+- Railway CLI 5.23.1 instalado globalmente nesta máquina
+  (`npm install -g @railway/cli`) e autenticado (`railway login`), mas
+  **bloqueado**: usuário confirmou que só pode rodar o backfill quando o
+  cron de varredura não estiver em execução no Railway. **Pendente**:
+  trocar o Start Command do serviço pra `npm run backfill:descricoes`,
+  rodar, reverter pra `npm run discover` — fora do horário do cron.
+
+### Ocultar telefone na descrição de anúncios captados
+- Anúncios de "descoberta" (OLX e futuros portais) não devem expor dados
+  pessoais do anunciante original — só `origem_tipo='insercao_direta'`
+  (nosso próprio anunciante) tem contato exibido.
+- `lib/mascaras.ts`: `ocultarTelefonesNaDescricao` detecta sequências de
+  10-11 dígitos (telefone BR, com/sem formatação, com/sem `+55`) no texto
+  de `descricao` e quebra em segmentos.
+- `components/PaginaOportunidade.tsx`: aplica a máscara só quando
+  `!ehInsercaoDireta`, renderizando um badge "telefone oculto"
+  (`.telefone-oculto` em `globals.css`) com tooltip "Contato disponível
+  apenas no anúncio original" no lugar do número — puramente na exibição,
+  sem tocar a captação/armazenamento (a `descricao` continua salva crua
+  no banco).
+
+### Base técnica de SEO
+- `app/robots.ts`: libera `/`, bloqueia rotas administrativas/auth
+  (`/usuarios`, `/enviar`, `/login`, `/cadastro`, `/redefinir-senha`,
+  `/auth`, `/api`, `/worker`), aponta pro sitemap.
+- `app/sitemap.ts`: dinâmico, lista oportunidades com `status='aprovada'`
+  (URLs de produto + cidade + estado), `revalidate = 3600`.
+- `app/layout.tsx`: `metadataBase`, title template (`"%s — Repasse
+  Livre"`), description, Open Graph e Twitter Card padrão.
+- Página individual ganhou `alternates.canonical`, Twitter Card e um
+  `<script type="application/ld+json">` com schema.org `Vehicle`/`Offer`
+  (nome, km, ano, preço, imagem, área servida).
+
+### URLs amigáveis — de `/oportunidade/{uuid}` pra `/carros/{cidade-uf}/{slug}`
+- Formato final, depois de duas iterações: `/carros/recife-pe/honda-
+  civic-coupe-si-2-4-16v-206cv-mec-2p-2015-{uuid}` — cidade/estado no
+  path (categoria indexável própria), slug do produto sem repetir geo
+  (já está no path), id completo no final do slug (mesmo padrão que a
+  OLX usa nos links que capturamos, garante unicidade sem coluna/índice
+  extra). Path raiz passou de `/oportunidades` pra **`/carros`**
+  (palavra-chave mais forte pra SEO automotivo) logo depois da primeira
+  implementação.
+- `lib/slug.ts`: `slugify`, `gerarSlugCidade`, `dividirSlugCidade`,
+  `gerarSlugEstado`, `gerarSlugOportunidade` (sem geo, evita duplicar o
+  ano quando já está no título), `extrairIdDaSlug` (regex de uuid no
+  fim do slug — aceita tanto o slug novo quanto um link antigo que era só
+  o uuid puro).
+- `lib/estados.ts`: mapa UF → nome completo (`NOME_POR_UF`).
+- `lib/localidade.ts` (novo): `resolverLocalidade(cidadeUf)` compartilhada
+  entre as páginas de listagem e de marca — tenta cidade
+  (`buscarCidadePorSlug`, exige sufixo `-uf`), depois estado
+  (`buscarEstadoPorSlug`, slug por extenso nunca colide com o sufixo de
+  cidade).
+- `app/carros/[cidadeUf]/[slug]/page.tsx`: página individual (slug
+  termina em uuid) **ou** página de marca dentro da cidade/estado (slug
+  sem uuid, ex.: `/carros/sao-paulo-sp/volkswagen`) — mesmo arquivo de
+  rota pra evitar conflito de rota dinâmica no Next.js.
+- `app/carros/[cidadeUf]/page.tsx`: resolve cidade → estado → marca de
+  nível Brasil (`/carros/volkswagen`, sem geo) nessa ordem.
+- `app/oportunidade/[slug]/page.tsx`: shim de redirect 308 — cobre uuid
+  puro de antes, slug-com-geo de uma versão intermediária, e qualquer
+  link `/oportunidade/...` velho. Tudo cai em `caminhoOportunidade()`
+  (`lib/site.ts`), fonte única da verdade pro path atual.
+- `lib/site.ts`: `caminhoOportunidade`/`urlOportunidade`,
+  `caminhoCidade`/`urlCidade`, `caminhoEstado`/`urlEstado`,
+  `caminhoMarca`/`urlMarca` (cobre os 3 níveis: cidade+marca,
+  estado+marca, só marca/nacional).
+
+### Breadcrumb na página individual
+- `components/BreadcrumbOportunidade.tsx`: `Carros > {Estado} > {Cidade}
+  > {Marca}`, cada nível com link real (`/`, `/carros/{estadoSlug}`,
+  `/carros/{cidadeUf}`, `/carros/{cidadeUf}/{marca}`) + JSON-LD
+  `BreadcrumbList`. Marca extraída por heurística simples (`lib/marca.ts`
+  `extrairMarca`: primeira palavra do título) — sem lista fixa de marcas
+  pra manter.
+- Visível só no desktop (`@media min-width: 768px`, classe
+  `.breadcrumb-pagina`) — decisão explícita do usuário, no mobile fica
+  `display: none`.
+- Fica **fora do corpo do conteúdo**, na mesma linha do link "← Voltar"
+  (texto simplificado, antes "Voltar para as oportunidades") — ver
+  `.pagina-oportunidade-topo` em `globals.css`.
+
+### Páginas de cidade, estado e marca (3 níveis) + variável `$tags`
+- `/carros/{cidadeUf}/` lista oportunidades da cidade ou do estado
+  (mesma rota resolve os dois); `/carros/{cidadeUf}/{marca}` e
+  `/carros/{marca}` (nacional) listam por marca dentro/fora de um
+  recorte geográfico — todas paginadas (`?pagina=N`), reaproveitando o
+  grid (`OpportunityCard`).
+- `lib/tags.ts` (`buscarTagsMarcas`) e `buscarMarcaPorSlug`/
+  `buscarEstadoPorSlug` (`components/DiscoveriesBoard.tsx`) calculam
+  frequência de marca por cidade/estado/nacional — mesma base de dados
+  que poderia alimentar um futuro painel de BI (ex.: "quantos Chevrolet
+  tem em SP", "qual cidade tem mais Fiat" — ideia levantada pelo
+  usuário, ainda não estruturada, ver Pendências).
+
+### Painel `/seo` completo — 5 páginas-âncora e mapa de variáveis
+- Migration `0014_seo_paginas.sql` (aplicada manualmente pelo usuário):
+  tabela `seo_paginas` (chave/valor — `titulo`, `descricao`,
+  `atualizado_em`; coluna `imagem_og` existe mas não é mais usada, ver
+  abaixo).
+- `lib/seoVariaveis.ts` (client-safe, sem import de supabase):
+  `CHAVES_SEO_PAGINAS` (`home`, `cidade`, `estado`, `marca`, `produto`),
+  `VARIAVEIS_SEO` (legenda exibida no painel), `substituirVariaveisSeo`
+  (ordena por tamanho de variável decrescente antes de substituir — sem
+  isso `$tag` é substituído antes de `$tags` ser reconhecido, por ser
+  prefixo).
+- `lib/seo.ts` (server-only): `buscarConfigSeo`, `buscarTodasConfigsSeo`,
+  `buscarFotoDestaque` (ver abaixo) — todas usando `supabaseAdmin`.
+- Mapa de variáveis final (pedido explícito do usuário, com exemplo
+  textual): `$title_ad`/`$description_ad` (produto), `$tag` (marca,
+  singular), `$tags` (3 marcas mais frequentes do recorte), `$estado`,
+  `$cidade` (cidade+estado combinados). `$cidade` é reaproveitada com
+  significado diferente por página (ex.: "Recife Pernambuco" na de
+  cidade, só "Pernambuco" na de estado) — decisão deliberada pra não
+  multiplicar nomes de variável.
+- `components/PainelSeo.tsx`: 5 seções (Home/Cidade/Estado/Marca/
+  Individual), cada uma com Título + Descrição + botão **Salvar**
+  próprio (sem campo de imagem — ver abaixo), e uma legenda fixa no topo
+  listando todas as variáveis disponíveis.
+- **Campo de imagem manual removido**: usuário considerou baixo valor
+  manter um campo de URL pra preencher manualmente — substituído por
+  `buscarFotoDestaque` (`lib/seo.ts`), que busca a foto do anúncio mais
+  recente daquele recorte (cidade/estado/marca/home) automaticamente.
+  Produto individual sempre usa a própria foto do carro.
+
+### Bug de arquitetura: client component importando `lib/supabase.ts` indiretamente
+- `components/PainelSeo.tsx` (`"use client"`) importava de `lib/seo.ts`,
+  que importa `lib/supabase.ts` (cliente admin com service role key) —
+  isso faz o bundler levar esse módulo pro **navegador**, onde
+  `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` (sem prefixo
+  `NEXT_PUBLIC_`) não existem, lançando `Error: SUPABASE_URL e
+  SUPABASE_SERVICE_ROLE_KEY são obrigatórios.` só ao acessar `/seo`.
+- Corrigido separando `lib/seoVariaveis.ts` (sem nenhum import de
+  supabase) de `lib/seo.ts` (só as funções que de fato precisam do
+  Supabase) — `PainelSeo.tsx` passou a importar do arquivo client-safe.
+- Varredura manual em todos os componentes `"use client"` do projeto não
+  achou nenhum outro caso — os demais que importam de `lib/` ou usam
+  `type Usuario`/`type Aba` fazem isso via `import type` (apagado em
+  compile-time, seguro). **Regra geral pra evitar recorrência**: nenhum
+  arquivo importado (direta ou indiretamente) por um componente
+  `"use client"` deve ter `lib/supabase.ts`/`lib/supabase-server.ts` no
+  grafo de import de valor (não-type).
+
+### Nota de ambiente (troubleshooting desta sessão)
+- Erro "SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios" no
+  navegador pode ter duas causas distintas, ambas vistas nesta sessão:
+  (1) o bug de arquitetura acima, ou (2) uma variável de ambiente vazia
+  presa na sessão do terminal (PowerShell mantém `$env:` até a janela
+  fechar) — resolvido fechando o terminal e abrindo um novo antes de
+  `npm run dev`. Cache `.next` stale também pode mascarar a causa real
+  depois de corrigida — `Remove-Item -Recurse -Force .next` antes de
+  testar de novo se o erro persistir sem motivo aparente.
+- Processo `node.exe` travado na porta 3000 às vezes não pode ser
+  finalizado via `Stop-Process`/`taskkill` rodado por uma sessão sem
+  privilégio suficiente (`Acesso negado`) — nesse caso, finalizar via
+  Gerenciador de Tarefas (aba Detalhes, buscar pelo PID) é o caminho que
+  funciona.
+
+### Pesquisa futura levantada pelo usuário (ainda não implementada)
+- **Painel de busca/edição de páginas individuais** além das 5
+  páginas-âncora — ideia mencionada como "talvez o mais lógico", não
+  implementada nesta sessão (ficou só a base de 5 âncoras fixas).
+- **BI/analytics** a partir das contagens de marca por cidade/estado já
+  calculadas pelas páginas de SEO (ex.: "quantos Chevrolet em SP", "qual
+  cidade tem mais Fiat") — hoje calculado on-the-fly sem agregação nem
+  histórico; precisaria de uma tabela/view de agregação pra virar
+  dashboard de verdade.
+- **Google AI Overview / agentes de IA** — usuário observou que a
+  atualização recente do Google prioriza esse tipo de superfície sobre
+  busca tradicional; alinhar com isso fica como conversa futura.
+
+### Commits desta sessão (em ordem)
+1. Oculta telefone na descrição de anúncios captados de outras plataformas
+2. Adiciona base técnica de SEO: robots.txt, sitemap dinâmico, metadata e JSON-LD
+3. Reestrutura URLs de oportunidade com cidade/estado/marca no path (`/carros/...`)
+4. Adiciona breadcrumb com JSON-LD na página individual
+5. Adiciona páginas de estado e marca (cidade/estado/nacional) com SEO via template
+6. Implementa painel `/seo` com 5 páginas-âncora e mapa de variáveis
+7. Remove campo de imagem manual do painel SEO, usa foto do anúncio automaticamente
+8. Corrige client component importando o cliente Supabase indiretamente
+
 ## Pendências conhecidas / próximos passos
 
 1. **Agendamento real do worker**: hoje só roda manualmente
@@ -1155,9 +1363,30 @@ padrão de dropdown com clique-fora-fecha do `IconDropdown.tsx`.
     "Paginação real" acima sobre manter a URL sincronizada com a posição
     se for implementado, pra não regredir o caso de uso "voltar pra
     página 3"
-12. **[PRÓXIMO PASSO]** Nenhum pedido explícito em aberto ao final da
-    sessão de 23/06/2026 (parte 2) — última mudança foi a simplificação
-    do card (ver seção acima). Perguntar ao usuário o que vem a seguir.
+12. ~~[PRÓXIMO PASSO de 23/06]~~ — seguido pela rodada extensa de SEO em
+    25-26/06/2026 (ver seção acima)
+13. **Backfill residual de descrições** (278 registros) — bloqueado até
+    o cron de varredura do Railway não estar em execução; Railway CLI já
+    instalado/autenticado localmente, falta só trocar o Start Command,
+    rodar `npm run backfill:descricoes` e reverter
+14. **Gap 16h-21h / cron 2h vs 4h** — checkpoint incremental foi
+    adiantado numa sessão anterior pra evitar overlap; ainda falta
+    decidir se mantém 4h ou volta pra 2h
+15. **Analytics/BI** a partir das contagens de marca por cidade/estado já
+    calculadas pelas páginas de SEO — ideia levantada pelo usuário,
+    precisa de tabela/view de agregação pra não ficar só on-the-fly (ver
+    seção de SEO acima)
+16. **Painel de busca/edição de páginas individuais** (além das 5
+    páginas-âncora do `/seo`) — mencionado como ideia futura, não
+    implementado
+17. **Google AI Overview / agentes de IA** — alinhar a estratégia de SEO
+    com essa superfície, ainda não conversado em detalhe
+18. Visual dos chips de atributos OLX (cor/combustível/etc. na seção
+    "Detalhes" da página individual) — pendente de refino de design
+19. **[PRÓXIMO PASSO]** Nenhum pedido explícito em aberto ao final da
+    sessão de 25-26/06/2026 — última mudança foi a correção do bug de
+    arquitetura do painel `/seo`. Perguntar ao usuário o que vem a
+    seguir.
 
 ## Decisões importantes (não óbvias do código)
 

@@ -16,6 +16,7 @@ import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
 import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
 import { urlThumbnailOlx } from "@/lib/imagemOlx";
+import { caminhoOportunidade } from "@/lib/site";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
 
@@ -48,7 +49,7 @@ export function OpportunityCard({
       alternarSelecionado(oportunidade.id);
       return;
     }
-    router.push(`/oportunidade/${oportunidade.id}`);
+    router.push(caminhoOportunidade(oportunidade));
   }
 
   function mostrarFeedback(texto: string, duracaoMs = 1500) {

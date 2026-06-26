@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   Board,
   buscarEstadosDisponiveis,
@@ -14,10 +15,31 @@ import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { CLASSIFICACOES, type Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
+import { buscarConfigSeo, buscarFotoDestaque } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [config, foto] = await Promise.all([buscarConfigSeo("home"), buscarFotoDestaque({})]);
+  if (!config) return {};
+
+  return {
+    title: config.titulo || undefined,
+    description: config.descricao || undefined,
+    openGraph: {
+      title: config.titulo || undefined,
+      description: config.descricao || undefined,
+      images: foto ? [foto] : undefined,
+    },
+    twitter: {
+      title: config.titulo || undefined,
+      description: config.descricao || undefined,
+      images: foto ? [foto] : undefined,
+    },
+  };
+}
 
 const ORDENS_VALIDAS: Ordem[] = ["recente", "margem", "menor_valor", "maior_valor"];
 

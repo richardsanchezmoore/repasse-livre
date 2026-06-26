@@ -152,6 +152,24 @@ export async function salvarConfigWorker(chave: string, valor: string): Promise<
   revalidatePath("/worker");
 }
 
+export async function salvarConfigSeo(chave: string, dados: { titulo: string; descricao: string }): Promise<void> {
+  await exigirAdmin();
+  const { error } = await supabaseAdmin.from("seo_paginas").upsert(
+    {
+      chave,
+      titulo: dados.titulo || null,
+      descricao: dados.descricao || null,
+      atualizado_em: new Date().toISOString(),
+    },
+    { onConflict: "chave" }
+  );
+  if (error) {
+    throw new Error(`Falha ao salvar SEO "${chave}": ${error.message}`);
+  }
+  revalidatePath("/seo");
+  revalidatePath("/");
+}
+
 const RAILWAY_GRAPHQL_URL = "https://backboard.railway.com/graphql/v2";
 
 async function chamarRailwayGraphQL<T>(token: string, query: string, variables: Record<string, unknown>): Promise<T> {

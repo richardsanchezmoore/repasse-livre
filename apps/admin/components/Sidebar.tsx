@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Activity,
   CheckCircle2,
+  Globe,
   Heart,
   LogIn,
   Menu,
@@ -104,6 +105,16 @@ export function Sidebar({
             </button>
             <button
               type="button"
+              onClick={() => navegar("/seo")}
+              className={`sidebar-item ${pathname === "/seo" ? "sidebar-item-ativo" : ""}`}
+              title="SEO"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Globe size={18} strokeWidth={1.75} />
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => navegar("/usuarios")}
               className={`sidebar-item ${pathname === "/usuarios" ? "sidebar-item-ativo" : ""}`}
               title="Usuários"
@@ -164,6 +175,16 @@ export function Sidebar({
                 <Activity size={18} strokeWidth={1.75} />
               </span>
               <span className="sidebar-rotulo">Motor de Descoberta</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/seo")}
+              className={`sidebar-item ${pathname === "/seo" ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Globe size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">SEO</span>
             </button>
             <button
               type="button"

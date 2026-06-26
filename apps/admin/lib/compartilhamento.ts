@@ -30,7 +30,7 @@ export function gerarTextoCompartilhamento(oportunidade: Oportunidade): string {
       ? `🔥 ${oportunidade.margem_percentual.toFixed(1)}% abaixo da FIPE${rotulo ? ` — ${rotulo}` : ""}`
       : null,
     "",
-    `🔗 ${urlOportunidade(oportunidade.id)}`,
+    `🔗 ${urlOportunidade(oportunidade)}`,
   ];
 
   return linhas.filter((linha) => linha !== null).join("\n");

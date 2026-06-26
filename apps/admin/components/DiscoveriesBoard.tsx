@@ -2,6 +2,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
 import type { Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
+import { extrairMarca } from "@/lib/marca";
+import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
@@ -68,7 +70,7 @@ function escaparTermoIlike(termo: string): string {
   return termo.replace(/[%_]/g, (caractere) => `\\${caractere}`);
 }
 
-async function buscarIdsFavoritados(usuarioId: string): Promise<Set<string>> {
+export async function buscarIdsFavoritados(usuarioId: string): Promise<Set<string>> {
   const { data, error } = await supabaseAdmin.from("favoritos").select("opportunity_id").eq("user_id", usuarioId);
   if (error) {
     throw new Error(`Falha ao buscar favoritos: ${error.message}`);
@@ -205,6 +207,142 @@ export async function buscarEstadosDisponiveis(
   }
   const presentes = new Set((data ?? []).map((linha) => linha.estado as string));
   return UFS.filter((uf) => presentes.has(uf));
+}
+
+export interface CidadeResolvida {
+  cidade: string;
+  estado: string;
+  total: number;
+}
+
+/**
+ * Resolve o segmento de path /carros/{cidadeUf}/ pro par
+ * (cidade, estado) reais — a UF (2 letras) já vem certa no slug, mas o
+ * nome da cidade precisa casar contra a grafia exata salva no banco
+ * (acentos, maiúsculas). Escopado por estado pra não varrer a tabela toda.
+ */
+export async function buscarCidadePorSlug(cidadeUf: string): Promise<CidadeResolvida | null> {
+  const dividido = dividirSlugCidade(cidadeUf);
+  if (!dividido) return null;
+
+  const { data, error } = await supabaseAdmin
+    .from("opportunities")
+    .select("cidade")
+    .eq("status", "aprovada")
+    .eq("estado", dividido.estado)
+    .not("cidade", "is", null);
+  if (error) {
+    throw new Error(`Falha ao buscar cidade: ${error.message}`);
+  }
+
+  const contagemPorCidade = new Map<string, number>();
+  for (const linha of data ?? []) {
+    const cidade = linha.cidade as string;
+    if (slugify(cidade) === dividido.cidadeSlug) {
+      contagemPorCidade.set(cidade, (contagemPorCidade.get(cidade) ?? 0) + 1);
+    }
+  }
+
+  if (contagemPorCidade.size === 0) return null;
+
+  // Mesma cidade pode estar salva com grafias levemente diferentes
+  // (maiúscula/minúscula) — usa a mais frequente como canônica.
+  const [cidadeCanonica, total] = [...contagemPorCidade.entries()].sort((a, b) => b[1] - a[1])[0];
+  return { cidade: cidadeCanonica, estado: dividido.estado, total };
+}
+
+export interface EstadoResolvido {
+  estado: string;
+  total: number;
+}
+
+/**
+ * Resolve o segmento de path /carros/{estadoSlug}/ (ex.: "pernambuco") pra
+ * UF real — só tentada quando o slug não casa o padrão de cidade (que
+ * sempre termina em "-xx"), ver app/carros/[cidadeUf]/page.tsx.
+ */
+export async function buscarEstadoPorSlug(estadoSlug: string): Promise<EstadoResolvido | null> {
+  const estadosDisponiveis = await buscarEstadosDisponiveis();
+  const uf = estadosDisponiveis.find((candidata) => gerarSlugEstado(candidata) === estadoSlug);
+  if (!uf) return null;
+
+  const { count, error } = await supabaseAdmin
+    .from("opportunities")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "aprovada")
+    .eq("estado", uf);
+  if (error) {
+    throw new Error(`Falha ao contar oportunidades do estado: ${error.message}`);
+  }
+
+  return { estado: uf, total: count ?? 0 };
+}
+
+export interface MarcaResolvida {
+  marca: string;
+  total: number;
+}
+
+const LIMITE_AMOSTRA_MARCA = 1000;
+const LIMITE_AMOSTRA_MARCA_NACIONAL = 5000;
+
+/**
+ * Resolve o segmento {marcaSlug} (ex.: "volkswagen") pra a grafia real da
+ * marca — escopado por cidade+estado, só estado, ou nacional (nenhum dos
+ * dois, ver /carros/{marcaSlug} de nível Brasil). Mesmo princípio de
+ * buscarCidadePorSlug: casa por slug numa amostra, escolhe a grafia mais
+ * frequente, conta o total exato depois com ilike.
+ */
+export async function buscarMarcaPorSlug(
+  filtro: { cidade?: string; estado?: string },
+  marcaSlug: string
+): Promise<MarcaResolvida | null> {
+  let consultaAmostra = supabaseAdmin
+    .from("opportunities")
+    .select("veiculo")
+    .eq("status", "aprovada")
+    .limit(filtro.estado ? LIMITE_AMOSTRA_MARCA : LIMITE_AMOSTRA_MARCA_NACIONAL);
+  if (filtro.estado) {
+    consultaAmostra = consultaAmostra.eq("estado", filtro.estado);
+  }
+  if (filtro.cidade) {
+    consultaAmostra = consultaAmostra.eq("cidade", filtro.cidade);
+  }
+
+  const { data, error } = await consultaAmostra;
+  if (error) {
+    throw new Error(`Falha ao buscar marca: ${error.message}`);
+  }
+
+  const contagemPorMarca = new Map<string, number>();
+  for (const linha of data ?? []) {
+    const marca = extrairMarca(linha.veiculo as string);
+    if (marca && slugify(marca) === marcaSlug) {
+      contagemPorMarca.set(marca, (contagemPorMarca.get(marca) ?? 0) + 1);
+    }
+  }
+
+  if (contagemPorMarca.size === 0) return null;
+
+  const [marcaCanonica] = [...contagemPorMarca.entries()].sort((a, b) => b[1] - a[1])[0];
+
+  let consultaTotal = supabaseAdmin
+    .from("opportunities")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "aprovada")
+    .ilike("veiculo", `${marcaCanonica}%`);
+  if (filtro.estado) {
+    consultaTotal = consultaTotal.eq("estado", filtro.estado);
+  }
+  if (filtro.cidade) {
+    consultaTotal = consultaTotal.eq("cidade", filtro.cidade);
+  }
+  const { count, error: erroTotal } = await consultaTotal;
+  if (erroTotal) {
+    throw new Error(`Falha ao contar oportunidades da marca: ${erroTotal.message}`);
+  }
+
+  return { marca: marcaCanonica, total: count ?? 0 };
 }
 
 /** Contagem por aba pros badges da Sidebar — só conta, não carrega as linhas. */
