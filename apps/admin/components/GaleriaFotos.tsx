@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { urlThumbnailOlx } from "@/lib/imagemOlx";
+import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 
 export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
   const [indiceAtivo, setIndiceAtivo] = useState(0);
@@ -129,7 +129,7 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
                   onClick={() => abrirEm(indiceReal)}
                   aria-label={`Ver foto ${indiceReal + 1} em tela cheia`}
                 >
-                  <img src={urlThumbnailOlx(url)} alt={`${alt} — foto ${indiceReal + 1}`} referrerPolicy="no-referrer" />
+                  <ImagemThumbnail url={url} alt={`${alt} — foto ${indiceReal + 1}`} />
                   {ehUltima && <span className="galeria-mosaico-mais">+{restantes}</span>}
                 </button>
               );

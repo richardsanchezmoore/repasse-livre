@@ -15,7 +15,7 @@ import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
 import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
-import { urlThumbnailOlx } from "@/lib/imagemOlx";
+import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 import { caminhoOportunidade } from "@/lib/site";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
@@ -110,12 +110,7 @@ export function OpportunityCard({
     <div className="card card-clicavel" onClick={aoClicarCard}>
       <div className="foto-wrapper">
         {oportunidade.foto_principal ? (
-          <img
-            src={urlThumbnailOlx(oportunidade.foto_principal)}
-            alt=""
-            className="foto-capa"
-            referrerPolicy="no-referrer"
-          />
+          <ImagemThumbnail url={oportunidade.foto_principal} alt="" className="foto-capa" />
         ) : (
           <div className="foto-capa foto-capa-vazia" />
         )}
