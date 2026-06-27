@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect } = await searchParams;
+  const linkCadastro = redirect ? `/cadastro?redirect=${encodeURIComponent(redirect)}` : "/cadastro";
+
   return (
     <div className="login-pagina">
       <div className="login-card">
@@ -9,9 +16,9 @@ export default function LoginPage() {
         <img src="/logo.svg" alt="Repasse Livre" className="login-logo" />
         <h1 className="visualmente-oculto">Entrar — Repasse Livre</h1>
         <p className="login-subtitulo">Entre para favoritar oportunidades e acompanhar de onde estiver.</p>
-        <LoginForm />
+        <LoginForm redirect={redirect} />
         <p className="login-rodape">
-          Não tem conta? <Link href="/cadastro">Criar conta</Link>
+          Não tem conta? <Link href={linkCadastro}>Criar conta</Link>
         </p>
       </div>
     </div>

@@ -3,10 +3,12 @@
 import { useRef, useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import { criarSupabaseBrowser } from "@/lib/supabase-browser";
+import { caminhoRedirectSeguro } from "@/lib/redirectSeguro";
 import { IconeGoogle } from "@/components/IconeGoogle";
 import { ModalConfirmarGoogle } from "@/components/ModalConfirmarGoogle";
 
-export function LoginForm() {
+export function LoginForm({ redirect }: { redirect?: string }) {
+  const destino = caminhoRedirectSeguro(redirect);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const [modo, setModo] = useState<"login" | "recuperar">("login");
   const [email, setEmail] = useState("");
@@ -29,7 +31,7 @@ export function LoginForm() {
       setFeedback({ tipo: "erro", texto: "E-mail ou senha incorretos." });
       return;
     }
-    window.location.href = "/";
+    window.location.href = destino;
   }
 
   async function aoRedefinirSenha(evento: React.FormEvent) {
@@ -61,7 +63,7 @@ export function LoginForm() {
     const supabase = criarSupabaseBrowser();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destino)}` },
     });
   }
 

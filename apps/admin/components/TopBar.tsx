@@ -82,6 +82,9 @@ export function TopBar({
   }
 
   const podeSelecionarVarios = usuario?.role === "admin" && aba !== "favoritos";
+  // Anunciar exige conta — quem não está logado vai pro login e volta pra
+  // /enviar automaticamente depois (ver app/auth/callback/route.ts).
+  const hrefAnunciar = usuario ? "/enviar" : "/login?redirect=%2Fenviar";
 
   return (
     <div className="top-bar">
@@ -139,7 +142,7 @@ export function TopBar({
             </button>
           </div>
         )}
-        <Link href="/enviar" className="botao-anunciar">
+        <Link href={hrefAnunciar} className="botao-anunciar">
           <Plus size={16} strokeWidth={2.25} />
           Anunciar
         </Link>
@@ -169,7 +172,7 @@ export function TopBar({
             <Search size={18} strokeWidth={2.25} />
           </button>
         )}
-        <Link href="/enviar" className="botao-anunciar-compacto" aria-label="Anunciar" title="Anunciar">
+        <Link href={hrefAnunciar} className="botao-anunciar-compacto" aria-label="Anunciar" title="Anunciar">
           <Plus size={18} strokeWidth={2.25} />
         </Link>
         <UserMenu usuario={usuario} />

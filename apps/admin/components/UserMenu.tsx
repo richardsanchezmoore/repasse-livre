@@ -30,6 +30,9 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
   }
 
   const inicial = (usuario.nome ?? usuario.email ?? "?").charAt(0).toUpperCase();
+  // Conta criada via login simples (e-mail/senha ou Google) nunca pediu
+  // WhatsApp — só aparece depois do primeiro anúncio ou aqui.
+  const dadosIncompletos = !usuario.nome || !usuario.whatsapp;
 
   return (
     <div className="usuario-icone-wrapper">
@@ -38,6 +41,11 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
           <span className="usuario-menu-avatar">{inicial}</span>
           <span className="usuario-menu-email">{usuario.nome ?? usuario.email}</span>
         </div>
+        {dadosIncompletos && (
+          <Link href="/completar-dados" className="usuario-menu-completar-dados">
+            Completar Dados
+          </Link>
+        )}
         <button type="button" className="usuario-menu-sair" onClick={aoSair}>
           Sair
         </button>

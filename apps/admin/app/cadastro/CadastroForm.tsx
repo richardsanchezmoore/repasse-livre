@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import { criarSupabaseBrowser } from "@/lib/supabase-browser";
+import { caminhoRedirectSeguro } from "@/lib/redirectSeguro";
 import { IconeGoogle } from "@/components/IconeGoogle";
 import { ModalConfirmarGoogle } from "@/components/ModalConfirmarGoogle";
 
-export function CadastroForm() {
+export function CadastroForm({ redirect }: { redirect?: string }) {
+  const destino = caminhoRedirectSeguro(redirect);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
@@ -31,7 +33,7 @@ export function CadastroForm() {
     const { error } = await supabase.auth.signUp({
       email,
       password: senha,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destino)}` },
     });
     setCriando(false);
     setFeedback(
@@ -51,7 +53,7 @@ export function CadastroForm() {
     const supabase = criarSupabaseBrowser();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destino)}` },
     });
   }
 

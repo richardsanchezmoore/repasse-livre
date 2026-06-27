@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { buscarValorFipe } from "@/lib/fipe";
 import { calcularMargemPercentual, classificar, ehElegivel } from "@/lib/margin";
 import { verificarTurnstileToken } from "@/lib/turnstile";
+import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { PERFIS_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { MOTIVOS_VENDA, type MotivoVenda } from "@/lib/motivoVenda";
 
@@ -55,6 +56,14 @@ export async function enviarOportunidade(
   const fotosSecundarias = lerListaJson("fotosSecundariasJson");
   const opcionais = lerListaJson("opcionaisJson");
   const sinistroLeilao = lerListaJson("sinistroLeilaoJson");
+
+  // /enviar exige conta (ver app/enviar/page.tsx) — chegar aqui sem sessão
+  // só é possível burlando a UI (ex.: chamando a action direto), por isso
+  // o guard se repete na action e não só na página.
+  const usuario = await obterUsuarioAtual();
+  if (!usuario) {
+    return { erro: "Você precisa estar logado para anunciar.", sucesso: false };
+  }
 
   if (!veiculo || !marcaCode || !modeloCode || !anoCode || !precoTexto) {
     return { erro: "Preencha veículo, marca, modelo, ano e preço.", sucesso: false };
@@ -136,10 +145,21 @@ export async function enviarOportunidade(
     motivo_venda: motivoVenda,
     opcionais,
     sinistro_leilao: sinistroLeilao,
+    criado_por: usuario.id,
   });
 
   if (erroInsercao) {
     return { erro: "Falha ao salvar a oportunidade. Tente novamente.", sucesso: false };
+  }
+
+  // Primeira vez que essa conta anuncia "completa os dados" automaticamente
+  // — não sobrescreve se a conta já tinha nome/whatsapp salvos (ex.: editado
+  // manualmente em /completar-dados depois do envio anterior).
+  if (!usuario.nome || !usuario.whatsapp) {
+    await supabaseAdmin
+      .from("perfis")
+      .update({ nome: usuario.nome ?? (nomeRemetente || null), whatsapp: usuario.whatsapp ?? whatsapp })
+      .eq("user_id", usuario.id);
   }
 
   revalidatePath("/");

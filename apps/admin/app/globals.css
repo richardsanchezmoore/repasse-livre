@@ -2397,7 +2397,9 @@ body {
   white-space: nowrap;
 }
 
-.usuario-menu-sair {
+.usuario-menu-sair,
+.usuario-menu-completar-dados {
+  display: block;
   width: 100%;
   text-align: left;
   padding: 8px 10px;
@@ -2406,9 +2408,12 @@ body {
   background: none;
   cursor: pointer;
   font-size: 13px;
+  color: inherit;
+  text-decoration: none;
 }
 
-.usuario-menu-sair:hover {
+.usuario-menu-sair:hover,
+.usuario-menu-completar-dados:hover {
   background: #f0f2f5;
 }
 

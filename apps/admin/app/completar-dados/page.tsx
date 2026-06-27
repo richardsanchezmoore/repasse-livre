@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { buscarEstadosDisponiveis, contarOportunidades } from "@/components/DiscoveriesBoard";
-import { FormularioEnvio } from "@/components/FormularioEnvio";
+import { FormularioCompletarDados } from "@/components/FormularioCompletarDados";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
@@ -10,14 +10,12 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-export default async function EnviarOportunidadePage() {
-  const siteKeyTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+export default async function CompletarDadosPage() {
   const usuario = await obterUsuarioAtual();
-  // Anunciar passou a exigir conta — quem chega deslogado (link direto,
-  // favorito antigo etc.) volta pra cá automaticamente depois do login.
   if (!usuario) {
-    redirect("/login?redirect=%2Fenviar");
+    redirect("/login?redirect=%2Fcompletar-dados");
   }
+
   const [contagens, estadosDisponiveis] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(),
@@ -31,21 +29,16 @@ export default async function EnviarOportunidadePage() {
           <Sidebar
             abaAtiva="aprovadas"
             contagens={contagens}
-            role={usuario?.role ?? null}
-            usuarioLogado={Boolean(usuario)}
+            role={usuario.role}
+            usuarioLogado={true}
           />
           <main className="conteudo">
             <div className="pagina-publica">
-              <h1>Envie uma oportunidade</h1>
+              <h1>Complete seus dados</h1>
               <p className="pagina-publica-intro">
-                Encontrou um carro abaixo da tabela FIPE? Envie aqui — se a margem for
-                de pelo menos 5%, sua oportunidade entra na fila de revisão.
+                Nome e WhatsApp usados automaticamente da próxima vez que você anunciar um veículo.
               </p>
-              <FormularioEnvio
-                siteKeyTurnstile={siteKeyTurnstile}
-                nomeInicial={usuario.nome}
-                whatsappInicial={usuario.whatsapp}
-              />
+              <FormularioCompletarDados nomeInicial={usuario.nome} whatsappInicial={usuario.whatsapp} />
             </div>
           </main>
         </div>

@@ -51,7 +51,15 @@ async function buscarValorFipeApi(query: string): Promise<{ valor?: number; erro
 type CampoTocado = Record<string, boolean>;
 type Erros = Record<string, string | null>;
 
-export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string }) {
+export function FormularioEnvio({
+  siteKeyTurnstile,
+  nomeInicial,
+  whatsappInicial,
+}: {
+  siteKeyTurnstile: string;
+  nomeInicial?: string | null;
+  whatsappInicial?: string | null;
+}) {
   const [estado, acao] = useFormState(enviarOportunidade, ESTADO_INICIAL);
 
   const [marcas, setMarcas] = useState<FipeOpcao[]>([]);
@@ -73,8 +81,8 @@ export function FormularioEnvio({ siteKeyTurnstile }: { siteKeyTurnstile: string
   const [cambio, setCambio] = useState("");
   const [kmDigitos, setKmDigitos] = useState("");
   const [fotos, setFotos] = useState<FotoEnviada[]>([]);
-  const [whatsappDigitos, setWhatsappDigitos] = useState("");
-  const [nomeRemetente, setNomeRemetente] = useState("");
+  const [whatsappDigitos, setWhatsappDigitos] = useState(whatsappInicial ?? "");
+  const [nomeRemetente, setNomeRemetente] = useState(nomeInicial ?? "");
   const [perfilRemetente, setPerfilRemetente] = useState("");
   const [motivoVenda, setMotivoVenda] = useState("");
   const [descricao, setDescricao] = useState("");
