@@ -130,7 +130,7 @@ export default async function PaginaLocalidade({
 
   const contexto = await resolverContexto(cidadeUf);
   if (!contexto) {
-    await redirecionarOuNotFound(`/carros/${cidadeUf}`);
+    await redirecionarOuNotFound(`/carros/${cidadeUf}`, { usarPadrao: true });
     return null;
   }
 

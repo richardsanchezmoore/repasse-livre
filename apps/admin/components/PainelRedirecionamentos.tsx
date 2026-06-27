@@ -4,16 +4,30 @@ import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { apagarRedirecionamento, criarRedirecionamento } from "@/app/actions";
 
+// Não importar ORIGEM_PADRAO_CATCH_ALL de lib/redirecionamentos.ts aqui —
+// esse arquivo carrega supabaseAdmin, e este componente é "use client"
+// (mesma armadilha já documentada em rastreioVariaveis.ts). É só "*", duplicar
+// a constante como string literal é mais seguro do que arriscar o import.
+const ORIGEM_PADRAO_CATCH_ALL = "*";
+
 export interface RedirecionamentoLinha {
   origem: string;
   destino: string;
   criado_em: string;
 }
 
-export function PainelRedirecionamentos({ redirecionamentos }: { redirecionamentos: RedirecionamentoLinha[] }) {
+export function PainelRedirecionamentos({
+  redirecionamentos,
+  redirecionamentoPadrao,
+}: {
+  redirecionamentos: RedirecionamentoLinha[];
+  redirecionamentoPadrao: string;
+}) {
   const [pendente, iniciarTransicao] = useTransition();
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
+  const [padrao, setPadrao] = useState(redirecionamentoPadrao);
+  const [salvandoPadrao, setSalvandoPadrao] = useState(false);
   const [apagandoOrigem, setApagandoOrigem] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -29,6 +43,27 @@ export function PainelRedirecionamentos({ redirecionamentos }: { redirecionament
         setDestino("");
       } catch (erroCapturado) {
         setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao salvar redirecionamento.");
+      }
+    });
+  }
+
+  function salvarPadrao() {
+    setErro(null);
+    setMensagem(null);
+    setSalvandoPadrao(true);
+    iniciarTransicao(async () => {
+      try {
+        if (padrao.trim()) {
+          await criarRedirecionamento(ORIGEM_PADRAO_CATCH_ALL, padrao);
+          setMensagem("Redirecionamento padrão salvo.");
+        } else {
+          await apagarRedirecionamento(ORIGEM_PADRAO_CATCH_ALL);
+          setMensagem("Redirecionamento padrão removido.");
+        }
+      } catch (erroCapturado) {
+        setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao salvar redirecionamento padrão.");
+      } finally {
+        setSalvandoPadrao(false);
       }
     });
   }
@@ -59,6 +94,30 @@ export function PainelRedirecionamentos({ redirecionamentos }: { redirecionament
 
       {erro && <p className="campo-erro">{erro}</p>}
       {mensagem && <p className="worker-mensagem">{mensagem}</p>}
+
+      <div className="worker-config-campo">
+        <label className="worker-config-rotulo" htmlFor="redirect-padrao">
+          Redirecionamento padrão (catch-all)
+        </label>
+        <div className="worker-config-linha">
+          <input
+            id="redirect-padrao"
+            type="text"
+            className="worker-config-input"
+            placeholder="/ (home)"
+            value={padrao}
+            onChange={(evento) => setPadrao(evento.target.value)}
+          />
+          <button type="button" className="worker-config-salvar" disabled={pendente} onClick={salvarPadrao}>
+            {pendente && salvandoPadrao ? "Salvando…" : "Salvar"}
+          </button>
+        </div>
+        <p className="worker-config-ajuda">
+          Pra onde mandar uma URL de carro/cidade/estado/marca que não existe mais e não tem nenhum
+          redirecionamento específico nem fallback automático aplicável (ex.: apagou todos os anúncios de uma
+          cidade inteira). Deixe em branco pra essas URLs caírem em 404 normal.
+        </p>
+      </div>
 
       <div className="worker-config-grade">
         <div className="worker-config-campo">

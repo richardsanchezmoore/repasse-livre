@@ -5,7 +5,7 @@ import { PainelRedirecionamentos } from "@/components/PainelRedirecionamentos";
 import { PainelSeo } from "@/components/PainelSeo";
 import { Sidebar } from "@/components/Sidebar";
 import { buscarConfigRastreio } from "@/lib/rastreio";
-import { buscarTodosRedirecionamentos } from "@/lib/redirecionamentos";
+import { buscarRedirecionamentoPadrao, buscarTodosRedirecionamentos } from "@/lib/redirecionamentos";
 import { buscarTodasConfigsSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 
@@ -16,10 +16,11 @@ export default async function SeoPage() {
   const usuarioAtual = await obterUsuarioAtual();
   if (!usuarioAtual) return null; // guarda real já em app/(painel)/layout.tsx — isto só estreita o tipo p/ TS
 
-  const [configs, configRastreio, redirecionamentos, contagens] = await Promise.all([
+  const [configs, configRastreio, redirecionamentos, redirecionamentoPadrao, contagens] = await Promise.all([
     buscarTodasConfigsSeo(),
     buscarConfigRastreio(),
     buscarTodosRedirecionamentos(),
+    buscarRedirecionamentoPadrao(),
     contarOportunidades(usuarioAtual),
   ]);
 
@@ -31,7 +32,10 @@ export default async function SeoPage() {
           <h1 className="usuarios-titulo">SEO</h1>
           <p className="usuarios-subtitulo">Edite título, descrição e imagem de compartilhamento de cada página.</p>
           <PainelRastreio config={configRastreio} />
-          <PainelRedirecionamentos redirecionamentos={redirecionamentos} />
+          <PainelRedirecionamentos
+            redirecionamentos={redirecionamentos}
+            redirecionamentoPadrao={redirecionamentoPadrao ?? ""}
+          />
           <PainelSeo configs={configs} />
         </main>
       </div>

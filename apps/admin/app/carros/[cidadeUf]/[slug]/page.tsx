@@ -139,7 +139,10 @@ async function PaginaMarca({
 }) {
   const localidade = await resolverLocalidade(cidadeUf);
   if (!localidade) {
-    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`);
+    // Localidade inválida — sem filtro de marca pra cair, sobe pro nível
+    // mais alto possível (a própria página da localidade decide a partir
+    // daí, inclusive usando o catch-all se nem ela existir mais).
+    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`, { fallback: `/carros/${cidadeUf}` });
     return null;
   }
 
@@ -148,7 +151,9 @@ async function PaginaMarca({
     marcaSlug
   );
   if (!marcaResolvida) {
-    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`);
+    // Marca não existe (mais) nessa localidade — cai pra ela sem o filtro,
+    // em vez de mostrar 404 pra uma marca que pode ter saído de cena.
+    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`, { fallback: `/carros/${cidadeUf}` });
     return null;
   }
 
@@ -265,7 +270,10 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   const [oportunidade, usuario] = await Promise.all([buscarOportunidadePorId(id), obterUsuarioAtual()]);
 
   if (!oportunidade) {
-    await redirecionarOuNotFound(`/carros/${cidadeUf}/${slug}`);
+    // Anúncio apagado/rejeitado (um a um ou em massa) — cai pra página da
+    // cidade em vez de 404, sem precisar cadastrar um redirecionamento pra
+    // cada anúncio removido.
+    await redirecionarOuNotFound(`/carros/${cidadeUf}/${slug}`, { fallback: `/carros/${cidadeUf}` });
     return null;
   }
 
