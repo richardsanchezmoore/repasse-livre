@@ -12,6 +12,7 @@ import {
   buscarDuplicataPorTituloEKm,
   finalizarRegistroVarreduraComErro,
   finalizarRegistroVarreduraComSucesso,
+  garantirCoordenadasCidade,
   iniciarRegistroVarredura,
   lerConfig,
   linkOrigemJaExiste,
@@ -191,6 +192,10 @@ async function processarAnuncio(
 
   await salvarOportunidade(oportunidade);
   resultado.elegiveis++;
+
+  if (anuncio.cidade && anuncio.estado) {
+    await garantirCoordenadasCidade(anuncio.cidade, anuncio.estado);
+  }
 }
 
 /**

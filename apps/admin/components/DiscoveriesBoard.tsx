@@ -13,7 +13,7 @@ import { RegistradorIdsVisiveis } from "./RegistradorIdsVisiveis";
 import { SeletorEstadoBreadcrumb } from "./SeletorEstadoBreadcrumb";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
-export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor";
+export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor" | "proximidade";
 
 export const ITENS_POR_PAGINA = 40;
 
@@ -35,6 +35,9 @@ export interface FiltrosBoard {
   precoMin?: number;
   precoMax?: number;
   ordem?: Ordem;
+  /** Coordenadas do usuário — só usadas quando ordem === "proximidade" (ver lib/geolocalizacao.ts). */
+  lat?: number;
+  lng?: number;
 }
 
 const TITULO_POR_ABA: Record<Aba, string> = {
@@ -64,6 +67,9 @@ const ORDEM_SQL: Record<Ordem, { coluna: string; ascendente: boolean }> = {
   margem: { coluna: "margem_percentual", ascendente: false },
   menor_valor: { coluna: "preco", ascendente: true },
   maior_valor: { coluna: "preco", ascendente: false },
+  // "proximidade" não passa por aqui — buscarOportunidades trata via RPC
+  // (oportunidades_por_proximidade) antes de chegar nesse ORDER BY genérico.
+  proximidade: { coluna: "data_ordenacao", ascendente: false },
 };
 
 function escaparTermoIlike(termo: string): string {
@@ -94,6 +100,28 @@ async function buscarOportunidades(
   const { coluna, ascendente } = ORDEM_SQL[filtros.ordem ?? "recente"];
   const inicio = (pagina - 1) * ITENS_POR_PAGINA;
   const fim = inicio + ITENS_POR_PAGINA - 1;
+
+  // "Perto de mim" só existe na vitrine pública (aprovadas) e só com
+  // coordenadas resolvidas (ver lib/geolocalizacao.ts) — combinação
+  // diferente disso (ex.: URL manipulada) cai pro ORDER BY padrão abaixo.
+  if (aba === "aprovadas" && filtros.ordem === "proximidade" && filtros.lat !== undefined && filtros.lng !== undefined) {
+    const { data, error } = await supabaseAdmin.rpc("oportunidades_por_proximidade", {
+      p_lat: filtros.lat,
+      p_lng: filtros.lng,
+      p_classificacao: filtros.classificacao ?? null,
+      p_busca: filtros.busca ?? null,
+      p_estado: filtros.estado ?? null,
+      p_preco_min: filtros.precoMin ?? null,
+      p_preco_max: filtros.precoMax ?? null,
+      p_limite: ITENS_POR_PAGINA,
+      p_deslocamento: inicio,
+    });
+    if (error) {
+      throw new Error(`Falha ao buscar oportunidades por proximidade: ${error.message}`);
+    }
+    const linhas = (data ?? []) as Array<Oportunidade & { total: string | number }>;
+    return { itens: linhas, total: linhas.length > 0 ? Number(linhas[0].total) : 0 };
+  }
 
   if (aba === "favoritos") {
     if (!usuario) return { itens: [], total: 0 };
@@ -380,12 +408,14 @@ export async function Board({
   usuario = null,
   pagina = 1,
   estadosDisponiveis = [],
+  proximidadeDisponivel = false,
 }: {
   aba: Aba;
   filtros?: FiltrosBoard;
   usuario?: Usuario | null;
   pagina?: number;
   estadosDisponiveis?: string[];
+  proximidadeDisponivel?: boolean;
 }) {
   const { itens: oportunidades, total } = await buscarOportunidades(aba, filtros, usuario, pagina);
   const idsFavoritados = aba === "favoritos"
@@ -422,6 +452,7 @@ export async function Board({
         ordem={filtros.ordem}
         precoMin={filtros.precoMin}
         precoMax={filtros.precoMax}
+        proximidadeDisponivel={proximidadeDisponivel}
       />
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />
       <div className="board-lista">

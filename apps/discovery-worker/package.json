@@ -9,6 +9,7 @@
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
+    "backfill:coordenadas": "tsx src/backfillCoordenadas.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

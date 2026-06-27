@@ -14,9 +14,10 @@ const ROTULO_ORDEM: Record<Ordem, string> = {
   margem: "Maior Margem",
   menor_valor: "Menor valor",
   maior_valor: "Maior Valor",
+  proximidade: "Perto de mim",
 };
 
-const ORDENS: Ordem[] = ["recente", "margem", "menor_valor", "maior_valor"];
+const ORDENS_BASE: Ordem[] = ["recente", "margem", "menor_valor", "maior_valor"];
 
 export function FiltroClassificacao({
   aba,
@@ -24,13 +25,18 @@ export function FiltroClassificacao({
   ordem = "recente",
   precoMin,
   precoMax,
+  proximidadeDisponivel = false,
 }: {
   aba: Aba;
   ativa?: Classificacao;
   ordem?: Ordem;
   precoMin?: number;
   precoMax?: number;
+  proximidadeDisponivel?: boolean;
 }) {
+  // "Perto de mim" só aparece quando temos coordenada do usuário (ver
+  // lib/geolocalizacao.ts) — sem isso a opção não faria sentido na lista.
+  const ORDENS: Ordem[] = proximidadeDisponivel ? ["proximidade", ...ORDENS_BASE] : ORDENS_BASE;
   const { navegar } = useNavegacao();
   const searchParams = useSearchParams();
   const [minDigitos, setMinDigitos] = useState(precoMin ? String(precoMin) : "");
@@ -57,7 +63,11 @@ export function FiltroClassificacao({
   }
 
   function selecionarOrdem(novaOrdem: Ordem) {
-    atualizarParams({ ordem: novaOrdem === "recente" ? undefined : novaOrdem });
+    // Sempre grava o valor explícito (mesmo "recente") — quando há
+    // coordenada do usuário, a ausência do param vira "proximidade" por
+    // padrão (ver page.tsx), então só assim dá pra escolher "recente" de
+    // propósito e isso sobreviver a um refresh.
+    atualizarParams({ ordem: novaOrdem });
   }
 
   function aplicarFaixaPreco() {

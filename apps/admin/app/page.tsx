@@ -9,11 +9,13 @@ import {
   type Ordem,
 } from "@/components/DiscoveriesBoard";
 import { BoardArea } from "@/components/BoardArea";
+import { DetectorLocalizacao } from "@/components/DetectorLocalizacao";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { CLASSIFICACOES, type Classificacao } from "@/lib/classificacao";
+import { obterCoordsUsuario } from "@/lib/geolocalizacao";
 import { UFS } from "@/lib/mascaras";
 import { buscarConfigSeo, buscarFotoDestaque } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -41,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const ORDENS_VALIDAS: Ordem[] = ["recente", "margem", "menor_valor", "maior_valor"];
+const ORDENS_VALIDAS: Ordem[] = ["recente", "margem", "menor_valor", "maior_valor", "proximidade"];
 
 function paraNumero(valor: string | undefined): number | undefined {
   if (!valor) return undefined;
@@ -73,9 +75,20 @@ export default async function CentralDeOportunidadesPage({
   const classificacaoAtiva = CLASSIFICACOES.includes(classificacao as Classificacao)
     ? (classificacao as Classificacao)
     : undefined;
-  const ordemAtiva = ORDENS_VALIDAS.includes(ordem as Ordem) ? (ordem as Ordem) : "recente";
   const estadoAtivo = UFS.includes(estado ?? "") ? estado : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
+
+  // "Perto de mim" só existe na vitrine pública (aprovadas) e só com
+  // coordenada resolvida (cookie do navegador ou IP via Vercel — ver
+  // lib/geolocalizacao.ts). Sem `ordem` explícito na URL, vira o padrão
+  // automático quando disponível; senão cai pra "recente" como sempre foi.
+  const coordsUsuario = abaAtiva === "aprovadas" ? await obterCoordsUsuario() : null;
+  const proximidadeDisponivel = Boolean(coordsUsuario);
+  const ordemAtiva: Ordem = ORDENS_VALIDAS.includes(ordem as Ordem)
+    ? (ordem as Ordem)
+    : proximidadeDisponivel
+      ? "proximidade"
+      : "recente";
 
   const filtros: FiltrosBoard = {
     classificacao: classificacaoAtiva,
@@ -84,6 +97,8 @@ export default async function CentralDeOportunidadesPage({
     precoMin: paraNumero(precoMin),
     precoMax: paraNumero(precoMax),
     ordem: ordemAtiva,
+    lat: ordemAtiva === "proximidade" ? coordsUsuario?.lat : undefined,
+    lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,
   };
 
   const [contagens, estadosDisponiveis] = await Promise.all([
@@ -94,6 +109,7 @@ export default async function CentralDeOportunidadesPage({
   return (
     <NavegacaoProvider>
       <SelecaoMultiplaProvider>
+        <DetectorLocalizacao />
         <TopBar
           aba={abaAtiva}
           busca={filtros.busca}
@@ -116,6 +132,7 @@ export default async function CentralDeOportunidadesPage({
                 usuario={usuario}
                 pagina={paginaAtiva}
                 estadosDisponiveis={estadosDisponiveis}
+                proximidadeDisponivel={proximidadeDisponivel}
               />
             </BoardArea>
           </main>

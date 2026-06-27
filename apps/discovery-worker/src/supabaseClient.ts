@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { buscarCoordenadasCidade } from "./geocodingService.js";
 import type { Oportunidade } from "./types.js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -77,6 +78,45 @@ export async function apagarOportunidadeDuplicada(oportunidade: OportunidadeDupl
   const { error: erroExclusao } = await supabase.from("opportunities").delete().eq("id", oportunidade.id);
   if (erroExclusao) {
     throw new Error(`Falha ao apagar duplicata "${oportunidade.id}": ${erroExclusao.message}`);
+  }
+}
+
+/**
+ * Garante que (cidade, estado) tem uma linha em cidades_coordenadas — base
+ * pra "ordenar por proximidade" na vitrine pública (ver migration 0017 e
+ * função SQL oportunidades_por_proximidade). Roda em toda oportunidade nova
+ * elegível; é barato (uma consulta indexada) e idempotente, então não
+ * precisa de um backfill em lote separado pra cidades novas. Sem coordenada
+ * conhecida pro nome exato vindo da OLX (ex.: bairro/distrito que a OLX
+ * trata como "cidade"), só loga e segue — essa oportunidade fica sem
+ * distância calculada até alguém cadastrar a coordenada manualmente.
+ */
+export async function garantirCoordenadasCidade(cidade: string, estado: string): Promise<void> {
+  const { data: existente, error: erroConsulta } = await supabase
+    .from("cidades_coordenadas")
+    .select("id")
+    .eq("cidade", cidade)
+    .eq("estado", estado)
+    .maybeSingle();
+
+  if (erroConsulta) {
+    console.warn(`[geocoding] Falha ao consultar coordenadas de "${cidade}/${estado}": ${erroConsulta.message}`);
+    return;
+  }
+  if (existente) return;
+
+  const coordenadas = buscarCoordenadasCidade(cidade, estado);
+  if (!coordenadas) {
+    console.warn(`[geocoding] Sem coordenada conhecida pra "${cidade}/${estado}".`);
+    return;
+  }
+
+  const { error: erroInsercao } = await supabase.from("cidades_coordenadas").upsert(
+    { cidade, estado, latitude: coordenadas.latitude, longitude: coordenadas.longitude },
+    { onConflict: "cidade,estado" }
+  );
+  if (erroInsercao) {
+    console.warn(`[geocoding] Falha ao salvar coordenadas de "${cidade}/${estado}": ${erroInsercao.message}`);
   }
 }
 
