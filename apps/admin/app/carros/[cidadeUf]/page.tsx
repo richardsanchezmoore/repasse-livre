@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { BreadcrumbOportunidade } from "@/components/BreadcrumbOportunidade";
 import {
   buscarEstadosDisponiveis,
@@ -15,6 +14,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { resolverLocalidade } from "@/lib/localidade";
+import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo, type ChaveSeoPagina } from "@/lib/seo";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -130,7 +130,8 @@ export default async function PaginaLocalidade({
 
   const contexto = await resolverContexto(cidadeUf);
   if (!contexto) {
-    notFound();
+    await redirecionarOuNotFound(`/carros/${cidadeUf}`);
+    return null;
   }
 
   const usuario = await obterUsuarioAtual();

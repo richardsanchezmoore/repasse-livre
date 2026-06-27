@@ -184,6 +184,34 @@ export async function salvarConfigRastreio(chave: string, valor: string): Promis
   revalidatePath("/");
 }
 
+export async function criarRedirecionamento(origem: string, destino: string): Promise<void> {
+  await exigirAdmin();
+  const origemNormalizada = origem.trim();
+  const destinoNormalizado = destino.trim();
+  if (!origemNormalizada || !destinoNormalizado) {
+    throw new Error("Origem e destino são obrigatórios.");
+  }
+  if (origemNormalizada === destinoNormalizado) {
+    throw new Error("Origem e destino não podem ser o mesmo caminho (criaria um loop).");
+  }
+  const { error } = await supabaseAdmin
+    .from("redirecionamentos")
+    .upsert({ origem: origemNormalizada, destino: destinoNormalizado }, { onConflict: "origem" });
+  if (error) {
+    throw new Error(`Falha ao salvar redirecionamento: ${error.message}`);
+  }
+  revalidatePath("/seo");
+}
+
+export async function apagarRedirecionamento(origem: string): Promise<void> {
+  await exigirAdmin();
+  const { error } = await supabaseAdmin.from("redirecionamentos").delete().eq("origem", origem);
+  if (error) {
+    throw new Error(`Falha ao apagar redirecionamento: ${error.message}`);
+  }
+  revalidatePath("/seo");
+}
+
 const RAILWAY_GRAPHQL_URL = "https://backboard.railway.com/graphql/v2";
 
 async function chamarRailwayGraphQL<T>(token: string, query: string, variables: Record<string, unknown>): Promise<T> {

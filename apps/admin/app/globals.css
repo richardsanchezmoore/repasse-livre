@@ -808,6 +808,49 @@ body {
   margin: 0;
 }
 
+.tabela-redirecionamentos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.tabela-redirecionamentos th {
+  text-align: left;
+  font-weight: 600;
+  color: #54656f;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e3e5e8;
+}
+
+.tabela-redirecionamentos td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f1f2;
+  word-break: break-all;
+}
+
+.botao-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #8a8d91;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.botao-icone:hover {
+  background: #f0f1f2;
+  color: #d4351c;
+}
+
+.botao-icone:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .seo-variaveis-tabela {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, permanentRedirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { resolverLocalidade } from "@/lib/localidade";
 import { extrairMarca } from "@/lib/marca";
+import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -137,7 +138,8 @@ async function PaginaMarca({
 }) {
   const localidade = await resolverLocalidade(cidadeUf);
   if (!localidade) {
-    notFound();
+    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`);
+    return null;
   }
 
   const marcaResolvida = await buscarMarcaPorSlug(
@@ -145,7 +147,8 @@ async function PaginaMarca({
     marcaSlug
   );
   if (!marcaResolvida) {
-    notFound();
+    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`);
+    return null;
   }
 
   const usuario = await obterUsuarioAtual();
@@ -261,7 +264,8 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   const [oportunidade, usuario] = await Promise.all([buscarOportunidadePorId(id), obterUsuarioAtual()]);
 
   if (!oportunidade) {
-    notFound();
+    await redirecionarOuNotFound(`/carros/${cidadeUf}/${slug}`);
+    return null;
   }
 
   // Link com cidade/slug desatualizado (anúncio editado, cidade mudou etc.)
