@@ -1486,6 +1486,18 @@ body {
   grid-column: 1 / -1;
 }
 
+.ofertas-relacionadas {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e3e5e8;
+}
+
+.ofertas-relacionadas-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
 .paginacao {
   display: flex;
   align-items: center;
