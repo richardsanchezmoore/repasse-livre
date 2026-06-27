@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Activity,
+  BarChart3,
   CheckCircle2,
   Globe,
   Heart,
@@ -95,6 +96,16 @@ export function Sidebar({
           <div className="sidebar-rodape">
             <button
               type="button"
+              onClick={() => navegar("/bia")}
+              className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
+              title="BIA"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <BarChart3 size={18} strokeWidth={1.75} />
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => navegar("/worker")}
               className={`sidebar-item ${pathname === "/worker" ? "sidebar-item-ativo" : ""}`}
               title="Motor de Descoberta"
@@ -166,6 +177,16 @@ export function Sidebar({
         </ul>
         {role === "admin" && (
           <div className="sidebar-rodape">
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/bia")}
+              className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <BarChart3 size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">BIA</span>
+            </button>
             <button
               type="button"
               onClick={() => navegarEFechar("/worker")}
