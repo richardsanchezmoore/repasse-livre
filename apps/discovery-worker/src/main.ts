@@ -6,6 +6,7 @@ import {
   resolverChaveFiltroFipe,
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
+import { gerarSnapshotDiario } from "./snapshotDiario.js";
 import {
   apagarOportunidadeDuplicada,
   avancarCheckpoint,
@@ -327,6 +328,16 @@ async function executarTodasCategorias(): Promise<void> {
   config = await carregarConfig();
   for (const categoriaUrlBase of config.categoriasUrlBase) {
     await executarVarreduraComRegistro(categoriaUrlBase, config.modo);
+  }
+
+  // Roda a cada cron, mas só faz o trabalho de fato na primeira execução do
+  // dia (gerarSnapshotDiario já se protege checando se hoje já tem
+  // snapshot) — não precisa de um segundo serviço/cron só pra isso. Falha
+  // aqui não pode derrubar a varredura, que é o que importa de verdade.
+  try {
+    await gerarSnapshotDiario();
+  } catch (erro) {
+    console.warn("[motor-descoberta] Falha ao gerar snapshot diário:", erro);
   }
 }
 
