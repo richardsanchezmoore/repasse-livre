@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowUpDown, Building2, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
+import { registrarEvento } from "@/lib/eventosAnalytics";
 import { IconDropdown } from "./IconDropdown";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba, Ordem } from "./DiscoveriesBoard";
@@ -62,10 +63,12 @@ export function FiltroClassificacao({
 
   function selecionar(classificacao?: Classificacao) {
     atualizarParams({ classificacao });
+    registrarEvento("busca", { filtro: "classificacao", classificacao, aba });
   }
 
   function selecionarAnunciante(novoAnunciante?: "profissional" | "particular") {
     atualizarParams({ anunciante: novoAnunciante });
+    registrarEvento("busca", { filtro: "anunciante", anunciante: novoAnunciante, aba });
   }
 
   function selecionarOrdem(novaOrdem: Ordem) {
@@ -74,10 +77,12 @@ export function FiltroClassificacao({
     // padrão (ver page.tsx), então só assim dá pra escolher "recente" de
     // propósito e isso sobreviver a um refresh.
     atualizarParams({ ordem: novaOrdem });
+    registrarEvento("busca", { filtro: "ordem", ordem: novaOrdem, aba });
   }
 
   function aplicarFaixaPreco() {
     atualizarParams({ precoMin: minDigitos || undefined, precoMax: maxDigitos || undefined });
+    registrarEvento("busca", { filtro: "preco", precoMin: minDigitos || undefined, precoMax: maxDigitos || undefined, aba });
   }
 
   function limparFaixaPreco() {

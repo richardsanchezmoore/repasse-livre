@@ -1,10 +1,11 @@
-import { Calendar, Check, Gauge, MapPin, MessageCircle, ExternalLink, Tag, ShieldAlert, Settings2 } from "lucide-react";
+import { Calendar, Check, Gauge, MapPin, ExternalLink, Tag, ShieldAlert, Settings2 } from "lucide-react";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
-import { formatarWhatsapp, ocultarTelefonesNaDescricao } from "@/lib/mascaras";
+import { ocultarTelefonesNaDescricao } from "@/lib/mascaras";
 import { urlOportunidade } from "@/lib/site";
+import { BotaoWhatsapp } from "./BotaoWhatsapp";
 import { GaleriaFotos } from "./GaleriaFotos";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
 import type { Oportunidade } from "@/lib/types";
@@ -212,16 +213,11 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
         </p>
 
         {oportunidade.whatsapp && (
-          <a
-            href={`https://wa.me/55${oportunidade.whatsapp}`}
-            target="_blank"
-            rel="noreferrer"
-            className="botao-whatsapp-pagina"
-          >
-            <MessageCircle size={18} strokeWidth={2} />
-            Falar com {oportunidade.nome_remetente || "o vendedor"} no WhatsApp
-            <span className="botao-whatsapp-pagina-numero">{formatarWhatsapp(oportunidade.whatsapp)}</span>
-          </a>
+          <BotaoWhatsapp
+            opportunityId={oportunidade.id}
+            whatsapp={oportunidade.whatsapp}
+            nomeRemetente={oportunidade.nome_remetente}
+          />
         )}
 
         {!oportunidade.link_origem.startsWith("insercao-direta:") && (

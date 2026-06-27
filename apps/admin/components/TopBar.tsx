@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ListChecks, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
+import { registrarEvento } from "@/lib/eventosAnalytics";
 import { BarraSelecaoMultipla } from "./BarraSelecaoMultipla";
 import { UserMenu } from "./UserMenu";
 import { useNavegacao } from "./NavegacaoProvider";
@@ -69,6 +70,11 @@ export function TopBar({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       atualizarParams({ busca: valor || undefined });
+      // Só registra termos com algum conteúdo real — evita logar todo
+      // backspace que volta o campo a vazio como uma "busca".
+      if (valor.trim().length >= 2) {
+        registrarEvento("busca", { termo: valor.trim(), estado, aba });
+      }
     }, 400);
   }
 
@@ -79,6 +85,7 @@ export function TopBar({
 
   function selecionarEstado(novoEstado: string) {
     atualizarParams({ estado: novoEstado || undefined });
+    registrarEvento("busca", { termo: termoBusca || undefined, estado: novoEstado || undefined, aba });
   }
 
   const podeSelecionarVarios = usuario?.role === "admin" && aba !== "favoritos";

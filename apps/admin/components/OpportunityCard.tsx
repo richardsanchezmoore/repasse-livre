@@ -11,6 +11,7 @@ import {
   rejeitarOportunidade,
 } from "@/app/actions";
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
+import { registrarEvento } from "@/lib/eventosAnalytics";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
@@ -223,7 +224,10 @@ export function OpportunityCard({
               target="_blank"
               rel="noreferrer"
               className="link-whatsapp"
-              onClick={(evento) => evento.stopPropagation()}
+              onClick={(evento) => {
+                evento.stopPropagation();
+                registrarEvento("clique_whatsapp", { origem: "card" }, oportunidade.id);
+              }}
             >
               {formatarWhatsapp(oportunidade.whatsapp)}
             </a>

@@ -15,6 +15,7 @@ import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { OfertasRelacionadas } from "@/components/OfertasRelacionadas";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
+import { RegistradorVisualizacao } from "@/components/RegistradorVisualizacao";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
@@ -342,6 +343,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               </Link>
               <BreadcrumbOportunidade oportunidade={oportunidade} titulo={titulo} />
             </div>
+            <RegistradorVisualizacao opportunityId={oportunidade.id} />
             <PaginaOportunidade oportunidade={oportunidade} />
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
