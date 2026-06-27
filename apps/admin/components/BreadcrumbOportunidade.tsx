@@ -8,11 +8,19 @@ import type { Oportunidade } from "@/lib/types";
 export function BreadcrumbOportunidade({
   oportunidade,
   titulo,
+  marca: marcaForcada,
+  caminhoAtual,
 }: {
   oportunidade: Pick<Oportunidade, "cidade" | "estado">;
-  titulo: string;
+  /** Título do anúncio, usado pra extrair a marca quando ela não vem resolvida (ver `marca`). */
+  titulo?: string;
+  /** Marca já resolvida (ex.: nas páginas de localidade, vem de buscarMarcaPorSlug) — evita repetir a
+   *  heurística "primeira palavra do título" quando a marca real já é conhecida. */
+  marca?: string;
+  /** Caminho da página atual — o item do breadcrumb que aponta pra ela mesma fica sem link. */
+  caminhoAtual?: string;
 }) {
-  const marca = extrairMarca(titulo);
+  const marca = marcaForcada ?? (titulo ? extrairMarca(titulo) : null);
 
   const itens: Array<{ rotulo: string; href?: string }> = [{ rotulo: "Carros", href: "/" }];
 
@@ -27,6 +35,12 @@ export function BreadcrumbOportunidade({
   }
   if (marca) {
     itens.push({ rotulo: marca, href: caminhoMarca(oportunidade, marca) });
+  }
+
+  if (caminhoAtual) {
+    for (const item of itens) {
+      if (item.href === caminhoAtual) item.href = undefined;
+    }
   }
 
   const jsonLd = {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BreadcrumbOportunidade } from "@/components/BreadcrumbOportunidade";
 import {
   buscarEstadosDisponiveis,
   buscarIdsFavoritados,
@@ -179,6 +180,11 @@ export default async function PaginaLocalidade({
             usuarioLogado={Boolean(usuario)}
           />
           <main className="conteudo">
+            <BreadcrumbOportunidade
+              oportunidade={{ cidade: contexto.filtroCidade ?? null, estado: contexto.filtroEstado ?? null }}
+              marca={contexto.filtroMarca}
+              caminhoAtual={contexto.caminho}
+            />
             <section className="board">
               <header className="board-header">
                 <div className="board-header-titulo">
