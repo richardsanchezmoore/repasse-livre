@@ -8,6 +8,7 @@
     "discover": "tsx src/main.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
+    "limpar:duplicados": "tsx src/limparDuplicados.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

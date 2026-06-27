@@ -21,6 +21,65 @@ export async function salvarOportunidade(oportunidade: Oportunidade): Promise<vo
   }
 }
 
+export interface OportunidadeDuplicada {
+  id: string;
+  preco: number;
+  origem_tipo: string;
+  fonte: string;
+  classificacao: string | null;
+  margem_percentual: number | null;
+  status: string;
+  data_captura: string;
+}
+
+/**
+ * Grandes frotistas (Localiza/Movida/Unidas etc.) permitem que cada loja da
+ * rede publique o mesmo veículo na OLX — mesmo título e KM, anúncios
+ * diferentes. Aqui isso é tratado como duplicata de rede: busca a oferta já
+ * salva mais barata para o mesmo (veiculo, km), independente do status
+ * (mesmo aprovada/enviada/favoritada — a base não pode mostrar o mesmo
+ * carro repetido para quem está pesquisando).
+ */
+export async function buscarDuplicataPorTituloEKm(
+  veiculo: string,
+  km: number
+): Promise<OportunidadeDuplicada | null> {
+  const { data, error } = await supabase
+    .from("opportunities")
+    .select("id, preco, origem_tipo, fonte, classificacao, margem_percentual, status, data_captura")
+    .eq("veiculo", veiculo)
+    .eq("km", km)
+    .order("preco", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Falha ao consultar duplicata por título+km: ${error.message}`);
+  }
+
+  return data;
+}
+
+/** Move a duplicata pro histórico (mesma convenção do painel admin) e apaga. */
+export async function apagarOportunidadeDuplicada(oportunidade: OportunidadeDuplicada): Promise<void> {
+  const { error: erroHistorico } = await supabase.from("oportunidades_historico").insert({
+    origem_tipo: oportunidade.origem_tipo,
+    fonte: oportunidade.fonte,
+    classificacao: oportunidade.classificacao,
+    margem_percentual: oportunidade.margem_percentual,
+    status: oportunidade.status,
+    data_captura: oportunidade.data_captura,
+  });
+  if (erroHistorico) {
+    throw new Error(`Falha ao registrar histórico da duplicata "${oportunidade.id}": ${erroHistorico.message}`);
+  }
+
+  const { error: erroExclusao } = await supabase.from("opportunities").delete().eq("id", oportunidade.id);
+  if (erroExclusao) {
+    throw new Error(`Falha ao apagar duplicata "${oportunidade.id}": ${erroExclusao.message}`);
+  }
+}
+
 export async function linkOrigemJaExiste(linkOrigem: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("opportunities")

@@ -7,7 +7,9 @@ import {
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import {
+  apagarOportunidadeDuplicada,
   avancarCheckpoint,
+  buscarDuplicataPorTituloEKm,
   finalizarRegistroVarreduraComErro,
   finalizarRegistroVarreduraComSucesso,
   iniciarRegistroVarredura,
@@ -166,6 +168,26 @@ async function processarAnuncio(
       anuncio.dataPublicacao !== null ? new Date(anuncio.dataPublicacao * 1000).toISOString() : null,
     atributos_olx: atributos,
   };
+
+  // Grandes frotistas (Localiza/Movida/Unidas etc.) deixam cada loja da rede
+  // republicar o mesmo carro (mesmo título e KM). Sem KM não dá pra comparar
+  // com segurança, então só dedupe quando o anúncio trouxe KM.
+  if (anuncio.km !== null) {
+    const duplicata = await buscarDuplicataPorTituloEKm(anuncio.titulo, anuncio.km);
+    if (duplicata) {
+      if (anuncio.preco >= duplicata.preco) {
+        console.log(
+          `[motor-descoberta] Duplicado de rede ("${anuncio.titulo}", ${anuncio.km}km) com preço >= já salvo (R$ ${duplicata.preco}) — descartado.`
+        );
+        resultado.descartados++;
+        return;
+      }
+      console.log(
+        `[motor-descoberta] Duplicado de rede mais barato ("${anuncio.titulo}", ${anuncio.km}km) — substituindo oferta anterior (id ${duplicata.id}, R$ ${duplicata.preco} → R$ ${anuncio.preco}).`
+      );
+      await apagarOportunidadeDuplicada(duplicata);
+    }
+  }
 
   await salvarOportunidade(oportunidade);
   resultado.elegiveis++;
