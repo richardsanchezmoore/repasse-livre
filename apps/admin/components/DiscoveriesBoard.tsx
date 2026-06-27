@@ -38,6 +38,8 @@ export interface FiltrosBoard {
   /** Coordenadas do usuário — só usadas quando ordem === "proximidade" (ver lib/geolocalizacao.ts). */
   lat?: number;
   lng?: number;
+  /** Tipo de anunciante (campo `professionalAd` da OLX) — undefined = todos. */
+  anunciante?: "profissional" | "particular";
 }
 
 const TITULO_POR_ABA: Record<Aba, string> = {
@@ -113,6 +115,7 @@ async function buscarOportunidades(
       p_estado: filtros.estado ?? null,
       p_preco_min: filtros.precoMin ?? null,
       p_preco_max: filtros.precoMax ?? null,
+      p_anunciante: filtros.anunciante === "profissional" ? true : filtros.anunciante === "particular" ? false : null,
       p_limite: ITENS_POR_PAGINA,
       p_deslocamento: inicio,
     });
@@ -137,6 +140,9 @@ async function buscarOportunidades(
     if (filtros.estado) consultaFavoritos = consultaFavoritos.eq("estado", filtros.estado);
     if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
     if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
+    if (filtros.anunciante) {
+      consultaFavoritos = consultaFavoritos.eq("anunciante_profissional", filtros.anunciante === "profissional");
+    }
     consultaFavoritos = consultaFavoritos
       .order(coluna, { ascending: ascendente, nullsFirst: false })
       .order("id", { ascending: true })
@@ -168,6 +174,9 @@ async function buscarOportunidades(
   }
   if (filtros.precoMax !== undefined) {
     consulta = consulta.lte("preco", filtros.precoMax);
+  }
+  if (filtros.anunciante) {
+    consulta = consulta.eq("anunciante_profissional", filtros.anunciante === "profissional");
   }
   consulta = consulta
     .order(coluna, { ascending: ascendente, nullsFirst: false })
@@ -452,6 +461,7 @@ export async function Board({
         ordem={filtros.ordem}
         precoMin={filtros.precoMin}
         precoMax={filtros.precoMax}
+        anunciante={filtros.anunciante}
         proximidadeDisponivel={proximidadeDisponivel}
       />
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />

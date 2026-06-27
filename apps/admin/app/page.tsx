@@ -62,10 +62,11 @@ export default async function CentralDeOportunidadesPage({
     precoMin?: string;
     precoMax?: string;
     ordem?: string;
+    anunciante?: string;
     pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, ordem, pagina } = await searchParams;
+  const { aba, classificacao, busca, estado, precoMin, precoMax, ordem, anunciante, pagina } = await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
   const abaSolicitada: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "aprovadas";
@@ -76,6 +77,7 @@ export default async function CentralDeOportunidadesPage({
     ? (classificacao as Classificacao)
     : undefined;
   const estadoAtivo = UFS.includes(estado ?? "") ? estado : undefined;
+  const anuncianteAtivo = anunciante === "profissional" || anunciante === "particular" ? anunciante : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
 
   // "Perto de mim" só existe na vitrine pública (aprovadas) e só com
@@ -96,6 +98,7 @@ export default async function CentralDeOportunidadesPage({
     estado: estadoAtivo,
     precoMin: paraNumero(precoMin),
     precoMax: paraNumero(precoMax),
+    anunciante: anuncianteAtivo,
     ordem: ordemAtiva,
     lat: ordemAtiva === "proximidade" ? coordsUsuario?.lat : undefined,
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,

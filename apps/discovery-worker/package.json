@@ -10,6 +10,7 @@
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
     "backfill:coordenadas": "tsx src/backfillCoordenadas.ts",
+    "backfill:anunciante": "tsx src/backfillTipoAnunciante.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

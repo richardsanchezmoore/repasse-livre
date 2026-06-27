@@ -19,6 +19,7 @@ interface AdOlx {
   properties?: PropriedadeOlx[];
   locationDetails?: { uf?: string; municipality?: string };
   date?: number; // epoch em segundos
+  professionalAd?: boolean;
 }
 
 interface NextDataOlx {
@@ -61,6 +62,7 @@ function mapearAnuncio(ad: AdOlx): AnuncioOlx {
     descricao: ad.description ?? null,
     linkOrigem: ad.url,
     dataPublicacao: ad.date ?? null,
+    professionalAd: typeof ad.professionalAd === "boolean" ? ad.professionalAd : null,
   };
 }
 
@@ -291,11 +293,24 @@ function extrairDescricaoDoHtml(html: string): string | null {
   return textoDecodificado.replace(/<br\s*\/?>/gi, "\n").trim() || null;
 }
 
+/**
+ * O bloco "initial-data" da página individual também carrega `professionalAd`
+ * (mesmo campo já usado na listagem, ver mapearAnuncio) — exigir o valor
+ * boolean explícito (`true`/`false`) evita casar com um bloco solto
+ * `"professionalAd":""` que aparece em outro objeto da mesma página
+ * (`adDetail`), sempre vazio, não confiável.
+ */
+function extrairTipoAnuncianteDoHtml(html: string): boolean | null {
+  const match = html.match(/(?:"|&quot;)professionalAd(?:"|&quot;):(true|false)/);
+  return match ? match[1] === "true" : null;
+}
+
 export interface DetalhesPaginaAnuncio {
   fipe: FipeDaPagina | null;
   fotos: string[];
   atributos: AtributosOlx;
   descricao: string | null;
+  professionalAd: boolean | null;
 }
 
 /**
@@ -316,7 +331,14 @@ export async function buscarDetalhesDaPaginaAnuncio(linkOrigem: string): Promise
     fotos: extrairFotosDoHtml(html),
     atributos: extrairAtributosDoHtml(html),
     descricao: extrairDescricaoDoHtml(html),
+    professionalAd: extrairTipoAnuncianteDoHtml(html),
   };
+}
+
+/** Usado pelo backfill de oportunidades capturadas antes da coluna `anunciante_profissional` existir. */
+export async function buscarTipoAnuncianteDaPagina(linkOrigem: string): Promise<boolean | null> {
+  const html = await buscarHtml(linkOrigem);
+  return extrairTipoAnuncianteDoHtml(html);
 }
 
 /**

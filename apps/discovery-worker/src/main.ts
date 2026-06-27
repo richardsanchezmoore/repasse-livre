@@ -107,7 +107,7 @@ async function processarAnuncio(
     return;
   }
 
-  const { fipe, fotos, atributos, descricao } = detalhes;
+  const { fipe, fotos, atributos, descricao, professionalAd } = detalhes;
   if (!fipe) {
     resultado.semFipe++;
     return;
@@ -168,6 +168,9 @@ async function processarAnuncio(
     data_publicacao_origem:
       anuncio.dataPublicacao !== null ? new Date(anuncio.dataPublicacao * 1000).toISOString() : null,
     atributos_olx: atributos,
+    // Página individual é a fonte mais confiável (ver extrairTipoAnuncianteDoHtml);
+    // cai pro valor já presente na listagem só se a página não trouxer nada.
+    anunciante_profissional: professionalAd ?? anuncio.professionalAd,
   };
 
   // Grandes frotistas (Localiza/Movida/Unidas etc.) deixam cada loja da rede

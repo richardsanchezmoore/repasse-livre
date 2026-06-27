@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowUpDown, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDown, Building2, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { IconDropdown } from "./IconDropdown";
@@ -25,6 +25,7 @@ export function FiltroClassificacao({
   ordem = "recente",
   precoMin,
   precoMax,
+  anunciante,
   proximidadeDisponivel = false,
 }: {
   aba: Aba;
@@ -32,6 +33,7 @@ export function FiltroClassificacao({
   ordem?: Ordem;
   precoMin?: number;
   precoMax?: number;
+  anunciante?: "profissional" | "particular";
   proximidadeDisponivel?: boolean;
 }) {
   // "Perto de mim" só aparece quando temos coordenada do usuário (ver
@@ -60,6 +62,10 @@ export function FiltroClassificacao({
 
   function selecionar(classificacao?: Classificacao) {
     atualizarParams({ classificacao });
+  }
+
+  function selecionarAnunciante(novoAnunciante?: "profissional" | "particular") {
+    atualizarParams({ anunciante: novoAnunciante });
   }
 
   function selecionarOrdem(novaOrdem: Ordem) {
@@ -162,6 +168,31 @@ export function FiltroClassificacao({
               Aplicar
             </button>
           </div>
+        </IconDropdown>
+
+        <IconDropdown Icone={Building2} rotulo="Anunciante" ativo={Boolean(anunciante)}>
+          <p className="icon-dropdown-titulo">Tipo de anunciante</p>
+          <button
+            type="button"
+            className={`icon-dropdown-opcao ${!anunciante ? "icon-dropdown-opcao-ativa" : ""}`}
+            onClick={() => selecionarAnunciante(undefined)}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            className={`icon-dropdown-opcao ${anunciante === "particular" ? "icon-dropdown-opcao-ativa" : ""}`}
+            onClick={() => selecionarAnunciante("particular")}
+          >
+            Particular
+          </button>
+          <button
+            type="button"
+            className={`icon-dropdown-opcao ${anunciante === "profissional" ? "icon-dropdown-opcao-ativa" : ""}`}
+            onClick={() => selecionarAnunciante("profissional")}
+          >
+            Profissional
+          </button>
         </IconDropdown>
       </div>
     </div>

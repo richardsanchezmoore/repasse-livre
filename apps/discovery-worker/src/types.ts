@@ -16,6 +16,8 @@ export interface AnuncioOlx {
   linkOrigem: string;
   /** Epoch em segundos da publicação/atualização do anúncio na OLX. */
   dataPublicacao: number | null;
+  /** Campo `professionalAd` da própria OLX — null quando a listagem não trouxe essa informação. */
+  professionalAd: boolean | null;
 }
 
 export interface ReferenciaFipe {
@@ -54,4 +56,5 @@ export interface Oportunidade {
   status: "descoberta";
   data_publicacao_origem: string | null;
   atributos_olx: AtributosOlx;
+  anunciante_profissional: boolean | null;
 }
