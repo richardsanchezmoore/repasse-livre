@@ -42,11 +42,11 @@ export function SeletorEstadoBreadcrumb({
     const params = new URLSearchParams(searchParams.toString());
     params.set("aba", aba);
     params.delete("pagina");
-    if (novoEstado) {
-      params.set("estado", novoEstado);
-    } else {
-      params.delete("estado");
-    }
+    // "BR" explícito (não ausência do param) ao escolher "Brasil" — sem
+    // isso, a página detecta o estado por geolocalização de novo no
+    // próximo carregamento (ver app/page.tsx), e "Brasil" nunca
+    // conseguiria mostrar o país inteiro de fato.
+    params.set("estado", novoEstado || "BR");
     navegar(`/?${params.toString()}`);
   }
 

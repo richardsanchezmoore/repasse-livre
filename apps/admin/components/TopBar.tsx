@@ -84,7 +84,11 @@ export function TopBar({
   }
 
   function selecionarEstado(novoEstado: string) {
-    atualizarParams({ estado: novoEstado || undefined });
+    // "BR" explícito (não ausência do param) quando o usuário limpa de
+    // propósito — sem isso, a página detecta o estado por geolocalização
+    // de novo no próximo carregamento (ver app/page.tsx) e "Todos os
+    // estados" nunca conseguiria mostrar o Brasil inteiro de fato.
+    atualizarParams({ estado: novoEstado || "BR" });
     registrarEvento("busca", { termo: termoBusca || undefined, estado: novoEstado || undefined, aba });
   }
 

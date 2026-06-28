@@ -15,7 +15,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { CLASSIFICACOES, type Classificacao } from "@/lib/classificacao";
-import { obterCoordsUsuario } from "@/lib/geolocalizacao";
+import { obterCoordsUsuario, obterEstadoDetectado } from "@/lib/geolocalizacao";
 import { UFS } from "@/lib/mascaras";
 import { buscarConfigSeo, buscarFotoDestaque } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -76,21 +76,26 @@ export default async function CentralDeOportunidadesPage({
   const classificacaoAtiva = CLASSIFICACOES.includes(classificacao as Classificacao)
     ? (classificacao as Classificacao)
     : undefined;
-  const estadoAtivo = UFS.includes(estado ?? "") ? estado : undefined;
+  // "BR" é o sentinela de "Brasil" escolhido de propósito (limpar o
+  // filtro) — diferente de ausência do param, que dispara a detecção por
+  // geolocalização abaixo. Sem essa distinção, abrir o seletor e escolher
+  // "Brasil" simplesmente cairia de volta no estado detectado no próximo
+  // carregamento (era exatamente o bug visto pelo usuário).
+  const estadoExplicito = estado === "BR" ? null : UFS.includes(estado ?? "") ? estado : undefined;
+  const estadoDetectado =
+    abaAtiva === "aprovadas" && estado === undefined ? await obterEstadoDetectado() : null;
+  const estadoAtivo = estadoExplicito === null ? undefined : estadoExplicito ?? estadoDetectado ?? undefined;
   const anuncianteAtivo = anunciante === "profissional" || anunciante === "particular" ? anunciante : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
 
-  // "Perto de mim" só existe na vitrine pública (aprovadas) e só com
-  // coordenada resolvida (cookie do navegador ou IP via Vercel — ver
-  // lib/geolocalizacao.ts). Sem `ordem` explícito na URL, vira o padrão
-  // automático quando disponível; senão cai pra "recente" como sempre foi.
+  // "Perto de mim" é uma opção manual no dropdown "Ordenar por" (não mais
+  // o padrão automático — ficava invisível pro usuário e parecia que o
+  // filtro de estado estava "travado", já que o Brasil inteiro mostrava só
+  // resultados da própria região). Só existe com coordenada resolvida
+  // (cookie do navegador ou IP via Vercel — ver lib/geolocalizacao.ts).
   const coordsUsuario = abaAtiva === "aprovadas" ? await obterCoordsUsuario() : null;
   const proximidadeDisponivel = Boolean(coordsUsuario);
-  const ordemAtiva: Ordem = ORDENS_VALIDAS.includes(ordem as Ordem)
-    ? (ordem as Ordem)
-    : proximidadeDisponivel
-      ? "proximidade"
-      : "recente";
+  const ordemAtiva: Ordem = ORDENS_VALIDAS.includes(ordem as Ordem) ? (ordem as Ordem) : "recente";
 
   const filtros: FiltrosBoard = {
     classificacao: classificacaoAtiva,
