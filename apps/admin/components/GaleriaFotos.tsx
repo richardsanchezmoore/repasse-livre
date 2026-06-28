@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { ImagemComCarregamento } from "@/components/ImagemComCarregamento";
 import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 
 export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
   const [indiceAtivo, setIndiceAtivo] = useState(0);
   const [visualizadorAberto, setVisualizadorAberto] = useState(false);
+  const [fotoVisualizadorCarregada, setFotoVisualizadorCarregada] = useState(false);
   const trilhaRef = useRef<HTMLDivElement>(null);
 
   const irPara = useCallback((indice: number) => {
@@ -25,6 +27,12 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
     window.addEventListener("keydown", aoApertarTecla);
     return () => window.removeEventListener("keydown", aoApertarTecla);
   }, [visualizadorAberto, indiceAtivo, irPara]);
+
+  // Spinner próprio do visualizador em tela cheia — reseta a cada troca de
+  // foto (cada índice é uma imagem nova, com seu próprio carregamento).
+  useEffect(() => {
+    setFotoVisualizadorCarregada(false);
+  }, [indiceAtivo]);
 
   if (fotos.length === 0) {
     return <div className="galeria-foto-vazia" />;
@@ -52,12 +60,12 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
       <div className="galeria galeria-mobile">
         <div className="galeria-trilha" ref={trilhaRef} onScroll={aoRolar}>
           {fotos.map((url, indice) => (
-            <img
+            <ImagemComCarregamento
               key={url}
               src={url}
               alt={`${alt} — foto ${indice + 1}`}
               className="galeria-foto"
-              referrerPolicy="no-referrer"
+              prioridade={indice === 0}
               onClick={() => setVisualizadorAberto(true)}
             />
           ))}
@@ -113,7 +121,12 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
           onClick={() => abrirEm(0)}
           aria-label="Ver foto 1 em tela cheia"
         >
-          <img src={fotos[0]} alt={`${alt} — foto 1`} referrerPolicy="no-referrer" />
+          <ImagemComCarregamento
+            src={fotos[0]}
+            alt={`${alt} — foto 1`}
+            className="imagem-carregamento-preencher"
+            prioridade
+          />
         </button>
 
         {miniaturas.length > 0 && (
@@ -129,7 +142,11 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
                   onClick={() => abrirEm(indiceReal)}
                   aria-label={`Ver foto ${indiceReal + 1} em tela cheia`}
                 >
-                  <ImagemThumbnail url={url} alt={`${alt} — foto ${indiceReal + 1}`} />
+                  <ImagemThumbnail
+                    url={url}
+                    alt={`${alt} — foto ${indiceReal + 1}`}
+                    className="imagem-carregamento-preencher"
+                  />
                   {ehUltima && <span className="galeria-mosaico-mais">+{restantes}</span>}
                 </button>
               );
@@ -149,11 +166,18 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
             <X size={24} strokeWidth={2.5} />
           </button>
 
+          {!fotoVisualizadorCarregada && (
+            <span className="visualizador-fotos-spinner" aria-hidden="true">
+              <Loader2 size={28} strokeWidth={2} />
+            </span>
+          )}
           <img
             src={fotos[indiceAtivo]}
             alt={`${alt} — foto ${indiceAtivo + 1}`}
-            className="visualizador-fotos-imagem"
+            className={`visualizador-fotos-imagem ${fotoVisualizadorCarregada ? "imagem-carregamento-visivel" : "imagem-carregamento-oculta"}`}
             referrerPolicy="no-referrer"
+            decoding="async"
+            onLoad={() => setFotoVisualizadorCarregada(true)}
             onClick={(evento) => evento.stopPropagation()}
           />
 

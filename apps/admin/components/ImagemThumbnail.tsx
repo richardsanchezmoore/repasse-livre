@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { urlThumbnailOlx } from "@/lib/imagemOlx";
 
 /**
@@ -11,26 +12,48 @@ import { urlThumbnailOlx } from "@/lib/imagemOlx";
  * HTML estático (SSR), ela pode falhar antes do React hidratar e conectar
  * o listener, perdendo o evento — por isso o useEffect confere de novo no
  * mount se a imagem já chegou quebrada (`naturalWidth === 0`).
+ *
+ * Também mostra um spinner enquanto a foto carrega (em vez do ícone de
+ * link quebrado do navegador, visível por um instante em rede lenta no
+ * mobile) — mesmo princípio do ImagemComCarregamento, mas combinado com a
+ * troca de `src` no fallback acima.
  */
 export function ImagemThumbnail({ url, alt, className }: { url: string; alt: string; className?: string }) {
   const [src, setSrc] = useState(() => urlThumbnailOlx(url));
+  const [carregada, setCarregada] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const img = imgRef.current;
-    if (img && img.complete && img.naturalWidth === 0) {
+    if (!img || !img.complete) return;
+    if (img.naturalWidth === 0) {
       setSrc(url);
+    } else {
+      // Mesma race: a foto pode já estar carregada (de verdade) antes do
+      // React conectar o onLoad — sem isso o spinner ficava preso pra
+      // sempre com a imagem por baixo já pronta.
+      setCarregada(true);
     }
   }, [url]);
 
   return (
-    <img
-      ref={imgRef}
-      src={src}
-      alt={alt}
-      className={className}
-      referrerPolicy="no-referrer"
-      onError={() => setSrc(url)}
-    />
+    <span className={`imagem-carregamento-wrapper ${className ?? ""}`}>
+      {!carregada && (
+        <span className="imagem-carregamento-spinner" aria-hidden="true">
+          <Loader2 size={20} strokeWidth={2} />
+        </span>
+      )}
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        referrerPolicy="no-referrer"
+        loading="lazy"
+        decoding="async"
+        className={carregada ? "imagem-carregamento-visivel" : "imagem-carregamento-oculta"}
+        onLoad={() => setCarregada(true)}
+        onError={() => setSrc(url)}
+      />
+    </span>
   );
 }
