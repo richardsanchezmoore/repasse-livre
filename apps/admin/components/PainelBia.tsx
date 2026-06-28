@@ -70,12 +70,12 @@ function Toggle<T extends string>({
   onSelecionar: (valor: T) => void;
 }) {
   return (
-    <div className="bia-toggle">
+    <div className="bia2-toggle">
       {opcoes.map((opcao) => (
         <button
           key={opcao.valor}
           type="button"
-          className={`bia-toggle-opcao ${ativo === opcao.valor ? "bia-toggle-opcao-ativa" : ""}`}
+          className={`bia2-toggle-opcao ${ativo === opcao.valor ? "bia2-toggle-opcao-ativa" : ""}`}
           onClick={() => onSelecionar(opcao.valor)}
         >
           {opcao.rotulo}
@@ -516,7 +516,7 @@ export function PainelBia({
       : 0;
 
   return (
-    <div className="bia2-painel">
+    <div className="bia-painel">
       <div className="bia2-kpis">
         <div className="bia2-kpi">
           <div className="bia2-kpi-rotulo">Estoque nac.</div>
