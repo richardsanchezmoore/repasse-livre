@@ -3235,6 +3235,7 @@ body {
    slider no desktop, onde uma única foto em pé (4:3) esticada na largura
    inteira ficava alta e desproporcional. */
 .galeria-mosaico-principal {
+  position: relative;
   border: none;
   padding: 0;
   background: #e0e3e7;
