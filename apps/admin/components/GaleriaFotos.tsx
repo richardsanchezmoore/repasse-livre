@@ -65,7 +65,7 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
               src={url}
               alt={`${alt} — foto ${indice + 1}`}
               className="galeria-foto"
-              prioridade={indice === 0}
+              prioridade={Math.abs(indice - indiceAtivo) <= 1}
               onClick={() => setVisualizadorAberto(true)}
             />
           ))}
