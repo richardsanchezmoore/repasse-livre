@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -12,7 +12,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatarKm, formatarMoeda } from "@/lib/formatadores";
+import { formatarMoeda } from "@/lib/formatadores";
+import {
+  corDaMarca,
+  corMapa,
+  formatarInteiro,
+  formatarMoedaArredondada,
+  formatarPercentual1,
+  hueMarcaLuxo,
+  normalizar,
+  posicaoGridUf,
+} from "@/lib/biaCores";
 import type {
   ItemCidadeAtiva,
   ItemDisputado,
@@ -23,26 +33,11 @@ import type {
   ResumoBia,
 } from "@/lib/biaDashboard";
 
-const COR_VERDE = "#22c55e";
-const COR_TEXTO_FRACO = "#8a8a8a";
-const COR_BORDA = "#262626";
-
-const PALETA = ["#22c55e", "#06b6d4", "#f97316", "#a855f7", "#f43f5e", "#eab308", "#3b82f6", "#14b8a6"];
-
-function corPorIndice(indice: number): string {
-  return PALETA[indice % PALETA.length];
-}
-
-/** Mesma cor pra todas as linhas de uma UF — primeira ocorrência na lista define a cor. */
-function construirMapaCorPorEstado(estados: string[]): Map<string, string> {
-  const mapa = new Map<string, string>();
-  for (const estado of estados) {
-    if (!mapa.has(estado)) {
-      mapa.set(estado, PALETA[mapa.size % PALETA.length]);
-    }
-  }
-  return mapa;
-}
+const HUE_ESTOQUE = 230;
+const HUE_PRECO = 155;
+const COR_VERDE_GRAFICO = "oklch(0.7 0.15 230)";
+const COR_BORDA_GRAFICO = "#222838";
+const COR_TEXTO_FRACO_GRAFICO = "#7b8395";
 
 function formatarDiaCurto(diaIso: string): string {
   const [, mes, dia] = diaIso.split("-");
@@ -51,74 +46,446 @@ function formatarDiaCurto(diaIso: string): string {
 
 const ESTILO_TOOLTIP = {
   contentStyle: {
-    background: "#1a1a1a",
-    border: `1px solid ${COR_BORDA}`,
-    borderRadius: 4,
+    background: "#161a23",
+    border: `1px solid ${COR_BORDA_GRAFICO}`,
+    borderRadius: 10,
     fontFamily: "inherit",
     fontSize: 12,
   },
-  labelStyle: { color: "#f5f5f5", fontWeight: 700 },
-  itemStyle: { color: COR_VERDE },
+  labelStyle: { color: "#eef1f6", fontWeight: 700 },
+  itemStyle: { color: COR_VERDE_GRAFICO },
 };
 
-function CartaoNumero({
-  titulo,
-  valor,
-  sufixo,
-  destaque,
+function Eyebrow({ numero, texto }: { numero: string; texto: string }) {
+  return <div className="bia-eyebrow-secao">{`${numero} — ${texto}`}</div>;
+}
+
+function Toggle<T extends string>({
+  opcoes,
+  ativo,
+  onSelecionar,
 }: {
-  titulo: string;
-  valor: string;
-  sufixo?: string;
-  destaque?: boolean;
+  opcoes: { valor: T; rotulo: string }[];
+  ativo: T;
+  onSelecionar: (valor: T) => void;
 }) {
   return (
-    <div className="bia-cartao">
-      <p className="bia-cartao-titulo">{titulo}</p>
-      <p className={`bia-cartao-valor ${destaque ? "bia-cartao-valor-destaque" : ""}`}>
-        {valor}
-        {sufixo && <span className="bia-cartao-sufixo">{sufixo}</span>}
-      </p>
+    <div className="bia-toggle">
+      {opcoes.map((opcao) => (
+        <button
+          key={opcao.valor}
+          type="button"
+          className={`bia-toggle-opcao ${ativo === opcao.valor ? "bia-toggle-opcao-ativa" : ""}`}
+          onClick={() => onSelecionar(opcao.valor)}
+        >
+          {opcao.rotulo}
+        </button>
+      ))}
     </div>
   );
 }
 
-function SecaoBia({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+function BarraSimples({ percentual, cor, alturaPx = 10 }: { percentual: number; cor: string; alturaPx?: number }) {
   return (
-    <section className="bia-secao">
-      <h2 className="bia-secao-titulo">{titulo}</h2>
-      {children}
+    <div className="bia2-trilho" style={{ height: alturaPx }}>
+      <div className="bia2-trilho-fundo" />
+      <div className="bia2-trilho-fill" style={{ width: `${percentual}%`, background: cor }} />
+    </div>
+  );
+}
+
+type MetricaEstado = "estoque" | "preco";
+
+function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
+  const [metrica, setMetrica] = useState<MetricaEstado>("estoque");
+  const [hoverUf, setHoverUf] = useState<string | null>(null);
+  const isEstoque = metrica === "estoque";
+  const hue = isEstoque ? HUE_ESTOQUE : HUE_PRECO;
+
+  const valores = estados.map((e) => (isEstoque ? e.quantidade : e.precoMedio));
+  const min = Math.min(...valores);
+  const max = Math.max(...valores);
+  const norm = (v: number) => normalizar(v, min, max);
+
+  const tiles = estados
+    .map((e) => {
+      const posicao = posicaoGridUf(e.estado);
+      if (!posicao) return null;
+      const valor = isEstoque ? e.quantidade : e.precoMedio;
+      const { bg, fg } = corMapa(norm(valor), hue);
+      return {
+        uf: e.estado,
+        row: posicao[0],
+        col: posicao[1],
+        bg,
+        fg,
+        valLabel: isEstoque ? formatarInteiro(valor) : `${Math.round(valor / 1000)}k`,
+        emHover: hoverUf === e.estado,
+      };
+    })
+    .filter((t): t is NonNullable<typeof t> => t !== null);
+
+  const legendaStops = [0.08, 0.3, 0.52, 0.74, 0.96].map((t) => corMapa(t, hue).bg);
+
+  const ranking = [...estados]
+    .sort((a, b) => (isEstoque ? b.quantidade - a.quantidade : b.precoMedio - a.precoMedio))
+    .slice(0, 12)
+    .map((e) => {
+      const valor = isEstoque ? e.quantidade : e.precoMedio;
+      return {
+        uf: e.estado,
+        percentual: norm(valor) * 100,
+        cor: corMapa(0.45 + 0.45 * norm(valor), hue).bg,
+        valLabel: isEstoque ? formatarInteiro(valor) : formatarMoedaArredondada(valor),
+      };
+    });
+
+  const porPreco = [...estados].sort((a, b) => b.precoMedio - a.precoMedio);
+  const caros = porPreco.slice(0, 4);
+  const acessiveis = porPreco.slice(-4).reverse();
+
+  const estadoHover = hoverUf ? estados.find((e) => e.estado === hoverUf) : null;
+  let linha1 = "";
+  let linha2 = "";
+  if (estadoHover) {
+    linha1 = `${formatarInteiro(estadoHover.quantidade)} anúncios · ${formatarMoedaArredondada(estadoHover.precoMedio)} médio`;
+    const rkEstoque = [...estados].sort((a, b) => b.quantidade - a.quantidade).findIndex((e) => e.estado === hoverUf) + 1;
+    const rkPreco = porPreco.findIndex((e) => e.estado === hoverUf) + 1;
+    linha2 = `Estoque #${rkEstoque}  ·  Preço #${rkPreco} do país`;
+  }
+
+  return (
+    <section className="bia2-secao">
+      <div className="bia2-secao-cabecalho">
+        <div>
+          <Eyebrow numero="01" texto="Geografia do estoque" />
+          <h2 className="bia2-titulo-secao">Estados mais ativos</h2>
+        </div>
+        <Toggle
+          opcoes={[
+            { valor: "estoque", rotulo: "Estoque" },
+            { valor: "preco", rotulo: "Preço médio" },
+          ]}
+          ativo={metrica}
+          onSelecionar={setMetrica}
+        />
+      </div>
+
+      <div className="bia2-grid-2col">
+        <div className="bia2-card">
+          <div className="bia2-mapa" onMouseLeave={() => setHoverUf(null)}>
+            {tiles.map((tile) => (
+              <div
+                key={tile.uf}
+                onMouseEnter={() => setHoverUf(tile.uf)}
+                className="bia2-mapa-tile"
+                style={{
+                  gridRow: tile.row,
+                  gridColumn: tile.col,
+                  background: tile.bg,
+                  color: tile.fg,
+                  boxShadow: tile.emHover ? "0 0 0 2px #eef1f6" : "none",
+                }}
+              >
+                <div className="bia2-mapa-tile-uf">{tile.uf}</div>
+                <div className="bia2-mapa-tile-valor">{tile.valLabel}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bia2-legenda-mapa">
+            <span className="bia2-legenda-extremo">{isEstoque ? "Menos" : "Acessível"}</span>
+            <div className="bia2-legenda-faixa">
+              {legendaStops.map((cor, i) => (
+                <div key={i} className="bia2-legenda-stop" style={{ background: cor }} />
+              ))}
+            </div>
+            <span className="bia2-legenda-extremo">{isEstoque ? "Mais" : "Caro"}</span>
+          </div>
+
+          <div className="bia2-painel-hover">
+            {estadoHover ? (
+              <div className="bia2-painel-hover-conteudo">
+                <div className="bia2-painel-hover-uf">{hoverUf}</div>
+                <div>
+                  <div className="bia2-painel-hover-linha1">{linha1}</div>
+                  <div className="bia2-painel-hover-linha2">{linha2}</div>
+                </div>
+              </div>
+            ) : (
+              <div className="bia2-painel-hover-vazio">Passe o cursor sobre um estado para ver estoque e preço médio.</div>
+            )}
+          </div>
+        </div>
+
+        <div className="bia2-coluna-flex">
+          <div className="bia2-card bia2-card-flex">
+            <div className="bia2-rotulo-mono">Top 12 · {isEstoque ? "Anúncios em estoque" : "Preço médio (R$)"}</div>
+            <div className="bia2-ranking-lista">
+              {ranking.map((item) => (
+                <div key={item.uf} className="bia2-ranking-linha">
+                  <span className="bia2-ranking-uf">{item.uf}</span>
+                  <BarraSimples percentual={item.percentual} cor={item.cor} alturaPx={8} />
+                  <span className="bia2-ranking-valor">{item.valLabel}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bia2-card">
+            <div className="bia2-rotulo-mono">Preço médio · extremos do país</div>
+            <div className="bia2-extremos-grid">
+              <div>
+                <div className="bia2-extremos-titulo bia2-extremos-caro">MAIS CAROS</div>
+                {caros.map((e) => (
+                  <div key={e.estado} className="bia2-extremos-linha">
+                    <span className="bia2-extremos-uf">{e.estado}</span>
+                    <span className="bia2-extremos-valor">{formatarMoedaArredondada(e.precoMedio)}</span>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="bia2-extremos-titulo bia2-extremos-acessivel">MAIS ACESSÍVEIS</div>
+                {acessiveis.map((e) => (
+                  <div key={e.estado} className="bia2-extremos-linha">
+                    <span className="bia2-extremos-uf">{e.estado}</span>
+                    <span className="bia2-extremos-valor">{formatarMoedaArredondada(e.precoMedio)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
-function BarraRanking({
-  rotulo,
-  valorFormatado,
-  percentual,
-  cor,
-  larga,
-}: {
-  rotulo: string;
-  valorFormatado: string;
-  percentual: number;
-  cor: string;
-  larga?: boolean;
-}) {
+function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
+  const [metrica, setMetrica] = useState<MetricaEstado>("estoque");
+  const isEstoque = metrica === "estoque";
+  const hue = isEstoque ? HUE_ESTOQUE : HUE_PRECO;
+
+  const ordenadas = [...cidades].sort((a, b) =>
+    isEstoque ? b.quantidade - a.quantidade : b.precoMedio - a.precoMedio
+  );
+  const max = Math.max(...ordenadas.map((c) => (isEstoque ? c.quantidade : c.precoMedio)), 1);
+
   return (
-    <div className={`bia-barra-linha ${larga ? "bia-barra-linha-larga" : ""}`}>
-      <span className="bia-barra-rotulo" title={rotulo}>
-        {rotulo}
-      </span>
-      <div className="bia-barra-trilho">
-        <div className="bia-barra-fill" style={{ width: `${percentual}%`, background: cor }} />
+    <section className="bia2-secao">
+      <div className="bia2-secao-cabecalho">
+        <div>
+          <Eyebrow numero="02" texto="Praças" />
+          <h2 className="bia2-titulo-secao">Cidades mais ativas</h2>
+        </div>
+        <Toggle
+          opcoes={[
+            { valor: "estoque", rotulo: "Estoque" },
+            { valor: "preco", rotulo: "Preço médio" },
+          ]}
+          ativo={metrica}
+          onSelecionar={setMetrica}
+        />
       </div>
-      <span className="bia-barra-valor">{valorFormatado}</span>
-    </div>
+
+      <div className="bia2-card bia2-cidades-lista">
+        {ordenadas.map((cidade) => {
+          const valor = isEstoque ? cidade.quantidade : cidade.precoMedio;
+          const t = valor / max;
+          return (
+            <div key={`${cidade.cidade}-${cidade.estado}`} className="bia2-cidade-linha">
+              <div className="bia2-cidade-nome-grupo">
+                <span className="bia2-cidade-nome" title={cidade.cidade}>
+                  {cidade.cidade}
+                </span>
+                <span className="bia2-cidade-uf">{cidade.estado}</span>
+              </div>
+              <div className="bia2-cidade-barra-grupo">
+                <BarraSimples percentual={t * 100} cor={corMapa(0.5 + 0.4 * t, hue).bg} />
+                <span className="bia2-cidade-valor">
+                  {isEstoque ? `${formatarInteiro(valor)} un.` : formatarMoedaArredondada(valor)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
-type AbaMercado = "marcas" | "estados" | "cidades";
+type OrdemDisputado = "qtd" | "margem";
+
+function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
+  const [marcaAtiva, setMarcaAtiva] = useState("Todas");
+  const [ordem, setOrdem] = useState<OrdemDisputado>("qtd");
+  const isVolume = ordem === "qtd";
+
+  const marcas = useMemo(() => {
+    const contagem = new Map<string, number>();
+    for (const item of disputados) {
+      contagem.set(item.marca, (contagem.get(item.marca) ?? 0) + item.quantidade);
+    }
+    return ["Todas", ...[...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([marca]) => marca)];
+  }, [disputados]);
+
+  const kmGlobal = Math.max(...disputados.map((item) => item.kmMax ?? 0), 1);
+
+  const filtrados = disputados.filter((item) => marcaAtiva === "Todas" || item.marca === marcaAtiva);
+  const ordenados = [...filtrados].sort((a, b) =>
+    isVolume ? b.quantidade - a.quantidade : (b.melhorMargem ?? 0) - (a.melhorMargem ?? 0)
+  );
+  const maiorValor = Math.max(...ordenados.map((item) => (isVolume ? item.quantidade : item.melhorMargem ?? 0)), 1);
+
+  return (
+    <section className="bia2-secao">
+      <div className="bia2-secao-cabecalho">
+        <div>
+          <Eyebrow numero="03" texto="Concorrência" />
+          <h2 className="bia2-titulo-secao">Anúncios mais disputados</h2>
+        </div>
+        <Toggle
+          opcoes={[
+            { valor: "qtd", rotulo: "Volume" },
+            { valor: "margem", rotulo: "Margem" },
+          ]}
+          ativo={ordem}
+          onSelecionar={setOrdem}
+        />
+      </div>
+
+      <div className="bia2-chips">
+        {marcas.map((marca) => (
+          <button
+            key={marca}
+            type="button"
+            className={`bia2-chip ${marcaAtiva === marca ? "bia2-chip-ativo" : ""}`}
+            onClick={() => setMarcaAtiva(marca)}
+          >
+            <span
+              className="bia2-chip-ponto"
+              style={{ background: marca === "Todas" ? "#8b93a3" : corDaMarca(marca) }}
+            />
+            {marca}
+          </button>
+        ))}
+      </div>
+
+      <div className="bia2-card bia2-disputados-card">
+        <div className="bia2-disputados-cabecalho">
+          <span>Modelo · UF</span>
+          <span>{isVolume ? "Volume de anúncios · margem" : "Melhor margem · volume"}</span>
+          <span className="bia2-alinhar-direita">Faixa de KM</span>
+        </div>
+        {ordenados.map((item) => {
+          const valor = isVolume ? item.quantidade : item.melhorMargem ?? 0;
+          const percentual = (valor / maiorValor) * 100;
+          const margemAlta = (item.melhorMargem ?? 0) >= 25;
+          const temKm = item.kmMin !== null && item.kmMax !== null;
+          const kmLeft = temKm ? ((item.kmMin as number) / kmGlobal) * 100 : 0;
+          const kmW = temKm ? Math.max(((item.kmMax as number) - (item.kmMin as number)) / kmGlobal * 100, 1.5) : 0;
+          return (
+            <div key={`${item.marca}-${item.modelo}-${item.estado}`} className="bia2-disputado-linha">
+              <div className="bia2-disputado-modelo-grupo">
+                <span className="bia2-disputado-ponto" style={{ background: corDaMarca(item.marca) }} />
+                <div>
+                  <div className="bia2-disputado-modelo">
+                    {item.modelo} <span className="bia2-disputado-uf">{item.estado}</span>
+                  </div>
+                  <div className="bia2-disputado-marca">{item.marca}</div>
+                </div>
+              </div>
+              <div className="bia2-disputado-barra-grupo">
+                <BarraSimples percentual={percentual} cor={corDaMarca(item.marca)} />
+                <span className="bia2-disputado-valores">
+                  <span className="bia2-disputado-qtd">{item.quantidade} un.</span>
+                  <span className={margemAlta ? "bia2-badge-margem" : "bia2-margem-normal"}>
+                    {item.melhorMargem !== null ? formatarPercentual1(item.melhorMargem) : "—"}
+                  </span>
+                </span>
+              </div>
+              <div>
+                {temKm ? (
+                  <>
+                    <div className="bia2-km-trilho">
+                      <div className="bia2-km-fill" style={{ left: `${kmLeft}%`, width: `${kmW}%` }} />
+                    </div>
+                    <div className="bia2-km-label">
+                      {formatarInteiro(item.kmMin as number)}–{formatarInteiro(item.kmMax as number)}
+                    </div>
+                  </>
+                ) : (
+                  <div className="bia2-km-label">—</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SecaoLuxo({ marcasLuxo }: { marcasLuxo: ItemMarcaLuxo[] }) {
+  const marcasAgrupadas = useMemo(() => {
+    const mapa = new Map<string, ItemMarcaLuxo[]>();
+    for (const item of marcasLuxo) {
+      const lista = mapa.get(item.marca) ?? [];
+      lista.push(item);
+      mapa.set(item.marca, lista);
+    }
+    return [...mapa.entries()];
+  }, [marcasLuxo]);
+
+  return (
+    <section className="bia2-secao">
+      <Eyebrow numero="04" texto="Alto padrão" />
+      <h2 className="bia2-titulo-secao">Marcas de luxo por estado</h2>
+      <p className="bia2-paragrafo-apoio">
+        Distribuição das marcas premium capturadas pelo motor de descoberta, por unidade federativa.
+      </p>
+
+      <div className="bia2-grid-marcas">
+        {marcasAgrupadas.map(([marca, itens]) => {
+          const total = itens.reduce((soma, item) => soma + item.quantidade, 0);
+          const lider = itens[0];
+          const hue = hueMarcaLuxo(marca);
+          const cor = `oklch(0.7 0.14 ${hue})`;
+          return (
+            <div key={marca} className="bia2-card bia2-card-marca">
+              <div className="bia2-card-marca-topo">
+                <div className="bia2-card-marca-nome-grupo">
+                  <span className="bia2-card-marca-quadrado" style={{ background: cor, boxShadow: `0 0 10px ${cor}` }} />
+                  <span className="bia2-card-marca-nome">{marca}</span>
+                </div>
+                <span className="bia2-card-marca-total">{total} no Brasil</span>
+              </div>
+              {lider && <div className="bia2-card-marca-lidera">Lidera: {lider.estado}</div>}
+              <div className="bia2-card-marca-lista">
+                {itens.slice(0, 5).map((item, indice) => (
+                  <div key={item.estado} className="bia2-card-marca-linha">
+                    <span
+                      className="bia2-card-marca-uf"
+                      style={{ fontWeight: indice === 0 ? 700 : 400, color: indice === 0 ? "#eef1f6" : "#7b8395" }}
+                    >
+                      {item.estado}
+                    </span>
+                    <BarraSimples
+                      percentual={lider ? (item.quantidade / lider.quantidade) * 100 : 0}
+                      cor={indice === 0 ? cor : `oklch(0.5 0.07 ${hue})`}
+                      alturaPx={9}
+                    />
+                    <span className="bia2-card-marca-qtd">{item.quantidade}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 export function PainelBia({
   resumo,
@@ -139,205 +506,101 @@ export function PainelBia({
   estadosAtivos: ItemEstadoAtivo[];
   cidadesAtivas: ItemCidadeAtiva[];
 }) {
-  const [janelaDescobertas, setJanelaDescobertas] = useState<7 | 30>(7);
-  const [abaMercado, setAbaMercado] = useState<AbaMercado>("estados");
-  const serieDescobertas = janelaDescobertas === 7 ? descobertas7d : descobertas30d;
+  const [janelaDescobertas, setJanelaDescobertas] = useState<"7" | "30">("7");
+  const serieDescobertas = janelaDescobertas === "7" ? descobertas7d : descobertas30d;
 
-  const marcasAgrupadas = new Map<string, ItemMarcaLuxo[]>();
-  for (const item of marcasLuxo) {
-    const lista = marcasAgrupadas.get(item.marca) ?? [];
-    lista.push(item);
-    marcasAgrupadas.set(item.marca, lista);
-  }
-
-  const maiorEstoqueEstado = Math.max(1, ...estadosAtivos.map((item) => item.quantidade));
-  const maiorEstoqueCidade = Math.max(1, ...cidadesAtivas.map((item) => item.quantidade));
-  const corPorEstado = construirMapaCorPorEstado(cidadesAtivas.map((item) => item.estado));
+  const totalEstoque = estadosAtivos.reduce((soma, e) => soma + e.quantidade, 0);
+  const ticketMedio =
+    totalEstoque > 0
+      ? estadosAtivos.reduce((soma, e) => soma + e.quantidade * e.precoMedio, 0) / totalEstoque
+      : 0;
 
   return (
-    <div className="bia-painel">
-      <div className="bia-cartoes">
-        <CartaoNumero titulo="Descobertas hoje" valor={String(resumo.descobertasHoje)} />
-        <CartaoNumero titulo="Descobertas (7 dias)" valor={String(resumo.descobertas7d)} />
-        <CartaoNumero titulo="Descobertas (30 dias)" valor={String(resumo.descobertas30d)} />
-        <CartaoNumero titulo="Valor potencial em estoque" valor={formatarMoeda(resumo.valorPotencial)} destaque />
-        <CartaoNumero titulo="Anúncios publicados" valor={String(resumo.anunciosPublicados)} />
-        <CartaoNumero titulo="Desconto médio sobre a FIPE" valor={`${resumo.descontoMedio.toFixed(1)}%`} />
+    <div className="bia2-painel">
+      <div className="bia2-kpis">
+        <div className="bia2-kpi">
+          <div className="bia2-kpi-rotulo">Estoque nac.</div>
+          <div className="bia2-kpi-valor">{formatarInteiro(totalEstoque)}</div>
+        </div>
+        <div className="bia2-kpi">
+          <div className="bia2-kpi-rotulo">Ticket médio</div>
+          <div className="bia2-kpi-valor bia2-kpi-valor-destaque">{formatarMoedaArredondada(ticketMedio)}</div>
+        </div>
+        <div className="bia2-kpi">
+          <div className="bia2-kpi-rotulo">UFs cobertas</div>
+          <div className="bia2-kpi-valor">{estadosAtivos.length}</div>
+        </div>
+        <div className="bia2-kpi">
+          <div className="bia2-kpi-rotulo">Cidades no ranking</div>
+          <div className="bia2-kpi-valor">{cidadesAtivas.length}</div>
+        </div>
       </div>
 
-      <SecaoBia titulo="Oportunidades descobertas por dia">
-        <div className="bia-toggle-janela">
-          <button
-            type="button"
-            className={`bia-toggle-opcao ${janelaDescobertas === 7 ? "bia-toggle-opcao-ativa" : ""}`}
-            onClick={() => setJanelaDescobertas(7)}
-          >
-            7 dias
-          </button>
-          <button
-            type="button"
-            className={`bia-toggle-opcao ${janelaDescobertas === 30 ? "bia-toggle-opcao-ativa" : ""}`}
-            onClick={() => setJanelaDescobertas(30)}
-          >
-            30 dias
-          </button>
+      <SecaoEstados estados={estadosAtivos} />
+      <SecaoCidades cidades={cidadesAtivas} />
+      <SecaoDisputados disputados={maisDisputados} />
+      <SecaoLuxo marcasLuxo={marcasLuxo} />
+
+      <section className="bia2-secao">
+        <Eyebrow numero="05" texto="Tendência" />
+        <h2 className="bia2-titulo-secao">Oportunidades descobertas por dia</h2>
+        <div className="bia2-card" style={{ marginTop: 18 }}>
+          <Toggle
+            opcoes={[
+              { valor: "7", rotulo: "7 dias" },
+              { valor: "30", rotulo: "30 dias" },
+            ]}
+            ativo={janelaDescobertas}
+            onSelecionar={setJanelaDescobertas}
+          />
+          <div style={{ marginTop: 16 }}>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={serieDescobertas}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COR_BORDA_GRAFICO} />
+                <XAxis dataKey="dia" tickFormatter={formatarDiaCurto} fontSize={11} stroke={COR_TEXTO_FRACO_GRAFICO} />
+                <YAxis fontSize={11} allowDecimals={false} stroke={COR_TEXTO_FRACO_GRAFICO} />
+                <Tooltip
+                  labelFormatter={(valor) => formatarDiaCurto(String(valor))}
+                  formatter={(valor) => [valor, "Descobertas"]}
+                  {...ESTILO_TOOLTIP}
+                />
+                <Bar dataKey="quantidade" fill={COR_VERDE_GRAFICO} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={serieDescobertas}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COR_BORDA} />
-            <XAxis dataKey="dia" tickFormatter={formatarDiaCurto} fontSize={11} stroke={COR_TEXTO_FRACO} />
-            <YAxis fontSize={11} allowDecimals={false} stroke={COR_TEXTO_FRACO} />
-            <Tooltip
-              labelFormatter={(valor) => formatarDiaCurto(String(valor))}
-              formatter={(valor) => [valor, "Descobertas"]}
-              {...ESTILO_TOOLTIP}
-            />
-            <Bar dataKey="quantidade" fill={COR_VERDE} radius={[3, 3, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </SecaoBia>
+      </section>
 
       {valorPotencialHistorico.length > 1 && (
-        <SecaoBia titulo="Valor potencial em estoque — histórico">
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={valorPotencialHistorico}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COR_BORDA} />
-              <XAxis dataKey="dia" tickFormatter={formatarDiaCurto} fontSize={11} stroke={COR_TEXTO_FRACO} />
-              <YAxis fontSize={11} tickFormatter={(valor) => formatarMoeda(valor)} width={90} stroke={COR_TEXTO_FRACO} />
-              <Tooltip
-                labelFormatter={(valor) => formatarDiaCurto(String(valor))}
-                formatter={(valor) => [formatarMoeda(Number(valor)), "Valor potencial"]}
-                {...ESTILO_TOOLTIP}
-              />
-              <Line type="monotone" dataKey="valorPotencial" stroke={COR_VERDE} strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </SecaoBia>
+        <section className="bia2-secao">
+          <h2 className="bia2-titulo-secao">Valor potencial em estoque — histórico</h2>
+          <div className="bia2-card" style={{ marginTop: 18 }}>
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={valorPotencialHistorico}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COR_BORDA_GRAFICO} />
+                <XAxis dataKey="dia" tickFormatter={formatarDiaCurto} fontSize={11} stroke={COR_TEXTO_FRACO_GRAFICO} />
+                <YAxis
+                  fontSize={11}
+                  tickFormatter={(valor) => formatarMoeda(valor)}
+                  width={90}
+                  stroke={COR_TEXTO_FRACO_GRAFICO}
+                />
+                <Tooltip
+                  labelFormatter={(valor) => formatarDiaCurto(String(valor))}
+                  formatter={(valor) => [formatarMoeda(Number(valor)), "Valor potencial"]}
+                  {...ESTILO_TOOLTIP}
+                />
+                <Line type="monotone" dataKey="valorPotencial" stroke={COR_VERDE_GRAFICO} strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
       )}
 
-      <SecaoBia titulo="Anúncios mais disputados (volume por modelo + estado)">
-        <div className="bia-tabela-wrapper">
-          <table className="bia-tabela">
-            <thead>
-              <tr>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Estado</th>
-                <th>Qtd.</th>
-                <th>Melhor margem</th>
-                <th>KM mín.</th>
-                <th>KM máx.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {maisDisputados.map((item) => (
-                <tr key={`${item.marca}-${item.modelo}-${item.estado}`}>
-                  <td>{item.marca}</td>
-                  <td>{item.modelo}</td>
-                  <td>{item.estado}</td>
-                  <td>{item.quantidade}</td>
-                  <td>{item.melhorMargem !== null ? `${item.melhorMargem.toFixed(1)}%` : "—"}</td>
-                  <td>{formatarKm(item.kmMin)}</td>
-                  <td>{formatarKm(item.kmMax)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SecaoBia>
-
-      <SecaoBia titulo="Visão de mercado">
-        <div className="bia-tabs">
-          <button
-            type="button"
-            className={`bia-tab ${abaMercado === "marcas" ? "bia-tab-ativa" : ""}`}
-            onClick={() => setAbaMercado("marcas")}
-          >
-            Marcas de luxo
-          </button>
-          <button
-            type="button"
-            className={`bia-tab ${abaMercado === "estados" ? "bia-tab-ativa" : ""}`}
-            onClick={() => setAbaMercado("estados")}
-          >
-            Estados
-          </button>
-          <button
-            type="button"
-            className={`bia-tab ${abaMercado === "cidades" ? "bia-tab-ativa" : ""}`}
-            onClick={() => setAbaMercado("cidades")}
-          >
-            Cidades
-          </button>
-        </div>
-
-        {abaMercado === "marcas" && (
-          <div className="bia-grade-marcas">
-            {[...marcasAgrupadas.entries()].map(([marca, itens]) => {
-              const total = itens.reduce((soma, item) => soma + item.quantidade, 0);
-              const liderEstado = itens[0];
-              return (
-                <div key={marca} className="bia-cartao-marca">
-                  <p className="bia-cartao-marca-titulo">{marca}</p>
-                  <p className="bia-cartao-marca-total">{total} no Brasil</p>
-                  {liderEstado && (
-                    <p className="bia-cartao-marca-lider">
-                      {liderEstado.estado} lidera: {liderEstado.quantidade}
-                    </p>
-                  )}
-                  <ul className="bia-cartao-marca-lista">
-                    {itens.slice(0, 5).map((item) => (
-                      <li key={item.estado}>
-                        <span>{item.estado}</span>
-                        <span>{item.quantidade}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {abaMercado === "estados" && (
-          <div className="bia-barras">
-            {estadosAtivos.slice(0, 15).map((item, indice) => (
-              <BarraRanking
-                key={item.estado}
-                rotulo={item.estado}
-                valorFormatado={String(item.quantidade)}
-                percentual={Math.max(4, (item.quantidade / maiorEstoqueEstado) * 100)}
-                cor={corPorIndice(indice)}
-              />
-            ))}
-          </div>
-        )}
-
-        {abaMercado === "cidades" && (
-          <>
-            <div className="bia-legenda">
-              {[...corPorEstado.entries()].map(([estado, cor]) => (
-                <span key={estado} className="bia-legenda-item">
-                  <span className="bia-legenda-ponto" style={{ background: cor }} />
-                  {estado}
-                </span>
-              ))}
-            </div>
-            <div className="bia-barras">
-              {cidadesAtivas.map((item) => (
-                <BarraRanking
-                  key={`${item.cidade}-${item.estado}`}
-                  rotulo={item.cidade}
-                  valorFormatado={String(item.quantidade)}
-                  percentual={Math.max(4, (item.quantidade / maiorEstoqueCidade) * 100)}
-                  cor={corPorEstado.get(item.estado) ?? COR_VERDE}
-                  larga
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </SecaoBia>
+      <footer className="bia2-rodape">
+        <span>Painel de inteligência de estoque · {formatarInteiro(resumo.descobertasHoje)} descobertas hoje</span>
+        <span>Valores em R$ · preços médios por anúncio ativo</span>
+      </footer>
     </div>
   );
 }

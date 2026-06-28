@@ -689,339 +689,726 @@ body {
 .usuarios-botao-apagar:hover:not(:disabled) {
   background: #fde2e1;
 }
-
-/* BIA — tema escuro mono-bold (referência do usuário: fundo quase preto,
-   tipografia monoespaçada, rótulo verde neon "// ...", barras coloridas
-   por categoria sobre trilho escuro). Escopado só a esta página — não
-   usa nenhuma variável/cor do resto do painel admin (light mode). */
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap");
-
-:root {
-  --bia-bg: #0a0a0a;
-  --bia-bg-cartao: #131313;
-  --bia-borda: #262626;
-  --bia-texto: #f5f5f5;
-  --bia-texto-fraco: #8a8a8a;
-  --bia-verde: #22c55e;
-  --bia-paleta-1: #22c55e;
-  --bia-paleta-2: #06b6d4;
-  --bia-paleta-3: #f97316;
-  --bia-paleta-4: #a855f7;
-  --bia-paleta-5: #f43f5e;
-  --bia-paleta-6: #eab308;
-  --bia-paleta-7: #3b82f6;
-  --bia-paleta-8: #14b8a6;
-}
+/* BIA — design "neo-fintech" (handoff recebido do usuário via Claude
+   Design, 28/06/2026): fundo escuro com glow radial, Archivo (títulos/
+   números) + Space Mono (rótulos/dados), mapa-tile esquemático do Brasil
+   com escala choroplética OKLCH, barras em pílula, chips de marca. Cores
+   computadas em TS (ver lib/biaCores.ts) e aplicadas via style inline por
+   item; classes abaixo cobrem só a estrutura estática. Escopado a esta
+   página — não usa nenhuma variável do resto do painel admin (light mode). */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap");
 
 .bia-pagina {
   flex: 1;
-  padding: 28px 32px 64px;
-  max-width: 1180px;
-  background: var(--bia-bg);
-  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  color: var(--bia-texto);
+  padding: 0;
+  max-width: none;
+  background: #0c0e13;
+  font-family: "Archivo", system-ui, sans-serif;
+  color: #eef1f6;
+}
+
+.bia-pagina-fundo {
+  background: radial-gradient(1200px 600px at 20% -10%, #1a1f2b 0%, #0c0e13 60%);
+  padding-bottom: 80px;
+}
+
+.bia-header {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px clamp(20px, 5vw, 64px) 0;
+}
+
+.bia-status-linha {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 22px;
+}
+
+.bia-status-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: oklch(0.72 0.16 230);
+  box-shadow: 0 0 12px oklch(0.72 0.16 230);
 }
 
 .bia-eyebrow {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--bia-verde);
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  margin: 0 0 10px;
+  color: #8b93a3;
+  margin: 0;
+}
+
+.bia-headline-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
 }
 
 .bia-headline {
-  font-size: clamp(28px, 4vw, 40px);
   font-weight: 800;
-  line-height: 1.05;
-  text-transform: uppercase;
-  letter-spacing: -0.01em;
-  margin: 0 0 8px;
-  color: var(--bia-texto);
+  font-size: clamp(36px, 5.4vw, 60px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  margin: 0;
+  max-width: 600px;
+}
+
+.bia-headline-fraco {
+  color: #8b93a3;
 }
 
 .bia-subtitulo {
   font-size: 13px;
-  color: var(--bia-texto-fraco);
-  margin: 0 0 24px;
+  color: #8b93a3;
+  margin: 8px 0 0;
   max-width: 560px;
 }
 
 .bia-painel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(36px, 5vw, 56px) clamp(20px, 5vw, 64px) 0;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: clamp(36px, 5vw, 56px);
 }
 
-.bia-cartoes {
+.bia2-kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1px;
-  background: var(--bia-borda);
-  border: 1px solid var(--bia-borda);
+  grid-template-columns: repeat(2, minmax(130px, 1fr));
+  gap: 10px;
 }
 
-.bia-cartao {
-  background: var(--bia-bg-cartao);
-  padding: 18px 20px;
+.bia2-kpi {
+  background: #161a23;
+  border: 1px solid #262b38;
+  border-radius: 12px;
+  padding: 15px 18px;
 }
 
-.bia-cartao-titulo {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+.bia2-kpi-rotulo {
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--bia-texto-fraco);
-  margin: 0 0 10px;
+  color: #7b8395;
 }
 
-.bia-cartao-valor {
-  font-size: 26px;
-  font-weight: 700;
-  margin: 0;
-  color: var(--bia-texto);
-  letter-spacing: -0.01em;
+.bia2-kpi-valor {
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  margin-top: 5px;
 }
 
-.bia-cartao-valor-destaque {
-  color: var(--bia-verde);
+.bia2-kpi-valor-destaque {
+  color: oklch(0.8 0.13 230);
 }
 
-.bia-cartao-sufixo {
-  font-size: 13px;
-  font-weight: 500;
-  margin-left: 4px;
-  color: var(--bia-texto-fraco);
+.bia2-secao {
+  display: flex;
+  flex-direction: column;
 }
 
-.bia-secao {
-  background: var(--bia-bg-cartao);
-  border: 1px solid var(--bia-borda);
-  border-radius: 4px;
-  padding: 22px;
+.bia2-secao-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
-.bia-secao-titulo {
+.bia-eyebrow-secao {
+  font-family: "Space Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.13 230);
+}
+
+.bia2-titulo-secao {
+  font-weight: 800;
+  font-size: clamp(24px, 3.2vw, 34px);
+  letter-spacing: -0.03em;
+  margin: 8px 0 0;
+}
+
+.bia2-paragrafo-apoio {
+  color: #8b93a3;
+  font-size: 15px;
+  margin: 8px 0 0;
+  max-width: 620px;
+}
+
+.bia2-toggle {
+  display: flex;
+  gap: 4px;
+  background: #161a23;
+  border: 1px solid #262b38;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.bia2-toggle-opcao {
+  font-family: "Space Mono", monospace;
   font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  color: #8b93a3;
+  font-weight: 400;
+}
+
+.bia2-toggle-opcao-ativa {
+  background: oklch(0.62 0.15 230);
+  color: #0d0f14;
   font-weight: 700;
+}
+
+.bia2-card {
+  background: #12151c;
+  border: 1px solid #222838;
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+
+.bia2-card-flex {
+  flex: 1;
+}
+
+.bia2-coluna-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bia2-grid-2col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(20px, 3vw, 36px);
+  align-items: stretch;
+}
+
+@media (max-width: 760px) {
+  .bia2-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bia2-rotulo-mono {
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7b8395;
+  margin-bottom: 14px;
+}
+
+/* Mapa-tile esquemático do Brasil */
+.bia2-mapa {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 5px;
+  aspect-ratio: 7 / 9;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.bia2-mapa-tile {
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: box-shadow 0.12s ease;
+  padding: 2px;
+}
+
+.bia2-mapa-tile-uf {
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.bia2-mapa-tile-valor {
+  font-family: "Space Mono", monospace;
+  font-size: 8.5px;
+  opacity: 0.82;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+.bia2-legenda-mapa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.bia2-legenda-extremo {
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--bia-texto-fraco);
-  margin: 0 0 18px;
+  color: #7b8395;
 }
 
-.bia-secao-titulo span {
-  color: var(--bia-texto);
-}
-
-.bia-toggle-janela {
+.bia2-legenda-faixa {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 2px;
+  flex: 1;
 }
 
-.bia-toggle-opcao {
-  border: 1px solid var(--bia-borda);
-  background: transparent;
-  color: var(--bia-texto-fraco);
-  border-radius: 999px;
-  padding: 5px 14px;
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
+.bia2-legenda-stop {
+  flex: 1;
+  height: 8px;
+  border-radius: 2px;
 }
 
-.bia-toggle-opcao-ativa {
-  background: var(--bia-verde);
-  border-color: var(--bia-verde);
-  color: #0a0a0a;
-  font-weight: 700;
+.bia2-painel-hover {
+  margin-top: 18px;
+  min-height: 54px;
+  border-top: 1px solid #222838;
+  padding-top: 14px;
 }
 
-.bia-tabs {
+.bia2-painel-hover-conteudo {
   display: flex;
-  gap: 6px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
 }
 
-.bia-tab {
-  border: 1px solid var(--bia-borda);
-  background: transparent;
-  color: var(--bia-texto-fraco);
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  white-space: nowrap;
+.bia2-painel-hover-uf {
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: oklch(0.82 0.13 230);
 }
 
-.bia-tab-ativa {
-  background: var(--bia-verde);
-  border-color: var(--bia-verde);
-  color: #0a0a0a;
-}
-
-.bia-tabela-wrapper {
-  overflow-x: auto;
-}
-
-.bia-tabela {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-
-.bia-tabela th {
-  text-align: left;
-  color: var(--bia-texto-fraco);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-size: 11px;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--bia-borda);
-  white-space: nowrap;
-}
-
-.bia-tabela td {
-  padding: 9px 10px;
-  border-bottom: 1px solid var(--bia-borda);
-  white-space: nowrap;
-  color: var(--bia-texto);
-}
-
-.bia-tabela tbody tr:hover {
-  background: #1a1a1a;
-}
-
-.bia-grade-marcas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1px;
-  background: var(--bia-borda);
-  border: 1px solid var(--bia-borda);
-}
-
-.bia-cartao-marca {
-  background: var(--bia-bg-cartao);
-  padding: 16px;
-}
-
-.bia-cartao-marca-titulo {
-  font-weight: 700;
-  margin: 0 0 4px;
-  text-transform: uppercase;
+.bia2-painel-hover-linha1 {
   font-size: 13px;
-  letter-spacing: 0.02em;
+  color: #c4cad6;
 }
 
-.bia-cartao-marca-total {
-  font-size: 12px;
-  color: var(--bia-texto-fraco);
-  margin: 0 0 10px;
+.bia2-painel-hover-linha2 {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: #7b8395;
+  margin-top: 3px;
 }
 
-.bia-cartao-marca-lider {
-  font-size: 11.5px;
-  color: var(--bia-verde);
-  margin: 0 0 12px;
+.bia2-painel-hover-vazio {
+  font-size: 13px;
+  color: #5e6678;
 }
 
-.bia-cartao-marca-lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Trilho/barra-pílula genérica */
+.bia2-trilho {
+  height: 8px;
+  position: relative;
+  flex: 1;
+}
+
+.bia2-trilho-fundo {
+  position: absolute;
+  inset: 0;
+  background: #1b2030;
+  border-radius: 99px;
+}
+
+.bia2-trilho-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 99px;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bia2-ranking-lista {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 12.5px;
+  gap: 8px;
 }
 
-.bia-cartao-marca-lista li {
+.bia2-ranking-linha {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.bia2-ranking-uf {
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+  font-size: 12px;
+  color: #c4cad6;
+}
+
+.bia2-ranking-valor {
+  font-family: "Space Mono", monospace;
+  font-size: 11.5px;
+  color: #aeb6c4;
+  min-width: 80px;
+  text-align: right;
+}
+
+.bia2-extremos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.bia2-extremos-titulo {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.bia2-extremos-caro {
+  color: oklch(0.72 0.16 25);
+}
+
+.bia2-extremos-acessivel {
+  color: oklch(0.74 0.15 150);
+}
+
+.bia2-extremos-linha {
   display: flex;
   justify-content: space-between;
-  color: var(--bia-texto-fraco);
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #1b2030;
 }
 
-.bia-cartao-marca-lista li span:first-child {
-  color: var(--bia-texto);
-  font-weight: 600;
+.bia2-extremos-uf {
+  font-family: "Space Mono", monospace;
+  font-size: 11.5px;
+  color: #c4cad6;
 }
 
-/* Barras de ranking coloridas (estados/cidades) — uma cor por categoria
-   sobre trilho escuro, igual à referência visual do usuário. */
-.bia-barras {
+.bia2-extremos-valor {
+  font-family: "Space Mono", monospace;
+  font-size: 11.5px;
+  color: #aeb6c4;
+}
+
+/* Cidades */
+.bia2-cidades-lista {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.bia-barra-linha {
+.bia2-cidade-linha {
   display: grid;
-  grid-template-columns: 40px 1fr 60px;
+  grid-template-columns: 190px 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.bia-barra-linha-larga {
-  grid-template-columns: 130px 1fr 50px;
+.bia2-cidade-nome-grupo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
 }
 
-.bia-barra-rotulo {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--bia-texto);
+.bia2-cidade-nome {
+  font-size: 14px;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.bia-legenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+.bia2-cidade-uf {
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  color: #7b8395;
+  padding: 1px 5px;
+  border: 1px solid #2a3142;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.bia-legenda-item {
+.bia2-cidade-barra-grupo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--bia-texto-fraco);
+  gap: 12px;
 }
 
-.bia-legenda-ponto {
-  width: 9px;
-  height: 9px;
+.bia2-cidade-valor {
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  color: #eef1f6;
+  min-width: 112px;
+  text-align: right;
+  font-weight: 700;
+}
+
+/* Disputados */
+.bia2-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.bia2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: "Archivo", sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #161a23;
+  color: #aeb6c4;
+  border: 1px solid #2a3142;
+}
+
+.bia2-chip-ativo {
+  background: #eef1f6;
+  color: #0d0f14;
+  border-color: #eef1f6;
+}
+
+.bia2-chip-ponto {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
 }
 
-.bia-barra-trilho {
-  background: #1c1c1c;
+.bia2-disputados-card {
+  padding: 8px 24px 16px;
+}
+
+.bia2-disputados-cabecalho {
+  display: grid;
+  grid-template-columns: 170px 1fr 150px;
+  gap: 16px;
+  padding: 12px 0 10px;
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5e6678;
+  border-bottom: 1px solid #1b2030;
+}
+
+.bia2-alinhar-direita {
+  text-align: right;
+}
+
+.bia2-disputado-linha {
+  display: grid;
+  grid-template-columns: 170px 1fr 150px;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #161b27;
+}
+
+.bia2-disputado-modelo-grupo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.bia2-disputado-ponto {
+  width: 9px;
+  height: 9px;
   border-radius: 3px;
-  height: 18px;
+  flex-shrink: 0;
+}
+
+.bia2-disputado-modelo {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.bia2-disputado-uf {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 400;
+  color: #7b8395;
+}
+
+.bia2-disputado-marca {
+  font-size: 10.5px;
+  color: #5e6678;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.bia2-disputado-barra-grupo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bia2-disputado-valores {
+  font-family: "Space Mono", monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  min-width: 90px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.bia2-disputado-qtd {
+  color: #aeb6c4;
+}
+
+.bia2-margem-normal {
+  color: #7b8395;
+}
+
+.bia2-badge-margem {
+  color: #0d0f14;
+  background: oklch(0.72 0.18 25);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.bia2-km-trilho {
+  height: 6px;
+  background: #1b2030;
+  border-radius: 3px;
+  position: relative;
   overflow: hidden;
 }
 
-.bia-barra-fill {
-  height: 100%;
+.bia2-km-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #3a4256;
   border-radius: 3px;
-  transition: width 0.3s ease;
 }
 
-.bia-barra-valor {
-  font-size: 12.5px;
-  font-weight: 700;
+.bia2-km-label {
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  color: #5e6678;
+  margin-top: 4px;
   text-align: right;
-  color: var(--bia-texto);
+}
+
+/* Marcas de luxo */
+.bia2-grid-marcas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.bia2-card-marca {
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+
+.bia2-card-marca-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.bia2-card-marca-nome-grupo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.bia2-card-marca-quadrado {
+  width: 11px;
+  height: 11px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.bia2-card-marca-nome {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.bia2-card-marca-total {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: #7b8395;
+}
+
+.bia2-card-marca-lidera {
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  color: #5e6678;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.bia2-card-marca-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.bia2-card-marca-linha {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+}
+
+.bia2-card-marca-uf {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+}
+
+.bia2-card-marca-qtd {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: #aeb6c4;
+  text-align: right;
+}
+
+.bia2-rodape {
+  border-top: 1px solid #222838;
+  padding-top: 18px;
+  font-family: "Space Mono", monospace;
+  font-size: 10.5px;
+  color: #5e6678;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .worker-painel {
