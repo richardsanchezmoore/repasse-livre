@@ -700,16 +700,22 @@ body {
 
 .bia-pagina {
   flex: 1;
-  padding: 0;
+  /* Respiro do menu lateral — sem isso o fundo escuro colava direto na
+     borda do menu, sem nenhuma moldura/contenção (reportado pelo usuário
+     com print: "sem container que alinhe o documento"). */
+  padding: 20px 20px 40px;
   max-width: none;
-  background: #0c0e13;
+  background: #f0f2f5;
   font-family: "Archivo", system-ui, sans-serif;
   color: #eef1f6;
 }
 
 .bia-pagina-fundo {
   background: radial-gradient(1200px 600px at 20% -10%, #1a1f2b 0%, #0c0e13 60%);
+  background-color: #0c0e13;
+  border-radius: 20px;
   padding-bottom: 80px;
+  overflow: hidden;
 }
 
 .bia-header {
