@@ -47,8 +47,9 @@ export default async function BiaPage() {
       <div className="layout">
         <Sidebar abaAtiva="descobertas" contagens={contagens} role={usuarioAtual.role} />
         <main className="bia-pagina">
-          <h1 className="usuarios-titulo">BIA — Business Intelligence Automotiva</h1>
-          <p className="usuarios-subtitulo">
+          <p className="bia-eyebrow">// inteligência de estoque</p>
+          <h1 className="bia-headline">Onde estão as oportunidades</h1>
+          <p className="bia-subtitulo">
             Tudo o que está acontecendo no mercado, com base no que o motor de descoberta já capturou.
           </p>
           <PainelBia

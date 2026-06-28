@@ -690,83 +690,180 @@ body {
   background: #fde2e1;
 }
 
+/* BIA — tema escuro mono-bold (referência do usuário: fundo quase preto,
+   tipografia monoespaçada, rótulo verde neon "// ...", barras coloridas
+   por categoria sobre trilho escuro). Escopado só a esta página — não
+   usa nenhuma variável/cor do resto do painel admin (light mode). */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap");
+
+:root {
+  --bia-bg: #0a0a0a;
+  --bia-bg-cartao: #131313;
+  --bia-borda: #262626;
+  --bia-texto: #f5f5f5;
+  --bia-texto-fraco: #8a8a8a;
+  --bia-verde: #22c55e;
+  --bia-paleta-1: #22c55e;
+  --bia-paleta-2: #06b6d4;
+  --bia-paleta-3: #f97316;
+  --bia-paleta-4: #a855f7;
+  --bia-paleta-5: #f43f5e;
+  --bia-paleta-6: #eab308;
+  --bia-paleta-7: #3b82f6;
+  --bia-paleta-8: #14b8a6;
+}
+
 .bia-pagina {
   flex: 1;
-  padding: 24px 32px 64px;
-  max-width: 1100px;
+  padding: 28px 32px 64px;
+  max-width: 1180px;
+  background: var(--bia-bg);
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--bia-texto);
+}
+
+.bia-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--bia-verde);
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.bia-headline {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  color: var(--bia-texto);
+}
+
+.bia-subtitulo {
+  font-size: 13px;
+  color: var(--bia-texto-fraco);
+  margin: 0 0 24px;
+  max-width: 560px;
 }
 
 .bia-painel {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 }
 
 .bia-cartoes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  gap: 1px;
+  background: var(--bia-borda);
+  border: 1px solid var(--bia-borda);
 }
 
 .bia-cartao {
-  background: #fff;
-  border: 1px solid #e9edef;
-  border-radius: 10px;
-  padding: 16px;
+  background: var(--bia-bg-cartao);
+  padding: 18px 20px;
 }
 
 .bia-cartao-titulo {
-  font-size: 12.5px;
-  color: #54656f;
-  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bia-texto-fraco);
+  margin: 0 0 10px;
 }
 
 .bia-cartao-valor {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   margin: 0;
-  color: #111b21;
+  color: var(--bia-texto);
+  letter-spacing: -0.01em;
+}
+
+.bia-cartao-valor-destaque {
+  color: var(--bia-verde);
 }
 
 .bia-cartao-sufixo {
   font-size: 13px;
   font-weight: 500;
   margin-left: 4px;
-  color: #54656f;
+  color: var(--bia-texto-fraco);
 }
 
 .bia-secao {
-  background: #fff;
-  border: 1px solid #e9edef;
-  border-radius: 10px;
-  padding: 20px;
+  background: var(--bia-bg-cartao);
+  border: 1px solid var(--bia-borda);
+  border-radius: 4px;
+  padding: 22px;
 }
 
 .bia-secao-titulo {
-  font-size: 16px;
+  font-size: 11px;
   font-weight: 700;
-  margin: 0 0 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bia-texto-fraco);
+  margin: 0 0 18px;
+}
+
+.bia-secao-titulo span {
+  color: var(--bia-texto);
 }
 
 .bia-toggle-janela {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
 .bia-toggle-opcao {
-  border: 1px solid #d1d7db;
-  background: #fff;
+  border: 1px solid var(--bia-borda);
+  background: transparent;
+  color: var(--bia-texto-fraco);
   border-radius: 999px;
   padding: 5px 14px;
-  font-size: 13px;
+  font-size: 12px;
+  font-family: inherit;
   cursor: pointer;
 }
 
 .bia-toggle-opcao-ativa {
-  background: #16a34a;
-  border-color: #16a34a;
-  color: #fff;
+  background: var(--bia-verde);
+  border-color: var(--bia-verde);
+  color: #0a0a0a;
+  font-weight: 700;
+}
+
+.bia-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.bia-tab {
+  border: 1px solid var(--bia-borda);
+  background: transparent;
+  color: var(--bia-texto-fraco);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bia-tab-ativa {
+  background: var(--bia-verde);
+  border-color: var(--bia-verde);
+  color: #0a0a0a;
 }
 
 .bia-tabela-wrapper {
@@ -776,51 +873,63 @@ body {
 .bia-tabela {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 12.5px;
 }
 
 .bia-tabela th {
   text-align: left;
-  color: #54656f;
+  color: var(--bia-texto-fraco);
   font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
   padding: 8px 10px;
-  border-bottom: 1px solid #e9edef;
+  border-bottom: 1px solid var(--bia-borda);
   white-space: nowrap;
 }
 
 .bia-tabela td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #f0f2f5;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--bia-borda);
   white-space: nowrap;
+  color: var(--bia-texto);
+}
+
+.bia-tabela tbody tr:hover {
+  background: #1a1a1a;
 }
 
 .bia-grade-marcas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  gap: 1px;
+  background: var(--bia-borda);
+  border: 1px solid var(--bia-borda);
 }
 
 .bia-cartao-marca {
-  border: 1px solid #e9edef;
-  border-radius: 8px;
-  padding: 14px;
+  background: var(--bia-bg-cartao);
+  padding: 16px;
 }
 
 .bia-cartao-marca-titulo {
   font-weight: 700;
-  margin: 0 0 2px;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
 
 .bia-cartao-marca-total {
-  font-size: 13px;
-  color: #54656f;
-  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--bia-texto-fraco);
+  margin: 0 0 10px;
 }
 
 .bia-cartao-marca-lider {
-  font-size: 12.5px;
-  color: #0a5d2c;
-  margin: 0 0 10px;
+  font-size: 11.5px;
+  color: var(--bia-verde);
+  margin: 0 0 12px;
 }
 
 .bia-cartao-marca-lista {
@@ -829,13 +938,90 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
+  gap: 6px;
+  font-size: 12.5px;
 }
 
 .bia-cartao-marca-lista li {
   display: flex;
   justify-content: space-between;
+  color: var(--bia-texto-fraco);
+}
+
+.bia-cartao-marca-lista li span:first-child {
+  color: var(--bia-texto);
+  font-weight: 600;
+}
+
+/* Barras de ranking coloridas (estados/cidades) — uma cor por categoria
+   sobre trilho escuro, igual à referência visual do usuário. */
+.bia-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bia-barra-linha {
+  display: grid;
+  grid-template-columns: 40px 1fr 60px;
+  align-items: center;
+  gap: 12px;
+}
+
+.bia-barra-linha-larga {
+  grid-template-columns: 130px 1fr 50px;
+}
+
+.bia-barra-rotulo {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bia-texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bia-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bia-legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--bia-texto-fraco);
+}
+
+.bia-legenda-ponto {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.bia-barra-trilho {
+  background: #1c1c1c;
+  border-radius: 3px;
+  height: 18px;
+  overflow: hidden;
+}
+
+.bia-barra-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.bia-barra-valor {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--bia-texto);
 }
 
 .worker-painel {
