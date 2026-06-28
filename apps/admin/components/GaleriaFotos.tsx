@@ -60,12 +60,20 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
       <div className="galeria galeria-mobile">
         <div className="galeria-trilha" ref={trilhaRef} onScroll={aoRolar}>
           {fotos.map((url, indice) => (
-            <ImagemComCarregamento
+            <ImagemThumbnail
               key={url}
-              src={url}
+              // Thumbnail leve (mesma transformação usada nos cards, com
+              // fallback pro original se não existir) em vez do tamanho
+              // cheio — o slider mostra todas de uma vez (é um scroller, não
+              // "1 foto por vez" de verdade); carregar 9-15 fotos em tamanho
+              // original de uma vez era a causa raiz da demora/travamento,
+              // não só uma questão de lazy/eager. Tamanho original fica
+              // reservado pro visualizador em tela cheia (uma foto só,
+              // aberta por escolha do usuário).
+              url={url}
               alt={`${alt} — foto ${indice + 1}`}
               className="galeria-foto"
-              prioridade={Math.abs(indice - indiceAtivo) <= 1}
+              prioridade
               onClick={() => setVisualizadorAberto(true)}
             />
           ))}

@@ -18,7 +18,19 @@ import { urlThumbnailOlx } from "@/lib/imagemOlx";
  * mobile) — mesmo princípio do ImagemComCarregamento, mas combinado com a
  * troca de `src` no fallback acima.
  */
-export function ImagemThumbnail({ url, alt, className }: { url: string; alt: string; className?: string }) {
+export function ImagemThumbnail({
+  url,
+  alt,
+  className,
+  prioridade = false,
+  onClick,
+}: {
+  url: string;
+  alt: string;
+  className?: string;
+  prioridade?: boolean;
+  onClick?: (evento: React.MouseEvent<HTMLImageElement>) => void;
+}) {
   const [src, setSrc] = useState(() => urlThumbnailOlx(url));
   const [carregada, setCarregada] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -48,11 +60,12 @@ export function ImagemThumbnail({ url, alt, className }: { url: string; alt: str
         src={src}
         alt={alt}
         referrerPolicy="no-referrer"
-        loading="lazy"
+        loading={prioridade ? "eager" : "lazy"}
         decoding="async"
         className={carregada ? "imagem-carregamento-visivel" : "imagem-carregamento-oculta"}
         onLoad={() => setCarregada(true)}
         onError={() => setSrc(url)}
+        onClick={onClick}
       />
     </span>
   );
