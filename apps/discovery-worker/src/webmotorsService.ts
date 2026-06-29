@@ -17,6 +17,8 @@ export interface AnuncioWebmotorsBruto {
   description?: string;
   price?: number;
   Tipo_de_vendedor?: boolean;
+  /** "Loja" | "Concessionária" | "Pessoa Física" — ver decisaoAnuncianteProfissional. */
+  vendor?: string;
   create_date?: string;
   Comuna?: string;
   Ciudad?: string;
@@ -110,6 +112,22 @@ function montarAtributos(anuncio: AnuncioWebmotorsBruto): Record<string, { label
   return atributos;
 }
 
+/**
+ * `Tipo_de_vendedor` (booleano) não é confiável: numa amostra de 514
+ * anúncios, só vinha `true` em 9 casos, sem nenhuma correlação com texto
+ * de loja/concessionária na própria descrição (74 anúncios com "loja",
+ * "concessionária" etc. no texto, nenhum marcado como profissional por
+ * esse campo). O campo categórico `vendor` ("Loja" | "Concessionária" |
+ * "Pessoa Física") é consistente com a descrição e reflete melhor a
+ * realidade da Webmotors (~80% lojista/concessionária na mesma amostra,
+ * batendo com a tese do pivot — ver
+ * project_repasse_livre_pivot_multifonte_webmotors).
+ */
+function decisaoAnuncianteProfissional(vendor: string | undefined): boolean | null {
+  if (!vendor) return null;
+  return vendor !== "Pessoa Física";
+}
+
 export interface OportunidadeWebmotorsOuDescarte {
   oportunidade: Oportunidade | null;
   motivoDescarte: "ja_existe" | "sem_dados_minimos" | "sem_fipe" | "fora_da_margem" | null;
@@ -173,7 +191,7 @@ export async function avaliarAnuncioWebmotors(
     status: "descoberta",
     data_publicacao_origem: anuncio.create_date ? new Date(anuncio.create_date).toISOString() : null,
     atributos_olx: montarAtributos(anuncio),
-    anunciante_profissional: typeof anuncio.Tipo_de_vendedor === "boolean" ? anuncio.Tipo_de_vendedor : null,
+    anunciante_profissional: decisaoAnuncianteProfissional(anuncio.vendor),
   };
 
   return { oportunidade, motivoDescarte: null };
