@@ -19,4 +19,4 @@ RUN npm ci
 
 COPY . .
 
-CMD ["npm", "run", "discover"]
+CMD ["npx", "tsx", "src/testarWebmotors.ts"]
