@@ -69,6 +69,21 @@ export async function buscarAnunciosWebmotors(categoryUrl: string): Promise<Anun
   return Array.isArray(dados) ? dados : [];
 }
 
+/**
+ * O campo `Ciudad` da Webmotors vem como "Santa Catarina (SC)" (nome do
+ * estado por extenso + sigla entre parênteses), não a sigla isolada que o
+ * resto do sistema espera em `estado` (igual a OLX já entrega via
+ * `locationDetails.uf`) — usado pra montar o slug da URL (`gerarSlugCidade`
+ * em apps/admin/lib/slug.ts faz `estado.toLowerCase()` direto, sem validar
+ * formato). Sem essa extração, o link da página individual sai quebrado
+ * (slug com nome do estado por extenso, espaços e parênteses).
+ */
+function extrairSiglaEstado(ciudad: string | undefined): string | null {
+  if (!ciudad) return null;
+  const match = ciudad.match(/\(([A-Za-z]{2})\)/);
+  return match ? match[1].toUpperCase() : null;
+}
+
 export interface OportunidadeWebmotorsOuDescarte {
   oportunidade: Oportunidade | null;
   motivoDescarte: "ja_existe" | "sem_dados_minimos" | "sem_fipe" | "fora_da_margem" | null;
@@ -119,7 +134,7 @@ export async function avaliarAnuncioWebmotors(
     cambio: null,
     km: anuncio.Kilometraje ?? null,
     cidade: anuncio.Comuna ?? null,
-    estado: anuncio.Ciudad ?? null,
+    estado: extrairSiglaEstado(anuncio.Ciudad),
     preco: anuncio.price,
     fipe_valor: referenciaFipe.valor,
     fipe_data_referencia: referenciaFipe.mesReferencia,
