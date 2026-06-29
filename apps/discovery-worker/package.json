@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "discover": "tsx src/main.ts",
+    "discover:webmotors": "tsx src/webmotorsMain.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
