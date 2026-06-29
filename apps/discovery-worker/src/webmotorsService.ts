@@ -1,11 +1,12 @@
 import { buscarReferenciaFipe } from "./fipeService.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
+import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { Classificacao, Oportunidade } from "./types.js";
 
 const BRIGHTDATA_API_URL = "https://api.brightdata.com/datasets/v3/scrape";
 const BRIGHTDATA_DATASET_ID = "gd_ld73zt91j10sphddj";
 
-interface AnuncioWebmotorsBruto {
+export interface AnuncioWebmotorsBruto {
   id?: number;
   url?: string;
   Marca?: string;
@@ -135,4 +136,56 @@ export async function avaliarAnuncioWebmotors(
   };
 
   return { oportunidade, motivoDescarte: null };
+}
+
+export interface ResultadoLoteWebmotors {
+  novos: number;
+  elegiveis: number;
+  descartados: number;
+  semFipe: number;
+}
+
+/**
+ * Processa um lote de anúncios brutos (vindos da Bright Data em tempo real
+ * ou de um JSON já baixado anteriormente — ver backfillWebmotorsLocal.ts,
+ * que reaproveita uma varredura já paga em vez de chamar a Bright Data de
+ * novo) contra o banco: dedupe por link_origem, corte por janela de dias de
+ * publicação, e gravação das oportunidades elegíveis. Compartilhado entre
+ * os dois entrypoints pra não duplicar essa lógica.
+ */
+export async function processarLoteAnunciosWebmotors(
+  anuncios: AnuncioWebmotorsBruto[],
+  margemMinima: number,
+  janelaDias: number
+): Promise<ResultadoLoteWebmotors> {
+  const cutoffEpoch = Date.now() - janelaDias * 24 * 60 * 60 * 1000;
+  const resultado: ResultadoLoteWebmotors = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
+
+  for (const anuncio of anuncios) {
+    if (!anuncio.url) continue;
+    if (await linkOrigemJaExiste(anuncio.url)) continue;
+
+    if (anuncio.create_date && new Date(anuncio.create_date).getTime() < cutoffEpoch) {
+      resultado.descartados++;
+      continue;
+    }
+
+    resultado.novos++;
+
+    const { oportunidade, motivoDescarte } = await avaliarAnuncioWebmotors(anuncio, margemMinima);
+    if (!oportunidade) {
+      if (motivoDescarte === "sem_fipe") resultado.semFipe++;
+      else resultado.descartados++;
+      continue;
+    }
+
+    await salvarOportunidade(oportunidade);
+    resultado.elegiveis++;
+
+    if (oportunidade.cidade && oportunidade.estado) {
+      await garantirCoordenadasCidade(oportunidade.cidade, oportunidade.estado);
+    }
+  }
+
+  return resultado;
 }

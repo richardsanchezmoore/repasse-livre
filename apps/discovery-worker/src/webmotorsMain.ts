@@ -1,24 +1,15 @@
 import "dotenv/config";
-import { avaliarAnuncioWebmotors, buscarAnunciosWebmotors } from "./webmotorsService.js";
+import { buscarAnunciosWebmotors, processarLoteAnunciosWebmotors } from "./webmotorsService.js";
+import type { ResultadoLoteWebmotors } from "./webmotorsService.js";
 import { MARGEM_MINIMA_PADRAO } from "./margin.js";
 import {
   finalizarRegistroVarreduraComErro,
   finalizarRegistroVarreduraComSucesso,
-  garantirCoordenadasCidade,
   iniciarRegistroVarredura,
   lerConfig,
-  linkOrigemJaExiste,
-  salvarOportunidade,
 } from "./supabaseClient.js";
 
 const MODO = "webmotors";
-
-interface ResultadoVarreduraWebmotors {
-  novos: number;
-  elegiveis: number;
-  descartados: number;
-  semFipe: number;
-}
 
 // Serviço Railway próprio (não reaproveita o cron da OLX), com cron diário
 // configurado direto no painel — diferente da OLX, a Webmotors não ordena
@@ -43,45 +34,18 @@ async function obterJanelaDias(): Promise<number> {
   return Number(valor);
 }
 
-async function executarVarreduraWebmotors(categoryUrl: string): Promise<ResultadoVarreduraWebmotors> {
+async function executarVarreduraWebmotors(categoryUrl: string): Promise<ResultadoLoteWebmotors> {
   const margemMinima = Number(
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
   );
   const janelaDias = await obterJanelaDias();
-  const cutoffEpoch = Date.now() - janelaDias * 24 * 60 * 60 * 1000;
-
-  const resultado: ResultadoVarreduraWebmotors = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
 
   console.log(`[motor-descoberta-webmotors] Categoria: ${categoryUrl} | janela: ${janelaDias} dias | margem mínima: ${margemMinima}%`);
 
   const anuncios = await buscarAnunciosWebmotors(categoryUrl);
   console.log(`[motor-descoberta-webmotors] ${anuncios.length} anúncios retornados pela Bright Data.`);
 
-  for (const anuncio of anuncios) {
-    if (!anuncio.url) continue;
-    if (await linkOrigemJaExiste(anuncio.url)) continue;
-
-    if (anuncio.create_date && new Date(anuncio.create_date).getTime() < cutoffEpoch) {
-      resultado.descartados++;
-      continue;
-    }
-
-    resultado.novos++;
-
-    const { oportunidade, motivoDescarte } = await avaliarAnuncioWebmotors(anuncio, margemMinima);
-    if (!oportunidade) {
-      if (motivoDescarte === "sem_fipe") resultado.semFipe++;
-      else resultado.descartados++;
-      continue;
-    }
-
-    await salvarOportunidade(oportunidade);
-    resultado.elegiveis++;
-
-    if (oportunidade.cidade && oportunidade.estado) {
-      await garantirCoordenadasCidade(oportunidade.cidade, oportunidade.estado);
-    }
-  }
+  const resultado = await processarLoteAnunciosWebmotors(anuncios, margemMinima, janelaDias);
 
   console.log(
     `[motor-descoberta-webmotors] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados | ${resultado.semFipe} sem FIPE.`

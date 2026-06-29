@@ -7,6 +7,7 @@
   "scripts": {
     "discover": "tsx src/main.ts",
     "discover:webmotors": "tsx src/webmotorsMain.ts",
+    "backfill:webmotors-local": "tsx src/backfillWebmotorsLocal.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
