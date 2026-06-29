@@ -17,6 +17,16 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Mercado Livre exige um browser real (Playwright) navegando organicamente
+# pra passar pelo bloqueio de bot deles (ver project_repasse_livre_mercadolivre_*
+# na memória do projeto — curl/curl-impersonate não resolve, é bloqueio
+# comportamental, não de TLS fingerprint). xvfb-run dá um display virtual
+# pro Chromium rodar em modo "headed" de verdade dentro do container Linux,
+# sem precisar de monitor físico.
+RUN npx playwright install --with-deps chromium
+RUN apt-get update && apt-get install -y --no-install-recommends xvfb xauth \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 
 CMD ["npm", "run", "discover"]
