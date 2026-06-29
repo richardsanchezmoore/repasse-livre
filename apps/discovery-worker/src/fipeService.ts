@@ -121,21 +121,53 @@ function encontrarMelhorCorrespondencia<T extends { name: string }>(
 }
 
 /**
+ * O nome do modelo (ex.: "Q3") é "sagrado": todo token dele precisa
+ * aparecer no nome do item da FIPE antes de qualquer pontuação por
+ * variante. Sem essa restrição, uma variante/trim genérico (ex.: "Prestige
+ * Plus") pode arrastar a busca pra outro modelo da mesma marca que também
+ * tenha essa variante — ex.: "Q3 P. Plus 1.4 TFSI Flex/P.Plus S-tronic"
+ * abrevia "Prestige" pra "P.", então sem esse filtro a palavra "Prestige"
+ * escrita por extenso em "A3 Sedan Prestige Plus 1.4 TFSI Flex Tip" pontua
+ * mais alto e rouba a correspondência do Q3 certo.
+ */
+function encontrarMelhorCorrespondenciaModeloVariante<T extends { name: string }>(
+  itens: T[],
+  modelo: string,
+  variante: string | null,
+  pontuacaoMinima = 1
+): T | null {
+  const tokensModelo = tokenizar(modelo);
+  const candidatos = itens.filter((item) => {
+    const tokensItem = tokenizar(item.name);
+    for (const token of tokensModelo) if (!tokensItem.has(token)) return false;
+    return true;
+  });
+
+  const baseCandidatos = candidatos.length > 0 ? candidatos : itens;
+  return encontrarMelhorCorrespondencia(baseCandidatos, `${modelo} ${variante ?? ""}`.trim(), pontuacaoMinima);
+}
+
+/**
  * Busca a referência FIPE mais próxima para marca/modelo/ano informados.
  * A correspondência é por aproximação textual (a OLX não usa os mesmos
  * nomes exatos da tabela FIPE), por isso pode não encontrar resultado.
+ * `variante` é opcional — quando informada (ex.: motorização/trim vindos
+ * separados do nome do modelo, como na Webmotors), ajuda a desambiguar
+ * entre versões do mesmo modelo sem arriscar roubar a correspondência de
+ * outro modelo da marca (ver encontrarMelhorCorrespondenciaModeloVariante).
  */
 export async function buscarReferenciaFipe(
   marca: string,
   modelo: string,
-  ano: string
+  ano: string,
+  variante: string | null = null
 ): Promise<ReferenciaFipe | null> {
   const marcas = await buscarMarcas();
   const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
   if (!marcaEncontrada) return null;
 
   const modelos = await buscarModelos(marcaEncontrada.code);
-  const modeloEncontrado = encontrarMelhorCorrespondencia(modelos, modelo, 2);
+  const modeloEncontrado = encontrarMelhorCorrespondenciaModeloVariante(modelos, modelo, variante, 2);
   if (!modeloEncontrado) return null;
 
   const anos = await fetchJson<FipeAno[]>(
