@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Check, Clock, Heart, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
@@ -38,20 +37,11 @@ export function OpportunityCard({
   isAdmin: boolean;
   usuarioLogado: boolean;
 }) {
-  const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [mostrarPopupLogin, setMostrarPopupLogin] = useState(false);
   const { modoSelecao, selecionados, alternarSelecionado } = useSelecaoMultipla();
   const selecionado = selecionados.has(oportunidade.id);
-
-  function aoClicarCard() {
-    if (isAdmin && modoSelecao) {
-      alternarSelecionado(oportunidade.id);
-      return;
-    }
-    router.push(caminhoOportunidade(oportunidade));
-  }
 
   function mostrarFeedback(texto: string, duracaoMs = 1500) {
     setFeedback(texto);
@@ -108,7 +98,18 @@ export function OpportunityCard({
       : oportunidade.veiculo;
 
   return (
-    <div className="card card-clicavel" onClick={aoClicarCard}>
+    <div className="card card-clicavel">
+      <Link
+        href={caminhoOportunidade(oportunidade)}
+        className="card-link-overlay"
+        aria-label={titulo}
+        onClick={(evento) => {
+          if (isAdmin && modoSelecao) {
+            evento.preventDefault();
+            alternarSelecionado(oportunidade.id);
+          }
+        }}
+      />
       <div className="foto-wrapper">
         {oportunidade.foto_principal ? (
           <ImagemThumbnail url={oportunidade.foto_principal} alt="" className="foto-capa" />
