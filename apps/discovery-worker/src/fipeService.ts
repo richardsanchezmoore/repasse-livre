@@ -120,6 +120,18 @@ function encontrarMelhorCorrespondencia<T extends { name: string }>(
   return melhorPontuacao >= pontuacaoMinima ? melhor : null;
 }
 
+function pontuarCandidatos<T extends { name: string }>(itens: T[], textoBusca: string): { item: T; pontuacao: number }[] {
+  const tokensBusca = tokenizar(textoBusca);
+  return itens
+    .map((item) => {
+      const tokensItem = tokenizar(item.name);
+      let pontuacao = 0;
+      for (const token of tokensItem) if (tokensBusca.has(token)) pontuacao++;
+      return { item, pontuacao };
+    })
+    .sort((a, b) => b.pontuacao - a.pontuacao);
+}
+
 /**
  * O nome do modelo (ex.: "Q3") é "sagrado": todo token dele precisa
  * aparecer no nome do item da FIPE antes de qualquer pontuação por
@@ -129,13 +141,22 @@ function encontrarMelhorCorrespondencia<T extends { name: string }>(
  * abrevia "Prestige" pra "P.", então sem esse filtro a palavra "Prestige"
  * escrita por extenso em "A3 Sedan Prestige Plus 1.4 TFSI Flex Tip" pontua
  * mais alto e rouba a correspondência do Q3 certo.
+ *
+ * Retorna os top-N candidatos por pontuação (não só o melhor): o "melhor
+ * texto" pode ser o código FIPE errado pro ano procurado — ex.: a versão
+ * abreviada certa ("Renegade Long. T270...") perde em pontuação pra uma
+ * versão escrita por extenso ("Renegade Longitude T270...") que só existe
+ * num motor/ano diferente (nesse caso, híbrido a partir de 2027). Quem
+ * chama decide o desempate real, checando qual candidato tem o ano do
+ * anúncio disponível.
  */
-function encontrarMelhorCorrespondenciaModeloVariante<T extends { name: string }>(
+function candidatosOrdenadosModeloVariante<T extends { name: string }>(
   itens: T[],
   modelo: string,
   variante: string | null,
-  pontuacaoMinima = 1
-): T | null {
+  pontuacaoMinima = 1,
+  topN = 5
+): T[] {
   const tokensModelo = tokenizar(modelo);
   const candidatos = itens.filter((item) => {
     const tokensItem = tokenizar(item.name);
@@ -144,7 +165,15 @@ function encontrarMelhorCorrespondenciaModeloVariante<T extends { name: string }
   });
 
   const baseCandidatos = candidatos.length > 0 ? candidatos : itens;
-  return encontrarMelhorCorrespondencia(baseCandidatos, `${modelo} ${variante ?? ""}`.trim(), pontuacaoMinima);
+  const busca = `${modelo} ${variante ?? ""}`.trim();
+
+  const exato = baseCandidatos.find((item) => normalizar(item.name) === normalizar(busca));
+  if (exato) return [exato];
+
+  return pontuarCandidatos(baseCandidatos, busca)
+    .filter((c) => c.pontuacao >= pontuacaoMinima)
+    .slice(0, topN)
+    .map((c) => c.item);
 }
 
 /**
@@ -167,15 +196,21 @@ export async function buscarReferenciaFipe(
   if (!marcaEncontrada) return null;
 
   const modelos = await buscarModelos(marcaEncontrada.code);
-  const modeloEncontrado = encontrarMelhorCorrespondenciaModeloVariante(modelos, modelo, variante, 2);
-  if (!modeloEncontrado) return null;
+  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 2);
+  if (candidatos.length === 0) return null;
 
-  const anos = await fetchJson<FipeAno[]>(
-    `${FIPE_BASE_URL}/brands/${marcaEncontrada.code}/models/${modeloEncontrado.code}/years`
-  );
-  const anoEncontrado =
-    anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
-  if (!anoEncontrado) return null;
+  let modeloEncontrado: FipeModelo | null = null;
+  let anoEncontrado: FipeAno | null = null;
+  for (const candidato of candidatos) {
+    const anos = await fetchJson<FipeAno[]>(`${FIPE_BASE_URL}/brands/${marcaEncontrada.code}/models/${candidato.code}/years`);
+    const ref = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+    if (ref) {
+      modeloEncontrado = candidato;
+      anoEncontrado = ref;
+      break;
+    }
+  }
+  if (!modeloEncontrado || !anoEncontrado) return null;
 
   const valor = await fetchJson<FipeValor>(
     `${FIPE_BASE_URL}/brands/${marcaEncontrada.code}/models/${modeloEncontrado.code}/years/${anoEncontrado.code}`
