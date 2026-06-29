@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, Clock, Heart, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
@@ -37,11 +38,20 @@ export function OpportunityCard({
   isAdmin: boolean;
   usuarioLogado: boolean;
 }) {
+  const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [mostrarPopupLogin, setMostrarPopupLogin] = useState(false);
   const { modoSelecao, selecionados, alternarSelecionado } = useSelecaoMultipla();
   const selecionado = selecionados.has(oportunidade.id);
+
+  function aoClicarFoto() {
+    if (isAdmin && modoSelecao) {
+      alternarSelecionado(oportunidade.id);
+      return;
+    }
+    router.push(caminhoOportunidade(oportunidade));
+  }
 
   function mostrarFeedback(texto: string, duracaoMs = 1500) {
     setFeedback(texto);
@@ -99,22 +109,16 @@ export function OpportunityCard({
 
   return (
     <div className="card card-clicavel">
-      <Link
-        href={caminhoOportunidade(oportunidade)}
-        className="card-link-overlay"
-        aria-label={titulo}
-        onClick={(evento) => {
-          if (isAdmin && modoSelecao) {
-            evento.preventDefault();
-            alternarSelecionado(oportunidade.id);
-          }
-        }}
-      />
-      <div className="foto-wrapper">
+      <div className="foto-wrapper" onClick={aoClicarFoto}>
         {oportunidade.foto_principal ? (
-          <ImagemThumbnail url={oportunidade.foto_principal} alt="" className="foto-capa" />
+          <ImagemThumbnail
+            url={oportunidade.foto_principal}
+            alt={titulo}
+            title={titulo}
+            className="foto-capa"
+          />
         ) : (
-          <div className="foto-capa foto-capa-vazia" />
+          <div className="foto-capa foto-capa-vazia" title={titulo} />
         )}
         {!(isAdmin && modoSelecao) && (
           <span className={`selo-fonte ${classeFonte}`}>{oportunidade.fonte}</span>
@@ -183,39 +187,51 @@ export function OpportunityCard({
       )}
 
       <div className="card-corpo">
-        <p className="titulo">{titulo}</p>
+        <Link
+          href={caminhoOportunidade(oportunidade)}
+          title={titulo}
+          className="card-corpo-link"
+          onClick={(evento) => {
+            if (isAdmin && modoSelecao) {
+              evento.preventDefault();
+              alternarSelecionado(oportunidade.id);
+            }
+          }}
+        >
+          <p className="titulo">{titulo}</p>
 
-        <div className="destaque-margem">
-          <p className="destaque-margem-valor-rotulo">Ganho</p>
-          <p className="destaque-margem-valor">{formatarMoeda(diferencaValor)}</p>
-          <p className="destaque-margem-percentual">
-            <span className="destaque-margem-percentual-rotulo">Margem de</span>{" "}
-            {oportunidade.margem_percentual?.toFixed(1)}%{" "}
-            <span className="destaque-margem-percentual-rotulo">abaixo da FIPE</span>
+          <div className="destaque-margem">
+            <p className="destaque-margem-valor-rotulo">Ganho</p>
+            <p className="destaque-margem-valor">{formatarMoeda(diferencaValor)}</p>
+            <p className="destaque-margem-percentual">
+              <span className="destaque-margem-percentual-rotulo">Margem de</span>{" "}
+              {oportunidade.margem_percentual?.toFixed(1)}%{" "}
+              <span className="destaque-margem-percentual-rotulo">abaixo da FIPE</span>
+            </p>
+          </div>
+
+          <div className="precos-grupo">
+            <div className="linha-preco linha-preco-anuncio">
+              <span className="preco-rotulo">Oferta</span>
+              <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
+            </div>
+            <div className="linha-preco linha-preco-fipe">
+              <span className="preco-rotulo">FIPE</span>
+              <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
+            </div>
+          </div>
+
+          <p className="data-local">
+            <span className="data-local-item">
+              <Clock size={12} strokeWidth={1.75} className="icone-inline" />{" "}
+              {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
+            </span>
+            <span className="data-local-item">
+              <MapPin size={13} strokeWidth={1.75} className="icone-inline" />{" "}
+              {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
+            </span>
           </p>
-        </div>
-
-        <div className="precos-grupo">
-          <div className="linha-preco linha-preco-anuncio">
-            <span className="preco-rotulo">Oferta</span>
-            <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
-          </div>
-          <div className="linha-preco linha-preco-fipe">
-            <span className="preco-rotulo">FIPE</span>
-            <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
-          </div>
-        </div>
-
-        <p className="data-local">
-          <span className="data-local-item">
-            <Clock size={12} strokeWidth={1.75} className="icone-inline" />{" "}
-            {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
-          </span>
-          <span className="data-local-item">
-            <MapPin size={13} strokeWidth={1.75} className="icone-inline" />{" "}
-            {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
-          </span>
-        </p>
+        </Link>
 
         {oportunidade.whatsapp && (
           <p className="info-remetente">
@@ -224,6 +240,7 @@ export function OpportunityCard({
               href={`https://wa.me/55${oportunidade.whatsapp}`}
               target="_blank"
               rel="noreferrer"
+              title={`Conversar no WhatsApp sobre ${titulo}`}
               className="link-whatsapp"
               onClick={(evento) => {
                 evento.stopPropagation();

@@ -2282,22 +2282,22 @@ body {
 }
 
 .card-clicavel {
-  position: relative;
   cursor: pointer;
-}
-
-/* <Link> real cobrindo o card inteiro, por baixo do conteúdo (z-index:0)
-   — dá um <a href> de verdade no HTML pro Google rastrear, sem precisar
-   aninhar elementos clicáveis (botões, link do WhatsApp) dentro do <a>. */
-.card-link-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
 }
 
 .foto-wrapper {
   position: relative;
-  z-index: 1;
+}
+
+/* <a href> real envolvendo o bloco de texto (título, margem, preços,
+   data) — dá pro Google rastrear o link entre listagem e página
+   individual. A foto continua navegando só via JS (router.push), de
+   propósito, pra deixar caminho livre pra um slider de fotos no card. */
+.card-corpo-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .foto-capa {
@@ -2635,8 +2635,6 @@ body {
 }
 
 .card-corpo {
-  position: relative;
-  z-index: 1;
   padding: 12px 14px;
   flex: 1;
 }
@@ -2841,8 +2839,6 @@ body {
 }
 
 .acoes {
-  position: relative;
-  z-index: 1;
   display: flex;
   border-top: 1px solid #e0e3e7;
 }

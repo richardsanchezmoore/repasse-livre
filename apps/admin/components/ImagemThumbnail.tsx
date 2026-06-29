@@ -21,12 +21,14 @@ import { urlThumbnailOlx } from "@/lib/imagemOlx";
 export function ImagemThumbnail({
   url,
   alt,
+  title,
   className,
   prioridade = false,
   onClick,
 }: {
   url: string;
   alt: string;
+  title?: string;
   className?: string;
   prioridade?: boolean;
   onClick?: (evento: React.MouseEvent<HTMLImageElement>) => void;
@@ -59,6 +61,7 @@ export function ImagemThumbnail({
         ref={imgRef}
         src={src}
         alt={alt}
+        title={title}
         referrerPolicy="no-referrer"
         loading={prioridade ? "eager" : "lazy"}
         decoding="async"
