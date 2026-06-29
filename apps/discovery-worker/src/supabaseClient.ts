@@ -186,7 +186,11 @@ export async function lerConfig(chave: string): Promise<string | null> {
     throw new Error(`Falha ao ler config "${chave}": ${error.message}`);
   }
 
-  return data?.valor ?? null;
+  // "" (campo limpo no painel admin) precisa cair no fallback igual a
+  // null/undefined — só usar "??" aqui deixava "" passar como valor válido,
+  // e Number("") é 0, não o padrão esperado (causou MAX_PAGINAS=0 silencioso
+  // em 28/06, zerando a varredura da OLX sem nenhum erro nos logs).
+  return data?.valor || null;
 }
 
 export interface ResultadoVarreduraRegistro {
