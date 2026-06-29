@@ -22,6 +22,11 @@ export interface AnuncioWebmotorsBruto {
   Ciudad?: string;
   number_of_photos?: number;
   photos?: string[];
+  Color?: string;
+  Combustible?: string;
+  carroceria?: string;
+  accept_exchange?: boolean;
+  single_owner?: boolean;
   // cnpj_cpf e phone existem na resposta da Bright Data, mas são dado
   // pessoal — propositalmente fora dessa interface, pra nunca acabarem
   // armazenados (ver descarteDeDadoPessoal logo abaixo).
@@ -82,6 +87,27 @@ function extrairSiglaEstado(ciudad: string | undefined): string | null {
   if (!ciudad) return null;
   const match = ciudad.match(/\(([A-Za-z]{2})\)/);
   return match ? match[1].toUpperCase() : null;
+}
+
+/**
+ * Mapeia os campos estruturados da Webmotors pras mesmas chaves que a OLX
+ * usa em atributos_olx (ver CHAVES_ATRIBUTOS_RELEVANTES em olxService.ts) —
+ * a página individual já sabe renderizar essas chaves (ficha técnica pra
+ * cartype/carcolor/fuel, chips de "Sim" pro resto), sem precisar de
+ * nenhuma mudança no app. Só inclui o que a Webmotors realmente manda;
+ * "doors", "car_steering" e "motorpower" não vêm nesses dados, por
+ * exemplo, e ficam de fora (a renderização já trata chave ausente).
+ */
+function montarAtributos(anuncio: AnuncioWebmotorsBruto): Record<string, { label: string; value: string }> {
+  const atributos: Record<string, { label: string; value: string }> = {};
+
+  if (anuncio.carroceria) atributos.cartype = { label: "Tipo", value: anuncio.carroceria };
+  if (anuncio.Color) atributos.carcolor = { label: "Cor", value: anuncio.Color };
+  if (anuncio.Combustible) atributos.fuel = { label: "Combustível", value: anuncio.Combustible };
+  if (anuncio.accept_exchange) atributos.exchange = { label: "Aceita troca", value: "Sim" };
+  if (anuncio.single_owner) atributos.owner = { label: "Único dono", value: "Sim" };
+
+  return atributos;
 }
 
 export interface OportunidadeWebmotorsOuDescarte {
@@ -146,7 +172,7 @@ export async function avaliarAnuncioWebmotors(
     origem_tipo: "descoberta",
     status: "descoberta",
     data_publicacao_origem: anuncio.create_date ? new Date(anuncio.create_date).toISOString() : null,
-    atributos_olx: {},
+    atributos_olx: montarAtributos(anuncio),
     anunciante_profissional: typeof anuncio.Tipo_de_vendedor === "boolean" ? anuncio.Tipo_de_vendedor : null,
   };
 
