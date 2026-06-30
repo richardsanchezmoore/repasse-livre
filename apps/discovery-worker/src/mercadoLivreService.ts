@@ -312,11 +312,16 @@ async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Prom
 
 /**
  * Varre UMA página da listagem com browser+sessid próprios (IP limpo) e fecha.
- * O ML rate-limita por sessão/IP: warmup (~3 reqs) + 1 página já fica no limite,
- * e a 2ª página no MESMO IP cai no /captcha/wall. Dando um IP novo por página
- * (sessid distinto), cada IP faz só warmup + 1 página — igual à página 1, que
- * passa — então a paginação avança sem bater o wall. Retorna `walled` para o
- * chamador parar a paginação quando mesmo um IP limpo for bloqueado.
+ * O ML rate-limita por sessão/IP, então cada página usa um IP novo (warmup +
+ * 1 página por IP, igual à página 1, que passa).
+ *
+ * A página paginada (`_Desde_N`) costuma cair no challenge "Anubis" (redirect
+ * JS após o `domcontentloaded`). Esperamos a listagem REAL aparecer
+ * (`waitForSelector`) para o challenge resolver — mesmo padrão das páginas de
+ * detalhe — em vez de extrair na hora (extrair durante o redirect destruía o
+ * contexto e derrubava o run inteiro). Se a listagem não aparecer (wall duro
+ * / IP flagueado), o `waitForSelector` estoura e tratamos como bloqueada
+ * (`walled`), sem crashar — a página 1 já coletada sobrevive.
  */
 async function buscarCardsPaginaBrowserProprio(
   categoriaUrlBase: string,
@@ -334,23 +339,18 @@ async function buscarCardsPaginaBrowserProprio(
     const page = await context.newPage();
     await aquecerSessao(page);
     await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 45000 });
-    await page.waitForTimeout(2500);
-    const walled = page.url().includes("/captcha/wall");
-    const cards = walled ? [] : await extrairCardsDaPagina(page);
-    // Observabilidade: página vazia SEM ser o /captcha/wall clássico é ambígua
-    // (soft-challenge? IP flagueado? fim real da listagem?). Loga o que veio
-    // para diferenciar bad-IP de fim-de-listagem sem ficar no escuro.
-    if (!walled && cards.length === 0) {
-      const diag = await page.evaluate(() => ({
-        urlFinal: location.href,
-        titulo: document.title,
-        corpo: (document.body?.innerText ?? "").replace(/\s+/g, " ").slice(0, 200),
-        itensAlt: document.querySelectorAll("[class*='ui-search-layout__item']").length,
-        resultsContainer: document.querySelector(".ui-search-results") !== null,
-      }));
-      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} vazia (sem wall). DIAG: ${JSON.stringify(diag)}`);
-    }
-    return { cards, walled };
+    // Deixa o challenge Anubis resolver e a listagem real renderizar antes de
+    // extrair. Timeout aqui = página bloqueada (cai no catch).
+    await page.waitForSelector("li.ui-search-layout__item", { timeout: 15000 });
+    const cards = await extrairCardsDaPagina(page);
+    return { cards, walled: false };
+  } catch (erro) {
+    // Wall/challenge/redirect não resolvido. Captura o estado pra diferenciar
+    // wall de outro erro, e sinaliza walled pro chamador parar a paginação sem
+    // perder o que já foi coletado.
+    const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
+    console.warn(`[motor-descoberta-mercadolivre] Página ${pagina} bloqueada/falhou: ${msg} — parando paginação.`);
+    return { cards: [], walled: true };
   } finally {
     await browser.close();
   }
