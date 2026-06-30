@@ -302,23 +302,45 @@ async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Prom
   }
 }
 
+/** FIPE encontrada para um anúncio (sem o caso null já filtrado). */
+type ReferenciaFipe = NonNullable<Awaited<ReturnType<typeof buscarReferenciaFipe>>>;
+
+/** Anúncio que passou todos os filtros da Fase 1 e merece visita individual na Fase 2. */
+interface CandidatoElegivel {
+  anuncio: AnuncioMercadoLivreBruto;
+  // preco/ano já estreitados para não-nulo na Fase 1 (o tipo bruto os mantém
+  // nullable, e o narrowing se perde ao destructurar na Fase 2).
+  preco: number;
+  ano: string;
+  marca: string;
+  modelo: string;
+  variante: string | null;
+  referenciaFipe: ReferenciaFipe;
+  margemPercentual: number;
+  classificacao: Classificacao;
+}
+
 /**
- * Função principal — mantém o browser aberto durante toda a execução para
- * reutilizar a sessão (cookies) ao visitar páginas individuais. Só visita
- * a página individual do anúncio se ele passar pelo filtro de FIPE + margem,
- * evitando chamadas desnecessárias aos ~90% descartados.
+ * Função principal — dividida em 2 fases para não deixar o browser principal
+ * ocioso. Antes, visitar a página individual no meio do loop de listagem
+ * deixava o browser principal parado ~15min (1 browser de detalhe por
+ * elegível), a sessão do ML expirava e a página 2 voltava vazia (challenge).
+ *
+ * - Fase 1: varre TODA a listagem com o browser principal, mantendo a sessão
+ *   ativa do início ao fim, e coleta os candidatos elegíveis (FIPE + margem).
+ * - Fase 2: só depois visita a página individual de cada elegível, cada uma
+ *   com browser/sessid próprio. Os ~90% descartados nunca chegam aqui.
  */
 export async function varrerEProcessarMercadoLivre(
   categoriaUrlBase: string,
   maxPaginas: number,
   margemMinima: number
 ): Promise<ResultadoLoteMercadoLivre> {
-  // Browser principal: só para varrer páginas de listagem (sem limite de sessão).
-  // Páginas individuais usam sessid próprio via buscarDetalhesBrowserProprio.
-  const browser = await criarBrowser();
   const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
-  let sessaoDetalheId = 100; // sessid 100+ reservado para páginas individuais
+  const candidatos: CandidatoElegivel[] = [];
 
+  // ===== Fase 1: varrer listagem (browser principal, sessão contínua) =====
+  const browser = await criarBrowser();
   try {
     const context = await browser.newContext({
       userAgent:
@@ -367,46 +389,18 @@ export async function varrerEProcessarMercadoLivre(
         const classificacao: Classificacao | null = classificar(margemPercentual);
         if (!classificacao) { resultado.descartados++; continue; }
 
-        // Passou todos os filtros — vale visitar a página individual.
-        console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes...`);
-        const detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
-        await page.waitForTimeout(2000 + Math.floor(Math.random() * 2000));
-
-        const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
-        const todasFotos = [
-          ...(anuncio.fotoPrincipal ? [anuncio.fotoPrincipal] : []),
-          ...detalhes.fotos.filter((f) => f !== anuncio.fotoPrincipal),
-        ].slice(0, 10);
-
-        const oportunidade: Oportunidade = {
-          fonte: "MERCADO_LIVRE",
-          link_origem: anuncio.linkOrigem,
-          veiculo: `${marca} ${modelo}`,
-          versao: variante,
-          ano: anuncio.ano,
-          cambio: detalhes.cambio,
-          km: anuncio.km,
-          cidade,
-          estado,
+        // Passou todos os filtros — guarda para visitar na Fase 2.
+        candidatos.push({
+          anuncio,
           preco: anuncio.preco,
-          fipe_valor: referenciaFipe.valor,
-          fipe_data_referencia: referenciaFipe.mesReferencia,
-          margem_percentual: Number(margemPercentual.toFixed(2)),
+          ano: anuncio.ano,
+          marca,
+          modelo,
+          variante,
+          referenciaFipe,
+          margemPercentual,
           classificacao,
-          foto_principal: todasFotos[0] ?? null,
-          fotos_secundarias: todasFotos.slice(1),
-          descricao: detalhes.descricao,
-          origem_tipo: "descoberta",
-          status: "descoberta",
-          data_publicacao_origem: null,
-          atributos_olx: detalhes.atributos,
-          anunciante_profissional: false,
-        };
-
-        await salvarOportunidade(oportunidade);
-        resultado.elegiveis++;
-
-        if (cidade && estado) await garantirCoordenadasCidade(cidade, estado);
+        });
       }
 
       // Ritmo pausado entre páginas (8-12s).
@@ -414,6 +408,60 @@ export async function varrerEProcessarMercadoLivre(
     }
   } finally {
     await browser.close();
+  }
+
+  console.log(
+    `[motor-descoberta-mercadolivre] Fase 1 concluída: ${candidatos.length} elegíveis de ${resultado.novos} novos. Iniciando Fase 2 (detalhes)…`
+  );
+
+  // ===== Fase 2: visitar página individual de cada elegível =====
+  // Cada elegível usa browser/sessid próprio (ML manda /captcha/wall a partir
+  // da 2ª página individual visitada na mesma sessão de proxy).
+  let sessaoDetalheId = 100; // sessid 100+ reservado para páginas individuais
+  for (const cand of candidatos) {
+    const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = cand;
+
+    console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes…`);
+    const detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
+
+    const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
+    const todasFotos = [
+      ...(anuncio.fotoPrincipal ? [anuncio.fotoPrincipal] : []),
+      ...detalhes.fotos.filter((f) => f !== anuncio.fotoPrincipal),
+    ].slice(0, 10);
+
+    const oportunidade: Oportunidade = {
+      fonte: "MERCADO_LIVRE",
+      link_origem: anuncio.linkOrigem,
+      veiculo: `${marca} ${modelo}`,
+      versao: variante,
+      ano,
+      cambio: detalhes.cambio,
+      km: anuncio.km,
+      cidade,
+      estado,
+      preco,
+      fipe_valor: referenciaFipe.valor,
+      fipe_data_referencia: referenciaFipe.mesReferencia,
+      margem_percentual: Number(margemPercentual.toFixed(2)),
+      classificacao,
+      foto_principal: todasFotos[0] ?? null,
+      fotos_secundarias: todasFotos.slice(1),
+      descricao: detalhes.descricao,
+      origem_tipo: "descoberta",
+      status: "descoberta",
+      data_publicacao_origem: null,
+      atributos_olx: detalhes.atributos,
+      anunciante_profissional: false,
+    };
+
+    await salvarOportunidade(oportunidade);
+    resultado.elegiveis++;
+
+    if (cidade && estado) await garantirCoordenadasCidade(cidade, estado);
+
+    // Pausa entre detalhes (2-4s) para não martelar o proxy.
+    await new Promise((r) => setTimeout(r, 2000 + Math.floor(Math.random() * 2000)));
   }
 
   return resultado;
