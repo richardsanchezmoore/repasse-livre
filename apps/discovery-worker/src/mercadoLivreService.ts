@@ -337,6 +337,19 @@ async function buscarCardsPaginaBrowserProprio(
     await page.waitForTimeout(2500);
     const walled = page.url().includes("/captcha/wall");
     const cards = walled ? [] : await extrairCardsDaPagina(page);
+    // Observabilidade: página vazia SEM ser o /captcha/wall clássico é ambígua
+    // (soft-challenge? IP flagueado? fim real da listagem?). Loga o que veio
+    // para diferenciar bad-IP de fim-de-listagem sem ficar no escuro.
+    if (!walled && cards.length === 0) {
+      const diag = await page.evaluate(() => ({
+        urlFinal: location.href,
+        titulo: document.title,
+        corpo: (document.body?.innerText ?? "").replace(/\s+/g, " ").slice(0, 200),
+        itensAlt: document.querySelectorAll("[class*='ui-search-layout__item']").length,
+        resultsContainer: document.querySelector(".ui-search-results") !== null,
+      }));
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} vazia (sem wall). DIAG: ${JSON.stringify(diag)}`);
+    }
     return { cards, walled };
   } finally {
     await browser.close();
