@@ -67,14 +67,13 @@ function mapearAnuncio(ad: AdOlx): AnuncioOlx {
 }
 
 /**
- * Monta a URL de uma página de listagem ordenada por data (mais recentes
- * primeiro, parâmetro `sf=1`), na página indicada (`o=N`). A ordenação por
- * data é o que permite a varredura incremental parar assim que encontra um
- * anúncio já conhecido, sem precisar reler tudo a cada execução.
+ * Monta a URL de uma página de listagem na página indicada (`o=N`).
+ * OLX ordena por data de publicação por padrão — sf=1 foi removido porque
+ * conflita com o filtro fpdll (FIPE) e faz a OLX retornar ads:[].
  */
 export function montarUrlPagina(categoriaUrl: string, pagina: number): string {
   const url = new URL(categoriaUrl);
-  url.searchParams.set("sf", "1");
+  url.searchParams.delete("sf");
   url.searchParams.set("o", String(pagina));
   return url.toString();
 }
