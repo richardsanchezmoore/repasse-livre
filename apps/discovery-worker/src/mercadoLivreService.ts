@@ -310,6 +310,39 @@ async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Prom
   }
 }
 
+/**
+ * Varre UMA página da listagem com browser+sessid próprios (IP limpo) e fecha.
+ * O ML rate-limita por sessão/IP: warmup (~3 reqs) + 1 página já fica no limite,
+ * e a 2ª página no MESMO IP cai no /captcha/wall. Dando um IP novo por página
+ * (sessid distinto), cada IP faz só warmup + 1 página — igual à página 1, que
+ * passa — então a paginação avança sem bater o wall. Retorna `walled` para o
+ * chamador parar a paginação quando mesmo um IP limpo for bloqueado.
+ */
+async function buscarCardsPaginaBrowserProprio(
+  categoriaUrlBase: string,
+  pagina: number,
+  sessaoId: number
+): Promise<{ cards: CardBruto[]; walled: boolean }> {
+  const browser = await criarBrowser(sessaoId);
+  try {
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      locale: "pt-BR",
+      viewport: { width: 1366, height: 768 },
+    });
+    const page = await context.newPage();
+    await aquecerSessao(page);
+    await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 45000 });
+    await page.waitForTimeout(2500);
+    const walled = page.url().includes("/captcha/wall");
+    const cards = walled ? [] : await extrairCardsDaPagina(page);
+    return { cards, walled };
+  } finally {
+    await browser.close();
+  }
+}
+
 /** FIPE encontrada para um anúncio (sem o caso null já filtrado). */
 type ReferenciaFipe = NonNullable<Awaited<ReturnType<typeof buscarReferenciaFipe>>>;
 
@@ -329,15 +362,14 @@ interface CandidatoElegivel {
 }
 
 /**
- * Função principal — dividida em 2 fases para não deixar o browser principal
- * ocioso. Antes, visitar a página individual no meio do loop de listagem
- * deixava o browser principal parado ~15min (1 browser de detalhe por
- * elegível), a sessão do ML expirava e a página 2 voltava vazia (challenge).
+ * Função principal — dividida em 2 fases, ambas com IP limpo por requisição,
+ * porque o ML rate-limita por sessão/IP e walla a 2ª página (de listagem OU
+ * individual) na mesma sessão de proxy.
  *
- * - Fase 1: varre TODA a listagem com o browser principal, mantendo a sessão
- *   ativa do início ao fim, e coleta os candidatos elegíveis (FIPE + margem).
- * - Fase 2: só depois visita a página individual de cada elegível, cada uma
- *   com browser/sessid próprio. Os ~90% descartados nunca chegam aqui.
+ * - Fase 1: varre a listagem coletando candidatos elegíveis (FIPE + margem),
+ *   uma página por vez com browser/sessid próprio (warmup + 1 página por IP).
+ * - Fase 2: só então visita a página individual de cada elegível, também com
+ *   browser/sessid próprio. Os ~90% descartados nunca chegam aqui.
  */
 export async function varrerEProcessarMercadoLivre(
   categoriaUrlBase: string,
@@ -353,88 +385,65 @@ export async function varrerEProcessarMercadoLivre(
   // aleatório por run dá um IP limpo a cada execução.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
 
-  // ===== Fase 1: varrer listagem (browser principal, sessão contínua) =====
-  const browser = await criarBrowser(baseSess);
-  try {
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      locale: "pt-BR",
-      viewport: { width: 1366, height: 768 },
-    });
-    const page = await context.newPage();
+  // ===== Fase 1: varrer listagem, um IP limpo por página =====
+  // Cada página usa browser+sessid próprios (baseSess + pagina). O ML walla a
+  // 2ª página na MESMA sessão de proxy; com IP fresco por página, cada uma faz
+  // só warmup + 1 página e passa.
+  for (let pagina = 1; pagina <= maxPaginas; pagina++) {
+    const { cards: cardsBrutos, walled } = await buscarCardsPaginaBrowserProprio(
+      categoriaUrlBase,
+      pagina,
+      baseSess + pagina
+    );
 
-    await aquecerSessao(page);
-
-    for (let pagina = 1; pagina <= maxPaginas; pagina++) {
-      const url = montarUrlPagina(categoriaUrlBase, pagina);
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
-      await page.waitForTimeout(2500);
-
-      const cardsBrutos = await extrairCardsDaPagina(page);
-      if (cardsBrutos.length === 0) {
-        // DIAGNÓSTICO: por que a página vem vazia? Challenge (/captcha/wall),
-        // seletor mudou, ou URL `_Desde_` malformada com filtro /particular/?
-        const diag = await page.evaluate(() => ({
-          urlFinal: location.href,
-          titulo: document.title,
-          corpo: (document.body?.innerText ?? "").replace(/\s+/g, " ").slice(0, 300),
-          itensAlt: document.querySelectorAll("[class*='ui-search-layout__item']").length,
-          resultsContainer: document.querySelector(".ui-search-results") !== null,
-          proximaHref:
-            document.querySelector<HTMLAnchorElement>(".andes-pagination__button--next a")?.href ?? null,
-        }));
-        console.log(
-          `[motor-descoberta-mercadolivre] Página ${pagina} vazia. DIAG: ${JSON.stringify(diag)}`
-        );
-        break;
-      }
-
-      const anuncios = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
-      console.log(
-        `[motor-descoberta-mercadolivre] Página ${pagina}: ${cardsBrutos.length} cards (${anuncios.length} de particular, ${cardsBrutos.length - anuncios.length} patrocinado/loja descartados).`
-      );
-
-      for (const anuncio of anuncios) {
-        if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue;
-        resultado.novos++;
-
-        if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) {
-          resultado.descartados++;
-          continue;
-        }
-
-        const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
-        if (!marca || !modelo) { resultado.descartados++; continue; }
-
-        const referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
-        if (!referenciaFipe) { resultado.semFipe++; continue; }
-
-        const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
-        if (!ehElegivel(margemPercentual, margemMinima)) { resultado.descartados++; continue; }
-
-        const classificacao: Classificacao | null = classificar(margemPercentual);
-        if (!classificacao) { resultado.descartados++; continue; }
-
-        // Passou todos os filtros — guarda para visitar na Fase 2.
-        candidatos.push({
-          anuncio,
-          preco: anuncio.preco,
-          ano: anuncio.ano,
-          marca,
-          modelo,
-          variante,
-          referenciaFipe,
-          margemPercentual,
-          classificacao,
-        });
-      }
-
-      // Ritmo pausado entre páginas (8-12s).
-      await page.waitForTimeout(8000 + Math.floor(Math.random() * 4000));
+    if (walled) {
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} bloqueada (/captcha/wall) mesmo com IP limpo — parando paginação.`);
+      break;
     }
-  } finally {
-    await browser.close();
+    if (cardsBrutos.length === 0) {
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} vazia — fim da listagem.`);
+      break;
+    }
+
+    const anuncios = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
+    console.log(
+      `[motor-descoberta-mercadolivre] Página ${pagina}: ${cardsBrutos.length} cards (${anuncios.length} de particular, ${cardsBrutos.length - anuncios.length} patrocinado/loja descartados).`
+    );
+
+    for (const anuncio of anuncios) {
+      if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue;
+      resultado.novos++;
+
+      if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) {
+        resultado.descartados++;
+        continue;
+      }
+
+      const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
+      if (!marca || !modelo) { resultado.descartados++; continue; }
+
+      const referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
+      if (!referenciaFipe) { resultado.semFipe++; continue; }
+
+      const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
+      if (!ehElegivel(margemPercentual, margemMinima)) { resultado.descartados++; continue; }
+
+      const classificacao: Classificacao | null = classificar(margemPercentual);
+      if (!classificacao) { resultado.descartados++; continue; }
+
+      // Passou todos os filtros — guarda para visitar na Fase 2.
+      candidatos.push({
+        anuncio,
+        preco: anuncio.preco,
+        ano: anuncio.ano,
+        marca,
+        modelo,
+        variante,
+        referenciaFipe,
+        margemPercentual,
+        classificacao,
+      });
+    }
   }
 
   console.log(
