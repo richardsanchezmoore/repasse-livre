@@ -32,6 +32,11 @@ export interface FiltrosBoard {
   classificacao?: Classificacao;
   busca?: string;
   estado?: string;
+  /** Verdadeiro quando o usuário escolheu "Brasil" de forma explícita (sentinela estado=BR na URL).
+   * Sem isso, a paginação perde o parâmetro e o geo-detect da Vercel ativa outro estado no carregamento
+   * seguinte — Supabase retorna 416 "Requested range not satisfiable" se a página pedida não existir
+   * no novo recorte menor. */
+  estadoBR?: boolean;
   precoMin?: number;
   precoMax?: number;
   ordem?: Ordem;
@@ -186,6 +191,12 @@ async function buscarOportunidades(
   const { data, error, count } = await consulta;
 
   if (error) {
+    // Supabase 416: offset pedido além do total real — acontece quando o filtro
+    // muda entre a listagem e a navegação de página (ex.: geo-detect ativa outro
+    // estado depois que o usuário escolheu "Brasil"). Degrada em lista vazia.
+    if (error.message?.includes("Requested range not satisfiable")) {
+      return { itens: [], total: 0 };
+    }
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
   }
 

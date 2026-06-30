@@ -101,6 +101,7 @@ export default async function CentralDeOportunidadesPage({
     classificacao: classificacaoAtiva,
     busca: busca || undefined,
     estado: estadoAtivo,
+    estadoBR: estadoExplicito === null,
     precoMin: paraNumero(precoMin),
     precoMax: paraNumero(precoMax),
     anunciante: anuncianteAtivo,

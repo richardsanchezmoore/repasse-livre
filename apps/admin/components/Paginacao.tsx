@@ -10,6 +10,7 @@ function construirHref(aba: Aba, filtros: FiltrosBoard, pagina: number): string 
   if (filtros.classificacao) params.set("classificacao", filtros.classificacao);
   if (filtros.busca) params.set("busca", filtros.busca);
   if (filtros.estado) params.set("estado", filtros.estado);
+  else if (filtros.estadoBR) params.set("estado", "BR");
   if (filtros.precoMin !== undefined) params.set("precoMin", String(filtros.precoMin));
   if (filtros.precoMax !== undefined) params.set("precoMax", String(filtros.precoMax));
   if (filtros.ordem && filtros.ordem !== "recente") params.set("ordem", filtros.ordem);
