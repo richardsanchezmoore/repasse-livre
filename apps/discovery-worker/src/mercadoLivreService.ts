@@ -390,13 +390,6 @@ export async function varrerEProcessarMercadoLivre(
         break;
       }
 
-      // DIAGNÓSTICO: link real de "próxima página" no DOM (para comparar com a
-      // URL `_Desde_` que estamos construindo à mão).
-      const proximaHref = await page.evaluate(
-        () => document.querySelector<HTMLAnchorElement>(".andes-pagination__button--next a")?.href ?? null
-      );
-      console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: próxima página (DOM) = ${proximaHref}`);
-
       const anuncios = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
       console.log(
         `[motor-descoberta-mercadolivre] Página ${pagina}: ${cardsBrutos.length} cards (${anuncios.length} de particular, ${cardsBrutos.length - anuncios.length} patrocinado/loja descartados).`
