@@ -362,9 +362,20 @@ async function buscarCardsPaginaBrowserProprio(
     const page = await context.newPage();
     await aquecerSessao(page);
     await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 45000 });
-    // Deixa o challenge Anubis resolver e a listagem real renderizar antes de
-    // extrair. Timeout aqui = página bloqueada (cai no catch).
-    await page.waitForSelector("li.ui-search-layout__item", { timeout: 15000 });
+    // Deixa o challenge Anubis resolver e a listagem real renderizar. Timeout
+    // generoso (30s) porque pela Railway (datacenter US → proxy → saída BR →
+    // ML BR) o caminho é bem mais lento que rodando local no Brasil.
+    try {
+      await page.waitForSelector("li.ui-search-layout__item", { timeout: 30000 });
+    } catch {
+      // DIAGNÓSTICO: capturar URL/título reais para diferenciar wall de verdade
+      // (/captcha/wall) de página só lenta/vazia.
+      const titulo = await page.title().catch(() => "?");
+      console.warn(
+        `[motor-descoberta-mercadolivre] Página ${pagina} sem listagem em 30s. url=${page.url().slice(0, 75)} titulo="${titulo}"`
+      );
+      return { cards: [], walled: true };
+    }
     const cards = await extrairCardsDaPagina(page);
     return { cards, walled: false };
   } catch (erro) {
