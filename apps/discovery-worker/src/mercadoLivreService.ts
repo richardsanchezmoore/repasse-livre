@@ -359,9 +359,29 @@ export async function varrerEProcessarMercadoLivre(
 
       const cardsBrutos = await extrairCardsDaPagina(page);
       if (cardsBrutos.length === 0) {
-        console.log(`[motor-descoberta-mercadolivre] Página ${pagina} vazia, fim da listagem.`);
+        // DIAGNÓSTICO: por que a página vem vazia? Challenge (/captcha/wall),
+        // seletor mudou, ou URL `_Desde_` malformada com filtro /particular/?
+        const diag = await page.evaluate(() => ({
+          urlFinal: location.href,
+          titulo: document.title,
+          corpo: (document.body?.innerText ?? "").replace(/\s+/g, " ").slice(0, 300),
+          itensAlt: document.querySelectorAll("[class*='ui-search-layout__item']").length,
+          resultsContainer: document.querySelector(".ui-search-results") !== null,
+          proximaHref:
+            document.querySelector<HTMLAnchorElement>(".andes-pagination__button--next a")?.href ?? null,
+        }));
+        console.log(
+          `[motor-descoberta-mercadolivre] Página ${pagina} vazia. DIAG: ${JSON.stringify(diag)}`
+        );
         break;
       }
+
+      // DIAGNÓSTICO: link real de "próxima página" no DOM (para comparar com a
+      // URL `_Desde_` que estamos construindo à mão).
+      const proximaHref = await page.evaluate(
+        () => document.querySelector<HTMLAnchorElement>(".andes-pagination__button--next a")?.href ?? null
+      );
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: próxima página (DOM) = ${proximaHref}`);
 
       const anuncios = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
       console.log(
