@@ -1,8 +1,7 @@
 import "dotenv/config";
 import {
-  buscarAnunciosMercadoLivre,
   gerarUrlCategoriaParticular,
-  processarLoteAnunciosMercadoLivre,
+  varrerEProcessarMercadoLivre,
 } from "./mercadoLivreService.js";
 import type { ResultadoLoteMercadoLivre } from "./mercadoLivreService.js";
 import { MARGEM_MINIMA_PADRAO } from "./margin.js";
@@ -15,14 +14,6 @@ import {
 
 const MODO = "mercadolivre";
 
-// Serviço Railway próprio, cron separado da OLX/Webmotors (decisão do
-// usuário, mesmo padrão dos outros dois). Precisa de PROXY_URL apontando
-// pra um proxy residencial rotativo (não o ISP estático da Bright Data
-// usado pela OLX — está bloqueado pelo Mercado Livre especificamente, ver
-// memória do projeto) e roda via `xvfb-run` (script discover:mercadolivre
-// no package.json) porque usa Playwright em modo headed de verdade, não
-// curl — Mercado Livre exige navegação orgânica de browser real.
-
 async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<ResultadoLoteMercadoLivre> {
   const margemMinima = Number(
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
@@ -34,10 +25,7 @@ async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<
     `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | máx. páginas: ${maxPaginas} | margem mínima: ${margemMinima}%`
   );
 
-  const anuncios = await buscarAnunciosMercadoLivre(urlComFiltro, maxPaginas);
-  console.log(`[motor-descoberta-mercadolivre] ${anuncios.length} anúncios de particular extraídos da listagem.`);
-
-  const resultado = await processarLoteAnunciosMercadoLivre(anuncios, margemMinima);
+  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima);
 
   console.log(
     `[motor-descoberta-mercadolivre] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados | ${resultado.semFipe} sem FIPE.`

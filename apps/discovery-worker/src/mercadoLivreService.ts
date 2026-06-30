@@ -1,8 +1,9 @@
 import { chromium } from "playwright";
-import type { Page } from "playwright";
+import type { Browser, Page } from "playwright";
 import { buscarReferenciaFipe } from "./fipeService.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
 import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
+import type { AtributosOlx } from "./olxService.js";
 import type { Classificacao, Oportunidade } from "./types.js";
 
 /**
@@ -193,23 +194,103 @@ function converterCard(card: CardBruto): AnuncioMercadoLivreBruto | null {
   };
 }
 
+interface DetalhesPaginaML {
+  fotos: string[];
+  descricao: string | null;
+  cambio: string | null;
+  atributos: AtributosOlx;
+}
+
 /**
- * Varre a listagem (já filtrada por categoria + "particular" na própria
- * URL, ver gerarUrlCategoriaParticular) usando um browser real através de
- * um proxy residencial. Ritmo pausado entre páginas de propósito — bater
- * rápido demais no mesmo IP dispara um cooldown de captcha (confirmado em
- * teste; ver memória do projeto), não é só cortesia.
+ * Visita a página individual do anúncio e extrai fotos (máx. 10), descrição
+ * e atributos técnicos (câmbio, combustível, cor…). Deve ser chamada com o
+ * browser já aquecido e com cookies da sessão de listagem — a página
+ * individual do ML exige um challenge SHA-256 ("Anubis") que resolve
+ * automaticamente via JS em sessão quente; em sessão fria (sem cookies da
+ * listagem) o challenge demora ou bloqueia. Nunca navegar para páginas
+ * individuais em um browser novo sem antes varrer a listagem no mesmo
+ * contexto.
  */
-export async function buscarAnunciosMercadoLivre(
-  categoriaUrlBase: string,
-  maxPaginas: number
-): Promise<AnuncioMercadoLivreBruto[]> {
+async function buscarDetalhesPaginaMercadoLivre(page: Page, url: string): Promise<DetalhesPaginaML> {
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
+
+  // Aguarda o challenge anti-bot resolver e a página real carregar.
+  // O challenge seta cookies (_bmc, _bm_skipml) e redireciona sozinho.
+  // `.ui-pdp-gallery` ou `.ui-pdp-description` só existem na página real.
+  await page
+    .waitForSelector(".ui-pdp-gallery, .ui-pdp-description", { timeout: 20000 })
+    .catch(() => {});
+  await page.waitForTimeout(1500);
+
+  return page.evaluate(() => {
+    // FOTOS — pega a URL full-res via data-zoom (se disponível) ou src.
+    // Limita a 10 para não explodir o banco.
+    const imgEls = Array.from(
+      document.querySelectorAll<HTMLImageElement>(
+        "figure.ui-pdp-gallery__figure img, .ui-pdp-gallery figure img"
+      )
+    );
+    const fotos = [...new Set(
+      imgEls
+        .map((img) => img.getAttribute("data-zoom") || img.src || "")
+        .filter((src) => src.startsWith("http"))
+    )].slice(0, 10);
+
+    // DESCRIÇÃO
+    const descEl = document.querySelector(
+      ".ui-pdp-description__content, p.ui-pdp-description__content"
+    );
+    const descricao = descEl?.textContent?.trim() || null;
+
+    // SPECS — tabela de atributos técnicos (câmbio, combustível, cor…)
+    const specRows = Array.from(
+      document.querySelectorAll(".ui-pdp-specs__table tr, .andes-table__row")
+    );
+    const atributos: Record<string, { label: string; value: string }> = {};
+    for (const row of specRows) {
+      const cells = row.querySelectorAll("th, td");
+      if (cells.length >= 2) {
+        const label = cells[0].textContent?.trim() ?? "";
+        const value = cells[1].textContent?.trim() ?? "";
+        if (label && value) {
+          atributos[label.toLowerCase().replace(/\s+/g, "_")] = { label, value };
+        }
+      }
+    }
+
+    const cambio =
+      atributos["transmissão"]?.value ||
+      atributos["câmbio"]?.value ||
+      atributos["transmissao"]?.value ||
+      atributos["cambio"]?.value ||
+      null;
+
+    return { fotos, descricao, cambio, atributos };
+  });
+}
+
+function criarBrowser(): Promise<Browser> {
   const proxyUrl = process.env.PROXY_URL;
-  const browser = await chromium.launch({
+  return chromium.launch({
     headless: false,
     proxy: proxyUrl ? parseProxy(proxyUrl) : undefined,
     args: ["--no-sandbox"],
   });
+}
+
+/**
+ * Função principal — mantém o browser aberto durante toda a execução para
+ * reutilizar a sessão (cookies) ao visitar páginas individuais. Só visita
+ * a página individual do anúncio se ele passar pelo filtro de FIPE + margem,
+ * evitando chamadas desnecessárias aos ~90% descartados.
+ */
+export async function varrerEProcessarMercadoLivre(
+  categoriaUrlBase: string,
+  maxPaginas: number,
+  margemMinima: number
+): Promise<ResultadoLoteMercadoLivre> {
+  const browser = await criarBrowser();
+  const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
 
   try {
     const context = await browser.newContext({
@@ -222,7 +303,6 @@ export async function buscarAnunciosMercadoLivre(
 
     await aquecerSessao(page);
 
-    const anuncios: AnuncioMercadoLivreBruto[] = [];
     for (let pagina = 1; pagina <= maxPaginas; pagina++) {
       const url = montarUrlPagina(categoriaUrlBase, pagina);
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
@@ -234,20 +314,82 @@ export async function buscarAnunciosMercadoLivre(
         break;
       }
 
-      const convertidos = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
+      const anuncios = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
       console.log(
-        `[motor-descoberta-mercadolivre] Página ${pagina}: ${cardsBrutos.length} cards (${convertidos.length} de particular, ${cardsBrutos.length - convertidos.length} patrocinado/loja descartados).`
+        `[motor-descoberta-mercadolivre] Página ${pagina}: ${cardsBrutos.length} cards (${anuncios.length} de particular, ${cardsBrutos.length - anuncios.length} patrocinado/loja descartados).`
       );
-      anuncios.push(...convertidos);
 
-      // ritmo pausado entre páginas (8-12s) — ver comentário da função.
+      for (const anuncio of anuncios) {
+        if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue;
+        resultado.novos++;
+
+        if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) {
+          resultado.descartados++;
+          continue;
+        }
+
+        const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
+        if (!marca || !modelo) { resultado.descartados++; continue; }
+
+        const referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
+        if (!referenciaFipe) { resultado.semFipe++; continue; }
+
+        const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
+        if (!ehElegivel(margemPercentual, margemMinima)) { resultado.descartados++; continue; }
+
+        const classificacao: Classificacao | null = classificar(margemPercentual);
+        if (!classificacao) { resultado.descartados++; continue; }
+
+        // Passou todos os filtros — vale visitar a página individual.
+        console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes...`);
+        const detalhes = await buscarDetalhesPaginaMercadoLivre(page, anuncio.linkOrigem);
+        await page.waitForTimeout(3000 + Math.floor(Math.random() * 2000));
+
+        const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
+        const todasFotos = [
+          ...(anuncio.fotoPrincipal ? [anuncio.fotoPrincipal] : []),
+          ...detalhes.fotos.filter((f) => f !== anuncio.fotoPrincipal),
+        ].slice(0, 10);
+
+        const oportunidade: Oportunidade = {
+          fonte: "MERCADO_LIVRE",
+          link_origem: anuncio.linkOrigem,
+          veiculo: `${marca} ${modelo}`,
+          versao: variante,
+          ano: anuncio.ano,
+          cambio: detalhes.cambio,
+          km: anuncio.km,
+          cidade,
+          estado,
+          preco: anuncio.preco,
+          fipe_valor: referenciaFipe.valor,
+          fipe_data_referencia: referenciaFipe.mesReferencia,
+          margem_percentual: Number(margemPercentual.toFixed(2)),
+          classificacao,
+          foto_principal: todasFotos[0] ?? null,
+          fotos_secundarias: todasFotos.slice(1),
+          descricao: detalhes.descricao,
+          origem_tipo: "descoberta",
+          status: "descoberta",
+          data_publicacao_origem: null,
+          atributos_olx: detalhes.atributos,
+          anunciante_profissional: false,
+        };
+
+        await salvarOportunidade(oportunidade);
+        resultado.elegiveis++;
+
+        if (cidade && estado) await garantirCoordenadasCidade(cidade, estado);
+      }
+
+      // Ritmo pausado entre páginas (8-12s).
       await page.waitForTimeout(8000 + Math.floor(Math.random() * 4000));
     }
-
-    return anuncios;
   } finally {
     await browser.close();
   }
+
+  return resultado;
 }
 
 /**
@@ -262,96 +404,6 @@ export function gerarUrlCategoriaParticular(categoriaUrlBase: string): string {
   return `${base}/particular/`;
 }
 
-export interface OportunidadeMercadoLivreOuDescarte {
-  oportunidade: Oportunidade | null;
-  motivoDescarte: "ja_existe" | "sem_dados_minimos" | "sem_fipe" | "fora_da_margem" | null;
-}
-
-/**
- * O título do card ("Chevrolet Tracker 2021 1.2 Premier Turbo Aut. 5p")
- * não vem com marca/modelo separados como na Webmotors — só texto livre.
- * Primeira palavra = marca, segunda = modelo, resto = variante; o ano vem
- * do atributo separado do card (mais confiável que tentar achar um número
- * de 4 dígitos no título, já que nem todo título tem o ano embutido — ex.:
- * títulos com cilindrada como "Ford Ka 1.0 Flex 3p" sem ano nenhum no
- * texto). buscarReferenciaFipe já faz correspondência aproximada de
- * marca/modelo/variante, então essa divisão simples é suficiente.
- */
-function extrairMarcaModelo(titulo: string): { marca: string; modelo: string; variante: string | null } {
-  const palavras = titulo.trim().split(/\s+/);
-  const marca = palavras[0] ?? "";
-  const modelo = palavras[1] ?? "";
-  const variante = palavras.slice(2).join(" ") || null;
-  return { marca, modelo, variante };
-}
-
-export async function avaliarAnuncioMercadoLivre(
-  anuncio: AnuncioMercadoLivreBruto,
-  margemMinima: number
-): Promise<OportunidadeMercadoLivreOuDescarte> {
-  if (await linkOrigemJaExiste(anuncio.linkOrigem)) {
-    return { oportunidade: null, motivoDescarte: "ja_existe" };
-  }
-
-  if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) {
-    return { oportunidade: null, motivoDescarte: "sem_dados_minimos" };
-  }
-
-  const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
-  if (!marca || !modelo) {
-    return { oportunidade: null, motivoDescarte: "sem_dados_minimos" };
-  }
-
-  const referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
-  if (!referenciaFipe) {
-    return { oportunidade: null, motivoDescarte: "sem_fipe" };
-  }
-
-  const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
-  if (!ehElegivel(margemPercentual, margemMinima)) {
-    return { oportunidade: null, motivoDescarte: "fora_da_margem" };
-  }
-
-  const classificacao: Classificacao | null = classificar(margemPercentual);
-  if (!classificacao) {
-    return { oportunidade: null, motivoDescarte: "fora_da_margem" };
-  }
-
-  const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
-
-  const oportunidade: Oportunidade = {
-    fonte: "MERCADO_LIVRE",
-    link_origem: anuncio.linkOrigem,
-    veiculo: `${marca} ${modelo}`,
-    versao: variante,
-    ano: anuncio.ano,
-    cambio: null,
-    km: anuncio.km,
-    cidade,
-    estado,
-    preco: anuncio.preco,
-    fipe_valor: referenciaFipe.valor,
-    fipe_data_referencia: referenciaFipe.mesReferencia,
-    margem_percentual: Number(margemPercentual.toFixed(2)),
-    classificacao,
-    foto_principal: anuncio.fotoPrincipal,
-    fotos_secundarias: [],
-    descricao: null,
-    origem_tipo: "descoberta",
-    status: "descoberta",
-    // a listagem da ML não expõe data de publicação (diferente da OLX) —
-    // sem isso pra fazer janela/incremental por data; dedupe por
-    // link_origem (linkOrigemJaExiste acima) é o que evita duplicar.
-    data_publicacao_origem: null,
-    atributos_olx: {},
-    // já filtrado por "/particular/" na URL + descartado lojaOficial no
-    // card (ver converterCard) — sempre pessoa física aqui.
-    anunciante_profissional: false,
-  };
-
-  return { oportunidade, motivoDescarte: null };
-}
-
 export interface ResultadoLoteMercadoLivre {
   novos: number;
   elegiveis: number;
@@ -359,31 +411,15 @@ export interface ResultadoLoteMercadoLivre {
   semFipe: number;
 }
 
-export async function processarLoteAnunciosMercadoLivre(
-  anuncios: AnuncioMercadoLivreBruto[],
-  margemMinima: number
-): Promise<ResultadoLoteMercadoLivre> {
-  const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
-
-  for (const anuncio of anuncios) {
-    const { oportunidade, motivoDescarte } = await avaliarAnuncioMercadoLivre(anuncio, margemMinima);
-
-    if (motivoDescarte === "ja_existe") continue;
-    resultado.novos++;
-
-    if (!oportunidade) {
-      if (motivoDescarte === "sem_fipe") resultado.semFipe++;
-      else resultado.descartados++;
-      continue;
-    }
-
-    await salvarOportunidade(oportunidade);
-    resultado.elegiveis++;
-
-    if (oportunidade.cidade && oportunidade.estado) {
-      await garantirCoordenadasCidade(oportunidade.cidade, oportunidade.estado);
-    }
-  }
-
-  return resultado;
+/**
+ * O título do card ("Chevrolet Tracker 2021 1.2 Premier Turbo Aut. 5p")
+ * não vem com marca/modelo separados — só texto livre. Primeira palavra =
+ * marca, segunda = modelo, resto = variante.
+ */
+function extrairMarcaModelo(titulo: string): { marca: string; modelo: string; variante: string | null } {
+  const palavras = titulo.trim().split(/\s+/);
+  const marca = palavras[0] ?? "";
+  const modelo = palavras[1] ?? "";
+  const variante = palavras.slice(2).join(" ") || null;
+  return { marca, modelo, variante };
 }
