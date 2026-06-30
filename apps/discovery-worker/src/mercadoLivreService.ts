@@ -20,6 +20,9 @@ import type { Classificacao, Oportunidade } from "./types.js";
 
 const TAMANHO_PAGINA = 48;
 
+/** Tentativas com IP novo quando uma página da listagem é bloqueada antes de desistir. */
+const MAX_TENTATIVAS_PAGINA = 3;
+
 /** Nome completo do estado (como a ML mostra em poly-component__location) → sigla. */
 const UF_POR_NOME: Record<string, string> = {
   acre: "AC",
@@ -432,19 +435,29 @@ export async function varrerEProcessarMercadoLivre(
   // aleatório por run dá um IP limpo a cada execução.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
 
-  // ===== Fase 1: varrer listagem, um IP limpo por página =====
-  // Cada página usa browser+sessid próprios (baseSess + pagina). O ML walla a
-  // 2ª página na MESMA sessão de proxy; com IP fresco por página, cada uma faz
-  // só warmup + 1 página e passa.
+  // ===== Fase 1: varrer listagem, um IP limpo por página (com retry) =====
+  // Cada página usa browser+sessid próprios. O bloqueio (account-verification)
+  // é dependente de IP, não da URL paginada (o DataImpulse pegava 3 páginas; no
+  // Thordata a página 1 passa e a 2 às vezes não), então quando uma página é
+  // bloqueada tentamos de novo com um IP novo (sessid distinto) até
+  // MAX_TENTATIVAS_PAGINA, antes de desistir e parar a paginação.
   for (let pagina = 1; pagina <= maxPaginas; pagina++) {
-    const { cards: cardsBrutos, walled } = await buscarCardsPaginaBrowserProprio(
-      categoriaUrlBase,
-      pagina,
-      baseSess + pagina
-    );
+    let cardsBrutos: CardBruto[] = [];
+    let bloqueada = true;
+    for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA; tentativa++) {
+      const r = await buscarCardsPaginaBrowserProprio(categoriaUrlBase, pagina, baseSess + pagina * 10 + tentativa);
+      if (!r.walled) {
+        cardsBrutos = r.cards;
+        bloqueada = false;
+        break;
+      }
+      console.log(
+        `[motor-descoberta-mercadolivre] Página ${pagina} bloqueada (tentativa ${tentativa}/${MAX_TENTATIVAS_PAGINA}) — tentando IP novo…`
+      );
+    }
 
-    if (walled) {
-      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} bloqueada (/captcha/wall) mesmo com IP limpo — parando paginação.`);
+    if (bloqueada) {
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} bloqueada após ${MAX_TENTATIVAS_PAGINA} IPs — parando paginação.`);
       break;
     }
     if (cardsBrutos.length === 0) {
@@ -500,9 +513,10 @@ export async function varrerEProcessarMercadoLivre(
   // ===== Fase 2: visitar página individual de cada elegível =====
   // Cada elegível usa browser/sessid próprio (ML manda /captcha/wall a partir
   // da 2ª página individual visitada na mesma sessão de proxy).
-  // Páginas individuais: sessid distinto do da listagem (baseSess) e fresco
-  // por run, rotacionando a cada anúncio (ML walla a 2ª individual no mesmo IP).
-  let sessaoDetalheId = baseSess + 100;
+  // Páginas individuais: sessid em faixa separada da listagem (que usa
+  // baseSess + pagina*10 + tentativa, até ~103) pra não reusar IP, e fresco por
+  // run, rotacionando a cada anúncio (ML walla a 2ª individual no mesmo IP).
+  let sessaoDetalheId = baseSess + 1000;
   for (const cand of candidatos) {
     const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = cand;
 
