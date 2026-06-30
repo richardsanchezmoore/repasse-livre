@@ -292,12 +292,10 @@ async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Prom
       viewport: { width: 1366, height: 768 },
     });
     const page = await context.newPage();
-    // Aquecimento mínimo por sessão.
-    await page.goto("https://lista.mercadolivre.com.br/veiculos/carros-caminhonetes/particular/", {
-      waitUntil: "domcontentloaded",
-      timeout: 45000,
-    });
-    await page.waitForTimeout(3000);
+    // Aquecimento completo (home → categoria → sub) — o mini-warmup anterior
+    // (1 goto + 3s) era insuficiente para passar o challenge Anubis da página
+    // individual, que exige cookies de sessão orgânica como a listagem.
+    await aquecerSessao(page);
     return await buscarDetalhesPaginaMercadoLivre(page, url);
   } finally {
     await browser.close();
