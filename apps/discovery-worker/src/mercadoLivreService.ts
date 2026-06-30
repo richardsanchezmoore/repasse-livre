@@ -277,9 +277,15 @@ async function buscarDetalhesPaginaMercadoLivre(page: Page, url: string): Promis
 
 function parseProxyComSessao(url: string, sessaoId: number) {
   const u = new URL(url);
-  // Troca o sessid para um IP diferente — ML bloqueia com /captcha/wall a
-  // partir da 2ª página individual visitada na mesma sessão de proxy.
-  const username = decodeURIComponent(u.username).replace(/;sessid\.\d+/, `;sessid.${sessaoId}`);
+  // Sessão fixa por IP — o ML walla a 2ª requisição no mesmo IP, então cada
+  // página/detalhe usa um sessid diferente (= IP diferente). Formato Thordata:
+  // `td-customer-<id>-country-BR-sessid-<N>-sesstime-10` no username (mesmo IP
+  // enquanto o sessid se repete; `sesstime` segura o IP por até 10min e evita
+  // a troca por 60s de inatividade durante uma navegação multi-passo).
+  // O PROXY_URL traz o username base (sem sessid); aqui anexamos um sessid
+  // único e idempotente (remove um anterior, se houver).
+  const usernameBase = decodeURIComponent(u.username).replace(/-sessid-[^-]+(-sesstime-\d+)?$/i, "");
+  const username = `${usernameBase}-sessid-${sessaoId}-sesstime-10`;
   return { server: `${u.protocol}//${u.host}`, username, password: decodeURIComponent(u.password) };
 }
 
