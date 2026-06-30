@@ -23,6 +23,9 @@ const TAMANHO_PAGINA = 48;
 /** Tentativas com IP novo quando uma página da listagem é bloqueada antes de desistir. */
 const MAX_TENTATIVAS_PAGINA = 3;
 
+/** Tentativas com IP novo no detalhe (página individual) antes de cair pro card-only. */
+const MAX_TENTATIVAS_DETALHE = 2;
+
 /** Nome completo do estado (como a ML mostra em poly-component__location) → sigla. */
 const UF_POR_NOME: Record<string, string> = {
   acre: "AC",
@@ -521,17 +524,24 @@ export async function varrerEProcessarMercadoLivre(
     const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = cand;
 
     console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes…`);
-    // Resiliência: uma falha de detalhe (timeout, wall, etc.) NÃO pode derrubar
-    // o run e perder todos os outros elegíveis (já aconteceu: 13 elegíveis
-    // perdidos por 1 timeout). Salva a oportunidade com os dados do card e
-    // segue; o backfill de detalhes pode completar fotos/descrição depois.
-    let detalhes: DetalhesPaginaML;
-    try {
-      detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
-    } catch (erro) {
-      const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
-      console.warn(`[motor-descoberta-mercadolivre] Detalhe falhou (${anuncio.titulo}): ${msg} — salvando só com dados do card.`);
-      detalhes = { fotos: [], descricao: null, cambio: null, atributos: {} };
+    // O detalhe também pega o account-verification dependente de IP, então
+    // tenta com IP novo até MAX_TENTATIVAS_DETALHE antes de cair pro card-only
+    // (sobe a taxa de fotos/descrição sem depender do backfill manual). Se
+    // todas falharem, salva só com os dados do card — uma falha NUNCA derruba o
+    // run nem perde o elegível (resiliência).
+    let detalhes: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {} };
+    for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_DETALHE; tentativa++) {
+      try {
+        detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
+        break;
+      } catch (erro) {
+        const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
+        if (tentativa < MAX_TENTATIVAS_DETALHE) {
+          console.warn(`[motor-descoberta-mercadolivre] Detalhe falhou (tentativa ${tentativa}/${MAX_TENTATIVAS_DETALHE}, ${anuncio.titulo}): ${msg} — IP novo…`);
+        } else {
+          console.warn(`[motor-descoberta-mercadolivre] Detalhe falhou após ${MAX_TENTATIVAS_DETALHE} IPs (${anuncio.titulo}) — salvando só com card.`);
+        }
+      }
     }
 
     const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
