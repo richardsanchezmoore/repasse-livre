@@ -229,6 +229,12 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
   const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
   let maiorDataVistaEpoch: number | null = null;
+  // Contador de páginas consecutivas onde todos os anúncios já existem no banco.
+  // OLX pode mudar a ordenação (ex.: filtro FIPE sobrepõe sf=1), então não
+  // podemos parar na primeira data < checkpoint — esperamos 3 páginas "secas"
+  // antes de concluir que não há mais anúncios novos.
+  let paginasSemsNovos = 0;
+  const MAX_PAGINAS_SECAS = 3;
 
   if (MODO === "intervalo" && (!JANELA_INICIO || !JANELA_FIM)) {
     throw new Error(
@@ -264,19 +270,11 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
       (checkpointAnteriorEpoch ? ` | checkpoint: ${new Date(checkpointAnteriorEpoch * 1000).toISOString()}` : "")
     );
 
+    const novosAntesDestaPagina = resultado.novos;
+
     for (const anuncio of anuncios) {
       if (anuncio.dataPublicacao !== null && (maiorDataVistaEpoch === null || anuncio.dataPublicacao > maiorDataVistaEpoch)) {
         maiorDataVistaEpoch = anuncio.dataPublicacao;
-      }
-
-      if (
-        MODO === "incremental" &&
-        checkpointAnteriorEpoch !== null &&
-        anuncio.dataPublicacao !== null &&
-        anuncio.dataPublicacao <= checkpointAnteriorEpoch
-      ) {
-        console.log(`[motor-descoberta] Checkpoint alcançado, parando varredura incremental.`);
-        break paginas;
       }
 
       if (MODO === "inicial" && anuncio.dataPublicacao !== null && anuncio.dataPublicacao < cutoffEpoch) {
@@ -300,6 +298,21 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
       }
 
       await processarAnuncio(anuncio, resultado, MARGEM_MINIMA);
+    }
+
+    // Parada incremental robusta: em vez de parar no primeiro anúncio com data
+    // <= checkpoint (frágil quando OLX muda a ordenação), esperamos 3 páginas
+    // consecutivas sem nenhum anúncio novo. Isso tolera que o filtro FIPE da
+    // OLX ordene por desconto em vez de data — novos aparecem em qualquer posição.
+    if (MODO === "incremental" && resultado.novos === novosAntesDestaPagina) {
+      paginasSemsNovos++;
+      console.log(`[motor-descoberta] Página ${pagina} sem novos (${paginasSemsNovos}/${MAX_PAGINAS_SECAS} páginas secas).`);
+      if (paginasSemsNovos >= MAX_PAGINAS_SECAS) {
+        console.log(`[motor-descoberta] ${MAX_PAGINAS_SECAS} páginas consecutivas sem novos, parando varredura incremental.`);
+        break paginas;
+      }
+    } else {
+      paginasSemsNovos = 0;
     }
   }
 
