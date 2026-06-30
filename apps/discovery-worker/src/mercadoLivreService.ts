@@ -218,13 +218,15 @@ interface DetalhesPaginaML {
  * contexto.
  */
 async function buscarDetalhesPaginaMercadoLivre(page: Page, url: string): Promise<DetalhesPaginaML> {
-  // networkidle aguarda a página final estabilizar (500ms sem requisições),
-  // passando pelo challenge anti-bot do ML ("Anubis") que faz um redirect JS
-  // antes de carregar o anúncio real. Se usarmos domcontentloaded, o goto
-  // retorna na challenge page e o redirect ainda não aconteceu — confirmado
-  // que era a causa de fotos/descrição vazias em 12/13 anúncios no backfill.
-  await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
-  await page.waitForTimeout(1000);
+  // O ML faz um redirect JS (challenge "Anubis") antes de renderizar o anúncio
+  // real, então não basta o `domcontentloaded` (volta na challenge page). Mas
+  // `networkidle` travava: páginas do ML têm analytics/websocket que nunca
+  // ficam 500ms sem tráfego → estourava os 60s e derrubava o run inteiro.
+  // Solução: domcontentloaded rápido + espera EXPLÍCITA pelo container do
+  // anúncio aparecer (pós-redirect), sem depender de a rede ficar ociosa.
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
+  await page.waitForSelector(".ui-pdp-container, .ui-pdp-title, .ui-pdp-gallery", { timeout: 25000 });
+  await page.waitForTimeout(800);
 
   return page.evaluate(() => {
     // FOTOS — pega a URL full-res via data-zoom (se disponível) ou src.
@@ -456,7 +458,18 @@ export async function varrerEProcessarMercadoLivre(
     const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = cand;
 
     console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes…`);
-    const detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
+    // Resiliência: uma falha de detalhe (timeout, wall, etc.) NÃO pode derrubar
+    // o run e perder todos os outros elegíveis (já aconteceu: 13 elegíveis
+    // perdidos por 1 timeout). Salva a oportunidade com os dados do card e
+    // segue; o backfill de detalhes pode completar fotos/descrição depois.
+    let detalhes: DetalhesPaginaML;
+    try {
+      detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
+    } catch (erro) {
+      const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
+      console.warn(`[motor-descoberta-mercadolivre] Detalhe falhou (${anuncio.titulo}): ${msg} — salvando só com dados do card.`);
+      detalhes = { fotos: [], descricao: null, cambio: null, atributos: {} };
+    }
 
     const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
     const todasFotos = [
