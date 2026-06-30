@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import type { Browser, Page } from "playwright";
+import type { Browser, BrowserContext, Page } from "playwright";
 import { buscarReferenciaFipe } from "./fipeService.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
 import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
@@ -283,6 +283,24 @@ function parseProxyComSessao(url: string, sessaoId: number) {
   return { server: `${u.protocol}//${u.host}`, username, password: decodeURIComponent(u.password) };
 }
 
+/**
+ * Bloqueia imagens, mídia e fontes — puro tráfego de banda, inúteis para
+ * extrair o DOM ou resolver o challenge JS (Anubis). Corta a maior parte do
+ * consumo do proxy residencial (a home/listagem do ML é pesadíssima em
+ * imagem; um run com warmup por página + por detalhe chegou a ~400MB).
+ * Mantém document/script/xhr/css — necessários para o challenge e para a
+ * listagem hidratar.
+ */
+async function bloquearMidia(context: BrowserContext): Promise<void> {
+  await context.route("**/*", (route) => {
+    const tipo = route.request().resourceType();
+    if (tipo === "image" || tipo === "media" || tipo === "font") {
+      return route.abort();
+    }
+    return route.continue();
+  });
+}
+
 function criarBrowser(sessaoId?: number): Promise<Browser> {
   const proxyUrl = process.env.PROXY_URL;
   const proxy = proxyUrl
@@ -299,6 +317,7 @@ async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Prom
       locale: "pt-BR",
       viewport: { width: 1366, height: 768 },
     });
+    await bloquearMidia(context);
     const page = await context.newPage();
     // Aquecimento completo (home → categoria → sub) — o mini-warmup anterior
     // (1 goto + 3s) era insuficiente para passar o challenge Anubis da página
@@ -336,6 +355,7 @@ async function buscarCardsPaginaBrowserProprio(
       locale: "pt-BR",
       viewport: { width: 1366, height: 768 },
     });
+    await bloquearMidia(context);
     const page = await context.newPage();
     await aquecerSessao(page);
     await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 45000 });
