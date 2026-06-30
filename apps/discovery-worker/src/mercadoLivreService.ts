@@ -212,15 +212,13 @@ interface DetalhesPaginaML {
  * contexto.
  */
 async function buscarDetalhesPaginaMercadoLivre(page: Page, url: string): Promise<DetalhesPaginaML> {
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
-
-  // Aguarda o challenge anti-bot resolver e a página real carregar.
-  // O challenge seta cookies (_bmc, _bm_skipml) e redireciona sozinho.
-  // `.ui-pdp-gallery` ou `.ui-pdp-description` só existem na página real.
-  await page
-    .waitForSelector(".ui-pdp-gallery, .ui-pdp-description", { timeout: 20000 })
-    .catch(() => {});
-  await page.waitForTimeout(1500);
+  // networkidle aguarda a página final estabilizar (500ms sem requisições),
+  // passando pelo challenge anti-bot do ML ("Anubis") que faz um redirect JS
+  // antes de carregar o anúncio real. Se usarmos domcontentloaded, o goto
+  // retorna na challenge page e o redirect ainda não aconteceu — confirmado
+  // que era a causa de fotos/descrição vazias em 12/13 anúncios no backfill.
+  await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(1000);
 
   return page.evaluate(() => {
     // FOTOS — pega a URL full-res via data-zoom (se disponível) ou src.
@@ -269,13 +267,41 @@ async function buscarDetalhesPaginaMercadoLivre(page: Page, url: string): Promis
   });
 }
 
-function criarBrowser(): Promise<Browser> {
+function parseProxyComSessao(url: string, sessaoId: number) {
+  const u = new URL(url);
+  // Troca o sessid para um IP diferente — ML bloqueia com /captcha/wall a
+  // partir da 2ª página individual visitada na mesma sessão de proxy.
+  const username = decodeURIComponent(u.username).replace(/;sessid\.\d+/, `;sessid.${sessaoId}`);
+  return { server: `${u.protocol}//${u.host}`, username, password: decodeURIComponent(u.password) };
+}
+
+function criarBrowser(sessaoId?: number): Promise<Browser> {
   const proxyUrl = process.env.PROXY_URL;
-  return chromium.launch({
-    headless: false,
-    proxy: proxyUrl ? parseProxy(proxyUrl) : undefined,
-    args: ["--no-sandbox"],
-  });
+  const proxy = proxyUrl
+    ? sessaoId !== undefined ? parseProxyComSessao(proxyUrl, sessaoId) : parseProxy(proxyUrl)
+    : undefined;
+  return chromium.launch({ headless: true, proxy, args: ["--no-sandbox"] });
+}
+
+async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Promise<DetalhesPaginaML> {
+  const browser = await criarBrowser(sessaoId);
+  try {
+    const context = await browser.newContext({
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      locale: "pt-BR",
+      viewport: { width: 1366, height: 768 },
+    });
+    const page = await context.newPage();
+    // Aquecimento mínimo por sessão.
+    await page.goto("https://lista.mercadolivre.com.br/veiculos/carros-caminhonetes/particular/", {
+      waitUntil: "domcontentloaded",
+      timeout: 45000,
+    });
+    await page.waitForTimeout(3000);
+    return await buscarDetalhesPaginaMercadoLivre(page, url);
+  } finally {
+    await browser.close();
+  }
 }
 
 /**
@@ -289,8 +315,11 @@ export async function varrerEProcessarMercadoLivre(
   maxPaginas: number,
   margemMinima: number
 ): Promise<ResultadoLoteMercadoLivre> {
+  // Browser principal: só para varrer páginas de listagem (sem limite de sessão).
+  // Páginas individuais usam sessid próprio via buscarDetalhesBrowserProprio.
   const browser = await criarBrowser();
   const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
+  let sessaoDetalheId = 100; // sessid 100+ reservado para páginas individuais
 
   try {
     const context = await browser.newContext({
@@ -342,8 +371,8 @@ export async function varrerEProcessarMercadoLivre(
 
         // Passou todos os filtros — vale visitar a página individual.
         console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes...`);
-        const detalhes = await buscarDetalhesPaginaMercadoLivre(page, anuncio.linkOrigem);
-        await page.waitForTimeout(3000 + Math.floor(Math.random() * 2000));
+        const detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
+        await page.waitForTimeout(2000 + Math.floor(Math.random() * 2000));
 
         const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
         const todasFotos = [

@@ -7,8 +7,8 @@
   "scripts": {
     "discover": "tsx src/main.ts",
     "discover:webmotors": "tsx src/webmotorsMain.ts",
-    "discover:mercadolivre": "xvfb-run -a npx tsx src/mercadoLivreMain.ts",
-    "backfill:ml-detalhes": "xvfb-run -a npx tsx src/backfillMercadoLivreDetalhes.ts",
+    "discover:mercadolivre": "npx tsx src/mercadoLivreMain.ts",
+    "backfill:ml-detalhes": "npx tsx src/backfillMercadoLivreDetalhes.ts",
     "backfill:webmotors-local": "tsx src/backfillWebmotorsLocal.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
