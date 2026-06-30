@@ -255,7 +255,14 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
       break;
     }
 
-    console.log(`[motor-descoberta] Página ${pagina}: ${anuncios.length} anúncios.`);
+    // Log de diagnóstico: data do primeiro e último anúncio da página
+    const primData = anuncios[0]?.dataPublicacao;
+    const ultData = anuncios[anuncios.length - 1]?.dataPublicacao;
+    console.log(
+      `[motor-descoberta] Página ${pagina}: ${anuncios.length} anúncios.` +
+      ` Datas: ${primData ? new Date(primData * 1000).toISOString() : "null"} → ${ultData ? new Date(ultData * 1000).toISOString() : "null"}` +
+      (checkpointAnteriorEpoch ? ` | checkpoint: ${new Date(checkpointAnteriorEpoch * 1000).toISOString()}` : "")
+    );
 
     for (const anuncio of anuncios) {
       if (anuncio.dataPublicacao !== null && (maiorDataVistaEpoch === null || anuncio.dataPublicacao > maiorDataVistaEpoch)) {

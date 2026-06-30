@@ -137,13 +137,40 @@ async function buscarHtml(url: string): Promise<string> {
 export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx[]> {
   const html = await buscarHtml(paginaUrl);
 
+  console.log(`[olx] HTML size: ${html.length} | url: ${paginaUrl.slice(0, 120)}`);
+
   const match = html.match(/__NEXT_DATA__"\s*type="application\/json">(.*?)<\/script>/s);
   if (!match) {
+    console.error(`[olx] __NEXT_DATA__ não encontrado. Início do HTML: ${html.slice(0, 400)}`);
     throw new Error("Não foi possível localizar __NEXT_DATA__ na página da OLX.");
   }
 
-  const data = JSON.parse(match[1]) as NextDataOlx;
-  const anunciosValidos = data.props.pageProps.ads.filter((ad) => ad.subject && ad.url && ad.price);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = JSON.parse(match[1]) as any;
+  const pp = data?.props?.pageProps;
+
+  // OLX pode mudar a chave: "ads" foi o nome histórico, mas a estrutura evolui.
+  // Logamos as chaves disponíveis sempre que ads está ausente ou vazio para
+  // facilitar diagnóstico de mudanças sem precisar de um sandbox Railway.
+  const ads = pp?.ads as AdOlx[] | undefined;
+  if (!ads || ads.length === 0) {
+    const ppKeys = Object.keys(pp ?? {});
+    console.warn(`[olx] pageProps.ads ausente ou vazio. pageProps keys: [${ppKeys.join(", ")}]`);
+    // Tentar chaves alternativas conhecidas
+    const candidates = ["listings", "adList", "items", "results", "data"];
+    for (const k of candidates) {
+      const alt = pp?.[k];
+      if (Array.isArray(alt) && alt.length > 0) {
+        console.warn(`[olx] Encontrado alternativo pageProps.${k} com ${alt.length} itens — usando.`);
+        const validos = (alt as AdOlx[]).filter((ad) => ad.subject && ad.url && ad.price);
+        return validos.map(mapearAnuncio);
+      }
+    }
+    return [];
+  }
+
+  console.log(`[olx] ${ads.length} anúncios brutos na página.`);
+  const anunciosValidos = ads.filter((ad) => ad.subject && ad.url && ad.price);
   return anunciosValidos.map(mapearAnuncio);
 }
 
