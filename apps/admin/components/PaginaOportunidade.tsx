@@ -1,5 +1,6 @@
 import { Calendar, Check, Gauge, MapPin, ExternalLink, Tag, ShieldAlert, Settings2 } from "lucide-react";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
+import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
@@ -10,12 +11,6 @@ import { GaleriaFotos } from "./GaleriaFotos";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
 import type { Oportunidade } from "@/lib/types";
 
-const CLASSE_FONTE: Record<string, string> = {
-  OLX: "selo-fonte-olx",
-  Webmotors: "selo-fonte-webmotors",
-  "Mercado Livre": "selo-fonte-mercadolivre",
-};
-
 export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
   // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
@@ -24,7 +19,7 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
     [oportunidade.foto_principal, ...oportunidade.fotos_secundarias].filter((url): url is string => !!url)
   )];
   const classificacao = oportunidade.classificacao as Classificacao | null;
-  const classeFonte = CLASSE_FONTE[oportunidade.fonte] ?? "selo-fonte-generico";
+  const { rotulo: rotuloFonte, classe: classeFonte } = infoFonte(oportunidade.fonte);
   const classeClassificacao = classificacao
     ? CLASSE_CLASSIFICACAO[classificacao] ?? "selo-classificacao-oportunidade"
     : "selo-classificacao-oportunidade";
@@ -55,7 +50,7 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
 
       <div className="pagina-oportunidade-corpo">
         <div className="pagina-oportunidade-selos">
-          <span className={`selo-fonte selo-fonte-inline ${classeFonte}`}>{oportunidade.fonte}</span>
+          <span className={`selo-fonte selo-fonte-inline ${classeFonte}`}>{rotuloFonte}</span>
           {classificacao && (
             <span className={`selo-classificacao ${classeClassificacao} selo-classificacao-inline`}>
               {ROTULO_CLASSIFICACAO[classificacao]}

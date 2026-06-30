@@ -13,6 +13,7 @@ import {
 import { gerarTextoCompartilhamento } from "@/lib/compartilhamento";
 import { registrarEvento } from "@/lib/eventosAnalytics";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
+import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
 import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
@@ -20,12 +21,6 @@ import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 import { caminhoOportunidade } from "@/lib/site";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
-
-const CLASSE_FONTE: Record<string, string> = {
-  OLX: "selo-fonte-olx",
-  Webmotors: "selo-fonte-webmotors",
-  "Mercado Livre": "selo-fonte-mercadolivre",
-};
 
 export function OpportunityCard({
   oportunidade,
@@ -93,7 +88,7 @@ export function OpportunityCard({
     executarAcao(() => apagarOportunidade(oportunidade.id), "Falha ao apagar. Tente novamente.");
   }
 
-  const classeFonte = CLASSE_FONTE[oportunidade.fonte] ?? "selo-fonte-generico";
+  const { rotulo: rotuloFonte, classe: classeFonte } = infoFonte(oportunidade.fonte);
   const classificacao = oportunidade.classificacao as Classificacao | null;
   const classeClassificacao = classificacao
     ? CLASSE_CLASSIFICACAO[classificacao] ?? "selo-classificacao-oportunidade"
@@ -121,7 +116,7 @@ export function OpportunityCard({
           <div className="foto-capa foto-capa-vazia" title={titulo} />
         )}
         {!(isAdmin && modoSelecao) && (
-          <span className={`selo-fonte ${classeFonte}`}>{oportunidade.fonte}</span>
+          <span className={`selo-fonte ${classeFonte}`}>{rotuloFonte}</span>
         )}
         {isAdmin && modoSelecao && (
           <button
