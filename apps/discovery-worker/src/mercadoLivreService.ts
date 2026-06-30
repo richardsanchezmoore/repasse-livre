@@ -163,10 +163,16 @@ async function extrairCardsDaPagina(page: Page): Promise<CardBruto[]> {
 }
 
 function montarUrlPagina(categoriaUrlBase: string, pagina: number): string {
-  if (pagina === 1) return categoriaUrlBase;
-  const offset = (pagina - 1) * TAMANHO_PAGINA + 1;
   const base = categoriaUrlBase.endsWith("/") ? categoriaUrlBase : `${categoriaUrlBase}/`;
-  return `${base}_Desde_${offset}`;
+  // O ML marca listagens filtradas com o sufixo `_NoIndex_True`, e o offset
+  // `_Desde_N` vem ANTES dele. Sem o sufixo, a URL de paginação (`_Desde_49`)
+  // não é servida como listagem e volta sem cards — era a causa real do
+  // "Página 2 vazia" (e não o rate-limit/wall, como se supôs antes).
+  // URLs reais: .../particular/_NoIndex_True (pág 1),
+  //             .../particular/_Desde_49_NoIndex_True (pág 2), +48 por página.
+  if (pagina === 1) return `${base}_NoIndex_True`;
+  const offset = (pagina - 1) * TAMANHO_PAGINA + 1;
+  return `${base}_Desde_${offset}_NoIndex_True`;
 }
 
 function converterCard(card: CardBruto): AnuncioMercadoLivreBruto | null {
@@ -339,8 +345,14 @@ export async function varrerEProcessarMercadoLivre(
   const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   const candidatos: CandidatoElegivel[] = [];
 
+  // sessid base aleatório por run: o PROXY_URL traz `sessid.1` fixo, então
+  // todo run reusava o MESMO IP residencial, que acumulava strikes de
+  // rate-limit ao longo do dia e acabava caindo no /captcha/wall. Um base
+  // aleatório por run dá um IP limpo a cada execução.
+  const baseSess = 1 + Math.floor(Math.random() * 9000);
+
   // ===== Fase 1: varrer listagem (browser principal, sessão contínua) =====
-  const browser = await criarBrowser();
+  const browser = await criarBrowser(baseSess);
   try {
     const context = await browser.newContext({
       userAgent:
@@ -437,7 +449,9 @@ export async function varrerEProcessarMercadoLivre(
   // ===== Fase 2: visitar página individual de cada elegível =====
   // Cada elegível usa browser/sessid próprio (ML manda /captcha/wall a partir
   // da 2ª página individual visitada na mesma sessão de proxy).
-  let sessaoDetalheId = 100; // sessid 100+ reservado para páginas individuais
+  // Páginas individuais: sessid distinto do da listagem (baseSess) e fresco
+  // por run, rotacionando a cada anúncio (ML walla a 2ª individual no mesmo IP).
+  let sessaoDetalheId = baseSess + 100;
   for (const cand of candidatos) {
     const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = cand;
 
