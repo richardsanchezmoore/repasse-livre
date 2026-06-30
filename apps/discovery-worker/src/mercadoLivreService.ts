@@ -113,18 +113,15 @@ async function aquecerSessao(page: Page): Promise<void> {
   });
   await page.waitForTimeout(1500);
 
-  try {
-    const subLink = page.getByRole("link", { name: /carros e caminhonetes/i }).first();
-    await subLink.scrollIntoViewIfNeeded({ timeout: 10000 });
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 45000 }),
-      subLink.click({ timeout: 10000, force: true }),
-    ]);
-  } catch {
-    // se o clique falhar (layout mudou, etc.) segue mesmo assim — o goto
-    // direto na página de categoria já é navegação real, só não tão
-    // "orgânica" quanto entrar na sub-categoria também
-  }
+  // Entra na sub-categoria via goto direto (em vez de clicar no link). Com o
+  // bloqueio de imagem/fonte ativo, o link da sub-categoria fica num carrossel
+  // que não renderiza/posiciona a tempo, e o clique dava timeout → warmup
+  // incompleto → /captcha/wall. O goto warma a sessão igual e é robusto ao
+  // bloqueio (validado: 48 cards com img+media+font bloqueados).
+  await page.goto("https://lista.mercadolivre.com.br/veiculos/carros-caminhonetes/", {
+    waitUntil: "domcontentloaded",
+    timeout: 30000,
+  });
   await page.waitForTimeout(2500);
 }
 
