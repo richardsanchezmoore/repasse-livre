@@ -16,6 +16,7 @@
     "bootstrap:historico-fipe": "tsx src/bootstrapHistoricoFipe.ts",
     "avancar:fipe-mes": "tsx src/avancarFipeMes.ts",
     "recalcular:fipe-mensal": "tsx src/recalcularFipeMensal.ts",
+    "fipe:mensal": "tsx src/avancarFipeMes.ts && tsx src/recalcularFipeMensal.ts --aplicar",
     "rematch:fipe": "tsx src/rematchFipeSemCodigo.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
