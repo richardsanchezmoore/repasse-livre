@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ListChecks, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { registrarEvento } from "@/lib/eventosAnalytics";
+import { salvarEstadoPreferido } from "@/lib/estadoPreferido";
 import { BarraSelecaoMultipla } from "./BarraSelecaoMultipla";
 import { UserMenu } from "./UserMenu";
 import { useNavegacao } from "./NavegacaoProvider";
@@ -88,6 +89,9 @@ export function TopBar({
     // propósito — sem isso, a página detecta o estado por geolocalização
     // de novo no próximo carregamento (ver app/page.tsx) e "Todos os
     // estados" nunca conseguiria mostrar o Brasil inteiro de fato.
+    // Persiste a escolha pra sobreviver à navegação (ex.: voltar de um
+    // anúncio) com prioridade sobre o GEO — ver lib/estadoPreferido.ts.
+    salvarEstadoPreferido(novoEstado || "BR");
     atualizarParams({ estado: novoEstado || "BR" });
     registrarEvento("busca", { termo: termoBusca || undefined, estado: novoEstado || undefined, aba });
   }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
+import { salvarEstadoPreferido } from "@/lib/estadoPreferido";
 import type { Aba } from "./DiscoveriesBoard";
 
 /**
@@ -46,6 +47,9 @@ export function SeletorEstadoBreadcrumb({
     // isso, a página detecta o estado por geolocalização de novo no
     // próximo carregamento (ver app/page.tsx), e "Brasil" nunca
     // conseguiria mostrar o país inteiro de fato.
+    // Persiste a escolha pra sobreviver à navegação (ex.: voltar de um
+    // anúncio) com prioridade sobre o GEO — ver lib/estadoPreferido.ts.
+    salvarEstadoPreferido(novoEstado || "BR");
     params.set("estado", novoEstado || "BR");
     navegar(`/?${params.toString()}`);
   }

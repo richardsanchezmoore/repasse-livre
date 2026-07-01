@@ -15,7 +15,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { CLASSIFICACOES, type Classificacao } from "@/lib/classificacao";
-import { obterCoordsUsuario, obterEstadoDetectado } from "@/lib/geolocalizacao";
+import { obterCoordsUsuario, obterEstadoDetectado, obterEstadoPreferido } from "@/lib/geolocalizacao";
 import { UFS } from "@/lib/mascaras";
 import { buscarConfigSeo, buscarFotoDestaque } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -76,14 +76,19 @@ export default async function CentralDeOportunidadesPage({
   const classificacaoAtiva = CLASSIFICACOES.includes(classificacao as Classificacao)
     ? (classificacao as Classificacao)
     : undefined;
+  // Precedência do estado: param `estado` na URL > cookie de preferência
+  // (última escolha manual) > detecção por IP (só na 1ª visita). O cookie faz
+  // a escolha manual sobreviver à navegação — antes, ao voltar de um anúncio
+  // (o "Voltar" é <Link href="/"> sem param) a página recaía no GEO e
+  // sobrescrevia a escolha do usuário (ver lib/estadoPreferido.ts).
+  const estadoPreferido =
+    abaAtiva === "aprovadas" && estado === undefined ? await obterEstadoPreferido() : null;
+  const estadoEfetivo = estado ?? estadoPreferido ?? undefined;
   // "BR" é o sentinela de "Brasil" escolhido de propósito (limpar o
-  // filtro) — diferente de ausência do param, que dispara a detecção por
-  // geolocalização abaixo. Sem essa distinção, abrir o seletor e escolher
-  // "Brasil" simplesmente cairia de volta no estado detectado no próximo
-  // carregamento (era exatamente o bug visto pelo usuário).
-  const estadoExplicito = estado === "BR" ? null : UFS.includes(estado ?? "") ? estado : undefined;
+  // filtro) — diferente de ausência, que dispara a detecção por IP abaixo.
+  const estadoExplicito = estadoEfetivo === "BR" ? null : UFS.includes(estadoEfetivo ?? "") ? estadoEfetivo : undefined;
   const estadoDetectado =
-    abaAtiva === "aprovadas" && estado === undefined ? await obterEstadoDetectado() : null;
+    abaAtiva === "aprovadas" && estadoEfetivo === undefined ? await obterEstadoDetectado() : null;
   const estadoAtivo = estadoExplicito === null ? undefined : estadoExplicito ?? estadoDetectado ?? undefined;
   const anuncianteAtivo = anunciante === "profissional" || anunciante === "particular" ? anunciante : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);

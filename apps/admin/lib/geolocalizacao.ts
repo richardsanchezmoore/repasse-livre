@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { UFS } from "./mascaras";
+import { COOKIE_ESTADO_PREFERIDO } from "./estadoPreferido";
 
 export interface CoordsUsuario {
   lat: number;
@@ -60,4 +61,19 @@ export async function obterEstadoDetectado(): Promise<string | null> {
   const headerStore = await headers();
   const regiao = headerStore.get("x-vercel-ip-country-region");
   return regiao && UFS.includes(regiao) ? regiao : null;
+}
+
+/**
+ * Última escolha manual de estado salva no cookie `rl_estado` (ver
+ * lib/estadoPreferido.ts). Tem prioridade sobre o GEO: a detecção por IP só
+ * define o estado na 1ª visita (sem cookie); depois a escolha do usuário
+ * manda e sobrevive à navegação. Retorna "BR" (Brasil explícito), uma UF
+ * válida, ou null (sem preferência salva / cookie inválido).
+ */
+export async function obterEstadoPreferido(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const valor = cookieStore.get(COOKIE_ESTADO_PREFERIDO)?.value;
+  if (!valor) return null;
+  if (valor === "BR") return "BR";
+  return UFS.includes(valor) ? valor : null;
 }
