@@ -2614,6 +2614,23 @@ body {
   color: #ffffff;
 }
 
+/* Linha com a classificação (esquerda) e a fonte "Via ..." (direita, textual). */
+.linha-fonte-classificacao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 14px 0;
+}
+.linha-fonte-classificacao .selo-classificacao {
+  margin: 0; /* o wrapper cuida do espaçamento */
+}
+.fonte-via {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a8f98;
+}
+
 /* Bronze */
 .selo-classificacao-oportunidade {
   background: #7a4220;

@@ -88,7 +88,7 @@ export function OpportunityCard({
     executarAcao(() => apagarOportunidade(oportunidade.id), "Falha ao apagar. Tente novamente.");
   }
 
-  const { rotulo: rotuloFonte, classe: classeFonte } = infoFonte(oportunidade.fonte);
+  const { rotulo: rotuloFonte } = infoFonte(oportunidade.fonte);
   const classificacao = oportunidade.classificacao as Classificacao | null;
   const classeClassificacao = classificacao
     ? CLASSE_CLASSIFICACAO[classificacao] ?? "selo-classificacao-oportunidade"
@@ -114,9 +114,6 @@ export function OpportunityCard({
           />
         ) : (
           <div className="foto-capa foto-capa-vazia" title={titulo} />
-        )}
-        {!(isAdmin && modoSelecao) && (
-          <span className={`selo-fonte ${classeFonte}`}>{rotuloFonte}</span>
         )}
         {isAdmin && modoSelecao && (
           <button
@@ -175,11 +172,14 @@ export function OpportunityCard({
         </div>
       )}
 
-      {classificacao && (
-        <span className={`selo-classificacao ${classeClassificacao}`}>
-          {ROTULO_CLASSIFICACAO[classificacao]}
-        </span>
-      )}
+      <div className="linha-fonte-classificacao">
+        {classificacao && (
+          <span className={`selo-classificacao ${classeClassificacao}`}>
+            {ROTULO_CLASSIFICACAO[classificacao]}
+          </span>
+        )}
+        {rotuloFonte && <span className="fonte-via">Via {rotuloFonte}</span>}
+      </div>
 
       <div className="card-corpo">
         <Link
