@@ -11,6 +11,7 @@
     "backfill:ml-detalhes": "npx tsx src/backfillMercadoLivreDetalhes.ts",
     "backfill:webmotors-local": "tsx src/backfillWebmotorsLocal.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
+    "backfill:titulos-multifonte": "tsx src/backfillTitulosMultifonte.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
     "backfill:coordenadas": "tsx src/backfillCoordenadas.ts",

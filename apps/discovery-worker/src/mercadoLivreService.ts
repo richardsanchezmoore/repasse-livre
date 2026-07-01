@@ -392,7 +392,11 @@ async function salvarElegivel(el: Elegivel, detalhes: DetalhesPaginaML, resultad
   const oportunidade: Oportunidade = {
     fonte: "MERCADO_LIVRE",
     link_origem: anuncio.linkOrigem,
-    veiculo: `${marca} ${modelo}`,
+    // Título COMPLETO do anúncio (igual OLX guarda o titulo) — o card e a
+    // página renderizam `veiculo`, então guardar só "marca modelo" cortava o
+    // nome. A BI/SEO/slug extraem marca+modelo das 2 primeiras palavras via
+    // extrairMarcaModelo/extrairMarca, então título completo não os afeta.
+    veiculo: anuncio.titulo,
     versao: variante,
     ano,
     cambio: detalhes.cambio,

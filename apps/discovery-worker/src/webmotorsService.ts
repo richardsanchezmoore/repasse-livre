@@ -223,7 +223,11 @@ export async function avaliarAnuncioWebmotors(
   const oportunidade: Oportunidade = {
     fonte: "WEBMOTORS",
     link_origem: anuncio.url,
-    veiculo: `${anuncio.Marca} ${anuncio.Modelo}`,
+    // Título completo (Marca + Modelo + Variante) — a Webmotors não traz um
+    // campo de título bruto, mas a Variante tem o resto do nome. Guardar só
+    // "Marca Modelo" cortava o veículo no card/página (mesmo bug do ML). BI/SEO
+    // extraem marca+modelo das 2 primeiras palavras, então não são afetados.
+    veiculo: [anuncio.Marca, anuncio.Modelo, anuncio.Variante].filter(Boolean).join(" "),
     versao: anuncio.Variante ?? null,
     ano: String(anuncio.Ano),
     cambio: null,
