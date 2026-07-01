@@ -59,7 +59,7 @@ export function BreadcrumbOportunidade({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav className="breadcrumb-pagina" aria-label="Breadcrumb">
         {itens.map((item, indice) => (
-          <span key={item.rotulo} className="breadcrumb-pagina-item">
+          <span key={`${indice}-${item.rotulo}`} className="breadcrumb-pagina-item">
             {item.href ? <Link href={item.href}>{item.rotulo}</Link> : <span>{item.rotulo}</span>}
             {indice < itens.length - 1 && (
               <ChevronRight size={13} strokeWidth={2} className="breadcrumb-pagina-separador" />
