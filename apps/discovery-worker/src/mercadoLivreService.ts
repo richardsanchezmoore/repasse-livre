@@ -20,11 +20,6 @@ import type { Classificacao, Oportunidade } from "./types.js";
 
 const TAMANHO_PAGINA = 48;
 
-/** Tentativas com IP novo quando uma página da listagem é bloqueada antes de desistir. */
-const MAX_TENTATIVAS_PAGINA = 3;
-
-/** Tentativas com IP novo no detalhe (página individual) antes de cair pro card-only. */
-const MAX_TENTATIVAS_DETALHE = 2;
 
 /** Nome completo do estado (como a ML mostra em poly-component__location) → sigla. */
 const UF_POR_NOME: Record<string, string> = {
@@ -220,17 +215,16 @@ interface DetalhesPaginaML {
  * individuais em um browser novo sem antes varrer a listagem no mesmo
  * contexto.
  */
-async function buscarDetalhesPaginaMercadoLivre(page: Page, url: string): Promise<DetalhesPaginaML> {
-  // O ML faz um redirect JS (challenge "Anubis") antes de renderizar o anúncio
-  // real, então não basta o `domcontentloaded` (volta na challenge page). Mas
-  // `networkidle` travava: páginas do ML têm analytics/websocket que nunca
-  // ficam 500ms sem tráfego → estourava os 60s e derrubava o run inteiro.
-  // Solução: domcontentloaded rápido + espera EXPLÍCITA pelo container do
-  // anúncio aparecer (pós-redirect), sem depender de a rede ficar ociosa.
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
-  await page.waitForSelector(".ui-pdp-container, .ui-pdp-title, .ui-pdp-gallery", { timeout: 25000 });
-  await page.waitForTimeout(800);
+/** Detecta se a página caiu no challenge do ML (captcha wall / account-verification). */
+function ehWall(page: Page): boolean {
+  const u = page.url();
+  return u.includes("/captcha/wall") || u.includes("/gz/account-verification");
+}
 
+const DETALHE_VAZIO: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {} };
+
+/** Extrai os detalhes de uma página de anúncio JÁ CARREGADA (aba aberta via clique). */
+async function extrairDetalhesDaPagina(page: Page): Promise<DetalhesPaginaML> {
   return page.evaluate(() => {
     // FOTOS — pega a URL full-res via data-zoom (se disponível) ou src.
     // Limita a 10 para não explodir o banco.
@@ -318,92 +312,64 @@ function criarBrowser(sessaoId?: number): Promise<Browser> {
   return chromium.launch({ headless: true, proxy, args: ["--no-sandbox"] });
 }
 
-async function buscarDetalhesBrowserProprio(url: string, sessaoId: number): Promise<DetalhesPaginaML> {
-  const browser = await criarBrowser(sessaoId);
-  try {
-    const context = await browser.newContext({
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      locale: "pt-BR",
-      viewport: { width: 1366, height: 768 },
-    });
-    await bloquearMidia(context);
-    const page = await context.newPage();
-    // Aquecimento completo (home → categoria → sub) — o mini-warmup anterior
-    // (1 goto + 3s) era insuficiente para passar o challenge Anubis da página
-    // individual, que exige cookies de sessão orgânica como a listagem.
-    await aquecerSessao(page);
-    return await buscarDetalhesPaginaMercadoLivre(page, url);
-  } finally {
-    await browser.close();
-  }
+/** Extrai o id "MLB-XXXXXXXX" da URL do anúncio (para localizar o card na listagem). */
+function extrairMlbId(link: string): string | null {
+  const m = link.match(/MLB-?\d+/);
+  if (!m) return null;
+  return m[0].startsWith("MLB-") ? m[0] : m[0].replace("MLB", "MLB-");
 }
 
+/** Sinaliza que o clique caiu no challenge do ML (IP saturado) — o chamador rotaciona a sessão. */
+class WallError extends Error {}
+
 /**
- * Varre UMA página da listagem com browser+sessid próprios (IP limpo) e fecha.
- * O ML rate-limita por sessão/IP, então cada página usa um IP novo (warmup +
- * 1 página por IP, igual à página 1, que passa).
- *
- * A página paginada (`_Desde_N`) costuma cair no challenge "Anubis" (redirect
- * JS após o `domcontentloaded`). Esperamos a listagem REAL aparecer
- * (`waitForSelector`) para o challenge resolver — mesmo padrão das páginas de
- * detalhe — em vez de extrair na hora (extrair durante o redirect destruía o
- * contexto e derrubava o run inteiro). Se a listagem não aparecer (wall duro
- * / IP flagueado), o `waitForSelector` estoura e tratamos como bloqueada
- * (`walled`), sem crashar — a página 1 já coletada sobrevive.
+ * Abre o detalhe de um anúncio CLICANDO no seu card na listagem já carregada
+ * (mesma sessão/IP). A chegada "fria" via goto direto na URL do anúncio cai no
+ * account-verification; o clique orgânico (referer real + abre aba nova) passa
+ * — validado. Lança WallError se o detalhe cair no challenge (IP saturado),
+ * para o chamador rotacionar a sessão e continuar os pendentes.
  */
-async function buscarCardsPaginaBrowserProprio(
-  categoriaUrlBase: string,
-  pagina: number,
-  sessaoId: number
-): Promise<{ cards: CardBruto[]; walled: boolean }> {
-  const browser = await criarBrowser(sessaoId);
+async function abrirDetalheViaClique(
+  listaPage: Page,
+  context: BrowserContext,
+  mlbId: string
+): Promise<DetalhesPaginaML> {
+  const cardLink = listaPage.locator(`li.ui-search-layout__item a.poly-component__title[href*="${mlbId}"]`).first();
+  if ((await cardLink.count()) === 0) throw new Error(`card ${mlbId} não está na listagem`);
+  await cardLink.scrollIntoViewIfNeeded({ timeout: 8000 });
+  await listaPage.waitForTimeout(700 + Math.floor(Math.random() * 900)); // pacing humano antes do clique
+
+  const [popup] = await Promise.all([
+    context.waitForEvent("page", { timeout: 30000 }),
+    cardLink.click({ timeout: 12000 }),
+  ]);
   try {
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      locale: "pt-BR",
-      viewport: { width: 1366, height: 768 },
-    });
-    await bloquearMidia(context);
-    const page = await context.newPage();
-    await aquecerSessao(page);
-    await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 45000 });
-    // Deixa o challenge Anubis resolver e a listagem real renderizar. Timeout
-    // generoso (30s) porque pela Railway (datacenter US → proxy → saída BR →
-    // ML BR) o caminho é bem mais lento que rodando local no Brasil.
+    await popup.waitForLoadState("domcontentloaded").catch(() => {});
     try {
-      await page.waitForSelector("li.ui-search-layout__item", { timeout: 30000 });
+      await popup.waitForSelector(".ui-pdp-container, .ui-pdp-title, .ui-pdp-gallery", { timeout: 40000 });
     } catch {
-      // DIAGNÓSTICO: capturar URL/título reais para diferenciar wall de verdade
-      // (/captcha/wall) de página só lenta/vazia.
-      const titulo = await page.title().catch(() => "?");
-      console.warn(
-        `[motor-descoberta-mercadolivre] Página ${pagina} sem listagem em 30s. url=${page.url().slice(0, 75)} titulo="${titulo}"`
-      );
-      return { cards: [], walled: true };
+      if (ehWall(popup)) throw new WallError("account-verification no detalhe");
+      throw new Error(`detalhe ${mlbId} não renderizou`);
     }
-    const cards = await extrairCardsDaPagina(page);
-    return { cards, walled: false };
-  } catch (erro) {
-    // Wall/challenge/redirect não resolvido. Captura o estado pra diferenciar
-    // wall de outro erro, e sinaliza walled pro chamador parar a paginação sem
-    // perder o que já foi coletado.
-    const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
-    console.warn(`[motor-descoberta-mercadolivre] Página ${pagina} bloqueada/falhou: ${msg} — parando paginação.`);
-    return { cards: [], walled: true };
+    if (ehWall(popup)) throw new WallError("account-verification no detalhe");
+    await popup.waitForTimeout(800);
+    return await extrairDetalhesDaPagina(popup);
   } finally {
-    await browser.close();
+    await popup.close().catch(() => {});
   }
 }
 
 /** FIPE encontrada para um anúncio (sem o caso null já filtrado). */
 type ReferenciaFipe = NonNullable<Awaited<ReturnType<typeof buscarReferenciaFipe>>>;
 
-/** Anúncio que passou todos os filtros da Fase 1 e merece visita individual na Fase 2. */
-interface CandidatoElegivel {
+/** Máximo de sessões (IPs) por página — rotaciona quando o IP satura clicando detalhes. */
+const MAX_SESSOES_POR_PAGINA = 6;
+
+/** Anúncio que passou FIPE + margem, pronto para ter o detalhe buscado via clique e ser salvo. */
+interface Elegivel {
   anuncio: AnuncioMercadoLivreBruto;
-  // preco/ano já estreitados para não-nulo na Fase 1 (o tipo bruto os mantém
-  // nullable, e o narrowing se perde ao destructurar na Fase 2).
+  mlbId: string;
+  // preco/ano já estreitados para não-nulo (o tipo bruto os mantém nullable).
   preco: number;
   ano: string;
   marca: string;
@@ -414,15 +380,123 @@ interface CandidatoElegivel {
   classificacao: Classificacao;
 }
 
+/** Monta e salva a oportunidade a partir do elegível + detalhes (que podem ser vazios/card-only). */
+async function salvarElegivel(el: Elegivel, detalhes: DetalhesPaginaML, resultado: ResultadoLoteMercadoLivre): Promise<void> {
+  const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = el;
+  const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
+  const todasFotos = [
+    ...(anuncio.fotoPrincipal ? [anuncio.fotoPrincipal] : []),
+    ...detalhes.fotos.filter((f) => f !== anuncio.fotoPrincipal),
+  ].slice(0, 10);
+
+  const oportunidade: Oportunidade = {
+    fonte: "MERCADO_LIVRE",
+    link_origem: anuncio.linkOrigem,
+    veiculo: `${marca} ${modelo}`,
+    versao: variante,
+    ano,
+    cambio: detalhes.cambio,
+    km: anuncio.km,
+    cidade,
+    estado,
+    preco,
+    fipe_valor: referenciaFipe.valor,
+    fipe_data_referencia: referenciaFipe.mesReferencia,
+    margem_percentual: Number(margemPercentual.toFixed(2)),
+    classificacao,
+    foto_principal: todasFotos[0] ?? null,
+    fotos_secundarias: todasFotos.slice(1),
+    descricao: detalhes.descricao,
+    origem_tipo: "descoberta",
+    status: "descoberta",
+    data_publicacao_origem: null,
+    atributos_olx: detalhes.atributos,
+    anunciante_profissional: false,
+  };
+  await salvarOportunidade(oportunidade);
+  resultado.elegiveis++;
+  if (cidade && estado) await garantirCoordenadasCidade(cidade, estado);
+}
+
 /**
- * Função principal — dividida em 2 fases, ambas com IP limpo por requisição,
- * porque o ML rate-limita por sessão/IP e walla a 2ª página (de listagem OU
- * individual) na mesma sessão de proxy.
+ * Filtra os cards de uma página, retornando os elegíveis (FIPE + margem) ainda
+ * não salvos. `contabilizar` só conta novos/descartados na primeira leitura da
+ * página (evita recontar quando a listagem é recarregada numa rotação de IP).
+ */
+async function coletarElegiveis(
+  cards: CardBruto[],
+  margemMinima: number,
+  resultado: ResultadoLoteMercadoLivre,
+  contabilizar: boolean
+): Promise<Elegivel[]> {
+  const elegiveis: Elegivel[] = [];
+  const anuncios = cards.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
+  for (const anuncio of anuncios) {
+    if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue;
+    const mlbId = extrairMlbId(anuncio.linkOrigem);
+    if (!mlbId) continue;
+    if (contabilizar) resultado.novos++;
+
+    if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) { if (contabilizar) resultado.descartados++; continue; }
+    const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
+    if (!marca || !modelo) { if (contabilizar) resultado.descartados++; continue; }
+    // FIPE resiliente: 429/502/timeout da API não pode derrubar o run — trata
+    // como "sem FIPE" e segue (transitório; o próximo run reprocessa).
+    let referenciaFipe: ReferenciaFipe | null = null;
+    try {
+      referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
+    } catch (erro) {
+      console.warn(`[motor-descoberta-mercadolivre] FIPE falhou (${marca} ${modelo} ${anuncio.ano}): ${erro instanceof Error ? erro.message.split("\n")[0] : erro} — pulando.`);
+    }
+    if (!referenciaFipe) { if (contabilizar) resultado.semFipe++; continue; }
+    const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
+    if (!ehElegivel(margemPercentual, margemMinima)) { if (contabilizar) resultado.descartados++; continue; }
+    const classificacao: Classificacao | null = classificar(margemPercentual);
+    if (!classificacao) { if (contabilizar) resultado.descartados++; continue; }
+
+    elegiveis.push({ anuncio, mlbId, preco: anuncio.preco, ano: anuncio.ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao });
+  }
+  return elegiveis;
+}
+
+/** Abre uma sessão (browser + warmup + listagem carregada) ou null se a listagem não carregou (wall/IP ruim). */
+async function abrirSessaoListagem(
+  categoriaUrlBase: string,
+  pagina: number,
+  sessaoId: number
+): Promise<{ browser: Browser; context: BrowserContext; page: Page } | null> {
+  const browser = await criarBrowser(sessaoId);
+  try {
+    const context = await browser.newContext({
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      locale: "pt-BR",
+      viewport: { width: 1366, height: 768 },
+    });
+    await bloquearMidia(context);
+    const page = await context.newPage();
+    page.setDefaultNavigationTimeout(120000); // Railway via proxy é lento; anti-bot se vence devagar
+    await aquecerSessao(page);
+    await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.waitForSelector("li.ui-search-layout__item", { timeout: 45000 });
+    return { browser, context, page };
+  } catch {
+    await browser.close();
+    return null;
+  }
+}
+
+/**
+ * Função principal — fluxo unificado com CLIQUE orgânico.
  *
- * - Fase 1: varre a listagem coletando candidatos elegíveis (FIPE + margem),
- *   uma página por vez com browser/sessid próprio (warmup + 1 página por IP).
- * - Fase 2: só então visita a página individual de cada elegível, também com
- *   browser/sessid próprio. Os ~90% descartados nunca chegam aqui.
+ * Para cada página da listagem: abre uma sessão (IP), carrega a listagem,
+ * coleta os elegíveis (FIPE + margem) e CLICA no card de cada um para abrir o
+ * detalhe. O `goto` direto na URL do anúncio cai no account-verification; o
+ * clique orgânico (referer real, abre aba nova) passa — validado. Quando o IP
+ * satura (WallError no clique), rotaciona a sessão, recarrega a listagem e
+ * continua os elegíveis pendentes (`feitos` evita reprocessar). O warmup é
+ * amortizado entre vários detalhes da mesma sessão. Pacing lento e deliberado
+ * (anti-bot se vence com lentidão, não velocidade — como os actors da Apify,
+ * que usam timeout de 1h).
  */
 export async function varrerEProcessarMercadoLivre(
   categoriaUrlBase: string,
@@ -430,158 +504,85 @@ export async function varrerEProcessarMercadoLivre(
   margemMinima: number
 ): Promise<ResultadoLoteMercadoLivre> {
   const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
-  const candidatos: CandidatoElegivel[] = [];
-
-  // sessid base aleatório por run: o PROXY_URL traz `sessid.1` fixo, então
-  // todo run reusava o MESMO IP residencial, que acumulava strikes de
-  // rate-limit ao longo do dia e acabava caindo no /captcha/wall. Um base
-  // aleatório por run dá um IP limpo a cada execução.
+  // sessid base aleatório por run — evita reusar um IP já fichado.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
 
-  // ===== Fase 1: varrer listagem, um IP limpo por página (com retry) =====
-  // Cada página usa browser+sessid próprios. O bloqueio (account-verification)
-  // é dependente de IP, não da URL paginada (o DataImpulse pegava 3 páginas; no
-  // Thordata a página 1 passa e a 2 às vezes não), então quando uma página é
-  // bloqueada tentamos de novo com um IP novo (sessid distinto) até
-  // MAX_TENTATIVAS_PAGINA, antes de desistir e parar a paginação.
   for (let pagina = 1; pagina <= maxPaginas; pagina++) {
-    let cardsBrutos: CardBruto[] = [];
-    let bloqueada = true;
-    for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA; tentativa++) {
-      const r = await buscarCardsPaginaBrowserProprio(categoriaUrlBase, pagina, baseSess + pagina * 10 + tentativa);
-      if (!r.walled) {
-        cardsBrutos = r.cards;
-        bloqueada = false;
-        break;
-      }
-      console.log(
-        `[motor-descoberta-mercadolivre] Página ${pagina} bloqueada (tentativa ${tentativa}/${MAX_TENTATIVAS_PAGINA}) — tentando IP novo…`
-      );
-    }
+    let sessId = baseSess + pagina * 100;
+    let elegiveis: Elegivel[] | null = null; // coletado uma vez (1ª leitura da página)
+    const feitos = new Set<string>();
+    let paginaVazia = false;
+    let sessoes = 0;
 
-    if (bloqueada) {
-      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} bloqueada após ${MAX_TENTATIVAS_PAGINA} IPs — parando paginação.`);
-      break;
-    }
-    if (cardsBrutos.length === 0) {
-      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} vazia — fim da listagem.`);
-      break;
-    }
-
-    const anuncios = cardsBrutos.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
-    console.log(
-      `[motor-descoberta-mercadolivre] Página ${pagina}: ${cardsBrutos.length} cards (${anuncios.length} de particular, ${cardsBrutos.length - anuncios.length} patrocinado/loja descartados).`
-    );
-
-    for (const anuncio of anuncios) {
-      if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue;
-      resultado.novos++;
-
-      if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) {
-        resultado.descartados++;
+    while (sessoes < MAX_SESSOES_POR_PAGINA) {
+      sessoes++;
+      const sess = await abrirSessaoListagem(categoriaUrlBase, pagina, sessId++);
+      if (!sess) {
+        console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: listagem bloqueada (sessão ${sessoes}/${MAX_SESSOES_POR_PAGINA}) — IP novo…`);
         continue;
       }
-
-      const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
-      if (!marca || !modelo) { resultado.descartados++; continue; }
-
-      const referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
-      if (!referenciaFipe) { resultado.semFipe++; continue; }
-
-      const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
-      if (!ehElegivel(margemPercentual, margemMinima)) { resultado.descartados++; continue; }
-
-      const classificacao: Classificacao | null = classificar(margemPercentual);
-      if (!classificacao) { resultado.descartados++; continue; }
-
-      // Passou todos os filtros — guarda para visitar na Fase 2.
-      candidatos.push({
-        anuncio,
-        preco: anuncio.preco,
-        ano: anuncio.ano,
-        marca,
-        modelo,
-        variante,
-        referenciaFipe,
-        margemPercentual,
-        classificacao,
-      });
-    }
-  }
-
-  console.log(
-    `[motor-descoberta-mercadolivre] Fase 1 concluída: ${candidatos.length} elegíveis de ${resultado.novos} novos. Iniciando Fase 2 (detalhes)…`
-  );
-
-  // ===== Fase 2: visitar página individual de cada elegível =====
-  // Cada elegível usa browser/sessid próprio (ML manda /captcha/wall a partir
-  // da 2ª página individual visitada na mesma sessão de proxy).
-  // Páginas individuais: sessid em faixa separada da listagem (que usa
-  // baseSess + pagina*10 + tentativa, até ~103) pra não reusar IP, e fresco por
-  // run, rotacionando a cada anúncio (ML walla a 2ª individual no mesmo IP).
-  let sessaoDetalheId = baseSess + 1000;
-  for (const cand of candidatos) {
-    const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = cand;
-
-    console.log(`[motor-descoberta-mercadolivre] Elegível: ${anuncio.titulo} — buscando detalhes…`);
-    // O detalhe também pega o account-verification dependente de IP, então
-    // tenta com IP novo até MAX_TENTATIVAS_DETALHE antes de cair pro card-only
-    // (sobe a taxa de fotos/descrição sem depender do backfill manual). Se
-    // todas falharem, salva só com os dados do card — uma falha NUNCA derruba o
-    // run nem perde o elegível (resiliência).
-    let detalhes: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {} };
-    for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_DETALHE; tentativa++) {
+      const { browser, context, page } = sess;
       try {
-        detalhes = await buscarDetalhesBrowserProprio(anuncio.linkOrigem, sessaoDetalheId++);
-        break;
-      } catch (erro) {
-        const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
-        if (tentativa < MAX_TENTATIVAS_DETALHE) {
-          console.warn(`[motor-descoberta-mercadolivre] Detalhe falhou (tentativa ${tentativa}/${MAX_TENTATIVAS_DETALHE}, ${anuncio.titulo}): ${msg} — IP novo…`);
-        } else {
-          console.warn(`[motor-descoberta-mercadolivre] Detalhe falhou após ${MAX_TENTATIVAS_DETALHE} IPs (${anuncio.titulo}) — salvando só com card.`);
+        const cards = await extrairCardsDaPagina(page);
+        if (cards.length === 0) {
+          // Vazia na 1ª leitura = fim da listagem. Numa recarga (rotação),
+          // pode ser flakiness — sai do while e o safety net salva os
+          // pendentes como card-only, sem parar a paginação toda.
+          if (elegiveis === null) paginaVazia = true;
+          break;
+        }
+
+        if (elegiveis === null) {
+          elegiveis = await coletarElegiveis(cards, margemMinima, resultado, true);
+          console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: ${cards.length} cards, ${elegiveis.length} elegíveis. Buscando detalhes via clique…`);
+        }
+
+        let saturou = false;
+        for (const el of elegiveis) {
+          if (feitos.has(el.anuncio.linkOrigem)) continue;
+          try {
+            const detalhes = await abrirDetalheViaClique(page, context, el.mlbId);
+            await salvarElegivel(el, detalhes, resultado);
+            feitos.add(el.anuncio.linkOrigem);
+            console.log(`[motor-descoberta-mercadolivre] ✓ ${el.anuncio.titulo} (${detalhes.fotos.length} fotos)`);
+            await page.waitForTimeout(3000 + Math.floor(Math.random() * 3000)); // pacing humano entre detalhes
+          } catch (erro) {
+            if (erro instanceof WallError) {
+              saturou = true;
+              console.log(`[motor-descoberta-mercadolivre] IP saturou (${feitos.size}/${elegiveis.length} feitos) — rotacionando sessão…`);
+              break;
+            }
+            // card não achado / não renderizou → salva só com card e segue
+            await salvarElegivel(el, DETALHE_VAZIO, resultado);
+            feitos.add(el.anuncio.linkOrigem);
+            console.warn(`[motor-descoberta-mercadolivre] ~ ${el.anuncio.titulo}: ${erro instanceof Error ? erro.message.split("\n")[0] : erro} — salvo só com card.`);
+          }
+        }
+        if (!saturou) break; // todos os elegíveis da página processados
+      } finally {
+        await browser.close();
+      }
+    }
+
+    // Elegíveis que sobraram (IP saturou em todas as sessões) — salva card-only
+    // pra não perder o elegível.
+    if (elegiveis) {
+      for (const el of elegiveis) {
+        if (!feitos.has(el.anuncio.linkOrigem)) {
+          await salvarElegivel(el, DETALHE_VAZIO, resultado);
+          feitos.add(el.anuncio.linkOrigem);
         }
       }
     }
 
-    const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
-    const todasFotos = [
-      ...(anuncio.fotoPrincipal ? [anuncio.fotoPrincipal] : []),
-      ...detalhes.fotos.filter((f) => f !== anuncio.fotoPrincipal),
-    ].slice(0, 10);
-
-    const oportunidade: Oportunidade = {
-      fonte: "MERCADO_LIVRE",
-      link_origem: anuncio.linkOrigem,
-      veiculo: `${marca} ${modelo}`,
-      versao: variante,
-      ano,
-      cambio: detalhes.cambio,
-      km: anuncio.km,
-      cidade,
-      estado,
-      preco,
-      fipe_valor: referenciaFipe.valor,
-      fipe_data_referencia: referenciaFipe.mesReferencia,
-      margem_percentual: Number(margemPercentual.toFixed(2)),
-      classificacao,
-      foto_principal: todasFotos[0] ?? null,
-      fotos_secundarias: todasFotos.slice(1),
-      descricao: detalhes.descricao,
-      origem_tipo: "descoberta",
-      status: "descoberta",
-      data_publicacao_origem: null,
-      atributos_olx: detalhes.atributos,
-      anunciante_profissional: false,
-    };
-
-    await salvarOportunidade(oportunidade);
-    resultado.elegiveis++;
-
-    if (cidade && estado) await garantirCoordenadasCidade(cidade, estado);
-
-    // Pausa entre detalhes (2-4s) para não martelar o proxy.
-    await new Promise((r) => setTimeout(r, 2000 + Math.floor(Math.random() * 2000)));
+    if (paginaVazia) {
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina} vazia — fim da listagem.`);
+      break;
+    }
+    if (elegiveis === null) {
+      console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: listagem não carregou após ${MAX_SESSOES_POR_PAGINA} IPs — parando paginação.`);
+      break;
+    }
   }
 
   return resultado;
