@@ -13,6 +13,26 @@ import { HistoricoPrecos } from "./HistoricoPrecos";
 import { buscarHistoricoFipe } from "@/lib/fipeHistorico";
 import type { Oportunidade } from "@/lib/types";
 
+const MESES_FIPE_SELO = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+/**
+ * Formata o mês de referência da FIPE pro selo. Trata os dois formatos que
+ * aparecem no banco: "julho de 2026" (recálculo/oficial) e "2026-06" (captação
+ * antiga OLX) → ambos viram "Julho/2026".
+ */
+function formatarMesRefFipe(ref: string): string {
+  const t = ref.trim();
+  const iso = t.match(/^(\d{4})-(\d{2})/);
+  if (iso) return `${MESES_FIPE_SELO[Number(iso[2]) - 1] ?? iso[2]}/${iso[1]}`;
+  const compacto = t.replace(" de ", "/");
+  return compacto.charAt(0).toUpperCase() + compacto.slice(1);
+}
+
+// Faixa em que a margem, após o recálculo mensal, caiu abaixo do piso de
+// captação (5%) mas ainda está na base (>=3%) — mostra o aviso de negociação.
+const MARGEM_PISO_CAPTACAO = 5;
+const MARGEM_MINIMA_BASE = 3;
+
 export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
   const historicoFipe = await buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano);
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
@@ -31,6 +51,15 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
   const ehInsercaoDireta = oportunidade.origem_tipo === "insercao_direta";
   const titulo =
     ehInsercaoDireta && oportunidade.versao ? oportunidade.versao : oportunidade.veiculo;
+
+  const mesRefFipe = oportunidade.fipe_data_referencia
+    ? formatarMesRefFipe(oportunidade.fipe_data_referencia)
+    : null;
+  // Aviso "negocie": a margem caiu pra 3-5% na virada da FIPE (preço fixo, só
+  // a FIPE muda no recálculo) — sinaliza a queda e convida a negociar.
+  const margemFipe = oportunidade.margem_percentual;
+  const avisoQuedaFipe =
+    margemFipe !== null && margemFipe >= MARGEM_MINIMA_BASE && margemFipe < MARGEM_PISO_CAPTACAO;
 
   // Atributos opcionais da OLX (cor, combustível, portas etc.) — só os que
   // o anunciante preencheu chegam aqui (ver olxService.ts no worker).
@@ -74,7 +103,19 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
             {oportunidade.margem_percentual?.toFixed(1)}%{" "}
             <span className="destaque-margem-percentual-rotulo">abaixo da FIPE</span>
           </p>
+          {mesRefFipe && <span className="selo-mes-fipe">FIPE ref. {mesRefFipe}</span>}
         </div>
+
+        {avisoQuedaFipe && (
+          <div className="aviso-queda-fipe">
+            <span className="aviso-queda-fipe-icone" aria-hidden>⚡</span>
+            <p>
+              <strong>Atenção:</strong> este anúncio teve queda de margem pela atualização da FIPE
+              deste mês, que foi negativa para esse modelo. Ainda está abaixo da tabela — aproveite e
+              negocie o valor, alertando o proprietário de que a FIPE caiu!
+            </p>
+          </div>
+        )}
 
         <div className="precos-grupo precos-grupo-pagina">
           <div className="linha-preco linha-preco-anuncio">
