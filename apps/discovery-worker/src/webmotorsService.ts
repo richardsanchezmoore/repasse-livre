@@ -199,12 +199,13 @@ export async function avaliarAnuncioWebmotors(
     return { oportunidade: null, motivoDescarte: "sem_dados_minimos" };
   }
 
+  // FIPE resiliente: 429/502/timeout da API vira "sem_fipe" (não derruba o run).
   const referenciaFipe = await buscarReferenciaFipe(
     anuncio.Marca,
     anuncio.Modelo,
     String(anuncio.Ano),
     anuncio.Variante ?? null
-  );
+  ).catch(() => null);
   if (!referenciaFipe) {
     return { oportunidade: null, motivoDescarte: "sem_fipe" };
   }
