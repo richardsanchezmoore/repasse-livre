@@ -17,6 +17,7 @@ export interface Oportunidade {
   estado: string | null;
   preco: number;
   fipe_valor: number | null;
+  fipe_codigo: string | null;
   margem_percentual: number | null;
   classificacao: string | null;
   foto_principal: string | null;

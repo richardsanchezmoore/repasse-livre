@@ -9,9 +9,12 @@ import { urlOportunidade } from "@/lib/site";
 import { BotaoWhatsapp } from "./BotaoWhatsapp";
 import { GaleriaFotos } from "./GaleriaFotos";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
+import { HistoricoPrecos } from "./HistoricoPrecos";
+import { buscarHistoricoFipe } from "@/lib/fipeHistorico";
 import type { Oportunidade } from "@/lib/types";
 
-export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
+export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
+  const historicoFipe = await buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano);
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
   // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
   // slider mostraria "fotos" repetidas em vez de só a foto captada.
@@ -83,6 +86,8 @@ export function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidad
             <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
           </div>
         </div>
+
+        {historicoFipe.length >= 2 && <HistoricoPrecos serie={historicoFipe} />}
 
         <dl className="pagina-oportunidade-ficha">
           <div className="pagina-oportunidade-ficha-item pagina-oportunidade-ficha-item-linha">

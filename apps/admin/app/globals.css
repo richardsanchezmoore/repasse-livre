@@ -4058,3 +4058,45 @@ body {
 .pagina-404-link:hover {
   background: #e3e5e8;
 }
+
+/* Histórico de Preços (FIPE) na página individual — ver HistoricoPrecos.tsx */
+.historico-precos {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #e0e3e7;
+  border-radius: 12px;
+  background: #fff;
+}
+.historico-precos-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.historico-precos-titulo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1f2e;
+  margin: 0;
+}
+.historico-precos-variacao {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 3px 0 0;
+}
+.historico-precos-variacao-periodo {
+  color: #9aa2b1;
+  font-weight: 500;
+}
+.historico-precos-select {
+  flex-shrink: 0;
+  border: 1px solid #e0e3e7;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1f2e;
+  background: #fff;
+  cursor: pointer;
+}
