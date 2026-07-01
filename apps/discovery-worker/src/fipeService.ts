@@ -49,19 +49,38 @@ const HEADERS_FIPE = {
   "User-Agent": "Mozilla/5.0",
 };
 
+// A FIPE oficial tem throttle por rajada (~4-5 req/s: medido, ~250ms limpo,
+// ~150ms começa a dar 429). NÃO é o teto duro de 1000/dia do parallelum — é
+// soft, se recupera com pausa. Serializamos TODAS as chamadas com um intervalo
+// mínimo pra nunca estourar (300ms = folga sobre o limite).
+const INTERVALO_MINIMO_MS = 300;
+let ultimaChamadaEpoch = 0;
+let filaThrottle: Promise<void> = Promise.resolve();
+
+/** Garante espaçamento mínimo entre chamadas à FIPE, mesmo com concorrência. */
+function aguardarVezNoThrottle(): Promise<void> {
+  filaThrottle = filaThrottle.then(async () => {
+    const espera = INTERVALO_MINIMO_MS - (Date.now() - ultimaChamadaEpoch);
+    if (espera > 0) await aguardar(espera);
+    ultimaChamadaEpoch = Date.now();
+  });
+  return filaThrottle;
+}
+
 /**
- * POST na API oficial da FIPE, com retentativa em 429/5xx (sob volume ela
- * pode devolver erro transitório; uma espera curta resolve a maioria).
+ * POST na API oficial da FIPE, com throttle (espaçamento mínimo) + retentativa
+ * em 429/5xx com backoff (sob volume ela estrangula por rajada; pausar resolve).
  */
 async function postFipe<T>(endpoint: string, corpo: Record<string, unknown>, tentativa = 1): Promise<T> {
+  await aguardarVezNoThrottle();
   const resp = await fetch(`${FIPE_BASE_URL}/${endpoint}`, {
     method: "POST",
     headers: HEADERS_FIPE,
     body: JSON.stringify(corpo),
   });
 
-  if ((resp.status === 429 || resp.status >= 500) && tentativa <= 3) {
-    await aguardar(600 * tentativa);
+  if ((resp.status === 429 || resp.status >= 500) && tentativa <= 4) {
+    await aguardar(800 * tentativa);
     return postFipe<T>(endpoint, corpo, tentativa + 1);
   }
 
@@ -76,6 +95,8 @@ async function postFipe<T>(endpoint: string, corpo: Record<string, unknown>, ten
 let cacheTabelaReferencia: Promise<number> | null = null;
 let cacheMarcas: Promise<FipeItem[]> | null = null;
 const cacheModelosPorMarca = new Map<string, Promise<FipeItem[]>>();
+const cacheAnosPorModelo = new Map<string, Promise<FipeAno[]>>();
+const cacheValor = new Map<string, Promise<FipeValorResposta>>();
 
 /** Código da tabela de referência mais recente (= mês vigente publicado pela FIPE). */
 function resolverTabelaReferencia(): Promise<number> {
@@ -120,15 +141,47 @@ function buscarModelos(marcaCode: string): Promise<FipeItem[]> {
   return promessa;
 }
 
-async function buscarAnos(marcaCode: string, modeloCode: string): Promise<FipeAno[]> {
-  const ref = await resolverTabelaReferencia();
-  const anos = await postFipe<{ Label: string; Value: string }[]>("ConsultarAnoModelo", {
-    codigoTabelaReferencia: ref,
-    codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
-    codigoMarca: marcaCode,
-    codigoModelo: modeloCode,
-  });
-  return anos.map((a) => ({ code: String(a.Value), name: a.Label }));
+function buscarAnos(marcaCode: string, modeloCode: string): Promise<FipeAno[]> {
+  const chave = `${marcaCode}|${modeloCode}`;
+  let promessa = cacheAnosPorModelo.get(chave);
+  if (!promessa) {
+    promessa = (async () => {
+      const ref = await resolverTabelaReferencia();
+      const anos = await postFipe<{ Label: string; Value: string }[]>("ConsultarAnoModelo", {
+        codigoTabelaReferencia: ref,
+        codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+        codigoMarca: marcaCode,
+        codigoModelo: modeloCode,
+      });
+      return anos.map((a) => ({ code: String(a.Value), name: a.Label }));
+    })();
+    cacheAnosPorModelo.set(chave, promessa);
+  }
+  return promessa;
+}
+
+/** Valor de um (marca, modelo, ano-combustível) — cacheado por veículo idêntico. */
+function buscarValor(marcaCode: string, modeloCode: string, anoCode: string): Promise<FipeValorResposta> {
+  const chave = `${marcaCode}|${modeloCode}|${anoCode}`;
+  let promessa = cacheValor.get(chave);
+  if (!promessa) {
+    promessa = (async () => {
+      const [anoModelo, codigoTipoCombustivel] = anoCode.split("-");
+      const ref = await resolverTabelaReferencia();
+      return postFipe<FipeValorResposta>("ConsultarValorComTodosParametros", {
+        codigoTabelaReferencia: ref,
+        codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+        codigoMarca: marcaCode,
+        codigoModelo: modeloCode,
+        anoModelo,
+        codigoTipoCombustivel,
+        tipoVeiculo: "carro",
+        tipoConsulta: "tradicional",
+      });
+    })();
+    cacheValor.set(chave, promessa);
+  }
+  return promessa;
 }
 
 function tokenizar(texto: string): Set<string> {
@@ -265,19 +318,7 @@ export async function buscarReferenciaFipe(
   }
   if (!modeloEncontrado || !anoEncontrado) return null;
 
-  // O `code` do ano vem como "ano-códigoCombustível" (ex.: "2013-3").
-  const [anoModelo, codigoTipoCombustivel] = anoEncontrado.code.split("-");
-  const ref = await resolverTabelaReferencia();
-  const valor = await postFipe<FipeValorResposta>("ConsultarValorComTodosParametros", {
-    codigoTabelaReferencia: ref,
-    codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
-    codigoMarca: marcaEncontrada.code,
-    codigoModelo: modeloEncontrado.code,
-    anoModelo,
-    codigoTipoCombustivel,
-    tipoVeiculo: "carro",
-    tipoConsulta: "tradicional",
-  });
+  const valor = await buscarValor(marcaEncontrada.code, modeloEncontrado.code, anoEncontrado.code);
 
   return {
     marca: marcaEncontrada.name,
