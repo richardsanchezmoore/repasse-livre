@@ -28,10 +28,12 @@ import type {
   ItemDisputado,
   ItemEstadoAtivo,
   ItemMarcaLuxo,
+  ItemTendenciaDestaque,
   PontoSerie,
   PontoValor,
   ResumoBia,
 } from "@/lib/biaDashboard";
+import { gerarInsightTendencia } from "@/lib/insightTendencia";
 
 const HUE_ESTOQUE = 230;
 const HUE_PRECO = 155;
@@ -487,6 +489,37 @@ function SecaoLuxo({ marcasLuxo }: { marcasLuxo: ItemMarcaLuxo[] }) {
   );
 }
 
+function SecaoTendenciaMensal({ destaques }: { destaques: ItemTendenciaDestaque[] }) {
+  return (
+    <section className="bia2-secao">
+      <Eyebrow numero="05" texto="Fase 4 · Tendência mensal" />
+      <h2 className="bia2-titulo-secao">Tendências do mês</h2>
+      <p className="bia2-paragrafo-apoio">
+        Comparação de margem média e volume de oferta mês a mês, por modelo. A série histórica começou
+        em 27/06/2026 — comparações ficam mais completas conforme a base acumula mais meses.
+      </p>
+
+      {destaques.length === 0 ? (
+        <div className="bia2-card">
+          <div className="bia2-painel-hover-vazio">
+            Ainda não há dois meses completos de histórico pra comparar — volte aqui no próximo mês.
+          </div>
+        </div>
+      ) : (
+        <div className="bia2-card bia2-cidades-lista">
+          {destaques.map((item) => (
+            <div key={`${item.marca}-${item.modelo}`} className="bia2-cidade-linha">
+              <div className="bia2-cidade-nome-grupo">
+                <span className="bia2-cidade-nome">{gerarInsightTendencia(item)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function PainelBia({
   resumo,
   descobertas7d,
@@ -496,6 +529,7 @@ export function PainelBia({
   marcasLuxo,
   estadosAtivos,
   cidadesAtivas,
+  tendenciaDestaques,
 }: {
   resumo: ResumoBia;
   descobertas7d: PontoSerie[];
@@ -505,6 +539,7 @@ export function PainelBia({
   marcasLuxo: ItemMarcaLuxo[];
   estadosAtivos: ItemEstadoAtivo[];
   cidadesAtivas: ItemCidadeAtiva[];
+  tendenciaDestaques: ItemTendenciaDestaque[];
 }) {
   const [janelaDescobertas, setJanelaDescobertas] = useState<"7" | "30">("7");
   const serieDescobertas = janelaDescobertas === "7" ? descobertas7d : descobertas30d;
@@ -540,9 +575,10 @@ export function PainelBia({
       <SecaoCidades cidades={cidadesAtivas} />
       <SecaoDisputados disputados={maisDisputados} />
       <SecaoLuxo marcasLuxo={marcasLuxo} />
+      <SecaoTendenciaMensal destaques={tendenciaDestaques} />
 
       <section className="bia2-secao">
-        <Eyebrow numero="05" texto="Tendência" />
+        <Eyebrow numero="06" texto="Tendência diária" />
         <h2 className="bia2-titulo-secao">Oportunidades descobertas por dia</h2>
         <div className="bia2-card" style={{ marginTop: 18 }}>
           <Toggle

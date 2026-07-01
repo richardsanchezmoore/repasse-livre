@@ -48,6 +48,23 @@ export interface ItemCidadeAtiva {
   precoMedio: number;
 }
 
+export interface PontoTendenciaMensal {
+  mes: string;
+  marca: string;
+  modelo: string;
+  quantidadeMedia: number;
+  margemMedia: number | null;
+}
+
+export interface ItemTendenciaDestaque {
+  marca: string;
+  modelo: string;
+  margemMesAtual: number | null;
+  margemMesAnterior: number | null;
+  quantidadeMesAtual: number;
+  quantidadeMesAnterior: number;
+}
+
 function lancarSeErro<T>(resultado: { data: T | null; error: { message: string } | null }, contexto: string): T {
   if (resultado.error) {
     throw new Error(`Falha ao buscar ${contexto}: ${resultado.error.message}`);
@@ -142,5 +159,43 @@ export async function buscarCidadesMaisAtivas(limite: number): Promise<ItemCidad
     estado: linha.estado,
     quantidade: linha.quantidade,
     precoMedio: linha.preco_medio,
+  }));
+}
+
+export async function buscarTendenciaMensal(meses: number): Promise<PontoTendenciaMensal[]> {
+  const resultado = await supabaseAdmin.rpc("bia_tendencia_mensal_por_modelo", { p_meses: meses });
+  const linhas = lancarSeErro(resultado, "tendência mensal por modelo") as Array<{
+    mes: string;
+    marca: string;
+    modelo: string;
+    quantidade_media: number;
+    margem_media: number | null;
+  }>;
+  return linhas.map((linha) => ({
+    mes: linha.mes,
+    marca: linha.marca,
+    modelo: linha.modelo,
+    quantidadeMedia: linha.quantidade_media,
+    margemMedia: linha.margem_media,
+  }));
+}
+
+export async function buscarTendenciaDestaques(limite: number): Promise<ItemTendenciaDestaque[]> {
+  const resultado = await supabaseAdmin.rpc("bia_tendencia_destaques", { p_limite: limite });
+  const linhas = lancarSeErro(resultado, "destaques de tendência mensal") as Array<{
+    marca: string;
+    modelo: string;
+    margem_mes_atual: number | null;
+    margem_mes_anterior: number | null;
+    quantidade_mes_atual: number;
+    quantidade_mes_anterior: number;
+  }>;
+  return linhas.map((linha) => ({
+    marca: linha.marca,
+    modelo: linha.modelo,
+    margemMesAtual: linha.margem_mes_atual,
+    margemMesAnterior: linha.margem_mes_anterior,
+    quantidadeMesAtual: linha.quantidade_mes_atual,
+    quantidadeMesAnterior: linha.quantidade_mes_anterior,
   }));
 }
