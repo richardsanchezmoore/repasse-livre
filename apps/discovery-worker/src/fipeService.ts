@@ -1,26 +1,27 @@
 import type { ReferenciaFipe } from "./types.js";
 
-const FIPE_BASE_URL = "https://fipe.parallelum.com.br/api/v2/cars";
-const FIPE_API_KEY = process.env.FIPE_API_KEY;
+// API oficial da FIPE (a mesma que veiculos.fipe.org.br consome). Substituiu o
+// parallelum (fipe.parallelum.com.br), cujo plano free (1000 req/dia) dava 429
+// e zerava a elegibilidade de ML/Webmotors. A oficial é a fonte de verdade,
+// sempre no mês vigente (o mirror fipeX atrasava a virada do mês), sem limite
+// aparente e ~0,1-0,4s por chamada. Estrutura idêntica (marcas→modelos→
+// anos→valor), então o fuzzy-match abaixo continua igual. A OLX não usa isto
+// (o FIPE dela vem da própria página do anúncio). Ver
+// project_repasse_livre_fipe_banco_proprio.
+const FIPE_BASE_URL = "https://veiculos.fipe.org.br/api/veiculos";
+const CODIGO_TIPO_VEICULO_CARRO = 1;
 
-interface FipeMarca {
+interface FipeItem {
   code: string;
   name: string;
 }
 
-interface FipeModelo {
-  code: string;
-  name: string;
-}
+/** Item de ano/combustível: `code` no formato "2013-3" (ano-códigoCombustível), `name` = "2013 Diesel". */
+type FipeAno = FipeItem;
 
-interface FipeAno {
-  code: string;
-  name: string;
-}
-
-interface FipeValor {
-  price: string; // ex: "R$ 79.900,00"
-  referenceMonth: string;
+interface FipeValorResposta {
+  Valor: string; // "R$ 72.634,00"
+  MesReferencia: string; // "julho de 2026 "
 }
 
 const DIACRITICOS = /[̀-ͯ]/g;
@@ -42,41 +43,92 @@ function aguardar(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** A API pública da FIPE limita por taxa (429) sob volume; uma pequena espera com retentativas resolve a maioria dos casos. */
-async function fetchJson<T>(url: string, tentativa = 1): Promise<T> {
-  const resp = await fetch(url, {
-    headers: FIPE_API_KEY ? { Authorization: `Bearer ${FIPE_API_KEY}` } : undefined,
+const HEADERS_FIPE = {
+  "Content-Type": "application/json",
+  Referer: "https://veiculos.fipe.org.br/",
+  "User-Agent": "Mozilla/5.0",
+};
+
+/**
+ * POST na API oficial da FIPE, com retentativa em 429/5xx (sob volume ela
+ * pode devolver erro transitório; uma espera curta resolve a maioria).
+ */
+async function postFipe<T>(endpoint: string, corpo: Record<string, unknown>, tentativa = 1): Promise<T> {
+  const resp = await fetch(`${FIPE_BASE_URL}/${endpoint}`, {
+    method: "POST",
+    headers: HEADERS_FIPE,
+    body: JSON.stringify(corpo),
   });
 
-  if (resp.status === 429 && tentativa <= 3) {
-    await aguardar(500 * tentativa);
-    return fetchJson<T>(url, tentativa + 1);
+  if ((resp.status === 429 || resp.status >= 500) && tentativa <= 3) {
+    await aguardar(600 * tentativa);
+    return postFipe<T>(endpoint, corpo, tentativa + 1);
   }
 
   if (!resp.ok) {
-    throw new Error(`Falha ao consultar FIPE (${resp.status}): ${url}`);
+    throw new Error(`Falha ao consultar FIPE (${resp.status}): ${endpoint}`);
   }
   return resp.json() as Promise<T>;
 }
 
-const cacheModelosPorMarca = new Map<string, Promise<FipeModelo[]>>();
-let cacheMarcas: Promise<FipeMarca[]> | null = null;
+// A tabela de referência (mês), a lista de marcas e a de modelos por marca não
+// mudam durante uma execução, então ficam em cache em memória.
+let cacheTabelaReferencia: Promise<number> | null = null;
+let cacheMarcas: Promise<FipeItem[]> | null = null;
+const cacheModelosPorMarca = new Map<string, Promise<FipeItem[]>>();
 
-/** A lista de marcas e a de modelos por marca não mudam durante uma execução, então ficam em cache em memória. */
-function buscarMarcas(): Promise<FipeMarca[]> {
+/** Código da tabela de referência mais recente (= mês vigente publicado pela FIPE). */
+function resolverTabelaReferencia(): Promise<number> {
+  if (!cacheTabelaReferencia) {
+    cacheTabelaReferencia = (async () => {
+      const tabelas = await postFipe<{ Codigo: number; Mes: string }[]>("ConsultarTabelaDeReferencia", {});
+      const maisRecente = tabelas.reduce((a, b) => (b.Codigo > a.Codigo ? b : a));
+      return maisRecente.Codigo;
+    })();
+  }
+  return cacheTabelaReferencia;
+}
+
+async function buscarMarcas(): Promise<FipeItem[]> {
   if (!cacheMarcas) {
-    cacheMarcas = fetchJson<FipeMarca[]>(`${FIPE_BASE_URL}/brands`);
+    cacheMarcas = (async () => {
+      const ref = await resolverTabelaReferencia();
+      const marcas = await postFipe<{ Label: string; Value: string }[]>("ConsultarMarcas", {
+        codigoTabelaReferencia: ref,
+        codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+      });
+      return marcas.map((m) => ({ code: String(m.Value), name: m.Label }));
+    })();
   }
   return cacheMarcas;
 }
 
-function buscarModelos(marcaCode: string): Promise<FipeModelo[]> {
+function buscarModelos(marcaCode: string): Promise<FipeItem[]> {
   let promessa = cacheModelosPorMarca.get(marcaCode);
   if (!promessa) {
-    promessa = fetchJson<FipeModelo[]>(`${FIPE_BASE_URL}/brands/${marcaCode}/models`);
+    promessa = (async () => {
+      const ref = await resolverTabelaReferencia();
+      const resp = await postFipe<{ Modelos: { Label: string; Value: number | string }[] }>("ConsultarModelos", {
+        codigoTabelaReferencia: ref,
+        codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+        codigoMarca: marcaCode,
+      });
+      return resp.Modelos.map((m) => ({ code: String(m.Value), name: m.Label }));
+    })();
     cacheModelosPorMarca.set(marcaCode, promessa);
   }
   return promessa;
+}
+
+async function buscarAnos(marcaCode: string, modeloCode: string): Promise<FipeAno[]> {
+  const ref = await resolverTabelaReferencia();
+  const anos = await postFipe<{ Label: string; Value: string }[]>("ConsultarAnoModelo", {
+    codigoTabelaReferencia: ref,
+    codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+    codigoMarca: marcaCode,
+    codigoModelo: modeloCode,
+  });
+  return anos.map((a) => ({ code: String(a.Value), name: a.Label }));
 }
 
 function tokenizar(texto: string): Set<string> {
@@ -183,7 +235,7 @@ function candidatosOrdenadosModeloVariante<T extends { name: string }>(
  * `variante` é opcional — quando informada (ex.: motorização/trim vindos
  * separados do nome do modelo, como na Webmotors), ajuda a desambiguar
  * entre versões do mesmo modelo sem arriscar roubar a correspondência de
- * outro modelo da marca (ver encontrarMelhorCorrespondenciaModeloVariante).
+ * outro modelo da marca (ver candidatosOrdenadosModeloVariante).
  */
 export async function buscarReferenciaFipe(
   marca: string,
@@ -199,10 +251,11 @@ export async function buscarReferenciaFipe(
   const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 2);
   if (candidatos.length === 0) return null;
 
-  let modeloEncontrado: FipeModelo | null = null;
+  let modeloEncontrado: FipeItem | null = null;
   let anoEncontrado: FipeAno | null = null;
   for (const candidato of candidatos) {
-    const anos = await fetchJson<FipeAno[]>(`${FIPE_BASE_URL}/brands/${marcaEncontrada.code}/models/${candidato.code}/years`);
+    const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+    // O Label do ano é tipo "2013 Diesel" — casa pelo prefixo do ano.
     const ref = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
     if (ref) {
       modeloEncontrado = candidato;
@@ -212,15 +265,25 @@ export async function buscarReferenciaFipe(
   }
   if (!modeloEncontrado || !anoEncontrado) return null;
 
-  const valor = await fetchJson<FipeValor>(
-    `${FIPE_BASE_URL}/brands/${marcaEncontrada.code}/models/${modeloEncontrado.code}/years/${anoEncontrado.code}`
-  );
+  // O `code` do ano vem como "ano-códigoCombustível" (ex.: "2013-3").
+  const [anoModelo, codigoTipoCombustivel] = anoEncontrado.code.split("-");
+  const ref = await resolverTabelaReferencia();
+  const valor = await postFipe<FipeValorResposta>("ConsultarValorComTodosParametros", {
+    codigoTabelaReferencia: ref,
+    codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+    codigoMarca: marcaEncontrada.code,
+    codigoModelo: modeloEncontrado.code,
+    anoModelo,
+    codigoTipoCombustivel,
+    tipoVeiculo: "carro",
+    tipoConsulta: "tradicional",
+  });
 
   return {
     marca: marcaEncontrada.name,
     modelo: modeloEncontrado.name,
     ano: anoEncontrado.name,
-    valor: parsePrecoFipe(valor.price),
-    mesReferencia: valor.referenceMonth,
+    valor: parsePrecoFipe(valor.Valor),
+    mesReferencia: valor.MesReferencia.trim(),
   };
 }
