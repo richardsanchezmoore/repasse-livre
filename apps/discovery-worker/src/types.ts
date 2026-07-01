@@ -26,6 +26,8 @@ export interface ReferenciaFipe {
   ano: string;
   valor: number;
   mesReferencia: string;
+  /** Código FIPE canônico do veículo (ex.: "005329-5") — chave da série histórica. */
+  codigoFipe: string;
 }
 
 export type Classificacao =
@@ -47,6 +49,9 @@ export interface Oportunidade {
   preco: number;
   fipe_valor: number;
   fipe_data_referencia: string;
+  /** Código FIPE canônico (chave da série histórica). Null na OLX, cujo FIPE
+   * vem da página do anúncio, não do lookup — preenchido depois pelo bootstrap. */
+  fipe_codigo: string | null;
   margem_percentual: number;
   classificacao: Classificacao;
   foto_principal: string | null;

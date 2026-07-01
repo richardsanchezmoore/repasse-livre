@@ -157,6 +157,10 @@ async function processarAnuncio(
     preco: anuncio.preco,
     fipe_valor: fipe.fipeValor,
     fipe_data_referencia: fipe.mesReferencia,
+    // OLX: FIPE vem da própria página do anúncio, sem codigo_fipe canônico.
+    // O bootstrap/recálculo (via lookup na oficial) preenche depois, dando
+    // histórico também aos anúncios OLX.
+    fipe_codigo: null,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
     foto_principal: fotoPrincipal,

@@ -22,6 +22,7 @@ type FipeAno = FipeItem;
 interface FipeValorResposta {
   Valor: string; // "R$ 72.634,00"
   MesReferencia: string; // "julho de 2026 "
+  CodigoFipe: string; // "005329-5"
 }
 
 const DIACRITICOS = /[̀-ͯ]/g;
@@ -326,5 +327,6 @@ export async function buscarReferenciaFipe(
     ano: anoEncontrado.name,
     valor: parsePrecoFipe(valor.Valor),
     mesReferencia: valor.MesReferencia.trim(),
+    codigoFipe: valor.CodigoFipe,
   };
 }

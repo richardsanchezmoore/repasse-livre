@@ -1,4 +1,5 @@
 import { buscarReferenciaFipe } from "./fipeService.js";
+import { garantirHistoricoFipe } from "./historicoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
 import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { Classificacao, Oportunidade } from "./types.js";
@@ -237,6 +238,7 @@ export async function avaliarAnuncioWebmotors(
     preco: anuncio.price,
     fipe_valor: referenciaFipe.valor,
     fipe_data_referencia: referenciaFipe.mesReferencia,
+    fipe_codigo: referenciaFipe.codigoFipe,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
     foto_principal: anuncio.photos?.[0] ?? null,
@@ -296,6 +298,9 @@ export async function processarLoteAnunciosWebmotors(
     await salvarOportunidade(oportunidade);
     resultado.elegiveis++;
 
+    if (oportunidade.fipe_codigo && oportunidade.ano) {
+      await garantirHistoricoFipe(oportunidade.fipe_codigo, Number.parseInt(oportunidade.ano, 10));
+    }
     if (oportunidade.cidade && oportunidade.estado) {
       await garantirCoordenadasCidade(oportunidade.cidade, oportunidade.estado);
     }

@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import type { Browser, BrowserContext, Page } from "playwright";
 import { buscarReferenciaFipe } from "./fipeService.js";
+import { garantirHistoricoFipe } from "./historicoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
 import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { AtributosOlx } from "./olxService.js";
@@ -406,6 +407,7 @@ async function salvarElegivel(el: Elegivel, detalhes: DetalhesPaginaML, resultad
     preco,
     fipe_valor: referenciaFipe.valor,
     fipe_data_referencia: referenciaFipe.mesReferencia,
+    fipe_codigo: referenciaFipe.codigoFipe,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
     foto_principal: todasFotos[0] ?? null,
@@ -419,6 +421,7 @@ async function salvarElegivel(el: Elegivel, detalhes: DetalhesPaginaML, resultad
   };
   await salvarOportunidade(oportunidade);
   resultado.elegiveis++;
+  await garantirHistoricoFipe(referenciaFipe.codigoFipe, Number.parseInt(referenciaFipe.ano, 10));
   if (cidade && estado) await garantirCoordenadasCidade(cidade, estado);
 }
 
