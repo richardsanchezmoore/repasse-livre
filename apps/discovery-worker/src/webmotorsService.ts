@@ -3,8 +3,12 @@ import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
 import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { Classificacao, Oportunidade } from "./types.js";
 
-const BRIGHTDATA_API_URL = "https://api.brightdata.com/datasets/v3/scrape";
+const BRIGHTDATA_BASE = "https://api.brightdata.com/datasets/v3";
 const BRIGHTDATA_DATASET_ID = "gd_ld73zt91j10sphddj";
+/** Teto de anúncios por run (Bright Data cobra por registro). Configurável via env. */
+const LIMITE_PADRAO = 150;
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export interface AnuncioWebmotorsBruto {
   id?: number;
@@ -34,46 +38,92 @@ export interface AnuncioWebmotorsBruto {
   // armazenados (ver descarteDeDadoPessoal logo abaixo).
 }
 
+/** Remove os registros de erro (dead_page etc., vêm por include_errors=true) — só anúncios reais. */
+function filtrarValidos(dados: unknown[]): AnuncioWebmotorsBruto[] {
+  return dados.filter((r): r is AnuncioWebmotorsBruto => {
+    const rec = r as { error?: unknown; error_code?: unknown };
+    return !rec.error && !rec.error_code;
+  });
+}
+
+/** Aguarda a coleta assíncrona do Bright Data ficar "ready". */
+async function esperarSnapshotPronto(snapshotId: string, headers: Record<string, string>, maxMinutos = 15): Promise<void> {
+  const inicio = Date.now();
+  while (Date.now() - inicio < maxMinutos * 60_000) {
+    await sleep(10_000);
+    const r = await fetch(`${BRIGHTDATA_BASE}/progress/${snapshotId}`, { headers });
+    const p = (await r.json()) as { status?: string };
+    if (p.status === "ready") return;
+    if (p.status === "failed") throw new Error(`Snapshot ${snapshotId} falhou no Bright Data.`);
+  }
+  throw new Error(`Snapshot ${snapshotId} não ficou pronto em ${maxMinutos}min.`);
+}
+
+/** Baixa o snapshot pronto. O arquivo leva alguns segundos extras após "ready" → retry no 202. */
+async function baixarSnapshot(snapshotId: string, headers: Record<string, string>, maxTentativas = 20): Promise<unknown[]> {
+  for (let i = 0; i < maxTentativas; i++) {
+    const r = await fetch(`${BRIGHTDATA_BASE}/snapshot/${snapshotId}?format=json`, { headers });
+    if (r.status === 200) {
+      const dados = await r.json();
+      if (Array.isArray(dados)) return dados;
+    }
+    await sleep(6_000);
+  }
+  throw new Error(`Download do snapshot ${snapshotId} não completou.`);
+}
+
 /**
- * Busca anúncios "abaixo da FIPE" via Bright Data ("Discover by category",
- * modo síncrono) — substitui o papel de buscarHtml+curl_chrome116 da OLX,
- * já que a Webmotors bloqueia esse truque (ver
- * project_repasse_livre_webmotors_bloqueio_lambda_edge na memória do
- * projeto). categoryUrl é a URL de listagem da própria Webmotors, com
- * qualquer filtro nativo já aplicado (ex.: `?Oportunidades=Super%20Preco`
- * pro filtro "Abaixo da Fipe").
+ * Busca anúncios "abaixo da FIPE" via Bright Data ("Discover by category") —
+ * substitui o papel de buscarHtml+curl_chrome116 da OLX, já que a Webmotors
+ * bloqueia esse truque (Akamai/Lambda@Edge; confirmado 30/06 que nem browser
+ * residencial nem Scraping Browser passam — só o desbloqueio premium do Bright
+ * Data). categoryUrl é a listagem da Webmotors com filtro nativo já aplicado
+ * (ex.: `?Oportunidades=Super%20Preco` pro "Abaixo da Fipe").
+ *
+ * A API é ASSÍNCRONA: o POST retorna 202 + `snapshot_id`, depois é preciso
+ * pollar `/progress` até "ready" e baixar via `/snapshot`. `limit_per_input`
+ * limita quantos anúncios coletar (Bright Data cobra por registro; default 150
+ * corta ~70% do custo vs sem limite).
  */
 export async function buscarAnunciosWebmotors(categoryUrl: string): Promise<AnuncioWebmotorsBruto[]> {
   const apiToken = process.env.BRIGHTDATA_API_TOKEN;
   if (!apiToken) {
     throw new Error("BRIGHTDATA_API_TOKEN não configurado.");
   }
+  const headers = { Authorization: `Bearer ${apiToken}` };
+  const limite = Number(process.env.WEBMOTORS_LIMIT_PER_INPUT ?? LIMITE_PADRAO);
 
-  const url = new URL(BRIGHTDATA_API_URL);
+  const url = new URL(`${BRIGHTDATA_BASE}/scrape`);
   url.searchParams.set("dataset_id", BRIGHTDATA_DATASET_ID);
   url.searchParams.set("notify", "false");
   url.searchParams.set("include_errors", "true");
   url.searchParams.set("type", "discover_new");
   url.searchParams.set("discover_by", "category");
+  // limit_per_input precisa ir na QUERY STRING (não só no body) para o Bright
+  // Data respeitar o teto no discover_by=category — senão ignora e coleta tudo.
+  url.searchParams.set("limit_per_input", String(limite));
 
-  const resposta = await fetch(url.toString(), {
+  const trigger = await fetch(url.toString(), {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      input: [{ category_url: categoryUrl }],
-      limit_per_input: null,
-    }),
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ input: [{ category_url: categoryUrl }], limit_per_input: limite }),
   });
-
-  if (!resposta.ok) {
-    throw new Error(`Falha ao buscar anúncios da Webmotors via Bright Data (${resposta.status}).`);
+  const respostaTrigger: unknown = await trigger.json();
+  // Compat: se algum dia voltar síncrono (array direto), usa direto.
+  if (Array.isArray(respostaTrigger)) return filtrarValidos(respostaTrigger);
+  const snapshotId = (respostaTrigger as { snapshot_id?: string })?.snapshot_id;
+  if (!snapshotId) {
+    throw new Error(`Bright Data não retornou snapshot_id (HTTP ${trigger.status}): ${JSON.stringify(respostaTrigger).slice(0, 200)}`);
   }
 
-  const dados = (await resposta.json()) as AnuncioWebmotorsBruto[];
-  return Array.isArray(dados) ? dados : [];
+  console.log(`[motor-descoberta-webmotors] Snapshot ${snapshotId} disparado (limite ${limite}), aguardando coleta…`);
+  await esperarSnapshotPronto(snapshotId, headers);
+  const dados = await baixarSnapshot(snapshotId, headers);
+  const anuncios = filtrarValidos(dados);
+  console.log(
+    `[motor-descoberta-webmotors] Snapshot ${snapshotId}: ${dados.length} registros, ${anuncios.length} anúncios válidos (${dados.length - anuncios.length} erros/dead_page filtrados).`
+  );
+  return anuncios;
 }
 
 /**
