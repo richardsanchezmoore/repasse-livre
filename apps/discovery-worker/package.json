@@ -13,6 +13,7 @@
     "importar:snapshots-webmotors": "tsx src/importarSnapshotsWebmotors.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:titulos-multifonte": "tsx src/backfillTitulosMultifonte.ts",
+    "bootstrap:historico-fipe": "tsx src/bootstrapHistoricoFipe.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
     "backfill:coordenadas": "tsx src/backfillCoordenadas.ts",
