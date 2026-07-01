@@ -41,7 +41,7 @@ export function HistoricoPrecos({ serie }: { serie: PontoHistoricoFipe[] }) {
     <section className="historico-precos">
       <div className="historico-precos-cabecalho">
         <div>
-          <h2 className="historico-precos-titulo">Histórico de Preços</h2>
+          <h2 className="historico-precos-titulo">Histórico Preços FIPE</h2>
           <p className="historico-precos-variacao" style={{ color: corVariacao }}>
             {subiu ? "▲" : "▼"} {Math.abs(variacaoPct).toFixed(1)}%{" "}
             <span className="historico-precos-variacao-periodo">
