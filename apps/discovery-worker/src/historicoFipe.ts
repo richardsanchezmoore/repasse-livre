@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient.js";
+import type { ReferenciaFipe } from "./types.js";
 
 /**
  * Série histórica de FIPE por modelo (tabela fipe_historico). Alimenta a
@@ -30,6 +31,32 @@ interface LinhaMirror {
   valor_centavos: number;
   nome_marca: string;
   nome_modelo: string;
+}
+
+/**
+ * Grava o ponto do MÊS VIGENTE no histórico, a partir de uma ReferenciaFipe da
+ * oficial (fresca). É o que faz a série avançar mês a mês no recálculo mensal —
+ * o mirror só cobre o passado. Upsert idempotente. Best-effort.
+ */
+export async function registrarPontoHistoricoFipe(ref: ReferenciaFipe): Promise<void> {
+  if (!ref.codigoFipe || !ref.anoModelo || !ref.mesReferenciaNum || !ref.anoReferencia) return;
+  try {
+    await supabase.from("fipe_historico").upsert(
+      {
+        codigo_fipe: ref.codigoFipe,
+        ano_modelo: ref.anoModelo,
+        sigla_combustivel: ref.siglaCombustivel || "-",
+        mes_referencia: ref.mesReferenciaNum,
+        ano_referencia: ref.anoReferencia,
+        valor_centavos: Math.round(ref.valor * 100),
+        nome_marca: ref.marca,
+        nome_modelo: ref.modelo,
+      },
+      { onConflict: "codigo_fipe,ano_modelo,sigla_combustivel,ano_referencia,mes_referencia" }
+    );
+  } catch {
+    // best-effort
+  }
 }
 
 /** Backfill automático dos últimos ~12 meses de um modelo, do mirror. Idempotente. */

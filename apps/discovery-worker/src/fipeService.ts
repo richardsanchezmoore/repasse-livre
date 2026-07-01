@@ -23,6 +23,17 @@ interface FipeValorResposta {
   Valor: string; // "R$ 72.634,00"
   MesReferencia: string; // "julho de 2026 "
   CodigoFipe: string; // "005329-5"
+  SiglaCombustivel: string; // "D" | "G" | "F" ...
+}
+
+const MESES_PT = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+/** "julho de 2026 " → { mes: 7, ano: 2026 }. */
+function parseMesReferencia(texto: string): { mes: number; ano: number } {
+  const t = normalizar(texto);
+  const mes = MESES_PT.findIndex((m) => t.includes(normalizar(m))) + 1;
+  const anoMatch = t.match(/\d{4}/);
+  return { mes: mes || 0, ano: anoMatch ? Number(anoMatch[0]) : 0 };
 }
 
 const DIACRITICOS = /[̀-ͯ]/g;
@@ -54,7 +65,7 @@ const HEADERS_FIPE = {
 // ~150ms começa a dar 429). NÃO é o teto duro de 1000/dia do parallelum — é
 // soft, se recupera com pausa. Serializamos TODAS as chamadas com um intervalo
 // mínimo pra nunca estourar (300ms = folga sobre o limite).
-const INTERVALO_MINIMO_MS = 300;
+const INTERVALO_MINIMO_MS = 450;
 let ultimaChamadaEpoch = 0;
 let filaThrottle: Promise<void> = Promise.resolve();
 
@@ -320,6 +331,7 @@ export async function buscarReferenciaFipe(
   if (!modeloEncontrado || !anoEncontrado) return null;
 
   const valor = await buscarValor(marcaEncontrada.code, modeloEncontrado.code, anoEncontrado.code);
+  const { mes: mesRef, ano: anoRef } = parseMesReferencia(valor.MesReferencia);
 
   return {
     marca: marcaEncontrada.name,
@@ -328,5 +340,9 @@ export async function buscarReferenciaFipe(
     valor: parsePrecoFipe(valor.Valor),
     mesReferencia: valor.MesReferencia.trim(),
     codigoFipe: valor.CodigoFipe,
+    anoModelo: Number.parseInt(anoEncontrado.name, 10),
+    siglaCombustivel: (valor.SiglaCombustivel ?? "").toLowerCase(),
+    mesReferenciaNum: mesRef,
+    anoReferencia: anoRef,
   };
 }

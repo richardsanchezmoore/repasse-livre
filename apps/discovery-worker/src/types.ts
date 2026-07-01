@@ -28,6 +28,12 @@ export interface ReferenciaFipe {
   mesReferencia: string;
   /** Código FIPE canônico do veículo (ex.: "005329-5") — chave da série histórica. */
   codigoFipe: string;
+  /** Ano do modelo (ex.: 2013) e combustível — chave do ponto histórico. */
+  anoModelo: number;
+  siglaCombustivel: string;
+  /** Mês/ano de referência da FIPE em número (ex.: 7 e 2026), pro fipe_historico. */
+  mesReferenciaNum: number;
+  anoReferencia: number;
 }
 
 export type Classificacao =
