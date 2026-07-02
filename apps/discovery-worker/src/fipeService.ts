@@ -117,7 +117,14 @@ function resolverTabelaReferencia(): Promise<number> {
       const tabelas = await postFipe<{ Codigo: number; Mes: string }[]>("ConsultarTabelaDeReferencia", {});
       const maisRecente = tabelas.reduce((a, b) => (b.Codigo > a.Codigo ? b : a));
       return maisRecente.Codigo;
-    })();
+    })().catch((erro) => {
+      // NÃO perpetuar falha transitória: um único 429/blip nessa chamada-raiz
+      // envenenaria o cache e faria TODOS os buscarReferenciaFipe do run cair em
+      // sem_fipe (foi o que zerou o run Webmotors de 02/07: 328/328 sem FIPE).
+      // Limpando o slot, o próximo veículo re-tenta e o run se recupera sozinho.
+      cacheTabelaReferencia = null;
+      throw erro;
+    });
   }
   return cacheTabelaReferencia;
 }
@@ -131,7 +138,10 @@ async function buscarMarcas(): Promise<FipeItem[]> {
         codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
       });
       return marcas.map((m) => ({ code: String(m.Value), name: m.Label }));
-    })();
+    })().catch((erro) => {
+      cacheMarcas = null; // idem resolverTabelaReferencia: não cachear rejeição
+      throw erro;
+    });
   }
   return cacheMarcas;
 }
@@ -147,7 +157,10 @@ function buscarModelos(marcaCode: string): Promise<FipeItem[]> {
         codigoMarca: marcaCode,
       });
       return resp.Modelos.map((m) => ({ code: String(m.Value), name: m.Label }));
-    })();
+    })().catch((erro) => {
+      cacheModelosPorMarca.delete(marcaCode); // não cachear rejeição
+      throw erro;
+    });
     cacheModelosPorMarca.set(marcaCode, promessa);
   }
   return promessa;
@@ -166,7 +179,10 @@ function buscarAnos(marcaCode: string, modeloCode: string): Promise<FipeAno[]> {
         codigoModelo: modeloCode,
       });
       return anos.map((a) => ({ code: String(a.Value), name: a.Label }));
-    })();
+    })().catch((erro) => {
+      cacheAnosPorModelo.delete(chave); // não cachear rejeição
+      throw erro;
+    });
     cacheAnosPorModelo.set(chave, promessa);
   }
   return promessa;
@@ -190,7 +206,10 @@ function buscarValor(marcaCode: string, modeloCode: string, anoCode: string): Pr
         tipoVeiculo: "carro",
         tipoConsulta: "tradicional",
       });
-    })();
+    })().catch((erro) => {
+      cacheValor.delete(chave); // não cachear rejeição
+      throw erro;
+    });
     cacheValor.set(chave, promessa);
   }
   return promessa;
