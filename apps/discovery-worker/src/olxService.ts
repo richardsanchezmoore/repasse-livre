@@ -129,48 +129,103 @@ async function buscarHtml(url: string): Promise<string> {
 }
 
 /**
- * Busca uma página de listagem da OLX e extrai os anúncios a partir do
- * JSON estruturado embutido no HTML (__NEXT_DATA__), sem precisar de
- * parsing de DOM ou browser headless.
+ * Extrai o array de anúncios ("ads") do flight data RSC do App Router. Desde
+ * ~jul/2026 a OLX migrou a listagem de Pages Router (__NEXT_DATA__) para App
+ * Router: os anúncios agora vêm como JSON ESCAPADO dentro de
+ * self.__next_f.push(...). A chave ("ads") e o formato de cada anúncio
+ * (subject/url/price/properties/locationDetails/images/professionalAd)
+ * continuam idênticos — só mudou o envelope. Localizamos o array no payload
+ * escapado, desescapamos um nível e fazemos bracket-match respeitando strings.
  */
-export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx[]> {
-  const html = await buscarHtml(paginaUrl);
+function extrairAdsDoFlight(html: string): AdOlx[] | null {
+  const marcador = '\\"ads\\":[';
+  const inicio = html.indexOf(marcador);
+  if (inicio === -1) return null;
 
-  console.log(`[olx] HTML size: ${html.length} | url: ${paginaUrl.slice(0, 120)}`);
+  // Começa no "[" do array e desescapa um nível (\" -> ", \\ -> \).
+  const texto = html.slice(inicio + marcador.length - 1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
 
-  const match = html.match(/__NEXT_DATA__"\s*type="application\/json">(.*?)<\/script>/s);
-  if (!match) {
-    console.error(`[olx] __NEXT_DATA__ não encontrado. Início do HTML: ${html.slice(0, 400)}`);
-    throw new Error("Não foi possível localizar __NEXT_DATA__ na página da OLX.");
+  // Bracket-match do array, ignorando colchetes dentro de strings.
+  let profundidade = 0;
+  let fim = -1;
+  let emString = false;
+  let escapado = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (escapado) {
+      escapado = false;
+      continue;
+    }
+    if (c === "\\") {
+      escapado = true;
+      continue;
+    }
+    if (c === '"') {
+      emString = !emString;
+      continue;
+    }
+    if (emString) continue;
+    if (c === "[") profundidade++;
+    else if (c === "]") {
+      profundidade--;
+      if (profundidade === 0) {
+        fim = i;
+        break;
+      }
+    }
   }
+  if (fim === -1) return null;
 
+  try {
+    return JSON.parse(texto.slice(0, fim + 1)) as AdOlx[];
+  } catch {
+    return null;
+  }
+}
+
+/** Extração legada via __NEXT_DATA__ (Pages Router) — mantida como fallback. */
+function extrairAdsDoNextData(html: string): AdOlx[] | null {
+  const match = html.match(/__NEXT_DATA__"\s*type="application\/json">(.*?)<\/script>/s);
+  if (!match) return null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = JSON.parse(match[1]) as any;
   const pp = data?.props?.pageProps;
-
-  // OLX pode mudar a chave: "ads" foi o nome histórico, mas a estrutura evolui.
-  // Logamos as chaves disponíveis sempre que ads está ausente ou vazio para
-  // facilitar diagnóstico de mudanças sem precisar de um sandbox Railway.
   const ads = pp?.ads as AdOlx[] | undefined;
-  if (!ads || ads.length === 0) {
-    const ppKeys = Object.keys(pp ?? {});
-    console.warn(`[olx] pageProps.ads ausente ou vazio. pageProps keys: [${ppKeys.join(", ")}]`);
-    // Tentar chaves alternativas conhecidas
-    const candidates = ["listings", "adList", "items", "results", "data"];
-    for (const k of candidates) {
-      const alt = pp?.[k];
-      if (Array.isArray(alt) && alt.length > 0) {
-        console.warn(`[olx] Encontrado alternativo pageProps.${k} com ${alt.length} itens — usando.`);
-        const validos = (alt as AdOlx[]).filter((ad) => ad.subject && ad.url && ad.price);
-        return validos.map(mapearAnuncio);
-      }
-    }
-    return [];
+  if (ads && ads.length > 0) return ads;
+  for (const k of ["listings", "adList", "items", "results", "data"]) {
+    const alt = pp?.[k];
+    if (Array.isArray(alt) && alt.length > 0) return alt as AdOlx[];
   }
+  return null;
+}
 
-  console.log(`[olx] ${ads.length} anúncios brutos na página.`);
-  const anunciosValidos = ads.filter((ad) => ad.subject && ad.url && ad.price);
-  return anunciosValidos.map(mapearAnuncio);
+/**
+ * Extrai e mapeia os anúncios de uma página de listagem da OLX a partir do
+ * HTML. Puro (sem rede), pra ser testável direto contra um HTML salvo. Tenta o
+ * flight data (App Router) e, como fallback, o __NEXT_DATA__ (Pages Router). Se
+ * nenhum casar, LANÇA — pra uma futura mudança de formato aparecer como run com
+ * erro (visível em discovery_runs), não como 0 anúncios silencioso.
+ */
+export function extrairAnunciosDoHtml(html: string): AnuncioOlx[] {
+  const ads = extrairAdsDoFlight(html) ?? extrairAdsDoNextData(html);
+  if (!ads) {
+    console.error(`[olx] Anúncios não localizados (flight nem __NEXT_DATA__). Início do HTML: ${html.slice(0, 400)}`);
+    throw new Error("Não foi possível localizar os anúncios na página da OLX (flight/__NEXT_DATA__).");
+  }
+  const validos = ads.filter((ad) => ad.subject && ad.url && ad.price);
+  console.log(`[olx] ${ads.length} anúncios brutos na página, ${validos.length} válidos.`);
+  return validos.map(mapearAnuncio);
+}
+
+/**
+ * Busca uma página de listagem da OLX e extrai os anúncios do JSON estruturado
+ * embutido no HTML (flight data RSC do App Router; __NEXT_DATA__ no legado),
+ * sem parsing de DOM nem browser headless.
+ */
+export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx[]> {
+  const html = await buscarHtml(paginaUrl);
+  console.log(`[olx] HTML size: ${html.length} | url: ${paginaUrl.slice(0, 120)}`);
+  return extrairAnunciosDoHtml(html);
 }
 
 export interface FipeDaPagina {
