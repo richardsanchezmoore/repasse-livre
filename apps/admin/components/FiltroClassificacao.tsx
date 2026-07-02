@@ -1,8 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { ArrowUpDown, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { ArrowUpDown, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { registrarEvento } from "@/lib/eventosAnalytics";
@@ -53,6 +54,27 @@ export function FiltroClassificacao({
   const [anoMinDigitos, setAnoMinDigitos] = useState(anoMin ?? "");
   const [anoMaxDigitos, setAnoMaxDigitos] = useState(anoMax ?? "");
   const [chipsAbertos, setChipsAbertos] = useState(false);
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+  // O drawer é portalizado pro body (fora do contexto de empilhamento aninhado,
+  // senão a TopBar fica por cima). Só monta no client.
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
+
+  // Enquanto o painel de Filtros está aberto: ESC fecha e o scroll da página
+  // fica travado (o painel tem scroll próprio). Mesmo padrão do menu lateral.
+  useEffect(() => {
+    if (!filtrosAbertos) return;
+    function aoTeclar(evento: KeyboardEvent) {
+      if (evento.key === "Escape") setFiltrosAbertos(false);
+    }
+    document.addEventListener("keydown", aoTeclar);
+    const overflowAntigo = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", aoTeclar);
+      document.body.style.overflow = overflowAntigo;
+    };
+  }, [filtrosAbertos]);
 
   const FONTES: { valor: string; rotulo: string }[] = [
     { valor: "OLX", rotulo: "OLX" },
@@ -176,7 +198,40 @@ export function FiltroClassificacao({
           ))}
         </IconDropdown>
 
-        <IconDropdown Icone={SlidersHorizontal} rotulo="Filtros" ativo={algumFiltroAtivo} mostrarRotulo>
+        <button
+          type="button"
+          className={`icon-dropdown-botao icon-dropdown-botao-com-texto ${
+            algumFiltroAtivo ? "icon-dropdown-botao-ativo" : ""
+          }`}
+          onClick={() => setFiltrosAbertos(true)}
+          aria-label="Filtros"
+        >
+          <SlidersHorizontal size={18} strokeWidth={1.75} />
+          <span className="icon-dropdown-botao-rotulo">Filtros</span>
+        </button>
+      </div>
+
+      {montado &&
+        createPortal(
+          <>
+            <div
+              className={`painel-filtros-backdrop ${filtrosAbertos ? "painel-filtros-aberto" : ""}`}
+              onClick={() => setFiltrosAbertos(false)}
+              aria-hidden
+            />
+            <aside className={`painel-filtros ${filtrosAbertos ? "painel-filtros-aberto" : ""}`} aria-label="Filtros">
+        <header className="painel-filtros-topo">
+          <h2 className="painel-filtros-titulo">Filtros</h2>
+          <button
+            type="button"
+            className="painel-filtros-fechar"
+            onClick={() => setFiltrosAbertos(false)}
+            aria-label="Fechar filtros"
+          >
+            <X size={20} strokeWidth={2} />
+          </button>
+        </header>
+        <div className="painel-filtros-corpo">
           <p className="icon-dropdown-titulo">Faixa de Preço</p>
           <div className="icon-dropdown-faixa">
             <input
@@ -275,8 +330,11 @@ export function FiltroClassificacao({
               </button>
             ))}
           </div>
-        </IconDropdown>
-      </div>
+        </div>
+            </aside>
+          </>,
+          document.body
+        )}
     </div>
   );
 }

@@ -4221,3 +4221,88 @@ body {
   font-weight: 600;
   color: #111b21;
 }
+
+/* Painel de Filtros — drawer da direita (espelha o menu lateral). Mobile =
+   tela cheia; desktop = 420px. Scroll próprio (não vaza pra página). */
+.painel-filtros-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 60;
+}
+.painel-filtros-backdrop.painel-filtros-aberto {
+  opacity: 1;
+  pointer-events: auto;
+}
+.painel-filtros {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
+  width: 420px;
+  max-width: 100vw;
+  background: #fff;
+  box-shadow: -2px 0 16px rgba(0, 0, 0, 0.18);
+  transform: translateX(100%);
+  transition: transform 0.24s ease;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+}
+.painel-filtros.painel-filtros-aberto {
+  transform: translateX(0);
+}
+.painel-filtros-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #f0f2f5;
+  flex-shrink: 0;
+}
+.painel-filtros-titulo {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111b21;
+}
+.painel-filtros-fechar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #54656f;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.painel-filtros-fechar:hover {
+  background: #f0f2f5;
+}
+.painel-filtros-corpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 32px;
+}
+/* Seções mais espaçadas no painel (vs. o dropdown pequeno) */
+.painel-filtros-corpo .icon-dropdown-titulo {
+  font-size: 13px;
+  color: #54656f;
+  margin: 4px 4px 8px;
+}
+.painel-filtros-corpo .icon-dropdown-secao {
+  margin-top: 20px;
+  padding-top: 16px;
+}
+@media (max-width: 640px) {
+  .painel-filtros {
+    width: 100vw;
+  }
+}
