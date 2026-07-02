@@ -4187,3 +4187,25 @@ body {
 .filtro-fonte-chip-inativo {
   opacity: 0.45;
 }
+
+/* Faixa (min – max) lado a lado, sem label — só placeholder */
+.icon-dropdown-faixa {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+}
+.icon-dropdown-faixa input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-weight: 400;
+  font-size: 12px;
+  padding: 8px 10px;
+  border: 1px solid #e0e3e7;
+  border-radius: 6px;
+}
+.icon-dropdown-faixa-tra {
+  flex-shrink: 0;
+  color: #8696a0;
+}

@@ -178,24 +178,21 @@ export function FiltroClassificacao({
 
         <IconDropdown Icone={SlidersHorizontal} rotulo="Filtros" ativo={algumFiltroAtivo}>
           <p className="icon-dropdown-titulo">Faixa de Preço</p>
-          <div className="icon-dropdown-campo">
-            <label htmlFor="preco-min">Mínimo</label>
+          <div className="icon-dropdown-faixa">
             <input
               id="preco-min"
               type="text"
               inputMode="numeric"
-              placeholder="R$ 0"
+              placeholder="Min."
               value={formatarMoeda(minDigitos)}
               onChange={(evento) => setMinDigitos(apenasDigitos(evento.target.value))}
             />
-          </div>
-          <div className="icon-dropdown-campo">
-            <label htmlFor="preco-max">Máximo</label>
+            <span className="icon-dropdown-faixa-tra">–</span>
             <input
               id="preco-max"
               type="text"
               inputMode="numeric"
-              placeholder="R$ 0"
+              placeholder="Max."
               value={formatarMoeda(maxDigitos)}
               onChange={(evento) => setMaxDigitos(apenasDigitos(evento.target.value))}
             />
@@ -210,25 +207,22 @@ export function FiltroClassificacao({
           </div>
 
           <p className="icon-dropdown-titulo icon-dropdown-secao">Faixa de Ano</p>
-          <div className="icon-dropdown-campo">
-            <label htmlFor="ano-min">De</label>
+          <div className="icon-dropdown-faixa">
             <input
               id="ano-min"
               type="text"
               inputMode="numeric"
-              placeholder="2010"
+              placeholder="Do ano"
               maxLength={4}
               value={anoMinDigitos}
               onChange={(evento) => setAnoMinDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
             />
-          </div>
-          <div className="icon-dropdown-campo">
-            <label htmlFor="ano-max">Até</label>
+            <span className="icon-dropdown-faixa-tra">–</span>
             <input
               id="ano-max"
               type="text"
               inputMode="numeric"
-              placeholder="2025"
+              placeholder="Até ano"
               maxLength={4}
               value={anoMaxDigitos}
               onChange={(evento) => setAnoMaxDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
