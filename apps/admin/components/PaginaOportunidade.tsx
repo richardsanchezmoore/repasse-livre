@@ -60,6 +60,9 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
   const margemFipe = oportunidade.margem_percentual;
   const avisoQuedaFipe =
     margemFipe !== null && margemFipe >= MARGEM_MINIMA_BASE && margemFipe < MARGEM_PISO_CAPTACAO;
+  // Só admin chega aqui com um anúncio não-aprovado (ver buscarOportunidadePorId):
+  // sinaliza que é prévia de revisão, não a página pública.
+  const ehPreviaNaoAprovada = oportunidade.status !== "aprovada";
 
   // Atributos opcionais da OLX (cor, combustível, portas etc.) — só os que
   // o anunciante preencheu chegam aqui (ver olxService.ts no worker).
@@ -78,6 +81,12 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
 
   return (
     <article className="pagina-oportunidade">
+      {ehPreviaNaoAprovada && (
+        <div className="previa-nao-aprovada">
+          <strong>Prévia de revisão</strong> — anúncio ainda em Descobertas, visível só para admin. Não
+          está público até ser aprovado.
+        </div>
+      )}
       <GaleriaFotos fotos={fotos} alt={titulo} />
 
       <div className="pagina-oportunidade-corpo">

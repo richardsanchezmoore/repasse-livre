@@ -268,7 +268,10 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     return <PaginaMarca cidadeUf={cidadeUf} marcaSlug={slug} pagina={Math.max(1, Number(paginaParam) || 1)} />;
   }
 
-  const [oportunidade, usuario] = await Promise.all([buscarOportunidadePorId(id), obterUsuarioAtual()]);
+  const usuario = await obterUsuarioAtual();
+  // Admin pode abrir a página de anúncios ainda em Descobertas (não aprovados)
+  // pra revisar detalhes/fotos antes de aprovar; público só vê aprovados.
+  const oportunidade = await buscarOportunidadePorId(id, usuario?.role === "admin");
 
   if (!oportunidade) {
     // Anúncio apagado/rejeitado (um a um ou em massa) — cai pra página da

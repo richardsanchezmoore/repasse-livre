@@ -204,13 +204,15 @@ async function buscarOportunidades(
 }
 
 /** Busca uma oportunidade pública (aprovada) pra página individual — null se não existir, não estiver aprovada ou tiver sido apagada. */
-export async function buscarOportunidadePorId(id: string): Promise<Oportunidade | null> {
-  const { data, error } = await supabaseAdmin
-    .from("opportunities")
-    .select("*")
-    .eq("id", id)
-    .eq("status", "aprovada")
-    .maybeSingle();
+export async function buscarOportunidadePorId(
+  id: string,
+  incluirNaoAprovadas = false
+): Promise<Oportunidade | null> {
+  // Público só enxerga aprovadas. Admin (incluirNaoAprovadas=true) enxerga
+  // também Descobertas/etc., pra revisar a página individual antes de aprovar.
+  let consulta = supabaseAdmin.from("opportunities").select("*").eq("id", id);
+  if (!incluirNaoAprovadas) consulta = consulta.eq("status", "aprovada");
+  const { data, error } = await consulta.maybeSingle();
   if (error) {
     throw new Error(`Falha ao buscar oportunidade: ${error.message}`);
   }

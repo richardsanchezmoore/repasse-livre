@@ -4137,3 +4137,18 @@ body {
 .aviso-queda-fipe strong {
   color: #b45309;
 }
+
+/* Prévia de revisão (admin abrindo anúncio ainda em Descobertas) */
+.previa-nao-aprovada {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px dashed #93c5fd;
+  background: #eff6ff;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1e40af;
+}
+.previa-nao-aprovada strong {
+  color: #1e3a8a;
+}
