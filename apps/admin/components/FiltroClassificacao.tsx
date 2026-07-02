@@ -167,7 +167,7 @@ export function FiltroClassificacao({
         onClick={() => setChipsAbertos((aberto) => !aberto)}
         aria-expanded={chipsAbertos}
       >
-        <span>{ativa ? ROTULO_CLASSIFICACAO_FILTRO[ativa] : "Filtrar Margem FIPE"}</span>
+        <span>{ativa ? ROTULO_CLASSIFICACAO_FILTRO[ativa] : "Margem FIPE"}</span>
         <ChevronDown size={16} strokeWidth={2.25} className={chipsAbertos ? "filtro-toggle-seta-aberta" : ""} />
       </button>
 
