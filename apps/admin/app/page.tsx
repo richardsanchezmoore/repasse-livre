@@ -61,12 +61,16 @@ export default async function CentralDeOportunidadesPage({
     estado?: string;
     precoMin?: string;
     precoMax?: string;
+    anoMin?: string;
+    anoMax?: string;
     ordem?: string;
     anunciante?: string;
+    fonte?: string;
     pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, ordem, anunciante, pagina } = await searchParams;
+  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, pagina } =
+    await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
   const abaSolicitada: Aba = ABAS_VALIDAS.includes(aba as Aba) ? (aba as Aba) : "aprovadas";
@@ -91,6 +95,10 @@ export default async function CentralDeOportunidadesPage({
     abaAtiva === "aprovadas" && estadoEfetivo === undefined ? await obterEstadoDetectado() : null;
   const estadoAtivo = estadoExplicito === null ? undefined : estadoExplicito ?? estadoDetectado ?? undefined;
   const anuncianteAtivo = anunciante === "profissional" || anunciante === "particular" ? anunciante : undefined;
+  const FONTES_VALIDAS = ["OLX", "WEBMOTORS", "MERCADO_LIVRE"];
+  const fonteAtiva = FONTES_VALIDAS.includes(fonte ?? "") ? fonte : undefined;
+  const anoMinAtivo = /^\d{4}$/.test(anoMin ?? "") ? anoMin : undefined;
+  const anoMaxAtivo = /^\d{4}$/.test(anoMax ?? "") ? anoMax : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
 
   // "Perto de mim" é uma opção manual no dropdown "Ordenar por" (não mais
@@ -109,7 +117,10 @@ export default async function CentralDeOportunidadesPage({
     estadoBR: estadoExplicito === null,
     precoMin: paraNumero(precoMin),
     precoMax: paraNumero(precoMax),
+    anoMin: anoMinAtivo,
+    anoMax: anoMaxAtivo,
     anunciante: anuncianteAtivo,
+    fonte: fonteAtiva,
     ordem: ordemAtiva,
     lat: ordemAtiva === "proximidade" ? coordsUsuario?.lat : undefined,
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,

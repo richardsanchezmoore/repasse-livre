@@ -4152,3 +4152,38 @@ body {
 .previa-nao-aprovada strong {
   color: #1e3a8a;
 }
+
+/* Painel de Filtros (preço + ano + anunciante + fontes) — ver FiltroClassificacao */
+.icon-dropdown-secao {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f2f5;
+}
+.filtro-fontes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 4px 4px;
+}
+.filtro-fonte-chip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border: 1px solid #e0e3e7;
+  border-radius: 999px;
+  background: #fff;
+  color: #3b4a54;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+/* Fonte selecionada = verde da marca (mesma do selo de opção ativa) */
+.filtro-fonte-chip-ativo {
+  background: #d9fdd3;
+  color: #0a5d2c;
+  border-color: #9fe8a6;
+}
+/* Quando uma fonte está selecionada, as outras ficam apagadas (filtradas fora) */
+.filtro-fonte-chip-inativo {
+  opacity: 0.45;
+}

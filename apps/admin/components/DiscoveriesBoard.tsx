@@ -39,12 +39,17 @@ export interface FiltrosBoard {
   estadoBR?: boolean;
   precoMin?: number;
   precoMax?: number;
+  /** Faixa de ano do modelo (texto de 4 dígitos — comparação lexicográfica = numérica). */
+  anoMin?: string;
+  anoMax?: string;
   ordem?: Ordem;
   /** Coordenadas do usuário — só usadas quando ordem === "proximidade" (ver lib/geolocalizacao.ts). */
   lat?: number;
   lng?: number;
   /** Tipo de anunciante (campo `professionalAd` da OLX) — undefined = todos. */
   anunciante?: "profissional" | "particular";
+  /** Fonte única selecionada (OLX/WEBMOTORS/MERCADO_LIVRE) — undefined = todas. */
+  fonte?: string;
 }
 
 const TITULO_POR_ABA: Record<Aba, string> = {
@@ -121,6 +126,9 @@ async function buscarOportunidades(
       p_preco_min: filtros.precoMin ?? null,
       p_preco_max: filtros.precoMax ?? null,
       p_anunciante: filtros.anunciante === "profissional" ? true : filtros.anunciante === "particular" ? false : null,
+      p_ano_min: filtros.anoMin ?? null,
+      p_ano_max: filtros.anoMax ?? null,
+      p_fonte: filtros.fonte ?? null,
       p_limite: ITENS_POR_PAGINA,
       p_deslocamento: inicio,
     });
@@ -145,6 +153,9 @@ async function buscarOportunidades(
     if (filtros.estado) consultaFavoritos = consultaFavoritos.eq("estado", filtros.estado);
     if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
     if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
+    if (filtros.anoMin) consultaFavoritos = consultaFavoritos.gte("ano", filtros.anoMin);
+    if (filtros.anoMax) consultaFavoritos = consultaFavoritos.lte("ano", filtros.anoMax);
+    if (filtros.fonte) consultaFavoritos = consultaFavoritos.eq("fonte", filtros.fonte);
     if (filtros.anunciante) {
       consultaFavoritos = consultaFavoritos.eq("anunciante_profissional", filtros.anunciante === "profissional");
     }
@@ -179,6 +190,15 @@ async function buscarOportunidades(
   }
   if (filtros.precoMax !== undefined) {
     consulta = consulta.lte("preco", filtros.precoMax);
+  }
+  if (filtros.anoMin) {
+    consulta = consulta.gte("ano", filtros.anoMin);
+  }
+  if (filtros.anoMax) {
+    consulta = consulta.lte("ano", filtros.anoMax);
+  }
+  if (filtros.fonte) {
+    consulta = consulta.eq("fonte", filtros.fonte);
   }
   if (filtros.anunciante) {
     consulta = consulta.eq("anunciante_profissional", filtros.anunciante === "profissional");
@@ -474,7 +494,10 @@ export async function Board({
         ordem={filtros.ordem}
         precoMin={filtros.precoMin}
         precoMax={filtros.precoMax}
+        anoMin={filtros.anoMin}
+        anoMax={filtros.anoMax}
         anunciante={filtros.anunciante}
+        fonte={filtros.fonte}
         proximidadeDisponivel={proximidadeDisponivel}
       />
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />

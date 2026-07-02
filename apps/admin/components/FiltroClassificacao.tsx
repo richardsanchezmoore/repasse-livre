@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowUpDown, Building2, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { registrarEvento } from "@/lib/eventosAnalytics";
@@ -26,7 +26,10 @@ export function FiltroClassificacao({
   ordem = "recente",
   precoMin,
   precoMax,
+  anoMin,
+  anoMax,
   anunciante,
+  fonte,
   proximidadeDisponivel = false,
 }: {
   aba: Aba;
@@ -34,7 +37,10 @@ export function FiltroClassificacao({
   ordem?: Ordem;
   precoMin?: number;
   precoMax?: number;
+  anoMin?: string;
+  anoMax?: string;
   anunciante?: "profissional" | "particular";
+  fonte?: string;
   proximidadeDisponivel?: boolean;
 }) {
   // "Perto de mim" só aparece quando temos coordenada do usuário (ver
@@ -44,7 +50,15 @@ export function FiltroClassificacao({
   const searchParams = useSearchParams();
   const [minDigitos, setMinDigitos] = useState(precoMin ? String(precoMin) : "");
   const [maxDigitos, setMaxDigitos] = useState(precoMax ? String(precoMax) : "");
+  const [anoMinDigitos, setAnoMinDigitos] = useState(anoMin ?? "");
+  const [anoMaxDigitos, setAnoMaxDigitos] = useState(anoMax ?? "");
   const [chipsAbertos, setChipsAbertos] = useState(false);
+
+  const FONTES: { valor: string; rotulo: string }[] = [
+    { valor: "OLX", rotulo: "OLX" },
+    { valor: "WEBMOTORS", rotulo: "Webmotors" },
+    { valor: "MERCADO_LIVRE", rotulo: "Mercado Livre" },
+  ];
 
   function atualizarParams(alteracoes: Record<string, string | undefined>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -91,7 +105,28 @@ export function FiltroClassificacao({
     atualizarParams({ precoMin: undefined, precoMax: undefined });
   }
 
-  const filtroPrecoAtivo = Boolean(precoMin || precoMax);
+  function aplicarFaixaAno() {
+    atualizarParams({ anoMin: anoMinDigitos || undefined, anoMax: anoMaxDigitos || undefined });
+    registrarEvento("busca", { filtro: "ano", anoMin: anoMinDigitos || undefined, anoMax: anoMaxDigitos || undefined, aba });
+  }
+
+  function limparFaixaAno() {
+    setAnoMinDigitos("");
+    setAnoMaxDigitos("");
+    atualizarParams({ anoMin: undefined, anoMax: undefined });
+  }
+
+  function selecionarFonte(novaFonte: string) {
+    // Todas ativas por padrão; clicar numa filtra só ela; clicar de novo na
+    // ativa volta pra todas.
+    const proxima = fonte === novaFonte ? undefined : novaFonte;
+    atualizarParams({ fonte: proxima });
+    registrarEvento("busca", { filtro: "fonte", fonte: proxima, aba });
+  }
+
+  // O ícone de Filtros fica "ativo" (destacado) se qualquer filtro do painel
+  // estiver aplicado.
+  const algumFiltroAtivo = Boolean(precoMin || precoMax || anoMin || anoMax || anunciante || fonte);
 
   return (
     <div className="filtro-classificacao">
@@ -141,7 +176,7 @@ export function FiltroClassificacao({
           ))}
         </IconDropdown>
 
-        <IconDropdown Icone={SlidersHorizontal} rotulo="Filtrar" ativo={filtroPrecoAtivo}>
+        <IconDropdown Icone={SlidersHorizontal} rotulo="Filtros" ativo={algumFiltroAtivo}>
           <p className="icon-dropdown-titulo">Faixa de Preço</p>
           <div className="icon-dropdown-campo">
             <label htmlFor="preco-min">Mínimo</label>
@@ -173,10 +208,42 @@ export function FiltroClassificacao({
               Aplicar
             </button>
           </div>
-        </IconDropdown>
 
-        <IconDropdown Icone={Building2} rotulo="Anunciante" ativo={Boolean(anunciante)}>
-          <p className="icon-dropdown-titulo">Tipo de anunciante</p>
+          <p className="icon-dropdown-titulo icon-dropdown-secao">Faixa de Ano</p>
+          <div className="icon-dropdown-campo">
+            <label htmlFor="ano-min">De</label>
+            <input
+              id="ano-min"
+              type="text"
+              inputMode="numeric"
+              placeholder="2010"
+              maxLength={4}
+              value={anoMinDigitos}
+              onChange={(evento) => setAnoMinDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
+            />
+          </div>
+          <div className="icon-dropdown-campo">
+            <label htmlFor="ano-max">Até</label>
+            <input
+              id="ano-max"
+              type="text"
+              inputMode="numeric"
+              placeholder="2025"
+              maxLength={4}
+              value={anoMaxDigitos}
+              onChange={(evento) => setAnoMaxDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
+            />
+          </div>
+          <div className="icon-dropdown-rodape">
+            <button type="button" className="icon-dropdown-limpar" onClick={limparFaixaAno}>
+              Limpar
+            </button>
+            <button type="button" className="icon-dropdown-aplicar" onClick={aplicarFaixaAno}>
+              Aplicar
+            </button>
+          </div>
+
+          <p className="icon-dropdown-titulo icon-dropdown-secao">Tipo de anunciante</p>
           <button
             type="button"
             className={`icon-dropdown-opcao ${!anunciante ? "icon-dropdown-opcao-ativa" : ""}`}
@@ -198,6 +265,22 @@ export function FiltroClassificacao({
           >
             Profissional
           </button>
+
+          <p className="icon-dropdown-titulo icon-dropdown-secao">Fontes</p>
+          <div className="filtro-fontes">
+            {FONTES.map((f) => (
+              <button
+                key={f.valor}
+                type="button"
+                className={`filtro-fonte-chip ${
+                  fonte === f.valor ? "filtro-fonte-chip-ativo" : fonte ? "filtro-fonte-chip-inativo" : ""
+                }`}
+                onClick={() => selecionarFonte(f.valor)}
+              >
+                {f.rotulo}
+              </button>
+            ))}
+          </div>
         </IconDropdown>
       </div>
     </div>
