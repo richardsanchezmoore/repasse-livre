@@ -1,3 +1,4 @@
+import { supabase } from "./supabaseClient.js";
 import type { ReferenciaFipe } from "./types.js";
 
 // API oficial da FIPE (a mesma que veiculos.fipe.org.br consome). Substituiu o
@@ -360,6 +361,113 @@ function candidatosOrdenadosModeloVariante<T extends { name: string }>(
     .map((c) => c.item);
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// CONSULTA LOCAL (nossa base). O fipe_historico já tem os códigos que
+// resolvemos, com nome oficial (nome_marca/nome_modelo), ano e valor mais
+// recente. Bater aqui PRIMEIRO evita a API oficial da FIPE, que passou a dar
+// 403 no IP de datacenter da Railway (o cron do ML ficava com 0 elegíveis
+// porque TODA consulta caía em 403 na ConsultarTabelaDeReferencia). Fuzzy
+// idêntico ao da oficial, só que sobre o subconjunto que já conhecemos — e os
+// modelos comuns (Onix/HB20/Renegade/Creta…) já estão na base.
+// ───────────────────────────────────────────────────────────────────────────
+interface AnoLocal {
+  valor: number;
+  mesRef: number;
+  anoRef: number;
+  sigla: string;
+  ordem: number; // ano_ref*12 + mes_ref, pra achar o mais recente
+}
+interface EntradaLocal {
+  codigoFipe: string;
+  nomeMarca: string;
+  nomeModelo: string;
+  anos: Map<number, AnoLocal>;
+}
+
+let cacheIndiceLocal: Promise<EntradaLocal[]> | null = null;
+function carregarIndiceLocal(): Promise<EntradaLocal[]> {
+  if (!cacheIndiceLocal) {
+    cacheIndiceLocal = (async () => {
+      const porCodigo = new Map<string, EntradaLocal>();
+      for (let de = 0; ; de += 1000) {
+        const { data, error } = await supabase
+          .from("fipe_historico")
+          .select("codigo_fipe,nome_marca,nome_modelo,ano_modelo,valor_centavos,mes_referencia,ano_referencia,sigla_combustivel")
+          .range(de, de + 999);
+        if (error) throw new Error(`Falha ao carregar fipe_historico: ${error.message}`);
+        for (const r of data ?? []) {
+          let e = porCodigo.get(r.codigo_fipe);
+          if (!e) {
+            e = { codigoFipe: r.codigo_fipe, nomeMarca: r.nome_marca ?? "", nomeModelo: r.nome_modelo ?? "", anos: new Map() };
+            porCodigo.set(r.codigo_fipe, e);
+          }
+          const ordem = r.ano_referencia * 12 + r.mes_referencia;
+          const atual = e.anos.get(r.ano_modelo);
+          if (!atual || ordem > atual.ordem) {
+            e.anos.set(r.ano_modelo, {
+              valor: r.valor_centavos / 100,
+              mesRef: r.mes_referencia,
+              anoRef: r.ano_referencia,
+              sigla: r.sigla_combustivel ?? "-",
+              ordem,
+            });
+          }
+        }
+        if (!data || data.length < 1000) break;
+      }
+      return [...porCodigo.values()];
+    })().catch((erro) => {
+      cacheIndiceLocal = null; // não perpetua falha
+      throw erro;
+    });
+  }
+  return cacheIndiceLocal;
+}
+
+/**
+ * Resolve a ReferenciaFipe pela NOSSA base (fipe_historico), sem tocar na API
+ * oficial. Mesmo fuzzy da oficial (marca → modelo/variante → ano), mas sobre os
+ * códigos que já conhecemos. Retorna null se não estiver na base (aí o chamador
+ * cai na oficial). O valor é o mais recente que temos pro (código, ano).
+ */
+export async function buscarReferenciaFipeLocal(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null = null
+): Promise<ReferenciaFipe | null> {
+  const indice = await carregarIndiceLocal();
+  if (indice.length === 0) return null;
+  const anoNum = Number.parseInt(ano, 10);
+  if (!Number.isFinite(anoNum)) return null;
+
+  const marcasDistintas = [...new Set(indice.map((e) => e.nomeMarca))].map((name) => ({ name }));
+  const marcaEnc = encontrarMelhorCorrespondencia(marcasDistintas, marca);
+  if (!marcaEnc) return null;
+
+  const daMarca = indice.filter((e) => e.nomeMarca === marcaEnc.name).map((e) => ({ name: e.nomeModelo, entrada: e }));
+  const candidatos = candidatosOrdenadosModeloVariante(daMarca, modelo, variante, 1, 25);
+
+  for (const c of candidatos) {
+    const dados = c.entrada.anos.get(anoNum);
+    if (dados) {
+      return {
+        marca: c.entrada.nomeMarca,
+        modelo: c.entrada.nomeModelo,
+        ano: String(anoNum),
+        valor: dados.valor,
+        mesReferencia: `${MESES_PT[dados.mesRef - 1]} de ${dados.anoRef}`,
+        codigoFipe: c.entrada.codigoFipe,
+        anoModelo: anoNum,
+        siglaCombustivel: (dados.sigla ?? "").toLowerCase(),
+        mesReferenciaNum: dados.mesRef,
+        anoReferencia: dados.anoRef,
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * Busca a referência FIPE mais próxima para marca/modelo/ano informados.
  * A correspondência é por aproximação textual (a OLX não usa os mesmos
@@ -375,6 +483,11 @@ export async function buscarReferenciaFipe(
   ano: string,
   variante: string | null = null
 ): Promise<ReferenciaFipe | null> {
+  // NOSSA BASE PRIMEIRO: evita a oficial (403 no IP da Railway) pros modelos
+  // que já conhecemos. Só cai na oficial nos genuinamente novos.
+  const local = await buscarReferenciaFipeLocal(marca, modelo, ano, variante).catch(() => null);
+  if (local) return local;
+
   const marcas = await buscarMarcas();
   const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
   if (!marcaEncontrada) return null;
