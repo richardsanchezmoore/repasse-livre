@@ -176,7 +176,7 @@ export function FiltroClassificacao({
           ))}
         </IconDropdown>
 
-        <IconDropdown Icone={SlidersHorizontal} rotulo="Filtros" ativo={algumFiltroAtivo}>
+        <IconDropdown Icone={SlidersHorizontal} rotulo="Filtros" ativo={algumFiltroAtivo} mostrarRotulo>
           <p className="icon-dropdown-titulo">Faixa de Preço</p>
           <div className="icon-dropdown-faixa">
             <input

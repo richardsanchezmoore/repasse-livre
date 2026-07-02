@@ -4209,3 +4209,15 @@ body {
   flex-shrink: 0;
   color: #8696a0;
 }
+
+/* Botão do dropdown com o rótulo escrito ao lado do ícone (ex.: "Filtros") */
+.icon-dropdown-botao-com-texto {
+  width: auto;
+  gap: 6px;
+  padding: 0 12px;
+}
+.icon-dropdown-botao-rotulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111b21;
+}

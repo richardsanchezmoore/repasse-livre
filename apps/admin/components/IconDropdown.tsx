@@ -7,11 +7,14 @@ export function IconDropdown({
   Icone,
   rotulo,
   ativo,
+  mostrarRotulo,
   children,
 }: {
   Icone: LucideIcon;
   rotulo: string;
   ativo?: boolean;
+  /** Mostra o `rotulo` como texto ao lado do ícone (em vez de só tooltip). */
+  mostrarRotulo?: boolean;
   children: ReactNode;
 }) {
   const [aberto, setAberto] = useState(false);
@@ -46,12 +49,15 @@ export function IconDropdown({
     >
       <button
         type="button"
-        className={`icon-dropdown-botao ${ativo ? "icon-dropdown-botao-ativo" : ""}`}
+        className={`icon-dropdown-botao ${ativo ? "icon-dropdown-botao-ativo" : ""} ${
+          mostrarRotulo ? "icon-dropdown-botao-com-texto" : ""
+        }`}
         onClick={() => setAberto(true)}
         aria-label={rotulo}
         title={rotulo}
       >
         <Icone size={18} strokeWidth={1.75} />
+        {mostrarRotulo && <span className="icon-dropdown-botao-rotulo">{rotulo}</span>}
       </button>
       {aberto && <div className="icon-dropdown-box">{children}</div>}
     </div>
