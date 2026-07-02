@@ -53,6 +53,10 @@ export function FiltroClassificacao({
   const [maxDigitos, setMaxDigitos] = useState(precoMax ? String(precoMax) : "");
   const [anoMinDigitos, setAnoMinDigitos] = useState(anoMin ?? "");
   const [anoMaxDigitos, setAnoMaxDigitos] = useState(anoMax ?? "");
+  // Anunciante e fonte ficam "pendentes" (staged) no painel — só valem quando o
+  // usuário clica em "Aplicar" (nem todos percebem que seria automático).
+  const [anuncianteLocal, setAnuncianteLocal] = useState(anunciante);
+  const [fonteLocal, setFonteLocal] = useState(fonte);
   const [chipsAbertos, setChipsAbertos] = useState(false);
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   // O drawer é portalizado pro body (fora do contexto de empilhamento aninhado,
@@ -103,8 +107,7 @@ export function FiltroClassificacao({
   }
 
   function selecionarAnunciante(novoAnunciante?: "profissional" | "particular") {
-    atualizarParams({ anunciante: novoAnunciante });
-    registrarEvento("busca", { filtro: "anunciante", anunciante: novoAnunciante, aba });
+    setAnuncianteLocal(novoAnunciante);
   }
 
   function selecionarOrdem(novaOrdem: Ordem) {
@@ -116,34 +119,40 @@ export function FiltroClassificacao({
     registrarEvento("busca", { filtro: "ordem", ordem: novaOrdem, aba });
   }
 
-  function aplicarFaixaPreco() {
-    atualizarParams({ precoMin: minDigitos || undefined, precoMax: maxDigitos || undefined });
-    registrarEvento("busca", { filtro: "preco", precoMin: minDigitos || undefined, precoMax: maxDigitos || undefined, aba });
+  function selecionarFonte(novaFonte: string) {
+    // Todas ativas por padrão; clicar numa deixa só ela pendente; clicar de
+    // novo na ativa volta pra todas. Só vale no "Aplicar".
+    setFonteLocal((atual) => (atual === novaFonte ? undefined : novaFonte));
   }
 
-  function limparFaixaPreco() {
+  function aplicarFiltros() {
+    atualizarParams({
+      precoMin: minDigitos || undefined,
+      precoMax: maxDigitos || undefined,
+      anoMin: anoMinDigitos || undefined,
+      anoMax: anoMaxDigitos || undefined,
+      anunciante: anuncianteLocal,
+      fonte: fonteLocal,
+    });
+    registrarEvento("busca", { filtro: "painel", aba });
+    setFiltrosAbertos(false);
+  }
+
+  function limparFiltros() {
     setMinDigitos("");
     setMaxDigitos("");
-    atualizarParams({ precoMin: undefined, precoMax: undefined });
-  }
-
-  function aplicarFaixaAno() {
-    atualizarParams({ anoMin: anoMinDigitos || undefined, anoMax: anoMaxDigitos || undefined });
-    registrarEvento("busca", { filtro: "ano", anoMin: anoMinDigitos || undefined, anoMax: anoMaxDigitos || undefined, aba });
-  }
-
-  function limparFaixaAno() {
     setAnoMinDigitos("");
     setAnoMaxDigitos("");
-    atualizarParams({ anoMin: undefined, anoMax: undefined });
-  }
-
-  function selecionarFonte(novaFonte: string) {
-    // Todas ativas por padrão; clicar numa filtra só ela; clicar de novo na
-    // ativa volta pra todas.
-    const proxima = fonte === novaFonte ? undefined : novaFonte;
-    atualizarParams({ fonte: proxima });
-    registrarEvento("busca", { filtro: "fonte", fonte: proxima, aba });
+    setAnuncianteLocal(undefined);
+    setFonteLocal(undefined);
+    atualizarParams({
+      precoMin: undefined,
+      precoMax: undefined,
+      anoMin: undefined,
+      anoMax: undefined,
+      anunciante: undefined,
+      fonte: undefined,
+    });
   }
 
   // O ícone de Filtros fica "ativo" (destacado) se qualquer filtro do painel
@@ -158,7 +167,7 @@ export function FiltroClassificacao({
         onClick={() => setChipsAbertos((aberto) => !aberto)}
         aria-expanded={chipsAbertos}
       >
-        <span>{ativa ? ROTULO_CLASSIFICACAO_FILTRO[ativa] : "Filtrar por Margem FIPE"}</span>
+        <span>{ativa ? ROTULO_CLASSIFICACAO_FILTRO[ativa] : "Filtrar Margem FIPE"}</span>
         <ChevronDown size={16} strokeWidth={2.25} className={chipsAbertos ? "filtro-toggle-seta-aberta" : ""} />
       </button>
 
@@ -183,7 +192,10 @@ export function FiltroClassificacao({
       </div>
 
       <div className="filtro-ordenacao">
-        <span className="filtro-ordenacao-label">Ordenar por:</span>
+        <span className="filtro-ordenacao-label">
+          <span className="filtro-ordenacao-label-completo">Ordenar por:</span>
+          <span className="filtro-ordenacao-label-curto">Ordenar</span>
+        </span>
         <IconDropdown Icone={ArrowUpDown} rotulo="Ordenar" ativo={ordem !== "recente"}>
           <p className="icon-dropdown-titulo">Ordenar por</p>
           {ORDENS.map((opcao) => (
@@ -252,14 +264,6 @@ export function FiltroClassificacao({
               onChange={(evento) => setMaxDigitos(apenasDigitos(evento.target.value))}
             />
           </div>
-          <div className="icon-dropdown-rodape">
-            <button type="button" className="icon-dropdown-limpar" onClick={limparFaixaPreco}>
-              Limpar
-            </button>
-            <button type="button" className="icon-dropdown-aplicar" onClick={aplicarFaixaPreco}>
-              Aplicar
-            </button>
-          </div>
 
           <p className="icon-dropdown-titulo icon-dropdown-secao">Faixa de Ano</p>
           <div className="icon-dropdown-faixa">
@@ -283,37 +287,31 @@ export function FiltroClassificacao({
               onChange={(evento) => setAnoMaxDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
             />
           </div>
-          <div className="icon-dropdown-rodape">
-            <button type="button" className="icon-dropdown-limpar" onClick={limparFaixaAno}>
-              Limpar
-            </button>
-            <button type="button" className="icon-dropdown-aplicar" onClick={aplicarFaixaAno}>
-              Aplicar
-            </button>
-          </div>
 
           <p className="icon-dropdown-titulo icon-dropdown-secao">Tipo de anunciante</p>
-          <button
-            type="button"
-            className={`icon-dropdown-opcao ${!anunciante ? "icon-dropdown-opcao-ativa" : ""}`}
-            onClick={() => selecionarAnunciante(undefined)}
-          >
-            Todos
-          </button>
-          <button
-            type="button"
-            className={`icon-dropdown-opcao ${anunciante === "particular" ? "icon-dropdown-opcao-ativa" : ""}`}
-            onClick={() => selecionarAnunciante("particular")}
-          >
-            Particular
-          </button>
-          <button
-            type="button"
-            className={`icon-dropdown-opcao ${anunciante === "profissional" ? "icon-dropdown-opcao-ativa" : ""}`}
-            onClick={() => selecionarAnunciante("profissional")}
-          >
-            Profissional
-          </button>
+          <div className="painel-filtros-opcoes">
+            <button
+              type="button"
+              className={`icon-dropdown-opcao ${!anuncianteLocal ? "icon-dropdown-opcao-ativa" : ""}`}
+              onClick={() => selecionarAnunciante(undefined)}
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              className={`icon-dropdown-opcao ${anuncianteLocal === "particular" ? "icon-dropdown-opcao-ativa" : ""}`}
+              onClick={() => selecionarAnunciante("particular")}
+            >
+              Particular
+            </button>
+            <button
+              type="button"
+              className={`icon-dropdown-opcao ${anuncianteLocal === "profissional" ? "icon-dropdown-opcao-ativa" : ""}`}
+              onClick={() => selecionarAnunciante("profissional")}
+            >
+              Profissional
+            </button>
+          </div>
 
           <p className="icon-dropdown-titulo icon-dropdown-secao">Fontes</p>
           <div className="filtro-fontes">
@@ -322,7 +320,11 @@ export function FiltroClassificacao({
                 key={f.valor}
                 type="button"
                 className={`filtro-fonte-chip ${
-                  fonte === f.valor ? "filtro-fonte-chip-ativo" : fonte ? "filtro-fonte-chip-inativo" : ""
+                  fonteLocal === f.valor
+                    ? "filtro-fonte-chip-ativo"
+                    : fonteLocal
+                      ? "filtro-fonte-chip-inativo"
+                      : ""
                 }`}
                 onClick={() => selecionarFonte(f.valor)}
               >
@@ -331,6 +333,14 @@ export function FiltroClassificacao({
             ))}
           </div>
         </div>
+            <footer className="painel-filtros-rodape">
+              <button type="button" className="painel-filtros-limpar" onClick={limparFiltros}>
+                Limpar Filtros
+              </button>
+              <button type="button" className="painel-filtros-aplicar" onClick={aplicarFiltros}>
+                Aplicar
+              </button>
+            </footer>
             </aside>
           </>,
           document.body
