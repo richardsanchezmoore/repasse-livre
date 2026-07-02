@@ -129,6 +129,25 @@ function resolverTabelaReferencia(): Promise<number> {
   return cacheTabelaReferencia;
 }
 
+// Os DOIS meses mais recentes (vigente + anterior). A âncora de valor da OLX
+// precisa dos dois: a OLX atrasa a virada do mês alguns dias, então um anúncio
+// captado no começo do mês ainda mostra o FIPE do mês ANTERIOR (confirmado:
+// anúncio publicado em 02/07 exibindo o FIPE de junho). Ver
+// project_repasse_livre_fipe_ancora_valor_olx. Mesmo tratamento de cache/rejeição.
+let cacheTabelasRecentes: Promise<number[]> | null = null;
+function resolverTabelasRecentes(): Promise<number[]> {
+  if (!cacheTabelasRecentes) {
+    cacheTabelasRecentes = (async () => {
+      const tabelas = await postFipe<{ Codigo: number; Mes: string }[]>("ConsultarTabelaDeReferencia", {});
+      return tabelas.map((t) => t.Codigo).sort((a, b) => b - a).slice(0, 2);
+    })().catch((erro) => {
+      cacheTabelasRecentes = null;
+      throw erro;
+    });
+  }
+  return cacheTabelasRecentes;
+}
+
 async function buscarMarcas(): Promise<FipeItem[]> {
   if (!cacheMarcas) {
     cacheMarcas = (async () => {
@@ -211,6 +230,35 @@ function buscarValor(marcaCode: string, modeloCode: string, anoCode: string): Pr
       throw erro;
     });
     cacheValor.set(chave, promessa);
+  }
+  return promessa;
+}
+
+// Valor num mês de referência ESPECÍFICO (não só o vigente) — usado pela âncora
+// de valor da OLX pra comparar contra vigente E anterior. Cache separado, com a
+// tabela na chave.
+const cacheValorEmTabela = new Map<string, Promise<FipeValorResposta>>();
+function buscarValorEmTabela(marcaCode: string, modeloCode: string, anoCode: string, tabela: number): Promise<FipeValorResposta> {
+  const chave = `${tabela}|${marcaCode}|${modeloCode}|${anoCode}`;
+  let promessa = cacheValorEmTabela.get(chave);
+  if (!promessa) {
+    promessa = (async () => {
+      const [anoModelo, codigoTipoCombustivel] = anoCode.split("-");
+      return postFipe<FipeValorResposta>("ConsultarValorComTodosParametros", {
+        codigoTabelaReferencia: tabela,
+        codigoTipoVeiculo: CODIGO_TIPO_VEICULO_CARRO,
+        codigoMarca: marcaCode,
+        codigoModelo: modeloCode,
+        anoModelo,
+        codigoTipoCombustivel,
+        tipoVeiculo: "carro",
+        tipoConsulta: "tradicional",
+      });
+    })().catch((erro) => {
+      cacheValorEmTabela.delete(chave);
+      throw erro;
+    });
+    cacheValorEmTabela.set(chave, promessa);
   }
   return promessa;
 }
@@ -364,4 +412,93 @@ export async function buscarReferenciaFipe(
     mesReferenciaNum: mesRef,
     anoReferencia: anoRef,
   };
+}
+
+// Folga só de arredondamento de centavos ao comparar o valor da página com o da
+// oficial. NÃO é tolerância de versão: o encaixe é EXATO (o valor da FIPE na
+// página da OLX existe idêntico na oficial — só o texto do anúncio "bagunça").
+const EPSILON_ENCAIXE_REAIS = 1;
+
+/**
+ * Resolve a ReferenciaFipe usando o VALOR da página como âncora de verdade.
+ * Portais grandes (OLX) puxam o FIPE direto da fonte oficial quando o vendedor
+ * escolhe marca/modelo/versão/ano nos dropdowns — então o VALOR exibido é
+ * exato, mesmo quando o texto livre do anúncio está bagunçado. Marca e ano vêm
+ * corretos; o que precisa acertar é modelo-versão.
+ *
+ * Em vez de confiar no melhor texto (que cai em versões vizinhas ~2-4% off — foi
+ * o que gerava falsos "abaixo da margem" e código errado no gráfico), iteramos
+ * os candidatos batendo na oficial e devolvemos aquele cujo valor ENCAIXA EXATO
+ * no valor da página. Se nenhum encaixa, retorna null — melhor ficar sem código
+ * (mantendo a margem da página, re-tentando no próximo run) do que gravar um
+ * código errado. Ver project_repasse_livre_fipe_ancora_valor_olx.
+ */
+export async function resolverReferenciaFipePorValor(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null,
+  valorPagina: number
+): Promise<ReferenciaFipe | null> {
+  if (!(valorPagina > 0)) return null;
+
+  const marcas = await buscarMarcas();
+  const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
+  if (!marcaEncontrada) return null;
+
+  const modelos = await buscarModelos(marcaEncontrada.code);
+  // O código certo quase sempre está entre os melhores por TEXTO — quem desempata
+  // é o valor. topN moderado (8) equilibra: cobre a versão certa vs. a vizinha
+  // (que é o caso que a âncora resolve) sem estourar a FIPE em chamadas (cada
+  // candidato custa buscarAnos+buscarValor; grupo-3 iteraria todos à toa).
+  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 8);
+  if (candidatos.length === 0) return null;
+
+  try {
+    const tabelas = await resolverTabelasRecentes();
+    const tabelaAtual = tabelas[0];
+    const tabelaAnterior = tabelas[1]; // undefined se a FIPE só tiver uma tabela
+
+    for (const candidato of candidatos) {
+      const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+      const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+      if (!refAno) continue;
+
+      // Encaixe EXATO contra o mês vigente e, se não bater, o anterior (OLX
+      // atrasa a virada). Igualdade de verdade — a folga é só de centavos.
+      const valorAtual = await buscarValorEmTabela(marcaEncontrada.code, candidato.code, refAno.code, tabelaAtual);
+      let encaixou = Math.abs(parsePrecoFipe(valorAtual.Valor) - valorPagina) <= EPSILON_ENCAIXE_REAIS;
+
+      if (!encaixou && tabelaAnterior !== undefined) {
+        const valorAnterior = await buscarValorEmTabela(marcaEncontrada.code, candidato.code, refAno.code, tabelaAnterior);
+        encaixou = Math.abs(parsePrecoFipe(valorAnterior.Valor) - valorPagina) <= EPSILON_ENCAIXE_REAIS;
+      }
+
+      if (encaixou) {
+        // Achou o código certo (bateu no vigente OU no anterior). Retornamos
+        // SEMPRE a referência do mês VIGENTE (código é estável; valor/mês
+        // atuais) — o codigo_fipe é o que importa aqui; a margem da OLX segue
+        // vindo do valor da página.
+        const { mes: mesRef, ano: anoRef } = parseMesReferencia(valorAtual.MesReferencia);
+        return {
+          marca: marcaEncontrada.name,
+          modelo: candidato.name,
+          ano: refAno.name,
+          valor: parsePrecoFipe(valorAtual.Valor),
+          mesReferencia: valorAtual.MesReferencia.trim(),
+          codigoFipe: valorAtual.CodigoFipe,
+          anoModelo: Number.parseInt(refAno.name, 10),
+          siglaCombustivel: (valorAtual.SiglaCombustivel ?? "").toLowerCase(),
+          mesReferenciaNum: mesRef,
+          anoReferencia: anoRef,
+        };
+      }
+    }
+  } catch {
+    // FIPE estrangulou (429 após os retries do postFipe) no meio da varredura de
+    // candidatos: aborta a resolução deste veículo (fica sem código, re-tenta no
+    // próximo run) em vez de martelar mais a API ou derrubar o processo.
+    return null;
+  }
+  return null; // nenhum candidato encaixou exato
 }

@@ -1,102 +1,108 @@
 import "dotenv/config";
 import { supabase } from "./supabaseClient.js";
-import { buscarReferenciaFipe } from "./fipeService.js";
+import { resolverReferenciaFipePorValor } from "./fipeService.js";
 import { garantirHistoricoFipe, registrarPontoHistoricoFipe } from "./historicoFipe.js";
-import { calcularMargemPercentual, classificar } from "./margin.js";
+import { buscarCodigoAprendido, gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
 import type { ReferenciaFipe } from "./types.js";
 
 /**
- * Re-match dos anúncios que ficaram SEM fipe_codigo (os ~5% que o bootstrap não
- * casou). Diagnóstico (01/07) mostrou 3 causas: (1) falhas TRANSIENTES da FIPE
- * durante o bootstrap — casam de novo no retry; (2) títulos livres do OLX (a 1ª
- * palavra não é a marca) — a marca real está no `versao`; (3) casos de fuzzy
- * genuínos (validar com o especialista). Este script ataca 1 e 2.
+ * Backfill do codigo_fipe dos anúncios (sobretudo OLX) que ficaram SEM código —
+ * a chave do gráfico "Histórico Preços FIPE" da página individual.
  *
- * Duas estratégias por anúncio:
- *  A) marca/modelo = 1ª/2ª palavra do `veiculo` (título) — recupera os transientes.
- *  B) marca = 1ª palavra do `versao`, modelo = 1ª palavra do `veiculo` — resolve
- *     título livre (ex.: "CAPTIVA 2015 BLINDADO" + versao "Chevrolet Sport...").
+ * RESOLUÇÃO POR ÂNCORA DE VALOR (ver project_repasse_livre_fipe_ancora_valor_olx):
+ * o fipe_valor guardado veio da página da OLX, que é EXATO (a OLX puxa da fonte
+ * oficial na inserção do anúncio). Então achamos o código cujo valor oficial
+ * ENCAIXA nesse valor — no mês vigente OU no anterior (a OLX congela o FIPE na
+ * inserção, então um anúncio de junho ainda ativo mostra o FIPE de junho). Isso
+ * elimina o erro do antigo fuzzy-por-texto, que casava versões VIZINHAS (ex.:
+ * T-Cross Comfortline → "200 TSI", ~10% off) e gerava código errado no gráfico.
  *
- * Ao casar: grava fipe_codigo, popula o histórico (ponto do mês + 12 meses do
- * mirror) e recalcula a margem contra a FIPE de agora (exclui <3%, igual ao
- * recálculo mensal). Resiliente (um erro/429 não derruba o run).
- *
- * DRY-RUN por padrão. Uso: npm run rematch:fipe [-- --aplicar]
+ * NÃO recalcula margem NEM exclui nada: a margem da OLX é a da página (fonte de
+ * verdade dela), e a versão ANTIGA deste script chegou a apagar deals reais por
+ * recalcular contra um fuzzy errado. Aqui só GRAVAMOS o código quando ele
+ * encaixa exato (e alimentamos a base aprendida pra acelerar as próximas). Sem
+ * encaixe → segue sem código, re-tenta num próximo run. DRY-RUN por padrão;
+ * --aplicar pra gravar.
  */
 
-const MARGEM_EXCLUSAO = 3;
 const APLICAR = process.argv.includes("--aplicar");
 
-async function tentarMatch(veiculo: string, versao: string | null, ano: string): Promise<{ ref: ReferenciaFipe; estrategia: "A" | "B" } | null> {
-  const pv = (veiculo ?? "").trim().split(/\s+/);
-  try {
-    const a = await buscarReferenciaFipe(pv[0] ?? "", pv[1] ?? "", ano, versao);
-    if (a) return { ref: a, estrategia: "A" };
-  } catch { /* transiente — tenta B */ }
-  if (versao) {
-    const pw = versao.trim().split(/\s+/);
-    try {
-      const b = await buscarReferenciaFipe(pw[0] ?? "", pv[0] ?? "", ano, versao);
-      if (b) return { ref: b, estrategia: "B" };
-    } catch { /* pula */ }
-  }
-  return null;
+interface CodigoResolvido {
+  codigoFipe: string;
+  anoModelo: number;
+  ref: ReferenciaFipe | null; // presente só quando resolvido fresco (pra registrar o ponto do mês)
+}
+
+async function resolverCodigo(
+  veiculo: string,
+  versao: string | null,
+  ano: string,
+  valorPagina: number
+): Promise<CodigoResolvido | null> {
+  const chave = versao ?? veiculo;
+  const aprendido = await buscarCodigoAprendido(chave, ano);
+  if (aprendido) return { codigoFipe: aprendido.codigoFipe, anoModelo: aprendido.anoModelo, ref: null };
+
+  const pv = veiculo.trim().split(/\s+/);
+  const ref = await resolverReferenciaFipePorValor(pv[0] ?? "", pv[1] ?? "", ano, versao, valorPagina).catch(() => null);
+  if (!ref) return null;
+
+  // Não grava aqui — a gravação (aprendizado) é só no modo --aplicar, pra o
+  // dry-run ser 100% leitura.
+  return { codigoFipe: ref.codigoFipe, anoModelo: ref.anoModelo, ref };
 }
 
 async function main(): Promise<void> {
   const TAM = 1000;
-  const anuncios: { id: string; veiculo: string; versao: string | null; ano: string | null; preco: number; fonte: string; origem_tipo: string; classificacao: string | null; status: string; data_captura: string }[] = [];
+  const anuncios: { id: string; veiculo: string; versao: string | null; ano: string; fipe_valor: number }[] = [];
   for (let inicio = 0; ; inicio += TAM) {
     const { data, error } = await supabase
       .from("opportunities")
-      .select("id, veiculo, versao, ano, preco, fonte, origem_tipo, classificacao, status, data_captura")
+      .select("id, veiculo, versao, ano, fipe_valor")
       .eq("origem_tipo", "descoberta")
       .is("fipe_codigo", null)
       .not("ano", "is", null)
+      .not("fipe_valor", "is", null) // sem valor de página não há âncora
       .range(inicio, inicio + TAM - 1);
     if (error) throw new Error(`Falha ao listar: ${error.message}`);
-    anuncios.push(...(data ?? []));
+    anuncios.push(...((data ?? []) as typeof anuncios));
     if (!data || data.length < TAM) break;
   }
-  console.log(`[rematch-fipe] ${anuncios.length} anúncios sem fipe_codigo. Modo: ${APLICAR ? "APLICAR" : "DRY-RUN"}.`);
+  console.log(`[rematch-fipe] ${anuncios.length} anúncios sem código (com fipe_valor). Modo: ${APLICAR ? "APLICAR" : "DRY-RUN"}.`);
 
-  let recA = 0, recB = 0, excluidos = 0, aindaNull = 0, i = 0;
+  let resolvidos = 0;
+  let viaAprendido = 0;
+  let semEncaixe = 0;
+  let i = 0;
   for (const a of anuncios) {
     i++;
-    if (!a.ano) { aindaNull++; continue; }
-    const achado = await tentarMatch(a.veiculo, a.versao, a.ano);
-    if (!achado) { aindaNull++; continue; }
-    const { ref, estrategia } = achado;
-    if (estrategia === "A") recA++; else recB++;
+    const achado = await resolverCodigo(a.veiculo, a.versao, a.ano, a.fipe_valor);
+    if (!achado) {
+      semEncaixe++;
+      continue;
+    }
+    resolvidos++;
+    if (!achado.ref) viaAprendido++;
 
-    const margem = calcularMargemPercentual(a.preco, ref.valor);
     if (APLICAR) {
-      if (margem < MARGEM_EXCLUSAO) {
-        await supabase.from("oportunidades_historico").insert({
-          origem_tipo: a.origem_tipo, fonte: a.fonte, classificacao: a.classificacao,
-          margem_percentual: Number(margem.toFixed(2)), status: a.status, data_captura: a.data_captura,
-        });
-        await supabase.from("opportunities").delete().eq("id", a.id);
-        excluidos++;
-      } else {
-        await supabase.from("opportunities").update({
-          fipe_codigo: ref.codigoFipe,
-          fipe_valor: ref.valor,
-          fipe_data_referencia: ref.mesReferencia,
-          margem_percentual: Number(margem.toFixed(2)),
-          classificacao: classificar(margem),
-        }).eq("id", a.id);
-        await registrarPontoHistoricoFipe(ref);
-        await garantirHistoricoFipe(ref.codigoFipe, ref.anoModelo);
+      // Só o código (e o histórico). NUNCA mexe em fipe_valor/margem/classificacao
+      // — a margem da OLX é a da página. NUNCA exclui.
+      await supabase.from("opportunities").update({ fipe_codigo: achado.codigoFipe }).eq("id", a.id);
+      if (achado.ref) {
+        await gravarCodigoAprendido(a.versao ?? a.veiculo, a.ano, achado.ref); // aprende
+        await registrarPontoHistoricoFipe(achado.ref);
       }
-    } else if (margem < MARGEM_EXCLUSAO) {
-      excluidos++;
+      await garantirHistoricoFipe(achado.codigoFipe, achado.anoModelo);
     }
 
-    if (i % 50 === 0) console.log(`[rematch-fipe] ${i}/${anuncios.length} — A:${recA} B:${recB} excl:${excluidos} null:${aindaNull}`);
+    if (i % 25 === 0) {
+      console.log(`[rematch-fipe] ${i}/${anuncios.length} — resolvidos:${resolvidos} (aprendidos:${viaAprendido}) semEncaixe:${semEncaixe}`);
+    }
   }
 
-  console.log(`[rematch-fipe] ${APLICAR ? "APLICADO" : "SIMULAÇÃO"}: recuperados A=${recA} + B=${recB} = ${recA + recB} | ${excluidos} desses ficariam <3% (excluídos) | ${aindaNull} continuam sem match (grupo 3, fuzzy).`);
+  console.log(
+    `[rematch-fipe] ${APLICAR ? "APLICADO" : "SIMULAÇÃO"}: ${resolvidos} resolvidos (${viaAprendido} via base aprendida) | ${semEncaixe} sem encaixe (ficam sem código, SEM exclusão).`
+  );
 }
 
 main().catch((erro) => {
