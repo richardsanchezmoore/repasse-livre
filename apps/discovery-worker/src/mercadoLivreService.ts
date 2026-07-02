@@ -217,9 +217,11 @@ interface DetalhesPaginaML {
  * contexto.
  */
 /** Detecta se a página caiu no challenge do ML (captcha wall / account-verification). */
-function ehWall(page: Page): boolean {
+function tipoWall(page: Page): "captcha/wall" | "account-verification" | null {
   const u = page.url();
-  return u.includes("/captcha/wall") || u.includes("/gz/account-verification");
+  if (u.includes("/captcha/wall")) return "captcha/wall";
+  if (u.includes("/gz/account-verification")) return "account-verification";
+  return null;
 }
 
 const DETALHE_VAZIO: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {} };
@@ -349,10 +351,12 @@ async function abrirDetalheViaClique(
     try {
       await popup.waitForSelector(".ui-pdp-container, .ui-pdp-title, .ui-pdp-gallery", { timeout: 40000 });
     } catch {
-      if (ehWall(popup)) throw new WallError("account-verification no detalhe");
-      throw new Error(`detalhe ${mlbId} não renderizou`);
+      const wall = tipoWall(popup);
+      if (wall) throw new WallError(wall);
+      throw new Error(`detalhe ${mlbId} não renderizou (url: ${popup.url().split("?")[0]})`);
     }
-    if (ehWall(popup)) throw new WallError("account-verification no detalhe");
+    const wall = tipoWall(popup);
+    if (wall) throw new WallError(wall);
     await popup.waitForTimeout(800);
     return await extrairDetalhesDaPagina(popup);
   } finally {
@@ -473,6 +477,7 @@ async function abrirSessaoListagem(
   sessaoId: number
 ): Promise<{ browser: Browser; context: BrowserContext; page: Page } | null> {
   const browser = await criarBrowser(sessaoId);
+  let page: Page | undefined;
   try {
     const context = await browser.newContext({
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -480,13 +485,20 @@ async function abrirSessaoListagem(
       viewport: { width: 1366, height: 768 },
     });
     await bloquearMidia(context);
-    const page = await context.newPage();
+    page = await context.newPage();
     page.setDefaultNavigationTimeout(120000); // Railway via proxy é lento; anti-bot se vence devagar
     await aquecerSessao(page);
     await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 60000 });
     await page.waitForSelector("li.ui-search-layout__item", { timeout: 45000 });
     return { browser, context, page };
-  } catch {
+  } catch (erro) {
+    // Diagnóstico: qual challenge bloqueou a listagem (captcha/wall vs
+    // account-verification) e onde parou — pra decidir a estratégia do detalhe.
+    const wall = page ? tipoWall(page) : null;
+    const url = page ? page.url().split("?")[0] : "(sem page)";
+    console.log(
+      `[motor-descoberta-mercadolivre]   ↳ bloqueio listagem: ${wall ? `wall=${wall}` : "sem wall (timeout?)"} | url=${url} | ${erro instanceof Error ? erro.message.split("\n")[0] : erro}`
+    );
     await browser.close();
     return null;
   }
@@ -556,7 +568,7 @@ export async function varrerEProcessarMercadoLivre(
           } catch (erro) {
             if (erro instanceof WallError) {
               saturou = true;
-              console.log(`[motor-descoberta-mercadolivre] IP saturou (${feitos.size}/${elegiveis.length} feitos) — rotacionando sessão…`);
+              console.log(`[motor-descoberta-mercadolivre] IP saturou [wall: ${erro.message}] (${feitos.size}/${elegiveis.length} feitos) — rotacionando sessão…`);
               break;
             }
             // card não achado / não renderizou → salva só com card e segue
