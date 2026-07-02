@@ -6,6 +6,8 @@ import {
   resolverChaveFiltroFipe,
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
+import { buscarReferenciaFipe } from "./fipeService.js";
+import { garantirHistoricoFipe } from "./historicoFipe.js";
 import { gerarSnapshotDiario } from "./snapshotDiario.js";
 import {
   apagarOportunidadeDuplicada,
@@ -144,6 +146,25 @@ async function processarAnuncio(
     return;
   }
 
+  // OLX usa o FIPE da própria página pra margem (fipe.fipeValor), mas fazemos o
+  // lookup na FIPE oficial pra pegar o codigo_fipe canônico — chave da série
+  // histórica e do gráfico "Histórico Preços FIPE" da página individual. A OLX
+  // põe tudo no título (Marca Modelo Versão...), então extraímos marca/modelo
+  // da 1ª/2ª palavra + a versão. Best-effort: se falhar, fica sem código (sem
+  // gráfico, como antes) — não derruba a captação.
+  const palavrasTitulo = anuncio.titulo.trim().split(/\s+/);
+  let refFipeOficial: Awaited<ReturnType<typeof buscarReferenciaFipe>> = null;
+  try {
+    refFipeOficial = await buscarReferenciaFipe(
+      palavrasTitulo[0] ?? "",
+      palavrasTitulo[1] ?? "",
+      anuncio.ano ?? "",
+      anuncio.modelo
+    );
+  } catch {
+    // transiente (ex.: 429) — segue sem código
+  }
+
   const oportunidade: Oportunidade = {
     fonte: "OLX",
     link_origem: anuncio.linkOrigem,
@@ -157,10 +178,9 @@ async function processarAnuncio(
     preco: anuncio.preco,
     fipe_valor: fipe.fipeValor,
     fipe_data_referencia: fipe.mesReferencia,
-    // OLX: FIPE vem da própria página do anúncio, sem codigo_fipe canônico.
-    // O bootstrap/recálculo (via lookup na oficial) preenche depois, dando
-    // histórico também aos anúncios OLX.
-    fipe_codigo: null,
+    // Código FIPE canônico via lookup na oficial (o valor da margem segue vindo
+    // da página OLX acima). Null se o fuzzy não casou — sem gráfico, como antes.
+    fipe_codigo: refFipeOficial?.codigoFipe ?? null,
     margem_percentual: Number(margemPercentual.toFixed(2)),
     classificacao,
     foto_principal: fotoPrincipal,
@@ -200,6 +220,12 @@ async function processarAnuncio(
 
   await salvarOportunidade(oportunidade);
   resultado.elegiveis++;
+
+  // Popula o histórico do modelo (pro gráfico) quando o lookup casou — mesmo
+  // padrão do ML/Webmotors e do garantirCoordenadasCidade.
+  if (refFipeOficial) {
+    await garantirHistoricoFipe(refFipeOficial.codigoFipe, refFipeOficial.anoModelo);
+  }
 
   if (anuncio.cidade && anuncio.estado) {
     await garantirCoordenadasCidade(anuncio.cidade, anuncio.estado);
