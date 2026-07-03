@@ -7,7 +7,7 @@ import {
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import { resolverReferenciaFipePorValor } from "./fipeService.js";
-import { garantirHistoricoFipe, registrarPontoHistoricoFipe } from "./historicoFipe.js";
+import { garantirHistoricoFipe, registrarPontoHistoricoFipe, resolverCodigoPorHistoricoLocal } from "./historicoFipe.js";
 import { buscarCodigoAprendido, gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
 import { gerarSnapshotDiario } from "./snapshotDiario.js";
 import {
@@ -163,9 +163,14 @@ async function processarAnuncio(
   let anoModeloResolvido: number | null = null;
   try {
     const aprendido = await buscarCodigoAprendido(chaveAprendido, anuncio.ano ?? "");
-    if (aprendido) {
-      codigoFipeResolvido = aprendido.codigoFipe;
-      anoModeloResolvido = aprendido.anoModelo;
+    const local = aprendido ?? (await resolverCodigoPorHistoricoLocal(anuncio.ano ?? "", fipe.fipeValor));
+    if (local) {
+      // HIT direto (base aprendida) ou âncora de valor LOCAL contra o
+      // fipe_historico — ambos resolvem sem tocar na FIPE oficial (fogem do
+      // 403/proxy do Railway). O código já está no histórico, então não há o
+      // que registrar; a margem segue vindo do valor da página.
+      codigoFipeResolvido = local.codigoFipe;
+      anoModeloResolvido = local.anoModelo;
     } else {
       const ref = await resolverReferenciaFipePorValor(
         palavrasTitulo[0] ?? "",

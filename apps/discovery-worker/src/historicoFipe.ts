@@ -1,5 +1,45 @@
 import { supabase } from "./supabaseClient.js";
+import type { CodigoAprendido } from "./mapaAprendidoFipe.js";
 import type { ReferenciaFipe } from "./types.js";
+
+// Mesmo epsilon da âncora oficial (fipeService.EPSILON_ENCAIXE_REAIS): o valor da
+// página OLX é exato, então exigimos encaixe em centavos.
+const EPSILON_CENTAVOS = 100;
+
+/**
+ * Âncora de valor LOCAL: resolve o codigo_fipe batendo o valor da página OLX
+ * contra a série `fipe_historico` — SEM tocar na FIPE oficial. Serve de tier
+ * intermediário (depois da base aprendida, antes do resolvedor oficial) para
+ * fugir do 403/instabilidade do proxy no Railway: se o modelo já está no
+ * histórico, resolvemos de graça.
+ *
+ * Só aceita match ÚNICO (um único código com aquele valor+ano) — se 0 ou
+ * ambíguo, retorna null e deixa o resolvedor oficial decidir (nunca chuta).
+ * Como o histórico cresce a cada resolução oficial, a cobertura local sobe com
+ * o tempo (auto-reforço). Ver project_repasse_livre_fipe_ancora_valor_olx.
+ */
+export async function resolverCodigoPorHistoricoLocal(
+  ano: string,
+  valorPagina: number
+): Promise<CodigoAprendido | null> {
+  const anoModelo = Number.parseInt(ano, 10);
+  if (!Number.isFinite(anoModelo) || !(valorPagina > 0)) return null;
+  const alvo = Math.round(valorPagina * 100);
+  try {
+    const { data, error } = await supabase
+      .from("fipe_historico")
+      .select("codigo_fipe")
+      .eq("ano_modelo", anoModelo)
+      .gte("valor_centavos", alvo - EPSILON_CENTAVOS)
+      .lte("valor_centavos", alvo + EPSILON_CENTAVOS);
+    if (error || !data || data.length === 0) return null;
+    const codigos = new Set(data.map((r) => r.codigo_fipe));
+    if (codigos.size !== 1) return null; // 0 ou ambíguo → pro oficial
+    return { codigoFipe: [...codigos][0]!, anoModelo };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Série histórica de FIPE por modelo (tabela fipe_historico). Alimenta a
