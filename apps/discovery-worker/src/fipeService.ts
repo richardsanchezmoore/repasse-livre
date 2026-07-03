@@ -101,7 +101,20 @@ async function postFipe<T>(endpoint: string, corpo: Record<string, unknown>, ten
     body: JSON.stringify(corpo),
   };
   if (dispatcherFipe) opcoes.dispatcher = dispatcherFipe;
-  const resp = await fetch(`${FIPE_BASE_URL}/${endpoint}`, opcoes);
+
+  let resp: Response;
+  try {
+    resp = await fetch(`${FIPE_BASE_URL}/${endpoint}`, opcoes);
+  } catch (erro) {
+    // "fetch failed" = erro de REDE (o proxy Thordata pisca, TLS, conexão). O
+    // fetch ESTOURA sem status, então o retry por status abaixo não pega. Re-tenta
+    // com backoff, igual ao 429/5xx (foi o que deixava alguns modelos sem FIPE no ML).
+    if (tentativa <= 4) {
+      await aguardar(800 * tentativa);
+      return postFipe<T>(endpoint, corpo, tentativa + 1);
+    }
+    throw erro;
+  }
 
   if ((resp.status === 429 || resp.status >= 500) && tentativa <= 4) {
     await aguardar(800 * tentativa);
