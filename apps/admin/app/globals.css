@@ -3564,6 +3564,17 @@ body {
   padding: 3px 10px;
 }
 
+/* Na página individual, TODOS os selos de fonte seguem o padrão da OLX (fundo
+   branco, borda cinza clara, texto preto) — visual uniforme, independente da
+   fonte. As cores por fonte (azul Webmotors, marrom ML) ficam só no card da
+   listagem. A especificidade (0,2,0) vence a classe de cor (.selo-fonte-*, 0,1,0). */
+.pagina-oportunidade-selos .selo-fonte {
+  background: #ffffff;
+  color: #000000;
+  font-weight: bold;
+  border: 1px solid #d9d9d9;
+}
+
 .selo-classificacao-inline {
   margin: 0;
 }
