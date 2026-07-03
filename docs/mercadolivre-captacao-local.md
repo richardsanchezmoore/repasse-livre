@@ -70,9 +70,12 @@ captou e `fim (exit 0)` = sucesso. Procure por linhas `✓ ... (N fotos)`.
 
 ## Requisitos e cuidados
 
-- **O PC precisa estar ligado** na hora do disparo (00h, 06h, 12h, 18h). Se
-  estiver desligado, aquele run é pulado — o próximo horário pega. O giro do ML
-  repõe os anúncios perdidos.
+- **Sobrevive a reinício/desligar**: a tarefa é persistente (fica salva no
+  Windows). Após um reboot, ela continua disparando nos horários normais (00h,
+  06h, 12h, 18h) — não precisa reconfigurar nada.
+- **Disparo perdido (PC estava desligado)**: está ligada a opção *"executar assim
+  que possível após um disparo perdido"* (`StartWhenAvailable`), então ao religar
+  o PC ele roda o que perdeu. Se ficar dias off, o giro do ML repõe os anúncios.
 - **Ritmo:** está em 6h (4x/dia). Dá pra aumentar, mas convém não martelar (é um
   IP único; o ML pode fichar se for muito agressivo). Se aumentar, olhe o log pra
   ver se aparece `account-verification`.
@@ -124,5 +127,33 @@ refeito. Passo a passo num PC novo (Windows):
 
 Só o **Mercado Livre** saiu da Railway. **OLX**, **Webmotors** e o **cron mensal
 de FIPE** continuam rodando na Railway normalmente. O cron do ML na Railway
-(`repasse-livre-mercadolivre`) foi/deve ser **desligado no painel** (Settings →
-Cron Schedule) pra não rodar em dobro nem gastar proxy à toa.
+(`repasse-livre-mercadolivre`) está com **"No schedule"** (não roda), então não
+gasta proxio nem roda em dobro. O serviço continua existindo (parado) — é só isso
+que permite voltar pro modo cloud num clique.
+
+---
+
+## Como VOLTAR pro modo cloud (Railway + Thordata + stealth)
+
+O **mesmo código** roda local ou na nuvem — a diferença é só o `PROXY_URL` e ONDE
+dispara. No modo cloud, o browser e o FIPE saem pelo **proxy residencial da
+Thordata** e o **stealth** (já no código, `playwright-extra`) contorna o
+account-verification. Foi validado que funciona; saímos dele só por **custo**
+($2/GB) e porque o local é mais confiável (residencial não dá 403 na FIPE).
+
+Pra reverter:
+1. **Railway** → serviço `repasse-livre-mercadolivre` → **Settings → Cron
+   Schedule** → colocar de volta `0 */16 * * *` (ou a frequência desejada).
+2. Conferir que o **`PROXY_URL`** (Thordata residencial) está setado nas variáveis
+   do serviço — é ele que ativa proxy+stealth (sem ele, tentaria sair pelo IP da
+   Railway e tomaria account-verification/403).
+3. **Desabilitar a tarefa local** `RepasseLivre-ML` (Agendador → botão direito →
+   Desabilitar) pra não rodar em dobro.
+4. Ajustar `MERCADOLIVRE_MAX_PAGINAS` no `worker_config` conforme o orçamento de
+   GB (no cloud, cada página/detalhe consome proxy).
+
+**Trade-offs do cloud** (por que saímos): custo por GB; a FIPE oficial dá 403 no
+IP de datacenter (a base local cobre parte, o resto sai pelo proxy e às vezes dá
+`fetch failed`); e o proxy tem instabilidade de SSL. O **local resolve tudo isso**
+— só exige o PC ligado. Ver `project_repasse_livre_fipe_oficial_403_railway` na
+memória pro histórico completo dos testes (SB, ISP, residencial).
