@@ -79,12 +79,44 @@ captou e `fim (exit 0)` = sucesso. Procure por linhas `✓ ... (N fotos)`.
 
 ---
 
-## Recriar a tarefa (se um dia sumir)
+## Reconstruir do ZERO (trocou de PC / formatou / o PC morreu)
 
-No PowerShell:
-```powershell
-schtasks /create /tn "RepasseLivre-ML" /tr "C:\claude\run-ml.cmd" /sc HOURLY /mo 6 /st 00:00 /f
-```
+Tudo que é versionado está no GitHub; só o que é específico da máquina precisa ser
+refeito. Passo a passo num PC novo (Windows):
+
+1. **Node.js** — instale em `C:\Program Files\nodejs` (ou ajuste o caminho no
+   `run-ml.cmd`).
+2. **Código** — clone o repo em `C:\claude\repasse-livre` (ou ajuste os caminhos).
+3. **Dependências**:
+   ```
+   cd C:\claude\repasse-livre\apps\discovery-worker
+   npm ci
+   ```
+4. **`.env`** — crie `apps/discovery-worker/.env` com as credenciais do Supabase
+   (o `.env` NÃO vai pro git). Pegue os valores no painel do **Supabase** ou nas
+   variáveis do serviço na **Railway**:
+   ```
+   SUPABASE_URL=...
+   SUPABASE_SERVICE_ROLE_KEY=...
+   ```
+   > **Importante:** NÃO defina `PROXY_URL` aqui — é justamente a ausência dele que
+   > faz sair pelo seu IP residencial (o que o ML aceita).
+5. **Navegador do Playwright** (em caminho fixo):
+   ```
+   set PLAYWRIGHT_BROWSERS_PATH=C:\claude\pw-browsers
+   npx playwright install chromium
+   ```
+6. **Script** — copie `repasse-livre/scripts/run-ml.cmd` (a cópia versionada) para
+   `C:\claude\run-ml.cmd`, conferindo os caminhos.
+7. **Tarefa agendada** (PowerShell):
+   ```powershell
+   schtasks /create /tn "RepasseLivre-ML" /tr "C:\claude\run-ml.cmd" /sc HOURLY /mo 6 /st 00:00 /f
+   ```
+8. **Teste**: `schtasks /run /tn "RepasseLivre-ML"` e confira `C:\claude\ml-cron.log`
+   (deve ter `✓ ... (N fotos)` e `fim (exit 0)`).
+
+> A cópia versionada do script está em **`scripts/run-ml.cmd`** (backup no GitHub).
+> A que roda de verdade é a `C:\claude\run-ml.cmd`.
 
 ---
 
