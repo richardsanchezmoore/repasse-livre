@@ -289,7 +289,42 @@ function buscarValorEmTabela(marcaCode: string, modeloCode: string, anoCode: str
 }
 
 function tokenizar(texto: string): Set<string> {
-  return new Set(normalizar(texto).split(/\s+/).filter((palavra) => palavra.length >= 2));
+  return new Set(
+    normalizar(texto)
+      .split(/\s+/)
+      // Tira pontuação FINAL: a FIPE abrevia com ponto ("Comfort.", "Aut.",
+      // "Long."). Só o final — pra não quebrar "1.0"/"2.0" (motor).
+      .map((palavra) => palavra.replace(/[.\-/,]+$/, ""))
+      .filter((palavra) => palavra.length >= 2)
+  );
+}
+
+/**
+ * Dois tokens "casam" se são IGUAIS ou se um é PREFIXO do outro com ≥4 letras.
+ * A FIPE abrevia trims ("Comfort." → Comfortline, "Highl." → Highline, "Long."
+ * → Longitude); match exato perdia isso e dava empate entre trims → escolhia o
+ * errado (ex.: Polo "Comfortline" casava Highline pelo mesmo score). O piso de 4
+ * letras evita ruído ("gl"≠"gli"; "com" não casa "compass"). A âncora de valor
+ * (ML via tooltip_fipe, OLX via página) valida por cima — afrouxamento seguro.
+ */
+function tokensCasam(t1: string, t2: string): boolean {
+  if (t1 === t2) return true;
+  const [curto, longo] = t1.length <= t2.length ? [t1, t2] : [t2, t1];
+  return curto.length >= 4 && longo.startsWith(curto);
+}
+
+/** Quantos tokens do item casam (exato ou prefixo) com algum token da busca. */
+function contarTokensCasados(tokensItem: Set<string>, tokensBusca: Set<string>): number {
+  let pontuacao = 0;
+  for (const ti of tokensItem) {
+    for (const tb of tokensBusca) {
+      if (tokensCasam(ti, tb)) {
+        pontuacao++;
+        break;
+      }
+    }
+  }
+  return pontuacao;
 }
 
 /**
@@ -315,11 +350,7 @@ function encontrarMelhorCorrespondencia<T extends { name: string }>(
   let melhorPontuacao = 0;
 
   for (const item of itens) {
-    const tokensItem = tokenizar(item.name);
-    let pontuacao = 0;
-    for (const token of tokensItem) {
-      if (tokensBusca.has(token)) pontuacao++;
-    }
+    const pontuacao = contarTokensCasados(tokenizar(item.name), tokensBusca);
     if (pontuacao > melhorPontuacao) {
       melhorPontuacao = pontuacao;
       melhor = item;
@@ -332,12 +363,7 @@ function encontrarMelhorCorrespondencia<T extends { name: string }>(
 function pontuarCandidatos<T extends { name: string }>(itens: T[], textoBusca: string): { item: T; pontuacao: number }[] {
   const tokensBusca = tokenizar(textoBusca);
   return itens
-    .map((item) => {
-      const tokensItem = tokenizar(item.name);
-      let pontuacao = 0;
-      for (const token of tokensItem) if (tokensBusca.has(token)) pontuacao++;
-      return { item, pontuacao };
-    })
+    .map((item) => ({ item, pontuacao: contarTokensCasados(tokenizar(item.name), tokensBusca) }))
     .sort((a, b) => b.pontuacao - a.pontuacao);
 }
 
@@ -369,7 +395,17 @@ function candidatosOrdenadosModeloVariante<T extends { name: string }>(
   const tokensModelo = tokenizar(modelo);
   const candidatos = itens.filter((item) => {
     const tokensItem = tokenizar(item.name);
-    for (const token of tokensModelo) if (!tokensItem.has(token)) return false;
+    // Todo token do modelo precisa casar (exato ou prefixo) com algum do item.
+    for (const tModelo of tokensModelo) {
+      let achou = false;
+      for (const ti of tokensItem) {
+        if (tokensCasam(tModelo, ti)) {
+          achou = true;
+          break;
+        }
+      }
+      if (!achou) return false;
+    }
     return true;
   });
 
