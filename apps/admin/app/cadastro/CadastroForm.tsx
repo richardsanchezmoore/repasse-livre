@@ -5,7 +5,8 @@ import { Mail, Lock } from "lucide-react";
 import { criarSupabaseBrowser } from "@/lib/supabase-browser";
 import { caminhoRedirectSeguro } from "@/lib/redirectSeguro";
 import { IconeGoogle } from "@/components/IconeGoogle";
-import { ModalConfirmarGoogle } from "@/components/ModalConfirmarGoogle";
+import { IconeFacebook } from "@/components/IconeFacebook";
+import { ModalConfirmarOAuth } from "@/components/ModalConfirmarOAuth";
 
 export function CadastroForm({ redirect }: { redirect?: string }) {
   const destino = caminhoRedirectSeguro(redirect);
@@ -15,6 +16,8 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
   const [criando, setCriando] = useState(false);
   const [enviandoGoogle, setEnviandoGoogle] = useState(false);
   const [modalGoogleAberto, setModalGoogleAberto] = useState(false);
+  const [enviandoFacebook, setEnviandoFacebook] = useState(false);
+  const [modalFacebookAberto, setModalFacebookAberto] = useState(false);
   const [feedback, setFeedback] = useState<{ tipo: "erro" | "sucesso"; texto: string } | null>(null);
 
   async function aoCriarConta(evento: React.FormEvent) {
@@ -57,6 +60,15 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
     });
   }
 
+  async function aoConfirmarFacebook() {
+    setEnviandoFacebook(true);
+    const supabase = criarSupabaseBrowser();
+    await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destino)}` },
+    });
+  }
+
   return (
     <div className="login-formulario">
       <button
@@ -69,11 +81,29 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
         Continuar com Google
       </button>
 
-      <ModalConfirmarGoogle
+      <button
+        type="button"
+        className="login-botao-facebook"
+        onClick={() => setModalFacebookAberto(true)}
+        disabled={enviandoFacebook}
+      >
+        <IconeFacebook size={18} />
+        Continuar com Facebook
+      </button>
+
+      <ModalConfirmarOAuth
         aberto={modalGoogleAberto}
         enviando={enviandoGoogle}
+        provedor="Google"
         onCancelar={() => setModalGoogleAberto(false)}
         onConfirmar={aoConfirmarGoogle}
+      />
+      <ModalConfirmarOAuth
+        aberto={modalFacebookAberto}
+        enviando={enviandoFacebook}
+        provedor="Facebook"
+        onCancelar={() => setModalFacebookAberto(false)}
+        onConfirmar={aoConfirmarFacebook}
       />
 
       <div className="login-divisor">

@@ -2,14 +2,22 @@
 
 import { ShieldCheck } from "lucide-react";
 
-export function ModalConfirmarGoogle({
+/**
+ * Aviso antes de redirecionar pro provedor OAuth (Google/Facebook): o usuário
+ * vê o domínio técnico do Supabase na tela de consentimento, o que assusta —
+ * este modal explica que é normal. Genérico por provedor (só o rótulo muda).
+ * Ver project_repasse_livre_aviso_dominio_google_login.
+ */
+export function ModalConfirmarOAuth({
   aberto,
   enviando,
+  provedor,
   onCancelar,
   onConfirmar,
 }: {
   aberto: boolean;
   enviando: boolean;
+  provedor: string;
   onCancelar: () => void;
   onConfirmar: () => void;
 }) {
@@ -26,7 +34,7 @@ export function ModalConfirmarGoogle({
           Você verá um domínio técnico do nosso provedor de autenticação — é normal e seguro.
         </p>
         <button type="button" className="popup-google-continuar" onClick={onConfirmar} disabled={enviando}>
-          {enviando ? "Redirecionando…" : "Continuar Login Google"}
+          {enviando ? "Redirecionando…" : `Continuar Login ${provedor}`}
         </button>
       </div>
     </div>
