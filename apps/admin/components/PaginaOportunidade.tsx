@@ -9,8 +9,9 @@ import { urlOportunidade } from "@/lib/site";
 import { BotaoWhatsapp } from "./BotaoWhatsapp";
 import { GaleriaFotos } from "./GaleriaFotos";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
-import { HistoricoPrecos } from "./HistoricoPrecos";
+import { PainelComparativo } from "./PainelComparativo";
 import { buscarHistoricoFipe } from "@/lib/fipeHistorico";
+import { buscarReferenciaPreco } from "@/lib/referenciaPreco";
 import type { Oportunidade } from "@/lib/types";
 
 const MESES_FIPE_SELO = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -34,7 +35,10 @@ const MARGEM_PISO_CAPTACAO = 5;
 const MARGEM_MINIMA_BASE = 3;
 
 export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
-  const historicoFipe = await buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano);
+  const [historicoFipe, referenciaPreco] = await Promise.all([
+    buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
+    buscarReferenciaPreco(oportunidade.fipe_codigo, oportunidade.ano, oportunidade.fipe_valor),
+  ]);
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
   // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
   // slider mostraria "fotos" repetidas em vez de só a foto captada.
@@ -137,7 +141,13 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
           </div>
         </div>
 
-        {historicoFipe.length >= 2 && <HistoricoPrecos serie={historicoFipe} />}
+        <PainelComparativo
+          historico={historicoFipe}
+          referencia={referenciaPreco}
+          precoAnuncio={oportunidade.preco}
+          fipeValor={oportunidade.fipe_valor}
+          mesRef={mesRefFipe}
+        />
 
         <dl className="pagina-oportunidade-ficha">
           <div className="pagina-oportunidade-ficha-item pagina-oportunidade-ficha-item-linha">

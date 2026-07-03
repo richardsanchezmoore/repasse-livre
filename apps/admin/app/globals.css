@@ -4132,6 +4132,221 @@ body {
   cursor: pointer;
 }
 
+/* ===== Painel comparativo: Histórico FIPE + Preços de referência ===== */
+.painel-comparativo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0;
+  align-items: stretch;
+}
+.painel-comparativo .historico-precos,
+.painel-comparativo .referencia-preco {
+  margin: 0; /* o gap do grid controla o espaçamento */
+  height: 100%;
+}
+.painel-comparativo-abas {
+  display: none; /* só aparece no mobile */
+}
+@media (min-width: 721px) {
+  /* Desktop: os dois lado a lado sempre; abas escondidas. */
+  .painel-comparativo-item {
+    display: block !important;
+  }
+}
+@media (max-width: 720px) {
+  /* Mobile: coluna única + abas; só o painel ativo aparece. */
+  .painel-comparativo {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .painel-comparativo-abas {
+    display: flex;
+    gap: 6px;
+    margin: 16px 0 10px;
+  }
+  .painel-comparativo-aba {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #54656f;
+    background: #f0f2f5;
+    border: 1px solid #e0e3e7;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .painel-comparativo-aba-ativa {
+    background: #1a1f2e;
+    color: #fff;
+    border-color: #1a1f2e;
+  }
+  .painel-comparativo-item[data-ativo="false"] {
+    display: none;
+  }
+}
+
+/* ===== Barra "Preços de referência Repasse Livre" ===== */
+.referencia-preco {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #e0e3e7;
+  border-radius: 12px;
+  background: #fff;
+}
+.referencia-preco-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.referencia-preco-titulo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1f2e;
+  margin: 0;
+}
+.referencia-preco-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.referencia-preco-selo-otimo {
+  background: #d9fdd3;
+  color: #0a5d2c;
+}
+.referencia-preco-selo-bom {
+  background: #e3f6ed;
+  color: #0a5d2c;
+}
+.referencia-preco-selo-neutro {
+  background: #f0f2f5;
+  color: #6b7280;
+}
+.referencia-preco-subtitulo {
+  font-size: 12px;
+  color: #9aa2b1;
+  margin: 3px 0 0;
+}
+.referencia-preco-grafico {
+  position: relative;
+  margin-top: 54px; /* espaço pro marcador "Este anúncio" acima da barra */
+  padding-bottom: 44px; /* espaço pras legendas mín/médio/máx embaixo */
+}
+.referencia-preco-marcador {
+  position: absolute;
+  top: -48px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  z-index: 2;
+}
+.referencia-preco-marcador-rotulo {
+  font-size: 10px;
+  color: #9aa2b1;
+  font-weight: 600;
+}
+.referencia-preco-marcador-valor {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1f2e;
+}
+.referencia-preco-marcador-agulha {
+  width: 2px;
+  height: 12px;
+  background: #1a1f2e;
+  margin-top: 2px;
+}
+.referencia-preco-trilho {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: #eef0f3;
+  overflow: visible;
+}
+.referencia-preco-faixa {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  /* Tons de verde da plataforma (claro → verde da marca), não azul/roxo. */
+  background: linear-gradient(90deg, #34d399, #16a34a);
+}
+.referencia-preco-tick-medio {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 16px;
+  background: #fff;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+.referencia-preco-fipe {
+  position: absolute;
+  top: -7px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+.referencia-preco-fipe-linha {
+  width: 0;
+  height: 24px;
+  border-left: 2px dashed #6b7280;
+}
+.referencia-preco-fipe-rotulo {
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.referencia-preco-legendas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 20px;
+  height: 34px;
+}
+.referencia-preco-legenda {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+}
+.referencia-preco-legenda-centro {
+  transform: translateX(-50%);
+  align-items: center;
+}
+.referencia-preco-legenda-fim {
+  transform: translateX(-100%);
+  align-items: flex-end;
+}
+.referencia-preco-legenda-rotulo {
+  font-size: 10px;
+  color: #9aa2b1;
+  font-weight: 600;
+}
+.referencia-preco-legenda-valor {
+  font-size: 12px;
+  color: #4b5563;
+  font-weight: 600;
+}
+.referencia-preco-mes {
+  font-size: 11px;
+  color: #9aa2b1;
+  margin: 10px 0 0;
+}
+
 /* Selo do mês de referência da FIPE (sob a margem) — ver PaginaOportunidade */
 .selo-mes-fipe {
   display: inline-block;
