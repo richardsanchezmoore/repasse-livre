@@ -1606,6 +1606,37 @@ body {
   color: #54656f;
 }
 
+.worker-abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.worker-aba {
+  font-size: 13px;
+  font-weight: 600;
+  color: #54656f;
+  background: #f0f2f5;
+  border: 1px solid #e0e3e7;
+  border-radius: 8px;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.worker-aba:hover {
+  background: #e3f6ed;
+  color: #0a5d2c;
+}
+
+.worker-aba-ativa,
+.worker-aba-ativa:hover {
+  background: #0a5d2c;
+  color: #ffffff;
+  border-color: #0a5d2c;
+}
+
 .worker-selo {
   display: inline-flex;
   font-size: 12px;

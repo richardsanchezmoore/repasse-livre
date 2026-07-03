@@ -41,9 +41,28 @@ const CAMPOS_CONFIG: Array<{ chave: string; rotulo: string; ajuda: string }> = [
   },
 ];
 
+type Fonte = "OLX" | "WEBMOTORS" | "MERCADO_LIVRE";
+
+/** discovery_runs não tem coluna `fonte` — derivamos da categoria_url. */
+function fonteDaUrl(categoriaUrl: string): Fonte {
+  if (/webmotors/i.test(categoriaUrl)) return "WEBMOTORS";
+  if (/mercadoli/i.test(categoriaUrl)) return "MERCADO_LIVRE"; // mercadolivre / mercadolibre
+  return "OLX";
+}
+
+const ROTULO_FONTE: Record<Fonte, string> = {
+  OLX: "OLX",
+  WEBMOTORS: "Webmotors",
+  MERCADO_LIVRE: "Mercado Livre",
+};
+
+const ORDEM_FONTES: Fonte[] = ["OLX", "WEBMOTORS", "MERCADO_LIVRE"];
+
 function extrairEstado(categoriaUrl: string): string {
+  // Só a OLX varre por estado; Webmotors/ML são varreduras nacionais.
+  if (fonteDaUrl(categoriaUrl) !== "OLX") return "Nacional";
   const match = categoriaUrl.match(/estado-([a-z]{2})/i);
-  return match ? match[1].toUpperCase() : categoriaUrl;
+  return match ? match[1].toUpperCase() : "—";
 }
 
 function formatarData(iso: string): string {
@@ -73,6 +92,12 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
     const intervalo = setInterval(() => setSegundosDecorridos((s) => s + 1), 1000);
     return () => clearInterval(intervalo);
   }, [disparando]);
+
+  // Abas por fonte: quais fontes têm run + qual começa ativa (OLX, a principal,
+  // quando presente; senão a primeira disponível).
+  const fontesPresentes = ORDEM_FONTES.filter((f) => runs.some((r) => fonteDaUrl(r.categoria_url) === f));
+  const [abaAtiva, setAbaAtiva] = useState<Fonte>(fontesPresentes[0] ?? "OLX");
+  const runsDaAba = runs.filter((r) => fonteDaUrl(r.categoria_url) === abaAtiva);
 
   const valorAtual = (chave: string): string => configs.find((c) => c.chave === chave)?.valor ?? "";
   const [valores, setValores] = useState<Record<string, string>>(
@@ -168,7 +193,22 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
         {runs.length === 0 ? (
           <p className="usuarios-subtitulo">Nenhuma varredura registrada ainda.</p>
         ) : (
-          <div className="usuarios-tabela-container">
+          <>
+            <div className="worker-abas" role="tablist">
+              {fontesPresentes.map((fonte) => (
+                <button
+                  key={fonte}
+                  type="button"
+                  role="tab"
+                  aria-selected={abaAtiva === fonte}
+                  className={`worker-aba${abaAtiva === fonte ? " worker-aba-ativa" : ""}`}
+                  onClick={() => setAbaAtiva(fonte)}
+                >
+                  {ROTULO_FONTE[fonte]}
+                </button>
+              ))}
+            </div>
+            <div className="usuarios-tabela-container">
             <table className="usuarios-tabela">
               <thead>
                 <tr>
@@ -181,7 +221,7 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
                 </tr>
               </thead>
               <tbody>
-                {runs.map((run) => (
+                {runsDaAba.map((run) => (
                   <tr key={run.id} className="usuarios-linha">
                     <td>{formatarData(run.iniciado_em)}</td>
                     <td>{extrairEstado(run.categoria_url)}</td>
@@ -204,7 +244,8 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </section>
     </div>
