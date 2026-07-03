@@ -527,13 +527,14 @@ async function abrirSessaoListagem(
 export async function varrerEProcessarMercadoLivre(
   categoriaUrlBase: string,
   maxPaginas: number,
-  margemMinima: number
+  margemMinima: number,
+  paginaInicial = 1
 ): Promise<ResultadoLoteMercadoLivre> {
   const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
   // sessid base aleatório por run — evita reusar um IP já fichado.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
 
-  for (let pagina = 1; pagina <= maxPaginas; pagina++) {
+  for (let pagina = paginaInicial; pagina < paginaInicial + maxPaginas; pagina++) {
     let sessId = baseSess + pagina * 100;
     let elegiveis: Elegivel[] | null = null; // coletado uma vez (1ª leitura da página)
     const feitos = new Set<string>();

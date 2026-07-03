@@ -19,13 +19,17 @@ async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
   );
   const maxPaginas = Number((await lerConfig("MERCADOLIVRE_MAX_PAGINAS")) ?? process.env.MERCADOLIVRE_MAX_PAGINAS ?? 10);
+  // Página inicial da varredura (default 1). Útil pra testar em anúncios NOVOS:
+  // como deduplicamos por link, re-varrer a pág 1 logo após uma varredura pula
+  // tudo; começar na 2 pega anúncios ainda não captados.
+  const paginaInicial = Number((await lerConfig("MERCADOLIVRE_PAGINA_INICIAL")) ?? process.env.MERCADOLIVRE_PAGINA_INICIAL ?? 1);
 
   const urlComFiltro = gerarUrlCategoriaParticular(categoriaUrlBase);
   console.log(
-    `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | máx. páginas: ${maxPaginas} | margem mínima: ${margemMinima}%`
+    `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | páginas: ${paginaInicial}..${paginaInicial + maxPaginas - 1} | margem mínima: ${margemMinima}%`
   );
 
-  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima);
+  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima, paginaInicial);
 
   console.log(
     `[motor-descoberta-mercadolivre] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados | ${resultado.semFipe} sem FIPE.`
