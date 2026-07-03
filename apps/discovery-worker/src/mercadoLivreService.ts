@@ -477,38 +477,63 @@ async function coletarElegiveis(
   return elegiveis;
 }
 
-/** Abre uma sessão (browser + warmup + listagem carregada) ou null se a listagem não carregou (wall/IP ruim). */
+/** Erros transientes de rede/proxy (não são wall do ML) — vale re-tentar no MESMO IP. */
+function ehErroTransienteProxy(msg: string): boolean {
+  return /ERR_SSL_PROTOCOL_ERROR|ERR_TUNNEL_CONNECTION_FAILED|ERR_PROXY_CONNECTION_FAILED|ERR_CONNECTION_(RESET|CLOSED|ABORTED|FAILED)|ERR_EMPTY_RESPONSE|ERR_TIMED_OUT|ERR_NETWORK/i.test(msg);
+}
+
+/**
+ * Abre uma sessão (browser + warmup + listagem carregada) ou null se não carregou.
+ * Distingue os dois tipos de falha:
+ *  - WALL (account-verification/captcha) → o IP está fichado; re-tentar o MESMO
+ *    IP não adianta → retorna null e o chamador ROTACIONA pra um IP novo.
+ *  - TRANSIENTE de proxy (ERR_SSL_PROTOCOL_ERROR/tunnel/timeout sem wall — o
+ *    Thordata "pisca") → re-tenta no MESMO IP (até 3x) antes de desistir. Antes,
+ *    qualquer erro rotacionava, e rotacionar troca a listagem (o ML personaliza
+ *    por IP) e orfaniza os elegíveis já coletados.
+ */
 async function abrirSessaoListagem(
   categoriaUrlBase: string,
   pagina: number,
   sessaoId: number
 ): Promise<{ browser: Browser; context: BrowserContext; page: Page } | null> {
-  const browser = await criarBrowser(sessaoId);
-  let page: Page | undefined;
-  try {
-    const context = await browser.newContext({
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      locale: "pt-BR",
-      viewport: { width: 1366, height: 768 },
-    });
-    await bloquearMidia(context);
-    page = await context.newPage();
-    page.setDefaultNavigationTimeout(120000); // Railway via proxy é lento; anti-bot se vence devagar
-    await aquecerSessao(page);
-    await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 60000 });
-    await page.waitForSelector("li.ui-search-layout__item", { timeout: 45000 });
-    return { browser, context, page };
-  } catch (erro) {
-    // Diagnóstico: qual challenge bloqueou a listagem (captcha/wall vs
-    // account-verification) e onde parou — pra decidir a estratégia do detalhe.
-    const wall = page ? tipoWall(page) : null;
-    const url = page ? page.url().split("?")[0] : "(sem page)";
-    console.log(
-      `[motor-descoberta-mercadolivre]   ↳ bloqueio listagem: ${wall ? `wall=${wall}` : "sem wall (timeout?)"} | url=${url} | ${erro instanceof Error ? erro.message.split("\n")[0] : erro}`
-    );
-    await browser.close();
-    return null;
+  const MAX_TENTATIVAS_REDE = 3;
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_REDE; tentativa++) {
+    const browser = await criarBrowser(sessaoId); // mesmo sessaoId = MESMO IP (sesstime)
+    let page: Page | undefined;
+    try {
+      const context = await browser.newContext({
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        locale: "pt-BR",
+        viewport: { width: 1366, height: 768 },
+      });
+      await bloquearMidia(context);
+      page = await context.newPage();
+      page.setDefaultNavigationTimeout(120000); // Railway via proxy é lento; anti-bot se vence devagar
+      await aquecerSessao(page);
+      await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 60000 });
+      await page.waitForSelector("li.ui-search-layout__item", { timeout: 45000 });
+      return { browser, context, page };
+    } catch (erro) {
+      const msg = erro instanceof Error ? erro.message.split("\n")[0] : String(erro);
+      const wall = page ? tipoWall(page) : null;
+      const url = page ? page.url().split("?")[0] : "(sem page)";
+      await browser.close();
+
+      if (wall) {
+        console.log(`[motor-descoberta-mercadolivre]   ↳ bloqueio listagem: wall=${wall} | url=${url} — rotacionando IP`);
+        return null; // IP fichado → rotaciona
+      }
+      if (ehErroTransienteProxy(msg) && tentativa < MAX_TENTATIVAS_REDE) {
+        console.log(`[motor-descoberta-mercadolivre]   ↳ proxy transiente (${tentativa}/${MAX_TENTATIVAS_REDE}), retry no MESMO IP: ${msg}`);
+        await new Promise((r) => setTimeout(r, 2000));
+        continue;
+      }
+      console.log(`[motor-descoberta-mercadolivre]   ↳ bloqueio listagem: sem wall (transiente?) | url=${url} | ${msg}`);
+      return null;
+    }
   }
+  return null;
 }
 
 /**
