@@ -412,10 +412,18 @@ interface Elegivel {
 async function salvarElegivel(el: Elegivel, detalhes: DetalhesPaginaML, resultado: ResultadoLoteMercadoLivre): Promise<void> {
   const { anuncio, preco, ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao } = el;
   const { cidade, estado } = extrairCidadeEstado(anuncio.localizacaoTexto ?? "");
-  const todasFotos = [
-    ...(anuncio.fotoPrincipal ? [anuncio.fotoPrincipal] : []),
-    ...detalhes.fotos.filter((f) => f !== anuncio.fotoPrincipal),
-  ].slice(0, 10);
+  // As fotos do detalhe são full-res; a `fotoPrincipal` do card é um thumbnail
+  // pequeno/baixa-res com URL DIFERENTE (não é a mesma string, então um filter
+  // por igualdade não a remove) — se a incluíssemos junto, ela entraria
+  // duplicada E como primeira/destaque em baixa qualidade. Por isso: havendo
+  // fotos de detalhe, usamos SÓ elas; a do card fica só como fallback card-only.
+  const todasFotos = (
+    detalhes.fotos.length > 0
+      ? detalhes.fotos
+      : anuncio.fotoPrincipal
+        ? [anuncio.fotoPrincipal]
+        : []
+  ).slice(0, 10);
 
   const oportunidade: Oportunidade = {
     fonte: "MERCADO_LIVRE",

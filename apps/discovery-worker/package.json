@@ -9,6 +9,7 @@
     "discover:webmotors": "tsx src/webmotorsMain.ts",
     "discover:mercadolivre": "npx tsx src/mercadoLivreMain.ts",
     "backfill:ml-detalhes": "npx tsx src/backfillMercadoLivreDetalhes.ts",
+    "backfill:fotos-ml": "npx tsx src/backfillFotosMlDuplicadas.ts",
     "backfill:webmotors-local": "tsx src/backfillWebmotorsLocal.ts",
     "importar:snapshots-webmotors": "tsx src/importarSnapshotsWebmotors.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
