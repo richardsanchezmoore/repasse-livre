@@ -7,8 +7,9 @@ import type { Browser, BrowserContext, Page } from "playwright";
 // patcheia isso. Tentativa de passar o /gz/account-verification do ML SEM login
 // (login real arrisca banimento). Registrado uma vez, no escopo do módulo.
 chromium.use(StealthPlugin());
-import { buscarReferenciaFipe } from "./fipeService.js";
-import { garantirHistoricoFipe } from "./historicoFipe.js";
+import { buscarReferenciaFipe, resolverReferenciaFipeProximaDoValor } from "./fipeService.js";
+import { garantirHistoricoFipe, registrarPontoHistoricoFipe } from "./historicoFipe.js";
+import { gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
 import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
 import type { AtributosOlx } from "./olxService.js";
@@ -211,6 +212,9 @@ interface DetalhesPaginaML {
   descricao: string | null;
   cambio: string | null;
   atributos: AtributosOlx;
+  /** FIPE que o ML mostra na página (tooltip_fipe). Aproximada, mas boa pra
+   *  desempatar o trim certo via âncora (ver corrigirFipeComAncora). */
+  fipePagina: number | null;
 }
 
 /**
@@ -231,7 +235,7 @@ function tipoWall(page: Page): "captcha/wall" | "account-verification" | null {
   return null;
 }
 
-const DETALHE_VAZIO: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {} };
+const DETALHE_VAZIO: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {}, fipePagina: null };
 
 /** Extrai os detalhes de uma página de anúncio JÁ CARREGADA (aba aberta via clique). */
 async function extrairDetalhesDaPagina(page: Page): Promise<DetalhesPaginaML> {
@@ -278,7 +282,19 @@ async function extrairDetalhesDaPagina(page: Page): Promise<DetalhesPaginaML> {
       atributos["cambio"]?.value ||
       null;
 
-    return { fotos, descricao, cambio, atributos };
+    // FIPE da página: o ML embute `"tooltip_fipe":{"data":{"text":"R$ 71.783 FIPE"…`
+    // no HTML. É aproximada, mas ótima pra desempatar o trim (trims diferem em
+    // milhares). Ver corrigirFipeComAncora.
+    let fipePagina: number | null = null;
+    const mFipe = document.documentElement.innerHTML.match(
+      /tooltip_fipe"\s*:\s*\{\s*"data"\s*:\s*\{\s*"text"\s*:\s*"R\$\s*([\d.]+)/
+    );
+    if (mFipe) {
+      const n = Number(mFipe[1].replace(/\./g, ""));
+      if (Number.isFinite(n) && n > 0) fipePagina = n;
+    }
+
+    return { fotos, descricao, cambio, atributos, fipePagina };
   });
 }
 
@@ -477,6 +493,57 @@ async function coletarElegiveis(
   return elegiveis;
 }
 
+interface ResultadoCorrecao {
+  el: Elegivel;
+  descartar: boolean; // true = falso positivo (margem real < mínimo)
+}
+
+/**
+ * B — valida/corrige o FIPE do elegível com a FIPE da PÁGINA do ML (tooltip_fipe)
+ * como âncora. O fuzzy do gate pode casar o trim errado (ex.: Polo "Comfortline"
+ * → Highline, ~R$8k a mais → falso positivo de margem). Aqui, com o valor da
+ * página, escolhemos o código do trim MAIS PRÓXIMO, recalculamos a margem e:
+ *  - se a margem real cai abaixo do mínimo → DESCARTA (mata o falso positivo);
+ *  - senão → adota o código certo (e ensina a base pro próximo run, auto-cura).
+ * Best-effort: sem fipePagina ou âncora fora de tolerância → mantém o do fuzzy.
+ */
+async function corrigirFipeComAncora(
+  el: Elegivel,
+  detalhes: DetalhesPaginaML,
+  margemMinima: number
+): Promise<ResultadoCorrecao> {
+  if (!detalhes.fipePagina) return { el, descartar: false };
+
+  const ref = await resolverReferenciaFipeProximaDoValor(
+    el.marca,
+    el.modelo,
+    el.ano,
+    el.variante,
+    detalhes.fipePagina
+  ).catch(() => null);
+  if (!ref) return { el, descartar: false }; // âncora não confia → mantém o do fuzzy
+
+  const margem = calcularMargemPercentual(el.preco, ref.valor);
+  const classificacao = ehElegivel(margem, margemMinima) ? classificar(margem) : null;
+  if (!classificacao) {
+    console.log(
+      `[motor-descoberta-mercadolivre] ✗ falso positivo: ${el.anuncio.titulo} — FIPE real R$${ref.valor} (fuzzy dava R$${el.referenciaFipe.valor}) → margem ${margem.toFixed(1)}% < ${margemMinima}%, descartado`
+    );
+    return { el, descartar: true };
+  }
+
+  // Auto-cura: ensina o código CERTO (base aprendida + ponto do mês).
+  await gravarCodigoAprendido(el.anuncio.titulo, el.ano, ref).catch(() => {});
+  await registrarPontoHistoricoFipe(ref).catch(() => {});
+
+  if (ref.codigoFipe !== el.referenciaFipe.codigoFipe) {
+    console.log(
+      `[motor-descoberta-mercadolivre] ✎ FIPE corrigido: ${el.anuncio.titulo} — ${el.referenciaFipe.codigoFipe} (R$${el.referenciaFipe.valor}) → ${ref.codigoFipe} (R$${ref.valor})`
+    );
+  }
+  return { el: { ...el, referenciaFipe: ref, margemPercentual: margem, classificacao }, descartar: false };
+}
+
 /** Erros transientes de rede/proxy (não são wall do ML) — vale re-tentar no MESMO IP. */
 function ehErroTransienteProxy(msg: string): boolean {
   return /ERR_SSL_PROTOCOL_ERROR|ERR_TUNNEL_CONNECTION_FAILED|ERR_PROXY_CONNECTION_FAILED|ERR_CONNECTION_(RESET|CLOSED|ABORTED|FAILED)|ERR_EMPTY_RESPONSE|ERR_TIMED_OUT|ERR_NETWORK/i.test(msg);
@@ -594,9 +661,16 @@ export async function varrerEProcessarMercadoLivre(
           if (feitos.has(el.anuncio.linkOrigem)) continue;
           try {
             const detalhes = await abrirDetalheViaClique(page, context, el.mlbId);
-            await salvarElegivel(el, detalhes, resultado);
+            // B: valida/corrige o FIPE com a FIPE da página do ML (mata falso positivo).
+            const correcao = await corrigirFipeComAncora(el, detalhes, margemMinima);
             feitos.add(el.anuncio.linkOrigem);
-            console.log(`[motor-descoberta-mercadolivre] ✓ ${el.anuncio.titulo} (${detalhes.fotos.length} fotos)`);
+            if (correcao.descartar) {
+              resultado.descartados++;
+              await page.waitForTimeout(3000 + Math.floor(Math.random() * 3000));
+              continue;
+            }
+            await salvarElegivel(correcao.el, detalhes, resultado);
+            console.log(`[motor-descoberta-mercadolivre] ✓ ${correcao.el.anuncio.titulo} (${detalhes.fotos.length} fotos)`);
             await page.waitForTimeout(3000 + Math.floor(Math.random() * 3000)); // pacing humano entre detalhes
           } catch (erro) {
             if (erro instanceof WallError) {

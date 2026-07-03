@@ -675,3 +675,67 @@ export async function resolverReferenciaFipePorValor(
   }
   return null; // nenhum candidato encaixou exato
 }
+
+// Tolerância relativa da âncora POR PROXIMIDADE (ML): a FIPE que o ML mostra é
+// aproximada (~0,5% do real), mas trims vizinhos diferem ~10%+. 8% separa o trim
+// certo do vizinho com folga.
+const TOLERANCIA_PROXIMIDADE = 0.08;
+
+/**
+ * Como resolverReferenciaFipePorValor, mas escolhe o candidato cujo valor oficial
+ * é o MAIS PRÓXIMO de `valorAlvo` (não exige encaixe exato). Pro Mercado Livre: a
+ * FIPE do `tooltip_fipe` da página é aproximada, então não dá pra exigir
+ * igualdade — mas é boa o bastante pra desempatar o TRIM (Comfort vs Highline
+ * diferem ~R$8k). Retorna null se o mais próximo ainda ficar fora da tolerância
+ * (~8%) — aí não confiamos, e o chamador decide.
+ */
+export async function resolverReferenciaFipeProximaDoValor(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null,
+  valorAlvo: number
+): Promise<ReferenciaFipe | null> {
+  if (!(valorAlvo > 0)) return null;
+
+  const marcas = await buscarMarcas();
+  const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
+  if (!marcaEncontrada) return null;
+
+  const modelos = await buscarModelos(marcaEncontrada.code);
+  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 12);
+  if (candidatos.length === 0) return null;
+
+  let melhor: { valor: FipeValorResposta; refAno: FipeAno; nome: string; v: number; dist: number } | null = null;
+  try {
+    for (const candidato of candidatos) {
+      const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+      const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+      if (!refAno) continue;
+      const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
+      const v = parsePrecoFipe(valor.Valor);
+      const dist = Math.abs(v - valorAlvo) / valorAlvo;
+      if (!melhor || dist < melhor.dist) {
+        melhor = { valor, refAno, nome: candidato.name, v, dist };
+      }
+    }
+  } catch {
+    return null; // FIPE estrangulou — deixa o chamador seguir com o que já tinha
+  }
+
+  if (!melhor || melhor.dist > TOLERANCIA_PROXIMIDADE) return null;
+
+  const { mes: mesRef, ano: anoRef } = parseMesReferencia(melhor.valor.MesReferencia);
+  return {
+    marca: marcaEncontrada.name,
+    modelo: melhor.nome,
+    ano: melhor.refAno.name,
+    valor: melhor.v,
+    mesReferencia: melhor.valor.MesReferencia.trim(),
+    codigoFipe: melhor.valor.CodigoFipe,
+    anoModelo: Number.parseInt(melhor.refAno.name, 10),
+    siglaCombustivel: (melhor.valor.SiglaCombustivel ?? "").toLowerCase(),
+    mesReferenciaNum: mesRef,
+    anoReferencia: anoRef,
+  };
+}
