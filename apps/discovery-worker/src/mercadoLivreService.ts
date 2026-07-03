@@ -1,5 +1,12 @@
-import { chromium } from "playwright";
+import { chromium } from "playwright-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { Browser, BrowserContext, Page } from "playwright";
+
+// Stealth: Playwright puro vaza navigator.webdriver, chrome.runtime, plugins,
+// permissions, etc. — sinais que sistemas antibot leem como "robô". O plugin
+// patcheia isso. Tentativa de passar o /gz/account-verification do ML SEM login
+// (login real arrisca banimento). Registrado uma vez, no escopo do módulo.
+chromium.use(StealthPlugin());
 import { buscarReferenciaFipe } from "./fipeService.js";
 import { garantirHistoricoFipe } from "./historicoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
