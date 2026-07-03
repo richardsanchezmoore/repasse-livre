@@ -1,3 +1,4 @@
+import { ProxyAgent } from "undici";
 import { supabase } from "./supabaseClient.js";
 import type { ReferenciaFipe } from "./types.js";
 
@@ -62,6 +63,14 @@ const HEADERS_FIPE = {
   "User-Agent": "Mozilla/5.0",
 };
 
+// A FIPE oficial 403a em IP de datacenter (Railway) — não é rate-limit (o do
+// parallelum era), é bloqueio por IP: 403 já na 1ª chamada, e responde 200 do
+// residencial. Quando há PROXY_URL (Thordata residencial), roteamos as chamadas
+// por ele. Com o local-first (fipe_historico), só os modelos FORA da base
+// chegam até aqui, então é pouco tráfego (JSON leve, GB irrisório). Sem
+// PROXY_URL (rodando local/residencial), vai direto.
+const dispatcherFipe = process.env.PROXY_URL ? new ProxyAgent(process.env.PROXY_URL) : undefined;
+
 // A FIPE oficial tem throttle por rajada (~4-5 req/s: medido, ~250ms limpo,
 // ~150ms começa a dar 429). NÃO é o teto duro de 1000/dia do parallelum — é
 // soft, se recupera com pausa. Serializamos TODAS as chamadas com um intervalo
@@ -86,11 +95,13 @@ function aguardarVezNoThrottle(): Promise<void> {
  */
 async function postFipe<T>(endpoint: string, corpo: Record<string, unknown>, tentativa = 1): Promise<T> {
   await aguardarVezNoThrottle();
-  const resp = await fetch(`${FIPE_BASE_URL}/${endpoint}`, {
+  const opcoes: RequestInit & { dispatcher?: ProxyAgent } = {
     method: "POST",
     headers: HEADERS_FIPE,
     body: JSON.stringify(corpo),
-  });
+  };
+  if (dispatcherFipe) opcoes.dispatcher = dispatcherFipe;
+  const resp = await fetch(`${FIPE_BASE_URL}/${endpoint}`, opcoes);
 
   if ((resp.status === 429 || resp.status >= 500) && tentativa <= 4) {
     await aguardar(800 * tentativa);
