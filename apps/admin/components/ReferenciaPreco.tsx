@@ -1,7 +1,6 @@
 "use client";
 
 import { ThumbsUp } from "lucide-react";
-import { formatarMoeda } from "@/lib/formatadores";
 import type { ReferenciaPreco as Referencia } from "@/lib/referenciaPreco";
 
 /** Preço em reais SEM centavos — os rótulos do eixo são estreitos (barra ~287px
@@ -52,6 +51,10 @@ export function ReferenciaPreco({
   const posMax = porcentagem(max, lo, hi);
   const posFipe = fipeValor != null ? porcentagem(fipeValor, lo, hi) : null;
 
+  // Perto das bordas, o rótulo "Este anúncio" é ancorado no início/fim pra não
+  // vazar do card; no meio fica centrado. A agulha marca sempre a posição exata.
+  const ancoraAnuncio = posOferta <= 16 ? "inicio" : posOferta >= 84 ? "fim" : "centro";
+
   const fracao = max > min ? (precoAnuncio - min) / (max - min) : 0;
   const { rotulo: rotuloSelo, classe: classeSelo, icone: temIcone } = selo(fracao);
 
@@ -68,12 +71,16 @@ export function ReferenciaPreco({
       </p>
 
       <div className="referencia-preco-grafico">
-        {/* Marcador do anúncio (acima da barra) */}
-        <div className="referencia-preco-marcador" style={{ left: `${posOferta}%` }}>
+        {/* Rótulo "Este anúncio" — alinhamento flipa perto das bordas (não vaza) */}
+        <div
+          className={`referencia-preco-marcador referencia-preco-marcador-${ancoraAnuncio}`}
+          style={ancoraAnuncio === "centro" ? { left: `${posOferta}%` } : undefined}
+        >
           <span className="referencia-preco-marcador-rotulo">Este anúncio</span>
-          <span className="referencia-preco-marcador-valor">{formatarMoeda(precoAnuncio)}</span>
-          <span className="referencia-preco-marcador-agulha" aria-hidden />
+          <span className="referencia-preco-marcador-valor">{reaisCompacto(precoAnuncio)}</span>
         </div>
+        {/* Agulha na posição EXATA do preço do anúncio */}
+        <div className="referencia-preco-agulha" style={{ left: `${posOferta}%` }} aria-hidden />
 
         {/* Trilho: faixa das ofertas (mín→máx) preenchida, resto neutro até a FIPE */}
         <div className="referencia-preco-trilho">

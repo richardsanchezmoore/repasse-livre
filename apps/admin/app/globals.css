@@ -4251,13 +4251,25 @@ body {
 }
 .referencia-preco-marcador {
   position: absolute;
-  top: -48px;
-  transform: translateX(-50%);
+  top: -46px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   white-space: nowrap;
   z-index: 2;
+}
+/* No meio: centrado sobre a agulha. Nas bordas: ancorado no início/fim do
+   card pra o valor não vazar quando o anúncio é o mais barato/caro da faixa. */
+.referencia-preco-marcador-centro {
+  transform: translateX(-50%);
+  align-items: center;
+}
+.referencia-preco-marcador-inicio {
+  left: 0;
+  align-items: flex-start;
+}
+.referencia-preco-marcador-fim {
+  right: 0;
+  align-items: flex-end;
 }
 .referencia-preco-marcador-rotulo {
   font-size: 10px;
@@ -4269,11 +4281,15 @@ body {
   font-weight: 700;
   color: #1a1f2e;
 }
-.referencia-preco-marcador-agulha {
+/* Agulha vertical na posição exata do preço, apontando pra barra. */
+.referencia-preco-agulha {
+  position: absolute;
+  top: -14px;
   width: 2px;
-  height: 12px;
+  height: 14px;
   background: #1a1f2e;
-  margin-top: 2px;
+  transform: translateX(-50%);
+  z-index: 2;
 }
 .referencia-preco-trilho {
   position: relative;

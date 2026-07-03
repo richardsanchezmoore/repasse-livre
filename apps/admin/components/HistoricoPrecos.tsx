@@ -64,7 +64,9 @@ export function HistoricoPrecos({ serie }: { serie: PontoHistoricoFipe[] }) {
       </div>
 
       <ResponsiveContainer width="100%" height={200}>
-        <AreaChart data={dados} margin={{ top: 24, right: 16, left: 16, bottom: 4 }}>
+        {/* Margem lateral folgada (40) pros rótulos de valor dos pontos das
+            EXTREMIDADES não serem cortados pela borda do gráfico. */}
+        <AreaChart data={dados} margin={{ top: 24, right: 40, left: 40, bottom: 4 }}>
           <defs>
             <linearGradient id="gradienteHistoricoFipe" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={COR_VERDE} stopOpacity={0.14} />
