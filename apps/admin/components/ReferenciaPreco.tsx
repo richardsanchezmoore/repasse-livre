@@ -17,10 +17,11 @@ function reaisCompacto(valor: number): string {
  * Ver project_repasse_livre_referencia_preco_plataforma.
  */
 
-function porcentagem(valor: number, lo: number, hi: number): number {
-  if (hi <= lo) return 0;
-  return Math.max(0, Math.min(100, ((valor - lo) / (hi - lo)) * 100));
-}
+// Layout de ZONAS FIXAS: a faixa das ofertas (mín→máx) sempre ocupa esta % do
+// trilho, independente do spread — evita que preços muito próximos virem um
+// sliver com os rótulos amontoados. A FIPE fica num marco fixo à direita (teto).
+const LARGURA_FAIXA = 58;
+const POS_FIPE = 90;
 
 function selo(fracaoNaFaixa: number): { rotulo: string; classe: string; icone: boolean } {
   // Onde o anúncio cai entre mín (0) e máx (1) das ofertas do modelo.
@@ -41,21 +42,22 @@ export function ReferenciaPreco({
   mesRef: string | null;
 }) {
   const { min, media, max, total } = referencia;
-  // Domínio da barra: do menor preço até o maior entre (máx das ofertas, FIPE).
-  // Como as ofertas ficam ABAIXO da FIPE, a FIPE normalmente ancora a direita.
-  const lo = min;
-  const hi = Math.max(max, fipeValor ?? max);
+  // Posição DENTRO da faixa das ofertas (0 = mín, 1 = máx) — proporcional, é o
+  // que importa: onde o anúncio cai entre o menor e o maior preço do modelo.
+  const fracao = max > min ? (precoAnuncio - min) / (max - min) : 0.5;
+  const fracMedia = max > min ? (media - min) / (max - min) : 0.5;
 
-  const posOferta = porcentagem(precoAnuncio, lo, hi);
-  const posMedia = porcentagem(media, lo, hi);
-  const posMax = porcentagem(max, lo, hi);
-  const posFipe = fipeValor != null ? porcentagem(fipeValor, lo, hi) : null;
+  // A faixa ocupa sempre LARGURA_FAIXA% (zonas fixas), então mín/máx nunca se
+  // amontoam mesmo com spread pequeno. A FIPE é o marco fixo à direita.
+  const posOferta = fracao * LARGURA_FAIXA;
+  const posMedia = fracMedia * LARGURA_FAIXA;
+  const posMax = LARGURA_FAIXA;
+  const posFipe = fipeValor != null ? POS_FIPE : null;
 
-  // Perto das bordas, o rótulo "Este anúncio" é ancorado no início/fim pra não
-  // vazar do card; no meio fica centrado. A agulha marca sempre a posição exata.
+  // Perto das bordas, o rótulo "Este anúncio" ancora no início/fim pra não vazar
+  // do card; no meio fica centrado. A agulha marca sempre a posição exata.
   const ancoraAnuncio = posOferta <= 16 ? "inicio" : posOferta >= 84 ? "fim" : "centro";
 
-  const fracao = max > min ? (precoAnuncio - min) / (max - min) : 0;
   const { rotulo: rotuloSelo, classe: classeSelo, icone: temIcone } = selo(fracao);
 
   return (
