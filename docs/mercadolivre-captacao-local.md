@@ -164,10 +164,18 @@ refeito. Passo a passo num PC novo (Windows):
 ## Railway (o resto continua lá)
 
 Só o **Mercado Livre** saiu da Railway. **OLX**, **Webmotors** e o **cron mensal
-de FIPE** continuam rodando na Railway normalmente. O cron do ML na Railway
-(`repasse-livre-mercadolivre`) está com **"No schedule"** (não roda), então não
-gasta proxio nem roda em dobro. O serviço continua existindo (parado) — é só isso
-que permite voltar pro modo cloud num clique.
+de FIPE** continuam rodando na Railway normalmente. O serviço do ML na Railway
+(`repasse-livre-mercadolivre`) foi **EXCLUÍDO em 04/07** — não era só "No schedule":
+mesmo parado, **cada `git push` redeployava e ele CRASHAVA** (a Railway roda o
+serviço no deploy), gastando crédito à toa. Excluído resolve. Se voltar pro cloud,
+recria (é rápido — ver abaixo).
+
+> **⚠️ Deploy dispara o cron:** todo `git push` que a Railway auto-deploya faz os
+> serviços de cron (OLX/Webmotors/FIPE) **rodarem na hora do deploy**, fora da
+> agenda. Vários pushes seguidos = vários runs sobrepostos (validado 04/07: 14
+> pushes → 20 runs OLX no mesmo dia, a maioria falhando por brigar pelo proxy).
+> Se for pushar muito, espere a OLX/Webmotors se acalmarem depois — ou pause os
+> serviços. NÃO confundir esses runs extras com "o cron está bugado".
 
 ---
 
@@ -180,8 +188,10 @@ account-verification. Foi validado que funciona; saímos dele só por **custo**
 ($2/GB) e porque o local é mais confiável (residencial não dá 403 na FIPE).
 
 Pra reverter:
-1. **Railway** → serviço `repasse-livre-mercadolivre` → **Settings → Cron
-   Schedule** → colocar de volta `0 */16 * * *` (ou a frequência desejada).
+1. **Railway** → **recriar o serviço** `repasse-livre-mercadolivre` (foi excluído
+   em 04/07): novo serviço apontando pro mesmo repo, root `apps/discovery-worker`,
+   start `npm run discover:mercadolivre`, **Settings → Cron Schedule** `0 */16 * * *`
+   (ou a frequência desejada).
 2. Conferir que o **`PROXY_URL`** (Thordata residencial) está setado nas variáveis
    do serviço — é ele que ativa proxy+stealth (sem ele, tentaria sair pelo IP da
    Railway e tomaria account-verification/403).
