@@ -363,6 +363,31 @@ function encontrarMelhorCorrespondencia<T extends { name: string }>(
   return melhorPontuacao >= pontuacaoMinima ? melhor : null;
 }
 
+/**
+ * TODAS as marcas que casam com o texto buscado, não só a melhor — a mesma marca
+ * pode estar catalogada na FIPE sob nomes diferentes por ano/modelo. A Chery, por
+ * ex., aparece como "Caoa Chery" E "Caoa Chery/Chery" (a CAOA assumiu a marca no
+ * Brasil): um modelo pode existir só numa das duas. Retorna todas as de pontuação
+ * MÁXIMA (empatadas no topo), pra o resolvedor varrer o modelo em cada uma. É
+ * seguro alargar assim porque a âncora de VALOR valida por cima — procurar numa
+ * marca a mais nunca gera código errado (modelo errado não encaixa no valor), só
+ * acha o certo que estava na variante "errada". Match exato do nome vence e
+ * retorna só ele (mais específico). Ver o print da FIPE (Caoa Chery / Caoa Chery/Chery).
+ */
+function marcasCandidatas<T extends { name: string }>(itens: T[], textoBusca: string, pontuacaoMinima = 1): T[] {
+  const busca = normalizar(textoBusca);
+  const exato = itens.find((item) => normalizar(item.name) === busca);
+  if (exato) return [exato];
+
+  const tokensBusca = tokenizar(textoBusca);
+  if (tokensBusca.size === 0) return [];
+
+  const pontuadas = itens.map((item) => ({ item, p: contarTokensCasados(tokenizar(item.name), tokensBusca) }));
+  const maxP = Math.max(0, ...pontuadas.map((x) => x.p));
+  if (maxP < pontuacaoMinima) return [];
+  return pontuadas.filter((x) => x.p === maxP).map((x) => x.item);
+}
+
 function pontuarCandidatos<T extends { name: string }>(itens: T[], textoBusca: string): { item: T; pontuacao: number }[] {
   const tokensBusca = tokenizar(textoBusca);
   return itens
@@ -619,55 +644,59 @@ export async function resolverReferenciaFipePorValor(
   if (!(valorPagina > 0)) return null;
 
   const marcas = await buscarMarcas();
-  const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
-  if (!marcaEncontrada) return null;
-
-  const modelos = await buscarModelos(marcaEncontrada.code);
-  // O código certo quase sempre está entre os melhores por TEXTO — quem desempata
-  // é o valor. topN moderado (8) equilibra: cobre a versão certa vs. a vizinha
-  // (que é o caso que a âncora resolve) sem estourar a FIPE em chamadas (cada
-  // candidato custa buscarAnos+buscarValor; grupo-3 iteraria todos à toa).
-  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 8);
-  if (candidatos.length === 0) return null;
+  // Varre TODAS as marcas que casam (ex.: "Caoa Chery" + "Caoa Chery/Chery") — o
+  // modelo pode estar só numa das variantes. Seguro: a âncora de valor exato
+  // valida por cima, então marca extra nunca gera código errado.
+  const marcasEnc = marcasCandidatas(marcas, marca);
+  if (marcasEnc.length === 0) return null;
 
   try {
     const tabelas = await resolverTabelasRecentes();
     const tabelaAtual = tabelas[0];
     const tabelaAnterior = tabelas[1]; // undefined se a FIPE só tiver uma tabela
 
-    for (const candidato of candidatos) {
-      const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
-      const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
-      if (!refAno) continue;
+    for (const marcaEncontrada of marcasEnc) {
+      const modelos = await buscarModelos(marcaEncontrada.code);
+      // O código certo quase sempre está entre os melhores por TEXTO — quem desempata
+      // é o valor. topN moderado (8) equilibra: cobre a versão certa vs. a vizinha
+      // (que é o caso que a âncora resolve) sem estourar a FIPE em chamadas (cada
+      // candidato custa buscarAnos+buscarValor; grupo-3 iteraria todos à toa).
+      const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 8);
 
-      // Encaixe EXATO contra o mês vigente e, se não bater, o anterior (OLX
-      // atrasa a virada). Igualdade de verdade — a folga é só de centavos.
-      const valorAtual = await buscarValorEmTabela(marcaEncontrada.code, candidato.code, refAno.code, tabelaAtual);
-      let encaixou = Math.abs(parsePrecoFipe(valorAtual.Valor) - valorPagina) <= EPSILON_ENCAIXE_REAIS;
+      for (const candidato of candidatos) {
+        const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+        const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+        if (!refAno) continue;
 
-      if (!encaixou && tabelaAnterior !== undefined) {
-        const valorAnterior = await buscarValorEmTabela(marcaEncontrada.code, candidato.code, refAno.code, tabelaAnterior);
-        encaixou = Math.abs(parsePrecoFipe(valorAnterior.Valor) - valorPagina) <= EPSILON_ENCAIXE_REAIS;
-      }
+        // Encaixe EXATO contra o mês vigente e, se não bater, o anterior (OLX
+        // atrasa a virada). Igualdade de verdade — a folga é só de centavos.
+        const valorAtual = await buscarValorEmTabela(marcaEncontrada.code, candidato.code, refAno.code, tabelaAtual);
+        let encaixou = Math.abs(parsePrecoFipe(valorAtual.Valor) - valorPagina) <= EPSILON_ENCAIXE_REAIS;
 
-      if (encaixou) {
-        // Achou o código certo (bateu no vigente OU no anterior). Retornamos
-        // SEMPRE a referência do mês VIGENTE (código é estável; valor/mês
-        // atuais) — o codigo_fipe é o que importa aqui; a margem da OLX segue
-        // vindo do valor da página.
-        const { mes: mesRef, ano: anoRef } = parseMesReferencia(valorAtual.MesReferencia);
-        return {
-          marca: marcaEncontrada.name,
-          modelo: candidato.name,
-          ano: refAno.name,
-          valor: parsePrecoFipe(valorAtual.Valor),
-          mesReferencia: valorAtual.MesReferencia.trim(),
-          codigoFipe: valorAtual.CodigoFipe,
-          anoModelo: Number.parseInt(refAno.name, 10),
-          siglaCombustivel: (valorAtual.SiglaCombustivel ?? "").toLowerCase(),
-          mesReferenciaNum: mesRef,
-          anoReferencia: anoRef,
-        };
+        if (!encaixou && tabelaAnterior !== undefined) {
+          const valorAnterior = await buscarValorEmTabela(marcaEncontrada.code, candidato.code, refAno.code, tabelaAnterior);
+          encaixou = Math.abs(parsePrecoFipe(valorAnterior.Valor) - valorPagina) <= EPSILON_ENCAIXE_REAIS;
+        }
+
+        if (encaixou) {
+          // Achou o código certo (bateu no vigente OU no anterior). Retornamos
+          // SEMPRE a referência do mês VIGENTE (código é estável; valor/mês
+          // atuais) — o codigo_fipe é o que importa aqui; a margem da OLX segue
+          // vindo do valor da página.
+          const { mes: mesRef, ano: anoRef } = parseMesReferencia(valorAtual.MesReferencia);
+          return {
+            marca: marcaEncontrada.name,
+            modelo: candidato.name,
+            ano: refAno.name,
+            valor: parsePrecoFipe(valorAtual.Valor),
+            mesReferencia: valorAtual.MesReferencia.trim(),
+            codigoFipe: valorAtual.CodigoFipe,
+            anoModelo: Number.parseInt(refAno.name, 10),
+            siglaCombustivel: (valorAtual.SiglaCombustivel ?? "").toLowerCase(),
+            mesReferenciaNum: mesRef,
+            anoReferencia: anoRef,
+          };
+        }
       }
     }
   } catch {
@@ -702,24 +731,26 @@ export async function resolverReferenciaFipeProximaDoValor(
   if (!(valorAlvo > 0)) return null;
 
   const marcas = await buscarMarcas();
-  const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
-  if (!marcaEncontrada) return null;
+  // Varre TODAS as marcas que casam (ex.: "Caoa Chery" + "Caoa Chery/Chery"). A
+  // proximidade (≤8%) já filtra o trim errado; alargar a marca só amplia a busca.
+  const marcasEnc = marcasCandidatas(marcas, marca);
+  if (marcasEnc.length === 0) return null;
 
-  const modelos = await buscarModelos(marcaEncontrada.code);
-  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 12);
-  if (candidatos.length === 0) return null;
-
-  let melhor: { valor: FipeValorResposta; refAno: FipeAno; nome: string; v: number; dist: number } | null = null;
+  let melhor: { valor: FipeValorResposta; refAno: FipeAno; nome: string; marcaNome: string; v: number; dist: number } | null = null;
   try {
-    for (const candidato of candidatos) {
-      const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
-      const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
-      if (!refAno) continue;
-      const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
-      const v = parsePrecoFipe(valor.Valor);
-      const dist = Math.abs(v - valorAlvo) / valorAlvo;
-      if (!melhor || dist < melhor.dist) {
-        melhor = { valor, refAno, nome: candidato.name, v, dist };
+    for (const marcaEncontrada of marcasEnc) {
+      const modelos = await buscarModelos(marcaEncontrada.code);
+      const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 12);
+      for (const candidato of candidatos) {
+        const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+        const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+        if (!refAno) continue;
+        const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
+        const v = parsePrecoFipe(valor.Valor);
+        const dist = Math.abs(v - valorAlvo) / valorAlvo;
+        if (!melhor || dist < melhor.dist) {
+          melhor = { valor, refAno, nome: candidato.name, marcaNome: marcaEncontrada.name, v, dist };
+        }
       }
     }
   } catch {
@@ -730,7 +761,7 @@ export async function resolverReferenciaFipeProximaDoValor(
 
   const { mes: mesRef, ano: anoRef } = parseMesReferencia(melhor.valor.MesReferencia);
   return {
-    marca: marcaEncontrada.name,
+    marca: melhor.marcaNome,
     modelo: melhor.nome,
     ano: melhor.refAno.name,
     valor: melhor.v,
@@ -871,33 +902,36 @@ export async function resolverReferenciaFipePorValorParallelum(
   if (!(valorPagina > 0)) return null;
 
   const marcas = await buscarMarcasParallelum();
-  const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
-  if (!marcaEncontrada) return null;
+  // Varre TODAS as marcas que casam (ex.: "Caoa Chery" + "Caoa Chery/Chery") — o
+  // modelo pode estar só numa das variantes. Seguro pela âncora de valor exato.
+  const marcasEnc = marcasCandidatas(marcas, marca);
+  if (marcasEnc.length === 0) return null;
 
-  const modelos = await buscarModelosParallelum(marcaEncontrada.code);
-  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 8);
-  if (candidatos.length === 0) return null;
+  for (const marcaEncontrada of marcasEnc) {
+    const modelos = await buscarModelosParallelum(marcaEncontrada.code);
+    const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 8);
 
-  for (const candidato of candidatos) {
-    const anos = await buscarAnosParallelum(marcaEncontrada.code, candidato.code);
-    const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
-    if (!refAno) continue;
+    for (const candidato of candidatos) {
+      const anos = await buscarAnosParallelum(marcaEncontrada.code, candidato.code);
+      const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+      if (!refAno) continue;
 
-    const valor = await buscarValorParallelum(marcaEncontrada.code, candidato.code, refAno.code);
-    if (Math.abs(parsePrecoFipe(valor.price) - valorPagina) <= EPSILON_ENCAIXE_REAIS) {
-      const { mes, ano: anoRef } = parseMesReferencia(valor.referenceMonth);
-      return {
-        marca: valor.brand,
-        modelo: valor.model,
-        ano: refAno.name,
-        valor: parsePrecoFipe(valor.price),
-        mesReferencia: valor.referenceMonth.trim(),
-        codigoFipe: valor.codeFipe,
-        anoModelo: Number.parseInt(refAno.name, 10),
-        siglaCombustivel: (valor.fuelAcronym ?? "").toLowerCase(),
-        mesReferenciaNum: mes,
-        anoReferencia: anoRef,
-      };
+      const valor = await buscarValorParallelum(marcaEncontrada.code, candidato.code, refAno.code);
+      if (Math.abs(parsePrecoFipe(valor.price) - valorPagina) <= EPSILON_ENCAIXE_REAIS) {
+        const { mes, ano: anoRef } = parseMesReferencia(valor.referenceMonth);
+        return {
+          marca: valor.brand,
+          modelo: valor.model,
+          ano: refAno.name,
+          valor: parsePrecoFipe(valor.price),
+          mesReferencia: valor.referenceMonth.trim(),
+          codigoFipe: valor.codeFipe,
+          anoModelo: Number.parseInt(refAno.name, 10),
+          siglaCombustivel: (valor.fuelAcronym ?? "").toLowerCase(),
+          mesReferenciaNum: mes,
+          anoReferencia: anoRef,
+        };
+      }
     }
   }
   return null;
