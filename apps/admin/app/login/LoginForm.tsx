@@ -7,6 +7,7 @@ import { caminhoRedirectSeguro } from "@/lib/redirectSeguro";
 import { IconeGoogle } from "@/components/IconeGoogle";
 import { IconeFacebook } from "@/components/IconeFacebook";
 import { ModalConfirmarOAuth } from "@/components/ModalConfirmarOAuth";
+import { FACEBOOK_LOGIN_ATIVO } from "@/lib/flags";
 
 export function LoginForm({ redirect }: { redirect?: string }) {
   const destino = caminhoRedirectSeguro(redirect);
@@ -101,15 +102,19 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         Continuar com Google
       </button>
 
-      <button
-        type="button"
-        className="login-botao-facebook"
-        onClick={() => setModalFacebookAberto(true)}
-        disabled={enviandoFacebook}
-      >
-        <IconeFacebook size={18} />
-        Continuar com Facebook
-      </button>
+      {/* Login com Facebook pronto, mas escondido até o CNPJ liberar a Business
+          Verification do app no Meta (ver lib/flags.ts). */}
+      {FACEBOOK_LOGIN_ATIVO && (
+        <button
+          type="button"
+          className="login-botao-facebook"
+          onClick={() => setModalFacebookAberto(true)}
+          disabled={enviandoFacebook}
+        >
+          <IconeFacebook size={18} />
+          Continuar com Facebook
+        </button>
+      )}
 
       <ModalConfirmarOAuth
         aberto={modalGoogleAberto}
