@@ -27,6 +27,8 @@ export function RodapeGlobal() {
     return null;
   }
 
+  const anoAtual = new Date().getFullYear();
+
   return (
     <footer className="rodape-global">
       <div className="rodape-global-conteudo">
@@ -51,7 +53,9 @@ export function RodapeGlobal() {
           </div>
         </nav>
       </div>
-      <div className="rodape-global-base">© 2026 Repasse Livre</div>
+      <div className="rodape-global-base" suppressHydrationWarning>
+        © 2009-{anoAtual} JEM Global Technology. Todos os direitos reservados.
+      </div>
     </footer>
   );
 }

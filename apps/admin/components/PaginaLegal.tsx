@@ -15,6 +15,7 @@ export function PaginaLegal({
   atualizadoEm: string;
   children: React.ReactNode;
 }) {
+  const anoAtual = new Date().getFullYear();
   return (
     <div className="pagina-legal">
       <header className="pagina-legal-topo">
@@ -39,7 +40,7 @@ export function PaginaLegal({
           <Link href="/termos">Termos de Uso</Link>
           <Link href="/exclusao-de-dados">Exclusão de dados</Link>
         </nav>
-        <p>© 2026 Repasse Livre</p>
+        <p>© 2009-{anoAtual} JEM Global Technology. Todos os direitos reservados.</p>
       </footer>
     </div>
   );
