@@ -71,14 +71,52 @@ captou e `fim (exit 0)` = sucesso. Procure por linhas `✓ ... (N fotos)`.
 ## Requisitos e cuidados
 
 - **Sobrevive a reinício/desligar**: a tarefa é persistente (fica salva no
-  Windows). Após um reboot, ela continua disparando nos horários normais (00h,
-  06h, 12h, 18h) — não precisa reconfigurar nada.
+  Windows). Após um reboot, ela continua disparando (a cada 6h + atraso aleatório
+  de até 2h) — não precisa reconfigurar nada.
 - **Disparo perdido (PC estava desligado)**: está ligada a opção *"executar assim
   que possível após um disparo perdido"* (`StartWhenAvailable`), então ao religar
   o PC ele roda o que perdeu. Se ficar dias off, o giro do ML repõe os anúncios.
-- **Ritmo:** está em 6h (4x/dia). Dá pra aumentar, mas convém não martelar (é um
-  IP único; o ML pode fichar se for muito agressivo). Se aumentar, olhe o log pra
-  ver se aparece `account-verification`.
+- **Ritmo:** 6h (4x/dia) **com atraso aleatório de até 2h** (`RandomDelay PT2H` na
+  tarefa) — dispara num ponto variável dentro de cada janela em vez de cravado
+  00/06/12/18, pra não parecer robô. Dá pra aumentar a frequência, mas convém não
+  martelar (é um IP único; o ML pode fichar se for muito agressivo).
+
+---
+
+## Se o ML parar de descobrir (parede `account-verification`)
+
+**Como enxergar:** no painel admin **Motor de Descoberta → aba Mercado Livre**, um
+run bloqueado aparece **vermelho (Erro)** com a mensagem *"ML BLOQUEADO … IP
+residencial fichado"*. Runs normais mostram um resumo verde *"N pág. carregadas"*.
+(Antes o bloqueio virava "sucesso 0", indistinguível de "não teve nada novo".) No
+log local `ml-cron.log`, procure `wall=account-verification`.
+
+**O que é:** o bloqueio é **do IP**, não do código. O ML fica um tempo aceitando e,
+se o IP parece robô/agressivo demais, **ficha aquele IP** — aí toda página cai no
+`/gz/account-verification` (confirmado 04/07: o IP funcionou ~5h e depois fichou por
+horas seguidas). A "rotação de IP" do log é **cosmética no local** (sem proxy, é
+sempre o mesmo IP).
+
+**A cura imediata: trocar de IP.** **Reinicie o roteador** (a maioria dos provedores
+dá IP novo na reconexão) — validado: IP novo passou 3/3 páginas na hora. Se o
+provedor mantém o mesmo IP, espere algumas horas (ele costuma girar sozinho) ou peça
+renovação ao provedor.
+
+**Prevenção (já aplicada no código, pra o IP durar limpo):**
+1. **Carrega imagem/mídia/fonte** no local (navegador que não baixa imagem tem cara
+   de robô). Só bloqueia mídia quando há `PROXY_URL` (proxy = GB custa).
+2. **Não martela:** se bater na parede, para em 2 tentativas (era 6) e deixa o IP
+   esfriar — re-bater no mesmo IP fichado só piora.
+3. **Cadence humana:** pausas aleatórias maiores + scroll no warmup.
+4. **Horário aleatório:** `RandomDelay` na tarefa (acima).
+
+> **⚠️ Ressalva sobre GB (se um dia voltar pro proxy/Railway):** carregar mídia
+> consome MUITO mais banda (~400MB/run vs. pouco). Isso é de graça no local. **Se
+> voltarmos ao proxy E a plataforma estiver rentabilizando, NÃO re-ative o bloqueio
+> de mídia pra economizar** — contrate um **plano de GB confortável**. O fingerprint
+> humano (carregar tudo) vale mais que a economia de banda: é o que mantém o scraper
+> passando. O bloqueio de mídia foi economia da fase sem receita; com receita, GB é
+> custo operacional barato perto de perder a fonte.
 
 ---
 
