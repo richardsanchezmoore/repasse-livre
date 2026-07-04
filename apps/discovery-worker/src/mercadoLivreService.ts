@@ -105,13 +105,14 @@ function parseProxy(url: string) {
  */
 async function aquecerSessao(page: Page): Promise<void> {
   await page.goto("https://www.mercadolivre.com.br/", { waitUntil: "domcontentloaded", timeout: 30000 });
-  await page.waitForTimeout(1500);
+  await pausaHumana(page, 2500, 4500);
+  await rolarComoHumano(page);
 
   try {
     const aceitar = page.getByText("Aceitar cookies", { exact: false });
     if (await aceitar.first().isVisible({ timeout: 3000 })) {
       await aceitar.first().click();
-      await page.waitForTimeout(800);
+      await pausaHumana(page, 900, 1800);
     }
   } catch {
     // sem banner de cookies — segue normal
@@ -121,7 +122,8 @@ async function aquecerSessao(page: Page): Promise<void> {
     waitUntil: "domcontentloaded",
     timeout: 30000,
   });
-  await page.waitForTimeout(1500);
+  await pausaHumana(page, 2500, 4500);
+  await rolarComoHumano(page);
 
   // Entra na sub-categoria via goto direto (em vez de clicar no link). Com o
   // bloqueio de imagem/fonte ativo, o link da sub-categoria fica num carrossel
@@ -132,7 +134,30 @@ async function aquecerSessao(page: Page): Promise<void> {
     waitUntil: "domcontentloaded",
     timeout: 30000,
   });
-  await page.waitForTimeout(2500);
+  await pausaHumana(page, 3000, 5500);
+  await rolarComoHumano(page);
+}
+
+/** Espera um tempo ALEATÓRIO entre min/max — cadence humana (nada de intervalo fixo). */
+function pausaHumana(page: Page, minMs: number, maxMs: number): Promise<void> {
+  return page.waitForTimeout(minMs + Math.floor(Math.random() * (maxMs - minMs)));
+}
+
+/**
+ * Rola a página em alguns passos, como um humano lendo — sinal de comportamento
+ * que o anti-bot do ML observa. Best-effort (nunca derruba o warmup). Barato
+ * local; só roda quando a mídia carrega (residencial), onde faz diferença.
+ */
+async function rolarComoHumano(page: Page): Promise<void> {
+  try {
+    const passos = 2 + Math.floor(Math.random() * 3); // 2..4 passos
+    for (let i = 0; i < passos; i++) {
+      await page.mouse.wheel(0, 300 + Math.floor(Math.random() * 500));
+      await page.waitForTimeout(500 + Math.floor(Math.random() * 900));
+    }
+  } catch {
+    // best-effort — comportamento, não requisito
+  }
 }
 
 interface CardBruto {
@@ -319,8 +344,15 @@ function parseProxyComSessao(url: string, sessaoId: number) {
  * imagem; um run com warmup por página + por detalhe chegou a ~400MB).
  * Mantém document/script/xhr/css — necessários para o challenge e para a
  * listagem hidratar.
+ *
+ * SÓ bloqueia quando roteando por PROXY (PROXY_URL setado = GB custa dinheiro).
+ * No residencial LOCAL (sem proxy, como roda hoje) NÃO bloqueia: navegador que
+ * não baixa imagem/fonte tem fingerprint de robô e ajuda a fichar o IP no
+ * account-verification — e localmente GB é de graça. Ver
+ * project_repasse_livre_mercadolivre_ip_residencial_funciona.
  */
 async function bloquearMidia(context: BrowserContext): Promise<void> {
+  if (!process.env.PROXY_URL) return; // local/residencial: carrega tudo (fingerprint humano)
   await context.route("**/*", (route) => {
     const tipo = route.request().resourceType();
     if (tipo === "image" || tipo === "media" || tipo === "font") {
@@ -390,8 +422,14 @@ async function abrirDetalheViaClique(
 /** FIPE encontrada para um anúncio (sem o caso null já filtrado). */
 type ReferenciaFipe = NonNullable<Awaited<ReturnType<typeof buscarReferenciaFipe>>>;
 
-/** Máximo de sessões (IPs) por página — rotaciona quando o IP satura clicando detalhes. */
-const MAX_SESSOES_POR_PAGINA = 6;
+/**
+ * Máximo de sessões por página. Com PROXY (Thordata) cada sessão = IP NOVO, então
+ * vale rotacionar 6× quando o IP satura. LOCAL (residencial, sem proxy) é SEMPRE o
+ * MESMO IP: se bateu no account-verification, re-tentar não muda nada — 6 batidas
+ * seguidas na parede só aprofundam o fichamento. Então local para em 2 (1 tentativa
+ * + 1 confirmação) e desiste da paginação, deixando o IP esfriar até o próximo run.
+ */
+const MAX_SESSOES_POR_PAGINA = process.env.PROXY_URL ? 6 : 2;
 
 /** Anúncio que passou FIPE + margem, pronto para ter o detalhe buscado via clique e ser salvo. */
 interface Elegivel {
