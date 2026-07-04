@@ -74,8 +74,11 @@ const dispatcherFipe = process.env.PROXY_URL ? new ProxyAgent(process.env.PROXY_
 // A FIPE oficial tem throttle por rajada (~4-5 req/s: medido, ~250ms limpo,
 // ~150ms começa a dar 429). NÃO é o teto duro de 1000/dia do parallelum — é
 // soft, se recupera com pausa. Serializamos TODAS as chamadas com um intervalo
-// mínimo pra nunca estourar (300ms = folga sobre o limite).
-const INTERVALO_MINIMO_MS = 450;
+// mínimo pra nunca estourar (300ms = folga sobre o limite). Configurável via
+// FIPE_INTERVALO_MS: o job local/cron pode afrouxar (ex.: 900ms) sem correria,
+// já que ninguém espera o resultado; a captação segue no padrão. O mesmo
+// throttle serializa Parallelum + oficial (compartilham a fila).
+const INTERVALO_MINIMO_MS = Number(process.env.FIPE_INTERVALO_MS) || 450;
 let ultimaChamadaEpoch = 0;
 let filaThrottle: Promise<void> = Promise.resolve();
 
@@ -738,4 +741,190 @@ export async function resolverReferenciaFipeProximaDoValor(
     mesReferenciaNum: mesRef,
     anoReferencia: anoRef,
   };
+}
+
+// ==========================================================================
+// PARALLELUM v2 — fonte PRIMÁRIA de resolução por valor.
+// ==========================================================================
+// A oficial (veiculos.fipe.org.br) 403a em datacenter (Railway) e 429a por
+// rajada até no residencial: trims novos ficavam SEM código na captação (o
+// resolvedor só grava quando encaixa exato, e sob 403/429 ele aborta). O
+// Parallelum v2 (fipe.parallelum.com.br) usa os MESMOS códigos/nomes da FIPE,
+// devolve codeFipe+price+referenceMonth (tudo que a âncora precisa) e, com a
+// FIPE_API_KEY (plano ~1000/dia), respondeu 200 limpo onde a oficial dava 429.
+// Por isso vira o primário; a oficial fica de fallback (cobre o mês ANTERIOR —
+// OLX congela o FIPE na inserção — e é a rede quando o teto diário estoura).
+// Ver project_repasse_livre_fipe_ancora_valor_olx / _fipe_oficial_403_railway.
+const PARALLELUM_BASE = "https://fipe.parallelum.com.br/api/v2";
+const PARALLELUM_KEY = process.env.FIPE_API_KEY ?? "";
+
+/** Falha de FONTE (403/429/rede/teto), distinta de "nenhum candidato encaixou". */
+export class FipeIndisponivelError extends Error {}
+
+interface ParallelumValor {
+  price: string; // "R$ 96.832,00"
+  brand: string;
+  model: string;
+  modelYear: number;
+  codeFipe: string; // "004516-0"
+  referenceMonth: string; // "julho de 2026"
+  fuelAcronym: string; // "F"
+}
+
+// A v2 devolve arrays diretos ([{code,name}]) — mas normalizamos por segurança.
+function normalizarLista(dado: unknown): FipeItem[] {
+  const arr = Array.isArray(dado) ? dado : Array.isArray((dado as any)?.models) ? (dado as any).models : [];
+  return (arr as { code: number | string; name: string }[]).map((x) => ({ code: String(x.code), name: x.name }));
+}
+
+/** GET no Parallelum v2, com o MESMO throttle serial da oficial + retry em 429/5xx/rede. */
+async function getParallelum<T>(path: string, tentativa = 1): Promise<T> {
+  await aguardarVezNoThrottle();
+  // Manda os dois cabeçalhos de auth aceitos (subscription token e Bearer): a
+  // chave é a mesma e servidores diferentes leem de um ou de outro.
+  const headers: Record<string, string> = PARALLELUM_KEY
+    ? { "X-Subscription-Token": PARALLELUM_KEY, Authorization: `Bearer ${PARALLELUM_KEY}` }
+    : {};
+  let resp: Response;
+  try {
+    resp = await fetch(`${PARALLELUM_BASE}${path}`, { headers });
+  } catch {
+    if (tentativa <= 4) {
+      await aguardar(800 * tentativa);
+      return getParallelum<T>(path, tentativa + 1);
+    }
+    throw new FipeIndisponivelError(`rede em ${path}`);
+  }
+  if ((resp.status === 429 || resp.status >= 500) && tentativa <= 4) {
+    await aguardar(800 * tentativa);
+    return getParallelum<T>(path, tentativa + 1);
+  }
+  if (!resp.ok) throw new FipeIndisponivelError(`HTTP ${resp.status} em ${path}`);
+  return resp.json() as Promise<T>;
+}
+
+// Marcas e modelos-por-marca não mudam durante a execução → cache em memória
+// (mesma estratégia da oficial). Rejeição NÃO é cacheada.
+let cacheMarcasPar: Promise<FipeItem[]> | null = null;
+const cacheModelosPar = new Map<string, Promise<FipeItem[]>>();
+const cacheAnosPar = new Map<string, Promise<FipeItem[]>>();
+
+function buscarMarcasParallelum(): Promise<FipeItem[]> {
+  if (!cacheMarcasPar) {
+    cacheMarcasPar = getParallelum<unknown>("/cars/brands")
+      .then(normalizarLista)
+      .catch((erro) => {
+        cacheMarcasPar = null;
+        throw erro;
+      });
+  }
+  return cacheMarcasPar;
+}
+
+function buscarModelosParallelum(marcaCode: string): Promise<FipeItem[]> {
+  let p = cacheModelosPar.get(marcaCode);
+  if (!p) {
+    p = getParallelum<unknown>(`/cars/brands/${marcaCode}/models`)
+      .then(normalizarLista)
+      .catch((erro) => {
+        cacheModelosPar.delete(marcaCode);
+        throw erro;
+      });
+    cacheModelosPar.set(marcaCode, p);
+  }
+  return p;
+}
+
+function buscarAnosParallelum(marcaCode: string, modeloCode: string): Promise<FipeItem[]> {
+  const chave = `${marcaCode}|${modeloCode}`;
+  let p = cacheAnosPar.get(chave);
+  if (!p) {
+    p = getParallelum<unknown>(`/cars/brands/${marcaCode}/models/${modeloCode}/years`)
+      .then(normalizarLista)
+      .catch((erro) => {
+        cacheAnosPar.delete(chave);
+        throw erro;
+      });
+    cacheAnosPar.set(chave, p);
+  }
+  return p;
+}
+
+function buscarValorParallelum(marcaCode: string, modeloCode: string, anoCode: string): Promise<ParallelumValor> {
+  return getParallelum<ParallelumValor>(`/cars/brands/${marcaCode}/models/${modeloCode}/years/${anoCode}`);
+}
+
+/**
+ * Como resolverReferenciaFipePorValor, mas contra o Parallelum v2. Só o MÊS
+ * VIGENTE (o que a v2 devolve por padrão) — o caso "mês anterior" (OLX que
+ * congelou o FIPE) fica pro fallback oficial, que checa vigente+anterior.
+ * Propaga FipeIndisponivelError (fonte fora do ar/teto) pra o híbrido decidir;
+ * retorna null quando a fonte respondeu mas nenhum candidato encaixou exato.
+ */
+export async function resolverReferenciaFipePorValorParallelum(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null,
+  valorPagina: number
+): Promise<ReferenciaFipe | null> {
+  if (!(valorPagina > 0)) return null;
+
+  const marcas = await buscarMarcasParallelum();
+  const marcaEncontrada = encontrarMelhorCorrespondencia(marcas, marca);
+  if (!marcaEncontrada) return null;
+
+  const modelos = await buscarModelosParallelum(marcaEncontrada.code);
+  const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 8);
+  if (candidatos.length === 0) return null;
+
+  for (const candidato of candidatos) {
+    const anos = await buscarAnosParallelum(marcaEncontrada.code, candidato.code);
+    const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+    if (!refAno) continue;
+
+    const valor = await buscarValorParallelum(marcaEncontrada.code, candidato.code, refAno.code);
+    if (Math.abs(parsePrecoFipe(valor.price) - valorPagina) <= EPSILON_ENCAIXE_REAIS) {
+      const { mes, ano: anoRef } = parseMesReferencia(valor.referenceMonth);
+      return {
+        marca: valor.brand,
+        modelo: valor.model,
+        ano: refAno.name,
+        valor: parsePrecoFipe(valor.price),
+        mesReferencia: valor.referenceMonth.trim(),
+        codigoFipe: valor.codeFipe,
+        anoModelo: Number.parseInt(refAno.name, 10),
+        siglaCombustivel: (valor.fuelAcronym ?? "").toLowerCase(),
+        mesReferenciaNum: mes,
+        anoReferencia: anoRef,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolvedor HÍBRIDO por valor (o que a captação e o rematch usam): Parallelum
+ * v2 primeiro (confiável, sem 429, funciona na Railway) e, se ele falhar/estourar
+ * o teto OU não achar match no mês vigente, cai pra oficial (que cobre o mês
+ * ANTERIOR e é a rede de segurança). Nunca chuta: só retorna quando algum dos
+ * dois encaixa EXATO no valor da página.
+ */
+export async function resolverReferenciaFipePorValorHibrido(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null,
+  valorPagina: number
+): Promise<ReferenciaFipe | null> {
+  try {
+    const viaParallelum = await resolverReferenciaFipePorValorParallelum(marca, modelo, ano, variante, valorPagina);
+    if (viaParallelum) return viaParallelum;
+    // Parallelum respondeu mas não encaixou no mês vigente → tenta a oficial
+    // (vigente + anterior). Se a oficial cair (403/429), seu catch interno
+    // devolve null — aí o anúncio fica sem código e o cron re-tenta.
+  } catch {
+    // Parallelum fora do ar / teto diário estourado → oficial assume.
+  }
+  return resolverReferenciaFipePorValor(marca, modelo, ano, variante, valorPagina);
 }

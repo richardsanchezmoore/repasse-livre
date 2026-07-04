@@ -6,7 +6,7 @@ import {
   resolverChaveFiltroFipe,
 } from "./olxService.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
-import { resolverReferenciaFipePorValor } from "./fipeService.js";
+import { resolverReferenciaFipePorValorHibrido } from "./fipeService.js";
 import { garantirHistoricoFipe, registrarPontoHistoricoFipe, resolverCodigoPorHistoricoLocal } from "./historicoFipe.js";
 import { buscarCodigoAprendido, gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
 import { gerarSnapshotDiario } from "./snapshotDiario.js";
@@ -172,7 +172,7 @@ async function processarAnuncio(
       codigoFipeResolvido = local.codigoFipe;
       anoModeloResolvido = local.anoModelo;
     } else {
-      const ref = await resolverReferenciaFipePorValor(
+      const ref = await resolverReferenciaFipePorValorHibrido(
         palavrasTitulo[0] ?? "",
         palavrasTitulo[1] ?? "",
         anuncio.ano ?? "",

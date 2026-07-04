@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { supabase } from "./supabaseClient.js";
-import { resolverReferenciaFipePorValor } from "./fipeService.js";
+import { resolverReferenciaFipePorValorHibrido } from "./fipeService.js";
 import { garantirHistoricoFipe, registrarPontoHistoricoFipe } from "./historicoFipe.js";
 import { buscarCodigoAprendido, gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
 import type { ReferenciaFipe } from "./types.js";
@@ -44,7 +44,7 @@ async function resolverCodigo(
   if (aprendido) return { codigoFipe: aprendido.codigoFipe, anoModelo: aprendido.anoModelo, ref: null };
 
   const pv = veiculo.trim().split(/\s+/);
-  const ref = await resolverReferenciaFipePorValor(pv[0] ?? "", pv[1] ?? "", ano, versao, valorPagina).catch(() => null);
+  const ref = await resolverReferenciaFipePorValorHibrido(pv[0] ?? "", pv[1] ?? "", ano, versao, valorPagina).catch(() => null);
   if (!ref) return null;
 
   // Não grava aqui — a gravação (aprendizado) é só no modo --aplicar, pra o
