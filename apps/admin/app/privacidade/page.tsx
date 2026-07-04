@@ -33,7 +33,7 @@ export default function PrivacidadePage() {
         <li>
           <strong>Dados de conta e login:</strong> ao criar conta ou entrar com Google, Facebook ou
           e-mail/senha, coletamos seu <strong>nome</strong>, <strong>e-mail</strong> e, quando disponível,
-          sua foto de perfil. No login social, recebemos esses dados do provedor (Google/Meta) apenas para
+          sua foto de perfil. No login social, recebemos esses dados do provedor escolhido apenas para
           autenticar você — <strong>não publicamos nada</strong> no seu perfil.
         </li>
         <li>
@@ -59,10 +59,11 @@ export default function PrivacidadePage() {
 
       <h2>4. Compartilhamento com terceiros</h2>
       <p>
-        <strong>Não vendemos</strong> os seus dados. Compartilhamos dados apenas com prestadores que
-        viabilizam o serviço, como provedores de infraestrutura e autenticação (Supabase), hospedagem
-        (Vercel), login social (Google e Meta) e ferramentas de análise (Google Analytics, Google Tag
-        Manager e Meta Pixel). Também podemos compartilhar dados quando exigido por lei ou ordem judicial.
+        <strong>Não vendemos</strong> os seus dados. Compartilhamos dados apenas com prestadores de
+        serviço que viabilizam a plataforma — como infraestrutura de nuvem, autenticação, hospedagem e
+        ferramentas de medição de audiência —, sempre limitados ao necessário para operar o serviço.
+        Também compartilhamos com os provedores de login que você escolher usar, para autenticar o seu
+        acesso, e quando exigido por lei ou ordem judicial.
       </p>
 
       <h2>5. Cookies e rastreamento</h2>
