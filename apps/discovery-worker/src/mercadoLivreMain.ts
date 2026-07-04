@@ -42,7 +42,23 @@ async function executarComRegistro(categoriaUrlBase: string): Promise<void> {
   const registroId = await iniciarRegistroVarredura(categoriaUrlBase, MODO);
   try {
     const resultado = await executarVarreduraMercadoLivre(categoriaUrlBase);
-    await finalizarRegistroVarreduraComSucesso(registroId, resultado);
+    const { paginasCarregadas, paginasBloqueadas } = resultado;
+    const observacao = `${paginasCarregadas} pág. carregadas${paginasBloqueadas ? `, ${paginasBloqueadas} bloqueadas (account-verification)` : ""}`;
+
+    // Run TOTALMENTE bloqueado (nenhuma página carregou, mas bateu na parede):
+    // não é "nada novo" — é o IP fichado. Registra como ERRO pra aparecer
+    // distinto (vermelho + mensagem) no painel, em vez de "sucesso 0". Não
+    // relança (não é crash): o cron segue e re-tenta na próxima janela.
+    if (paginasCarregadas === 0 && paginasBloqueadas > 0) {
+      await finalizarRegistroVarreduraComErro(
+        registroId,
+        `ML BLOQUEADO — 0 páginas carregaram, ${paginasBloqueadas} bloqueadas (account-verification: IP residencial fichado).`
+      );
+      console.log("[motor-descoberta-mercadolivre] ⚠ run BLOQUEADO — registrado como ERRO no painel.");
+      return;
+    }
+
+    await finalizarRegistroVarreduraComSucesso(registroId, resultado, observacao);
   } catch (erro) {
     const mensagem = erro instanceof Error ? erro.message : String(erro);
     await finalizarRegistroVarreduraComErro(registroId, mensagem);

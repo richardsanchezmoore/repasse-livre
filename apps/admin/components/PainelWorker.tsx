@@ -16,6 +16,7 @@ export interface RunWorker {
   descartados: number | null;
   sem_fipe: number | null;
   erro_mensagem: string | null;
+  observacao: string | null;
 }
 
 export interface ConfigWorker {
@@ -236,9 +237,18 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
                     </td>
                     <td>{formatarDuracao(run.iniciado_em, run.finalizado_em)}</td>
                     <td>
-                      {run.status === "erro"
-                        ? run.erro_mensagem ?? "—"
-                        : `${run.novos ?? "—"} / ${run.elegiveis ?? "—"} / ${run.descartados ?? "—"} / ${run.sem_fipe ?? "—"}`}
+                      {run.status === "erro" ? (
+                        run.erro_mensagem ?? "—"
+                      ) : (
+                        <>
+                          {`${run.novos ?? "—"} / ${run.elegiveis ?? "—"} / ${run.descartados ?? "—"} / ${run.sem_fipe ?? "—"}`}
+                          {run.observacao ? (
+                            <span className="worker-obs" style={{ display: "block", fontSize: "0.8em", opacity: 0.7 }}>
+                              {run.observacao}
+                            </span>
+                          ) : null}
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

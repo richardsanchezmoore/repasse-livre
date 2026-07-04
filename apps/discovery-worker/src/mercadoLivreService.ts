@@ -630,7 +630,7 @@ export async function varrerEProcessarMercadoLivre(
   margemMinima: number,
   paginaInicial = 1
 ): Promise<ResultadoLoteMercadoLivre> {
-  const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
+  const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, paginasCarregadas: 0, paginasBloqueadas: 0 };
   // sessid base aleatório por run — evita reusar um IP já fichado.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
 
@@ -714,9 +714,11 @@ export async function varrerEProcessarMercadoLivre(
       break;
     }
     if (elegiveis === null) {
+      resultado.paginasBloqueadas++;
       console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: listagem não carregou após ${MAX_SESSOES_POR_PAGINA} IPs — parando paginação.`);
       break;
     }
+    resultado.paginasCarregadas++;
   }
 
   return resultado;
@@ -739,6 +741,10 @@ export interface ResultadoLoteMercadoLivre {
   elegiveis: number;
   descartados: number;
   semFipe: number;
+  /** Páginas cuja listagem carregou (leu cards). 0 = run totalmente bloqueado. */
+  paginasCarregadas: number;
+  /** Páginas que bateram na parede (account-verification) em TODAS as sessões. */
+  paginasBloqueadas: number;
 }
 
 /**

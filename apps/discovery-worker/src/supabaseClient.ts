@@ -218,7 +218,8 @@ export async function iniciarRegistroVarredura(categoriaUrl: string, modo: strin
 /** Fecha o registro de uma varredura como sucesso, com os contadores finais. */
 export async function finalizarRegistroVarreduraComSucesso(
   id: string,
-  resultado: ResultadoVarreduraRegistro
+  resultado: ResultadoVarreduraRegistro,
+  observacao?: string | null
 ): Promise<void> {
   const { error } = await supabase
     .from("discovery_runs")
@@ -229,6 +230,7 @@ export async function finalizarRegistroVarreduraComSucesso(
       elegiveis: resultado.elegiveis,
       descartados: resultado.descartados,
       sem_fipe: resultado.semFipe,
+      observacao: observacao ?? null,
     })
     .eq("id", id);
 
