@@ -3093,6 +3093,71 @@ body {
   cursor: default;
 }
 
+/* ===== Rodapé global do site público ===== */
+.rodape-global {
+  border-top: 1px solid #e0e3e7;
+  background: #f7f8fa;
+  margin-top: 40px;
+}
+.rodape-global-conteudo {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 48px;
+  justify-content: space-between;
+}
+.rodape-global-marca {
+  max-width: 320px;
+}
+.rodape-global-logo {
+  height: 30px;
+  width: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+.rodape-global-tagline {
+  font-size: 13px;
+  color: #667781;
+  line-height: 1.5;
+  margin: 0;
+}
+.rodape-global-links {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.rodape-global-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rodape-global-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1a1f2e;
+  margin-bottom: 2px;
+}
+.rodape-global-coluna a {
+  font-size: 14px;
+  color: #54656f;
+  text-decoration: none;
+}
+.rodape-global-coluna a:hover {
+  color: #16a34a;
+  text-decoration: underline;
+}
+.rodape-global-base {
+  border-top: 1px solid #e8eaed;
+  padding: 14px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: #8696a0;
+}
+
 /* Links legais no rodapé das telas de login/cadastro */
 .login-legal {
   margin-top: 14px;

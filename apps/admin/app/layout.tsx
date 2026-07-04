@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+import { RodapeGlobal } from "@/components/RodapeGlobal";
 import { buscarConfigRastreio } from "@/lib/rastreio";
 import { URL_BASE_SITE } from "@/lib/site";
 
@@ -48,6 +49,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
         {children}
+
+        {/* Rodapé global — se esconde sozinho no auth/legais/painel (ver RodapeGlobal). */}
+        <RodapeGlobal />
 
         {/* beforeInteractive (só permitido no root layout) faz o Next injetar
             este script no <head>, antes de qualquer outro JS — é o que a
