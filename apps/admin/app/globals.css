@@ -3097,7 +3097,8 @@ body {
 .rodape-global {
   border-top: 1px solid #e0e3e7;
   background: #f7f8fa;
-  margin-top: 40px;
+  /* Sem margem externa: o rodapé encosta no fim do .layout, alinhando com a
+     base do menu lateral (sticky). O respiro fica no padding interno abaixo. */
 }
 .rodape-global-conteudo {
   max-width: 1100px;
