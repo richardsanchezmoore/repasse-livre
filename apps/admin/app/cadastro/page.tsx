@@ -20,6 +20,10 @@ export default async function CadastroPage({
         <p className="login-rodape">
           Já tem conta? <Link href={linkLogin}>Fazer login</Link>
         </p>
+        <p className="login-legal">
+          Ao criar conta, você concorda com os <Link href="/termos">Termos de Uso</Link> e a{" "}
+          <Link href="/privacidade">Política de Privacidade</Link>.
+        </p>
       </div>
     </div>
   );

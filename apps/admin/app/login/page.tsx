@@ -20,6 +20,9 @@ export default async function LoginPage({
         <p className="login-rodape">
           Não tem conta? <Link href={linkCadastro}>Criar conta</Link>
         </p>
+        <p className="login-legal">
+          <Link href="/privacidade">Privacidade</Link> · <Link href="/termos">Termos</Link>
+        </p>
       </div>
     </div>
   );
