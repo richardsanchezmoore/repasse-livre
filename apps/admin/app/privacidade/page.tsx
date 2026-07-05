@@ -72,6 +72,12 @@ export default function PrivacidadePage() {
         estado selecionado) e medir o uso da plataforma. Você pode gerenciar ou bloquear cookies nas
         configurações do seu navegador, ciente de que isso pode afetar o funcionamento do site.
       </p>
+      <p>
+        Para essa medição, usamos um <strong>identificador anônimo de navegação</strong> (um cookie sem
+        nome, e-mail ou qualquer dado que identifique você pessoalmente), que serve apenas para entender de
+        forma agregada quais modelos e anúncios são mais visualizados. Esses dados alimentam recursos de
+        inteligência de mercado da plataforma e não são usados para identificá-lo individualmente.
+      </p>
 
       <h2>6. Seus direitos (LGPD)</h2>
       <p>Você pode, a qualquer momento, solicitar:</p>

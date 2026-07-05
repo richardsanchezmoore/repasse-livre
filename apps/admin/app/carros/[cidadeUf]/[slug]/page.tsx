@@ -346,7 +346,11 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               </Link>
               <BreadcrumbOportunidade oportunidade={oportunidade} titulo={titulo} />
             </div>
-            <RegistradorVisualizacao opportunityId={oportunidade.id} />
+            <RegistradorVisualizacao
+              opportunityId={oportunidade.id}
+              veiculo={oportunidade.veiculo}
+              estado={oportunidade.estado}
+            />
             <PaginaOportunidade oportunidade={oportunidade} />
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
