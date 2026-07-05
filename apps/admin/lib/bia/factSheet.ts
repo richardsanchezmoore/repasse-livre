@@ -115,19 +115,38 @@ function estrelasMargem(m: number | null): number | null {
   return 1; // 3–5%
 }
 
-/** Estrelas de KM — ABSOLUTO (expertise do usuário), não percentil. Meia-estrela. */
-function estrelasKm(km: number | null): number | null {
-  // Guard de plausibilidade: km < 1000 num usado é dado sujo (0 = não preenchido,
-  // ou vendedor digitou "105" = 105 mil). Não avalia — não inventa 5★ pra km falso.
+// Média de km/ano do mercado ATUAL (o povo roda mais hoje que os "10 mil/ano" de
+// 15 anos atrás) — número da experiência prática do usuário.
+const KM_POR_ANO = 20000;
+
+/**
+ * Estrelas de KM — AGE-AWARE: km vs. o ESPERADO pra idade (idade × 20 mil/ano).
+ * "Equaliza" carros velhos (um 2012 com 152k rodou ~12k/ano = bom, não 1★) e
+ * pune km alto em carro novo. Teto de DURABILIDADE por desgaste absoluto (km
+ * gigante = motor gasto, independente da idade). Guard de dado sujo (<1000).
+ */
+function estrelasKm(km: number | null, ano: string | null): number | null {
   if (km == null || km < 1000) return null;
-  if (km <= 30000) return 5;
-  if (km <= 50000) return 4.5;
-  if (km <= 75000) return 4;
-  if (km <= 100000) return 3.5;
-  if (km <= 125000) return 3;
-  if (km <= 150000) return 2;
-  if (km <= 200000) return 1;
-  return 0.5;
+  const anoNum = Number.parseInt(ano ?? "", 10);
+  const idade = Number.isFinite(anoNum) ? Math.max(1, new Date().getFullYear() - anoNum) : 8;
+  const ratio = km / (idade * KM_POR_ANO);
+
+  let e =
+    ratio <= 0.5 ? 5
+    : ratio <= 0.65 ? 4.5
+    : ratio <= 0.8 ? 4
+    : ratio <= 1.0 ? 3.5
+    : ratio <= 1.2 ? 3
+    : ratio <= 1.5 ? 2.5
+    : ratio <= 1.8 ? 2
+    : ratio <= 2.2 ? 1.5
+    : 1;
+
+  // Teto de durabilidade (desgaste absoluto) — honra o padrão de vida útil do motor.
+  if (km >= 300000) e = Math.min(e, 1);
+  else if (km >= 250000) e = Math.min(e, 2);
+  else if (km >= 200000) e = Math.min(e, 3);
+  return e;
 }
 
 /**
@@ -144,7 +163,7 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
 
   // Margem (Preço vs FIPE) e KM = os PILARES, com a escala de mercado do usuário.
   add("Preço vs FIPE", estrelasMargem(anuncio.margem_percentual), "Calculado");
-  add("Quilometragem", estrelasKm(anuncio.km), "Anúncio");
+  add("Quilometragem", estrelasKm(anuncio.km, anuncio.ano), "Anúncio");
 
   // Preço vs. MERCADO (concorrentes reais) — UMA avaliação só. "Posição no ranking"
   // e "distância da média" são o mesmo fundamento (não contar em dobro): prefere o
