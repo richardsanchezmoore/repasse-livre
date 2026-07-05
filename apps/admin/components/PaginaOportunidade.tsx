@@ -74,13 +74,28 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
   // potência) entram na <dl> ao lado de ano/km/câmbio; o resto (único dono,
   // troca, documentação) entra como chips na seção "Detalhes".
   const atributos = oportunidade.atributos_olx ?? {};
-  const CHAVES_FICHA: readonly string[] = ["cartype", "carcolor", "fuel", "doors", "car_steering", "motorpower"];
-  // Os atributos fora da ficha técnica são todos booleanos (único dono,
+  // Ficha central: rótulo fixo → 1ª chave presente. Cobre OLX (carcolor/fuel/…) E
+  // Mercado Livre (cor/tipo_de_combustível/…), que usam esquemas de chave diferentes
+  // — antes a ficha do ML ficava vazia (cor/combustível não apareciam).
+  const FICHA_CENTRAL: { rotulo: string; chaves: string[] }[] = [
+    { rotulo: "Tipo de veículo", chaves: ["cartype", "tipo_de_carroceria"] },
+    { rotulo: "Cor", chaves: ["carcolor", "cor"] },
+    { rotulo: "Combustível", chaves: ["fuel", "tipo_de_combustível", "tipo_de_combustivel"] },
+    { rotulo: "Portas", chaves: ["doors", "portas"] },
+    { rotulo: "Direção", chaves: ["car_steering", "direção", "direcao"] },
+    { rotulo: "Potência do motor", chaves: ["motorpower", "motor"] },
+  ];
+  const fichaItens = FICHA_CENTRAL.map(({ rotulo, chaves }) => {
+    const chave = chaves.find((k) => atributos[k]?.value);
+    return chave ? { rotulo, value: atributos[chave]!.value } : null;
+  }).filter((x): x is { rotulo: string; value: string } => x !== null);
+  const CHAVES_CENTRAIS = new Set(FICHA_CENTRAL.flatMap((f) => f.chaves));
+  // Os atributos fora da ficha central são todos booleanos (único dono,
   // aceita troca, documentação etc.) — só vale mostrar os "Sim": um "Não"
   // pra cada um deles é ruído (ex.: "Com multas: Não"), não informação que
   // ajuda a decisão de compra.
   const detalhesExtras = Object.entries(atributos).filter(
-    ([chave, atributo]) => !CHAVES_FICHA.includes(chave) && atributo.value === "Sim"
+    ([chave, atributo]) => !CHAVES_CENTRAIS.has(chave) && atributo.value === "Sim"
   );
 
   return (
@@ -178,13 +193,11 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
               <dd>{oportunidade.cambio}</dd>
             </div>
           )}
-          {CHAVES_FICHA.map((chave) => {
-            const atributo = atributos[chave];
-            if (!atributo) return null;
+          {fichaItens.map((item) => {
             return (
-              <div key={chave} className="pagina-oportunidade-ficha-item">
-                <dt>{atributo.label}</dt>
-                <dd>{atributo.value}</dd>
+              <div key={item.rotulo} className="pagina-oportunidade-ficha-item">
+                <dt>{item.rotulo}</dt>
+                <dd>{item.value}</dd>
               </div>
             );
           })}
