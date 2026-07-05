@@ -142,6 +142,11 @@ function estrelasKm(km: number | null, ano: string | null): number | null {
     : ratio <= 2.2 ? 1.5
     : 1;
 
+  // PISO: km baixo em ABSOLUTO (≤30 mil) tem percepção boa mesmo em carro novo —
+  // não penaliza só pelo quesito tempo. Mínimo ★★★ (o ratio ainda leva a 4-5★ se
+  // for carro mais velho com km baixa). Decisão do usuário.
+  if (km <= 30000) e = Math.max(e, 3);
+
   // Teto de durabilidade (desgaste absoluto) — honra o padrão de vida útil do motor.
   if (km >= 300000) e = Math.min(e, 1);
   else if (km >= 250000) e = Math.min(e, 2);
