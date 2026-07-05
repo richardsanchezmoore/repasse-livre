@@ -22,7 +22,7 @@ export type Numeros = Partial<
     | "indice_exclusividade"
     | "historico_reducoes"
   >
-> & { coorteEscopo?: string; coorteTamanho?: number };
+> & { coorteEscopo?: string; coorteTamanho?: number; posicao?: number };
 
 export interface ResultadoIndicador {
   evidencia: Evidencia | null;
@@ -39,14 +39,13 @@ const nada: ResultadoIndicador = { evidencia: null };
 export function descontoFipe({ anuncio }: CtxIndicador): ResultadoIndicador {
   const m = anuncio.margem_percentual;
   if (m == null || m < 5) return nada;
-  const forte = m >= 10;
   return {
     evidencia: {
       chave: "desconto_fipe",
       tipo: "positivo",
-      texto: `${m.toFixed(1)}% abaixo da FIPE${forte ? " — desconto expressivo" : ""}`,
+      texto: `${m.toFixed(1).replace(".", ",")}% abaixo da FIPE`,
       origem: "Calculado",
-      peso: forte ? 3 : 2,
+      peso: m >= 10 ? 3 : 2,
     },
     numeros: { percentual_fipe: Number(m.toFixed(1)) },
   };
@@ -75,36 +74,7 @@ export function unicoDono({ anuncio }: CtxIndicador): ResultadoIndicador {
 export function quitado({ anuncio }: CtxIndicador): ResultadoIndicador {
   if (attr(anuncio, "is_settled") !== "Sim") return nada;
   return {
-    evidencia: { chave: "quitado", tipo: "positivo", texto: "Quitado (sem financiamento em aberto)", origem: "Anúncio", peso: 1 },
-  };
-}
-
-export function tempoMonitorado({ anuncio }: CtxIndicador): ResultadoIndicador {
-  const ms = Date.parse(anuncio.data_captura);
-  if (!Number.isFinite(ms)) return nada;
-  const dias = Math.max(0, Math.floor((Date.now() - ms) / 86400000));
-  // Só vira evidência com algum tempo (recém-captado não diz nada ainda).
-  const ev: Evidencia | null =
-    dias >= 3
-      ? { chave: "tempo_monitorado", tipo: "neutro", texto: `Monitorado por nós há ${dias} dias`, origem: "Snapshots", peso: 0 }
-      : null;
-  return { evidencia: ev, numeros: { historico_reducoes: undefined } };
-}
-
-export function consistencia({ anuncio }: CtxIndicador): ResultadoIndicador {
-  const fotos = (anuncio.foto_principal ? 1 : 0) + (anuncio.fotos_secundarias?.length ?? 0);
-  const temDescricao = (anuncio.descricao?.trim().length ?? 0) >= 60;
-  const atributosPreenchidos = Object.keys(anuncio.atributos_olx ?? {}).length;
-  const ok = fotos >= 4 && temDescricao && atributosPreenchidos >= 5;
-  if (!ok) return nada;
-  return {
-    evidencia: {
-      chave: "consistencia",
-      tipo: "positivo",
-      texto: `Anúncio completo (${fotos} fotos, descrição e ficha preenchida)`,
-      origem: "Anúncio",
-      peso: 1,
-    },
+    evidencia: { chave: "quitado", tipo: "positivo", texto: "Quitado", origem: "Anúncio", peso: 1 },
   };
 }
 
@@ -131,8 +101,8 @@ export function historicoReducoes({ precoLog, anuncio }: CtxIndicador): Resultad
       tipo: "positivo",
       texto:
         reducoes === 1
-          ? "O vendedor já reduziu o preço uma vez"
-          : `O vendedor reduziu o preço ${reducoes}× (R$${Math.round(maiorQueda).toLocaleString("pt-BR")} no total) — sinal de flexibilidade`,
+          ? "Vendedor já baixou o preço (aberto a negociar)"
+          : `Vendedor baixou o preço ${reducoes}× (aberto a negociar)`,
       origem: "Snapshots",
       peso: 2,
     },
@@ -153,17 +123,13 @@ export function percentilDesconto({ anuncio, universo }: CtxIndicador): Resultad
   const melhores = c.itens.filter((x) => (x.margem_percentual ?? -Infinity) > minha).length;
   const posicao = melhores + 1;
   const topPct = Math.max(1, Math.round((posicao / c.tamanho) * 100));
-  const destaque = topPct <= 10;
-  return {
-    evidencia: {
-      chave: "percentil_desconto",
-      tipo: "positivo",
-      texto: `Entre os ${topPct}% maiores descontos do modelo (${posicao}º de ${c.tamanho} ${c.escopo})`,
-      origem: "Benchmark interno",
-      peso: destaque ? 3 : 1,
-    },
-    numeros: { percentil_desconto: topPct, coorteEscopo: c.escopo, coorteTamanho: c.tamanho },
-  };
+  // Só vira DESTAQUE (✔) quando é realmente impressionante (top ~15%); senão a
+  // posição já aparece no veredito ("Xª de Y"), sem poluir com % fraco.
+  const ev: Evidencia | null =
+    topPct <= 15
+      ? { chave: "percentil_desconto", tipo: "positivo", texto: `Entre os ${topPct}% com melhor preço do modelo`, origem: "Benchmark interno", peso: topPct <= 5 ? 3 : 2 }
+      : null;
+  return { evidencia: ev, numeros: { percentil_desconto: topPct, coorteEscopo: c.escopo, coorteTamanho: c.tamanho, posicao } };
 }
 
 /** Posição de PREÇO absoluto — mesmo ano. Min 8. Dá % vs média + ranking. */
@@ -175,12 +141,13 @@ export function posicaoPreco({ anuncio, universo }: CtxIndicador): ResultadoIndi
   const vsMedia = ((anuncio.preco - media) / media) * 100;
   const maisBaratos = c.itens.filter((x) => x.preco < anuncio.preco).length;
   const posicao = maisBaratos + 1;
+  void posicao;
   const ev: Evidencia | null =
     vsMedia <= -3
       ? {
           chave: "posicao_preco",
           tipo: "positivo",
-          texto: `R$${Math.round(media - anuncio.preco).toLocaleString("pt-BR")} abaixo da média do modelo (${posicao}º mais barato de ${c.tamanho} ${c.escopo})`,
+          texto: `R$ ${Math.round(media - anuncio.preco).toLocaleString("pt-BR")} abaixo da média do modelo`,
           origem: "Benchmark interno",
           peso: 2,
         }
@@ -206,7 +173,7 @@ export function exclusividade({ anuncio, universo }: CtxIndicador): ResultadoInd
     evidencia: {
       chave: "exclusividade",
       tipo: "positivo",
-      texto: `Dos ${c.tamanho} semelhantes ${c.escopo}, só ${bons} estão ≥${limiar}% abaixo da FIPE — você está vendo um dos melhores preços`,
+      texto: bons <= 1 ? "É o melhor preço do modelo na sua região" : `Um dos ${bons} melhores preços do modelo na sua região`,
       origem: "Base monitorada",
       peso: 3,
     },
@@ -229,7 +196,7 @@ export function kmRaridade({ anuncio, universo }: CtxIndicador): ResultadoIndica
       ? {
           chave: "km",
           tipo: "positivo",
-          texto: `Quilometragem entre as ${pct}% menores do modelo (${anuncio.km.toLocaleString("pt-BR")} km)`,
+          texto: pct <= 20 ? "Quilometragem baixa para o modelo" : "Quilometragem abaixo da média do modelo",
           origem: "Benchmark interno",
           peso: pct <= 20 ? 2 : 1,
         }
@@ -250,7 +217,7 @@ export function corRaridade({ anuncio, universo }: CtxIndicador): ResultadoIndic
     evidencia: {
       chave: "cor",
       tipo: "neutro",
-      texto: `Cor pouco comum: só ${pct}% dos ${cor.toLowerCase()} anunciados deste modelo`,
+      texto: `Cor pouco comum neste modelo (${cor.toLowerCase()})`,
       origem: "Base monitorada",
       peso: 0,
     },
@@ -268,6 +235,4 @@ export const INDICADORES: ((ctx: CtxIndicador) => ResultadoIndicador)[] = [
   alertaLeilao,
   unicoDono,
   quitado,
-  consistencia,
-  tempoMonitorado,
 ];

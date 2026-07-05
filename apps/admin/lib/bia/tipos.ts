@@ -71,8 +71,14 @@ export interface FactSheet {
   dias_monitorado: number;
   historico_reducoes: number;
   coorte: EscopoCoorte | null;
-  // ---- saídas legíveis ----
-  fichas: FichaCategoria[];
-  evidencias: Evidencia[];
+  // ---- saídas legíveis (o que o comprador lê) ----
+  /** Veredito humano: "Excelente oportunidade" | "Boa oportunidade" | ... */
+  classificacao: string;
+  /** Frase-resumo instrutiva (por que, e a posição no ranking). */
   copiloto: string;
+  /** Evidências de destaque em linguagem plana (os ✔ do parecer). */
+  destaques: string[];
+  fichas: FichaCategoria[];
+  /** Cru, pra uso interno/Premium (não exibido ao comprador comum). */
+  evidencias: Evidencia[];
 }
