@@ -59,7 +59,7 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
     historico_reducoes: nums.historico_reducoes ?? 0,
     coorte: nums.coorteEscopo ? { rotulo: nums.coorteEscopo, tamanho: nums.coorteTamanho ?? 0 } : null,
     classificacao,
-    copiloto: montarParecer(classificacao, nums),
+    copiloto: montarParecer(classificacao, nums, fichas),
     destaques: positivos.map((e) => e.texto),
     fichas,
     evidencias,
@@ -170,6 +170,7 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
     let e = 3;
     if (attr("owner") === "Sim") e += 1; // único dono
     if (attr("dealership_review") === "Sim") e += 1; // revisões em concessionária
+    if (attr("warranty") === "Sim") e += 1; // com garantia (quase sempre fábrica) — confiança
     return Math.min(5, e);
   };
   add("Procedência", !temAtributos ? null : procedencia(), "Anúncio");
@@ -183,9 +184,24 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
   return fichas;
 }
 
-/** Parecer INSTRUTIVO (veredito → posição). Sem contagem de "pontos" (soava fraco). */
-function montarParecer(classificacao: string, nums: Numeros): string {
+// Frase do pilar que mais se destaca (ponte pra prosa humana; a LLM na Fase C
+// reescreve tudo a partir do fact-sheet).
+const FRASE_PILAR: Record<string, string> = {
+  "Preço vs FIPE": "pelo desconto sobre a tabela FIPE",
+  "Preço vs. mercado": "pelo preço frente aos concorrentes",
+  Quilometragem: "pela quilometragem",
+  Procedência: "pela procedência",
+};
+
+/** Parecer INSTRUTIVO (veredito → destaque do pilar mais forte → posição). */
+function montarParecer(classificacao: string, nums: Numeros, fichas: FichaCategoria[]): string {
   let txt = `**${classificacao}.**`;
+  const top = fichas
+    .filter((f) => FRASE_PILAR[f.categoria] && f.estrelas != null)
+    .sort((a, b) => (b.estrelas ?? 0) - (a.estrelas ?? 0))[0];
+  if (top && (top.estrelas ?? 0) >= 4) {
+    txt += ` Destaca-se principalmente ${FRASE_PILAR[top.categoria]}.`;
+  }
   if (nums.posicao && nums.coorteTamanho) {
     txt += ` Está na ${nums.posicao}ª posição de melhor preço entre ${nums.coorteTamanho} veículos monitorados.`;
   }
