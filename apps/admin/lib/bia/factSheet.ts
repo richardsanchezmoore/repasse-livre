@@ -70,10 +70,9 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
 // pelo usuário, 17 anos de expertise): MARGEM > KM > procedência. "Nível de
 // Informações" não é fator de VALOR → peso 0 (só é exibido).
 const PESO_CATEGORIA: Record<string, number> = {
-  "Preço vs FIPE": 0.35,
-  Quilometragem: 0.25,
-  "Preço vs. média do modelo": 0.2,
-  "Posição de preço": 0.1,
+  "Preço vs FIPE": 0.35, // margem vs. tabela (referência)
+  Quilometragem: 0.3, // dado duro, escala de mercado do usuário — pilar forte
+  "Preço vs. mercado": 0.25, // vs. concorrentes reais (ranking/distância da média fundidos)
   Procedência: 0.1,
 };
 
@@ -145,12 +144,19 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
   add("Preço vs FIPE", estrelasMargem(anuncio.margem_percentual), "Calculado");
   add("Quilometragem", estrelasKm(anuncio.km), "Anúncio");
 
-  // Posição de preço (percentil de desconto; menor = melhor). Gradual, sem cliff.
+  // Preço vs. MERCADO (concorrentes reais) — UMA avaliação só. "Posição no ranking"
+  // e "distância da média" são o mesmo fundamento (não contar em dobro): prefere o
+  // ranking (percentil de desconto, mais amostra); cai pra distância da média quando
+  // o ranking não tem coorte. A posição exata ("12ª de 43") fica no parecer.
   const pd = nums.percentil_desconto;
-  add("Posição de preço", pd == null ? null : pd <= 5 ? 5 : pd <= 15 ? 4 : pd <= 33 ? 3 : pd <= 60 ? 2 : 1, "Benchmark interno");
-
   const vm = nums.percentual_mercado;
-  add("Preço vs. média do modelo", vm == null ? null : porFaixa(-vm, [[0, 2], [3, 3], [8, 4], [13, 5]]), "Benchmark interno");
+  const estrelasMercado =
+    pd != null
+      ? pd <= 5 ? 5 : pd <= 15 ? 4 : pd <= 33 ? 3 : pd <= 60 ? 2 : 1
+      : vm != null
+        ? porFaixa(-vm, [[0, 1.5], [3, 2.5], [6, 3.5], [10, 4.5], [14, 5]])
+        : null;
+  add("Preço vs. mercado", estrelasMercado, "Benchmark interno");
 
   // Procedência + Nível de Informações vêm dos atributos do anúncio.
   const attr = (k: string) => anuncio.atributos_olx?.[k]?.value ?? null;
