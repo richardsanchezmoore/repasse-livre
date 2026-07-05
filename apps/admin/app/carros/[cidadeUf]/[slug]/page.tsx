@@ -16,6 +16,8 @@ import { OfertasRelacionadas } from "@/components/OfertasRelacionadas";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
 import { RegistradorVisualizacao } from "@/components/RegistradorVisualizacao";
+import { FichaBia } from "@/components/FichaBia";
+import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
@@ -320,6 +322,10 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     },
   };
 
+  // Copiloto de Compra (BIA Engine) — prévia admin-only por ora; o gate Premium
+  // substitui esta checagem quando os planos existirem. Recalculado na leitura.
+  const factSheetBia = usuario?.role === "admin" ? await gerarFactSheet(oportunidade.id) : null;
+
   return (
     <NavegacaoProvider>
       <SelecaoMultiplaProvider>
@@ -352,6 +358,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               estado={oportunidade.estado}
             />
             <PaginaOportunidade oportunidade={oportunidade} />
+            {factSheetBia && <FichaBia fs={factSheetBia} />}
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
         </div>

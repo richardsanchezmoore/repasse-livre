@@ -1,7 +1,14 @@
-import type { AnuncioBia, FactSheet, PontoPreco } from "./tipos";
+import type { AnuncioBia, FactSheet, FichaCategoria, PontoPreco } from "./tipos";
 import { INDICADORES, type CtxIndicador, type Numeros } from "./indicadores";
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+
+/** Escolhe estrelas por faixa crescente: pega o maior limiar que `valor` alcança. */
+function porFaixa(valor: number, faixas: [limiar: number, estrelas: number][]): number {
+  let e = 1;
+  for (const [lim, est] of faixas) if (valor >= lim) e = est;
+  return e;
+}
 
 /**
  * BIA Engine — computa o fact-sheet de um anúncio a partir do UNIVERSO atual
@@ -50,9 +57,81 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
     dias_monitorado: dias,
     historico_reducoes: nums.historico_reducoes ?? 0,
     coorte: nums.coorteEscopo ? { rotulo: nums.coorteEscopo, tamanho: nums.coorteTamanho ?? 0 } : null,
+    fichas: montarFichas(anuncio, nums, dias, evidencias),
     evidencias,
     copiloto: montarParecer(evidencias),
   };
+}
+
+/**
+ * Fichário técnico (parecer de analista): cada categoria vira estrelas + origem.
+ * `null` = sem dado suficiente → a UI mostra "N/D" (honesto, não inventa nota).
+ * Limiares transparentes e afináveis. Estrelas ≥1 quando há dado; a coluna de
+ * origem é a credibilidade que o usuário paga.
+ */
+function montarFichas(
+  anuncio: AnuncioBia,
+  nums: Numeros,
+  dias: number,
+  evidencias: FactSheet["evidencias"]
+): FichaCategoria[] {
+  const temEvid = (chave: string) => evidencias.some((e) => e.chave === chave);
+  const fichas: FichaCategoria[] = [];
+
+  // Preço vs FIPE — sempre (é o nosso âncora)
+  const m = anuncio.margem_percentual;
+  fichas.push({
+    categoria: "Preço vs FIPE",
+    estrelas: m == null ? null : porFaixa(m, [[5, 2], [8, 3], [12, 4], [16, 5]]),
+    origem: "Calculado",
+  });
+
+  // Posição de desconto (percentil, menor = melhor)
+  fichas.push({
+    categoria: "Posição de desconto",
+    estrelas: nums.percentil_desconto == null ? null : porFaixa(101 - nums.percentil_desconto, [[75, 3], [90, 4], [95, 5]]),
+    origem: "Benchmark interno",
+  });
+
+  // Preço vs mercado (mais abaixo da média = melhor)
+  fichas.push({
+    categoria: "Preço vs mercado",
+    estrelas: nums.percentual_mercado == null ? null : porFaixa(-nums.percentual_mercado, [[0, 2], [3, 3], [8, 4], [13, 5]]),
+    origem: "Benchmark interno",
+  });
+
+  // Quilometragem (percentil, menor = melhor). Mediano ~★★★, sem cliff seco.
+  const kmp = nums.km_percentil;
+  fichas.push({
+    categoria: "Quilometragem",
+    estrelas: kmp == null ? null : kmp <= 20 ? 5 : kmp <= 40 ? 4 : kmp <= 60 ? 3 : kmp <= 80 ? 2 : 1,
+    origem: "Benchmark interno",
+  });
+
+  // Procedência — leilão derruba; sem leilão + quitado sobe
+  const ehLeilao = temEvid("leilao");
+  const temAtributos = Object.keys(anuncio.atributos_olx ?? {}).length > 0;
+  fichas.push({
+    categoria: "Procedência",
+    estrelas: !temAtributos ? null : ehLeilao ? 1 : temEvid("quitado") ? 5 : 4,
+    origem: "Anúncio",
+  });
+
+  // Consistência do anúncio
+  fichas.push({
+    categoria: "Consistência do anúncio",
+    estrelas: !temAtributos ? null : temEvid("consistencia") ? 5 : 3,
+    origem: "Anúncio",
+  });
+
+  // Histórico de preço — ainda acumulando (Stage 1a). Reduções sobem; só idade = base.
+  fichas.push({
+    categoria: "Histórico de preço",
+    estrelas: nums.historico_reducoes && nums.historico_reducoes > 0 ? 5 : dias >= 15 ? 3 : dias >= 3 ? 2 : null,
+    origem: "Snapshots",
+  });
+
+  return fichas;
 }
 
 /**

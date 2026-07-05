@@ -46,6 +46,14 @@ export interface EscopoCoorte {
   tamanho: number;
 }
 
+/** Linha do fichário técnico (parecer de analista): categoria → estrelas → origem. */
+export interface FichaCategoria {
+  categoria: string;
+  /** 0–5; null = sem dado suficiente (mostra "N/D", honesto). */
+  estrelas: number | null;
+  origem: OrigemDado;
+}
+
 /** O fact-sheet — a saída da engine. */
 export interface FactSheet {
   opportunity_id: string;
@@ -64,6 +72,7 @@ export interface FactSheet {
   historico_reducoes: number;
   coorte: EscopoCoorte | null;
   // ---- saídas legíveis ----
+  fichas: FichaCategoria[];
   evidencias: Evidencia[];
   copiloto: string;
 }
