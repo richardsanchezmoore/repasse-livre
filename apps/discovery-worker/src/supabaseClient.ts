@@ -13,12 +13,28 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 /** Upsert por link_origem para evitar duplicar a mesma oportunidade entre execuções. */
 export async function salvarOportunidade(oportunidade: Oportunidade): Promise<void> {
+  // Preço anterior (se já existe) — pra detectar mudança e logar no histórico de
+  // preço, insumo do Copiloto ("2 reduções em uma semana").
+  const { data: existente } = await supabase
+    .from("opportunities")
+    .select("preco")
+    .eq("link_origem", oportunidade.link_origem)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("opportunities")
-    .upsert(oportunidade, { onConflict: "link_origem" });
+    .upsert({ ...oportunidade, ultimo_visto: new Date().toISOString() }, { onConflict: "link_origem" });
 
   if (error) {
     throw new Error(`Falha ao salvar oportunidade (${oportunidade.link_origem}): ${error.message}`);
+  }
+
+  // Só loga MUDANÇA de preço (o baseline já está em opportunities: data_captura +
+  // preco). Best-effort: nunca derruba a captação por causa do log.
+  if (existente && Number(existente.preco) !== Number(oportunidade.preco)) {
+    await supabase
+      .from("anuncio_preco_log")
+      .insert({ link_origem: oportunidade.link_origem, preco: oportunidade.preco, origem: "scraper" });
   }
 }
 
@@ -31,6 +47,14 @@ export interface OportunidadeDuplicada {
   margem_percentual: number | null;
   status: string;
   data_captura: string;
+  // Identidade do modelo — pra o histórico registrar O QUE saiu (liquidez por modelo).
+  veiculo: string | null;
+  versao: string | null;
+  ano: string | null;
+  estado: string | null;
+  fipe_codigo: string | null;
+  data_publicacao_origem: string | null;
+  ultimo_visto: string | null;
 }
 
 /**
@@ -47,7 +71,9 @@ export async function buscarDuplicataPorTituloEKm(
 ): Promise<OportunidadeDuplicada | null> {
   const { data, error } = await supabase
     .from("opportunities")
-    .select("id, preco, origem_tipo, fonte, classificacao, margem_percentual, status, data_captura")
+    .select(
+      "id, preco, origem_tipo, fonte, classificacao, margem_percentual, status, data_captura, veiculo, versao, ano, estado, fipe_codigo, data_publicacao_origem, ultimo_visto"
+    )
     .eq("veiculo", veiculo)
     .eq("km", km)
     .order("preco", { ascending: true })
@@ -70,6 +96,15 @@ export async function apagarOportunidadeDuplicada(oportunidade: OportunidadeDupl
     margem_percentual: oportunidade.margem_percentual,
     status: oportunidade.status,
     data_captura: oportunidade.data_captura,
+    veiculo: oportunidade.veiculo,
+    versao: oportunidade.versao,
+    ano: oportunidade.ano,
+    estado: oportunidade.estado,
+    preco: oportunidade.preco,
+    fipe_codigo: oportunidade.fipe_codigo,
+    data_publicacao_origem: oportunidade.data_publicacao_origem,
+    ultimo_visto: oportunidade.ultimo_visto,
+    motivo: "duplicata", // NÃO é liquidez (é o mesmo carro repetido na rede de frotistas)
   });
   if (erroHistorico) {
     throw new Error(`Falha ao registrar histórico da duplicata "${oportunidade.id}": ${erroHistorico.message}`);

@@ -30,6 +30,15 @@ async function moverParaHistoricoEApagar(oportunidades: Oportunidade[]): Promise
       margem_percentual: o.margem_percentual,
       status: o.status,
       data_captura: o.data_captura,
+      veiculo: o.veiculo,
+      versao: o.versao,
+      ano: o.ano,
+      estado: o.estado,
+      preco: o.preco,
+      fipe_codigo: o.fipe_codigo,
+      data_publicacao_origem: o.data_publicacao_origem,
+      ultimo_visto: o.ultimo_visto,
+      motivo: "admin", // exclusão manual — NÃO é liquidez de mercado
     }))
   );
   if (erroHistorico) {

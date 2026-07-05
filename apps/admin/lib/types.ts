@@ -35,6 +35,7 @@ export interface Oportunidade {
   favorito: boolean;
   data_captura: string;
   data_publicacao_origem: string | null;
+  ultimo_visto: string | null;
   atributos_olx: Record<string, { label: string; value: string }>;
   anunciante_profissional: boolean | null;
 }

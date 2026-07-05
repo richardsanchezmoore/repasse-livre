@@ -71,6 +71,9 @@ async function executarLimpeza(): Promise<void> {
         margem_percentual: duplicado.margem_percentual,
         status: duplicado.status,
         data_captura: duplicado.data_captura,
+        veiculo: duplicado.veiculo,
+        preco: duplicado.preco,
+        motivo: "duplicata", // NÃO é liquidez
       });
       if (erroHistorico) {
         console.warn(`[limpar-duplicados] Falha ao registrar histórico de "${duplicado.id}": ${erroHistorico.message}`);

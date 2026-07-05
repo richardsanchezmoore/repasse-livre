@@ -96,6 +96,7 @@ async function main(): Promise<void> {
         await supabase.from("oportunidades_historico").insert({
           origem_tipo: a.origem_tipo, fonte: a.fonte, classificacao: a.classificacao,
           margem_percentual: Number(margem.toFixed(2)), status: a.status, data_captura: a.data_captura,
+          motivo: "fipe_sem_margem", // exclusão por margem < 3% — NÃO é liquidez
         });
         await supabase.from("opportunities").delete().eq("id", a.id);
       }
