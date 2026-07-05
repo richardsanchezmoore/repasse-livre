@@ -160,10 +160,19 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
         : null;
   add("Preço vs. mercado", estrelasMercado, "Benchmark interno");
 
-  // Procedência + Nível de Informações vêm dos atributos do anúncio.
+  // Procedência = HISTÓRICO do carro (não estado financeiro). Régua do usuário:
+  // base 3; leilão trava em 1; único dono +1; revisões em concessionária +1.
+  // IPVA/multas/quitado são estado FINANCEIRO → fora da procedência (decisão do usuário).
   const attr = (k: string) => anuncio.atributos_olx?.[k]?.value ?? null;
   const temAtributos = Object.keys(anuncio.atributos_olx ?? {}).length > 0;
-  add("Procedência", !temAtributos ? null : attr("has_auction") === "Sim" ? 1 : attr("is_settled") === "Sim" ? 5 : 4, "Anúncio");
+  const procedencia = () => {
+    if (attr("has_auction") === "Sim") return 1; // leilão trava
+    let e = 3;
+    if (attr("owner") === "Sim") e += 1; // único dono
+    if (attr("dealership_review") === "Sim") e += 1; // revisões em concessionária
+    return Math.min(5, e);
+  };
+  add("Procedência", !temAtributos ? null : procedencia(), "Anúncio");
 
   const fotos = (anuncio.foto_principal ? 1 : 0) + (anuncio.fotos_secundarias?.length ?? 0);
   const temDescricao = (anuncio.descricao?.trim().length ?? 0) >= 60;
