@@ -560,11 +560,19 @@ async function corrigirFipeComAncora(
 ): Promise<ResultadoCorrecao> {
   if (!detalhes.fipePagina) return { el, descartar: false };
 
+  // Enriquece a variante com combustível + motor REAIS do ML (a página classifica
+  // certo: "Gasolina e álcool" = Flex, "Motor 1.3") — assim os guards de combustível
+  // e cilindrada da âncora não cruzam Diesel×Flex nem 1.3×2.0 por causa de um
+  // tooltip_fipe errado. O título entra como reforço.
+  const combustivelMl = detalhes.atributos?.["tipo_de_combustível"]?.value ?? detalhes.atributos?.["tipo_de_combustivel"]?.value ?? "";
+  const motorMl = detalhes.atributos?.["motor"]?.value ?? "";
+  const varianteEnriquecida = `${el.variante ?? ""} ${motorMl} ${combustivelMl}`.replace(/\s+/g, " ").trim();
+
   const ref = await resolverReferenciaFipeProximaDoValor(
     el.marca,
     el.modelo,
     el.ano,
-    el.variante,
+    varianteEnriquecida,
     detalhes.fipePagina
   ).catch(() => null);
   if (!ref) return { el, descartar: false }; // âncora não confia → mantém o do fuzzy

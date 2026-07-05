@@ -57,6 +57,33 @@ function aguardar(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Classe de combustível de um texto (nome do trim / label de ano da FIPE). Serve
+ * pra NÃO cruzar Diesel com Flex/Gasolina na resolução — o erro que fez um Jeep
+ * Commander 1.3 Flex casar o código do Commander 2.2 Diesel (R$30k a mais) só
+ * porque o valor do diesel ficou mais perto do tooltip do ML. "leve" agrupa
+ * flex/gasolina/álcool (a FIPE às vezes rotula flex como "Gasolina") — só o
+ * diesel (e elétrico/híbrido) é que separa de verdade.
+ */
+function classeCombustivel(texto: string): "diesel" | "eletrico" | "leve" | null {
+  const t = normalizar(texto);
+  if (/\bdiesel\b|\btdi?\b|\bbtdi\b|\bcrd\b|\bhdi\b|\bdci\b/.test(t)) return "diesel";
+  if (/eletric|\bev\b|hibrid|plug/.test(t)) return "eletrico";
+  if (/flex|gasolina|alcool|etanol|\bgnv\b/.test(t)) return "leve";
+  return null;
+}
+
+/**
+ * Cilindrada (motor) de um texto — "1.3", "2.0", "2.2". Discriminador DURO: um
+ * "1.3 Overland" não pode casar um "2.0 Black Hurricane" nem um "2.2 Diesel" (foi
+ * o que sobrou depois do guard de combustível: o tooltip errado do ML puxava pro
+ * trim 2.0 caro). Só o número X.Y (evita pegar "T270", "4x4", anos).
+ */
+function cilindrada(texto: string): string | null {
+  const m = normalizar(texto).match(/(?:^|\s)(\d[.,]\d)(?:\s|$|v|t|l|\b)/);
+  return m ? m[1].replace(",", ".") : null;
+}
+
 const HEADERS_FIPE = {
   "Content-Type": "application/json",
   Referer: "https://veiculos.fipe.org.br/",
@@ -736,15 +763,29 @@ export async function resolverReferenciaFipeProximaDoValor(
   const marcasEnc = marcasCandidatas(marcas, marca);
   if (marcasEnc.length === 0) return null;
 
+  // Combustível E cilindrada declarados no anúncio — discriminadores DUROS pra NÃO
+  // casar Diesel com Flex nem "1.3" com "2.0"/"2.2" (o tooltip errado do ML puxava
+  // pro trim mais caro). Idealmente vêm dos atributos reais do ML (ver enriquecimento
+  // em corrigirFipeComAncora), com o título como reforço.
+  const fuelAlvo = classeCombustivel(`${variante ?? ""} ${modelo}`);
+  const cilAlvo = cilindrada(`${variante ?? ""} ${modelo}`);
   let melhor: { valor: FipeValorResposta; refAno: FipeAno; nome: string; marcaNome: string; v: number; dist: number } | null = null;
   try {
     for (const marcaEncontrada of marcasEnc) {
       const modelos = await buscarModelos(marcaEncontrada.code);
       const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 12);
       for (const candidato of candidatos) {
+        // Combustível/cilindrada do candidato. Se o anúncio declara um e o
+        // candidato é OUTRO → pula (não cruza Diesel×Flex nem 1.3×2.0).
+        const fuelCand = classeCombustivel(candidato.name);
+        if (fuelAlvo && fuelCand && fuelAlvo !== fuelCand) continue;
+        const cilCand = cilindrada(candidato.name);
+        if (cilAlvo && cilCand && cilAlvo !== cilCand) continue;
         const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
         const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
         if (!refAno) continue;
+        const fuelAno = classeCombustivel(refAno.name);
+        if (fuelAlvo && fuelAno && fuelAlvo !== fuelAno) continue; // ex.: anúncio Flex vs "2025 Diesel"
         const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
         const v = parsePrecoFipe(valor.Valor);
         const dist = Math.abs(v - valorAlvo) / valorAlvo;
