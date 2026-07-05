@@ -14,6 +14,7 @@ import {
   Plus,
   Search,
   Send,
+  Settings,
   UserPlus,
   Users,
   X,
@@ -134,6 +135,16 @@ export function Sidebar({
                 <Users size={18} strokeWidth={1.75} />
               </span>
             </button>
+            <button
+              type="button"
+              onClick={() => navegar("/configuracoes")}
+              className={`sidebar-item ${pathname === "/configuracoes" ? "sidebar-item-ativo" : ""}`}
+              title="Configurações"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Settings size={18} strokeWidth={1.75} />
+              </span>
+            </button>
           </div>
         )}
       </nav>
@@ -216,6 +227,16 @@ export function Sidebar({
                 <Users size={18} strokeWidth={1.75} />
               </span>
               <span className="sidebar-rotulo">Usuários</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/configuracoes")}
+              className={`sidebar-item ${pathname === "/configuracoes" ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Settings size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Configurações</span>
             </button>
           </div>
         )}
