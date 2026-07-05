@@ -181,27 +181,15 @@ export function exclusividade({ anuncio, universo }: CtxIndicador): ResultadoInd
   };
 }
 
-/** Raridade de KM: quantos têm KM menor. Min 8. */
-export function kmRaridade({ anuncio, universo }: CtxIndicador): ResultadoIndicador {
-  if (anuncio.km == null || anuncio.km <= 0) return nada;
-  // KM é comparável entre anos próximos do mesmo modelo (pouco rodado é pouco
-  // rodado), então usa a coorte AMPLA no ano — mais amostra que o preço.
-  const c = montarCoorte(universo, anuncio, { metrica: "desconto", minimo: 8 });
-  const comKm = c.itens.filter((x) => x.km != null && x.km > 0);
-  if (comKm.length < 8) return nada;
-  const menores = comKm.filter((x) => (x.km ?? Infinity) < (anuncio.km ?? Infinity)).length;
-  const pct = Math.max(1, Math.round(((menores + 1) / comKm.length) * 100));
+/** KM baixo — ABSOLUTO (a estrela de KM usa a escala do usuário; aqui só o ✔). */
+export function kmRaridade({ anuncio }: CtxIndicador): ResultadoIndicador {
+  const km = anuncio.km;
+  if (km == null || km <= 0) return nada;
   const ev: Evidencia | null =
-    pct <= 40
-      ? {
-          chave: "km",
-          tipo: "positivo",
-          texto: pct <= 20 ? "Quilometragem baixa para o modelo" : "Quilometragem abaixo da média do modelo",
-          origem: "Benchmark interno",
-          peso: pct <= 20 ? 2 : 1,
-        }
+    km <= 75000
+      ? { chave: "km", tipo: "positivo", texto: km <= 50000 ? "Quilometragem baixa" : "Quilometragem boa para a idade", origem: "Anúncio", peso: km <= 50000 ? 2 : 1 }
       : null;
-  return { evidencia: ev, numeros: { km_percentil: pct } };
+  return { evidencia: ev };
 }
 
 /** Cor pouco comum — fato NEUTRO (raro nem sempre é bom pra revenda). */

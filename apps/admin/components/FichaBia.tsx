@@ -1,11 +1,18 @@
 import type { FactSheet } from "@/lib/bia/tipos";
 
+/** 5 estrelas com preenchimento FRACIONÁRIO (meia-estrela) via clip de largura. */
 function Estrelas({ n }: { n: number | null }) {
   if (n == null) return null;
+  const pct = Math.max(0, Math.min(100, (n / 5) * 100));
   return (
-    <span style={{ letterSpacing: 1 }} aria-label={`${n} de 5`}>
-      <span style={{ color: "#f59e0b" }}>{"★".repeat(n)}</span>
-      <span style={{ color: "#e5e7eb" }}>{"★".repeat(5 - n)}</span>
+    <span
+      style={{ position: "relative", display: "inline-block", letterSpacing: 2, whiteSpace: "nowrap", fontSize: 15 }}
+      aria-label={`${n} de 5`}
+    >
+      <span style={{ color: "#e5e7eb" }}>★★★★★</span>
+      <span style={{ position: "absolute", left: 0, top: 0, width: `${pct}%`, overflow: "hidden", color: "#f59e0b" }}>
+        ★★★★★
+      </span>
     </span>
   );
 }

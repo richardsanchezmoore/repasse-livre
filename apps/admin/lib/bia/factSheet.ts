@@ -34,25 +34,16 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
 
   const positivos = evidencias.filter((e) => e.tipo === "positivo");
   const ehLeilao = evidencias.some((e) => e.tipo === "alerta" && e.chave === "leilao");
+  const fichas = montarFichas(anuncio, nums);
 
-  // ---- score 0–100, intuitivo (bom negócio ~85–95) ----
-  const m = anuncio.margem_percentual ?? 0;
-  const bonusFipe = m >= 20 ? 30 : m >= 15 ? 26 : m >= 10 ? 22 : m >= 7 ? 15 : m >= 5 ? 10 : 0;
-  const bonusEvid = Math.min(20, Math.max(0, positivos.length - 1) * 4); // além do desconto-FIPE
-  const pd = nums.percentil_desconto;
-  const bonusPercentil = pd == null ? 0 : pd <= 5 ? 10 : pd <= 15 ? 6 : pd <= 30 ? 3 : 0;
-  const penalidade = ehLeilao ? 36 : 0;
-  const score =
-    anuncio.margem_percentual == null && positivos.length === 0
-      ? null
-      : Math.round(clamp(50 + bonusFipe + bonusEvid + bonusPercentil - penalidade, 0, 100));
+  // ---- score = média PONDERADA das avaliações (os PILARES pesam mais) ----
+  const score = scoreDasFichas(fichas, ehLeilao);
+  const classificacao = classificar(score, ehLeilao);
 
   // Cobertura de dado (interno/Premium; não exibido ao comprador comum).
   const cobertura = Math.min(1, evidencias.length / 6);
   const amostra = Math.min(1, (nums.coorteTamanho ?? 0) / 50);
   const grau_confianca = Math.round(100 * (0.55 * cobertura + 0.45 * amostra));
-
-  const classificacao = classificar(score, ehLeilao);
 
   return {
     opportunity_id: anuncio.id,
@@ -68,21 +59,74 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
     historico_reducoes: nums.historico_reducoes ?? 0,
     coorte: nums.coorteEscopo ? { rotulo: nums.coorteEscopo, tamanho: nums.coorteTamanho ?? 0 } : null,
     classificacao,
-    copiloto: montarParecer(classificacao, positivos.length, nums, ehLeilao),
+    copiloto: montarParecer(classificacao, nums),
     destaques: positivos.map((e) => e.texto),
-    fichas: montarFichas(anuncio, nums),
+    fichas,
     evidencias,
   };
 }
 
-/** Veredito humano a partir do score. Leilão nunca vira "excelente". */
+// Peso de cada avaliação no score. Pilares do mercado de oportunidade (definidos
+// pelo usuário, 17 anos de expertise): MARGEM > KM > procedência. "Nível de
+// Informações" não é fator de VALOR → peso 0 (só é exibido).
+const PESO_CATEGORIA: Record<string, number> = {
+  "Preço vs FIPE": 0.35,
+  Quilometragem: 0.25,
+  "Preço vs. média do modelo": 0.2,
+  "Posição de preço": 0.1,
+  Procedência: 0.1,
+};
+
+function scoreDasFichas(fichas: FichaCategoria[], ehLeilao: boolean): number | null {
+  let somaPeso = 0;
+  let somaPond = 0;
+  for (const f of fichas) {
+    const p = PESO_CATEGORIA[f.categoria] ?? 0;
+    if (p > 0 && f.estrelas != null) {
+      somaPeso += p;
+      somaPond += f.estrelas * p;
+    }
+  }
+  if (somaPeso === 0) return null;
+  let s = Math.round((somaPond / somaPeso / 5) * 100);
+  if (ehLeilao) s = Math.min(s, 45); // leilão nunca é bom negócio
+  return s;
+}
+
+/** Veredito humano. Bandas calibradas pelo usuário: Boa ≥ 70. Leilão nunca é bom. */
 function classificar(score: number | null, ehLeilao: boolean): string {
   if (score == null) return "Sem dados suficientes";
-  if (ehLeilao) return score >= 55 ? "Oportunidade com ressalva" : "Requer atenção";
-  if (score >= 80) return "Excelente oportunidade";
-  if (score >= 65) return "Boa oportunidade";
+  if (ehLeilao) return score >= 40 ? "Oportunidade com ressalva" : "Requer atenção";
+  if (score >= 82) return "Excelente oportunidade";
+  if (score >= 70) return "Boa oportunidade";
   if (score >= 50) return "Oportunidade razoável";
   return "Preço na média do mercado";
+}
+
+/** Estrelas de MARGEM (% abaixo da FIPE) — escala de mercado do usuário, meia-estrela. */
+function estrelasMargem(m: number | null): number | null {
+  if (m == null || m < 3) return null;
+  if (m >= 20) return 5;
+  if (m >= 17.5) return 4.5;
+  if (m >= 15) return 4;
+  if (m >= 12.5) return 3.5;
+  if (m >= 10) return 3;
+  if (m >= 7.5) return 2.5;
+  if (m >= 5) return 2;
+  return 1; // 3–5%
+}
+
+/** Estrelas de KM — ABSOLUTO (expertise do usuário), não percentil. Meia-estrela. */
+function estrelasKm(km: number | null): number | null {
+  if (km == null || km <= 0) return null;
+  if (km <= 30000) return 5;
+  if (km <= 50000) return 4.5;
+  if (km <= 75000) return 4;
+  if (km <= 100000) return 3.5;
+  if (km <= 125000) return 3;
+  if (km <= 150000) return 2;
+  if (km <= 200000) return 1;
+  return 0.5;
 }
 
 /**
@@ -97,8 +141,9 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
     if (estrelas != null) fichas.push({ categoria, estrelas, origem });
   };
 
-  const m = anuncio.margem_percentual;
-  add("Preço vs FIPE", m == null ? null : porFaixa(m, [[5, 2], [8, 3], [12, 4], [16, 5]]), "Calculado");
+  // Margem (Preço vs FIPE) e KM = os PILARES, com a escala de mercado do usuário.
+  add("Preço vs FIPE", estrelasMargem(anuncio.margem_percentual), "Calculado");
+  add("Quilometragem", estrelasKm(anuncio.km), "Anúncio");
 
   // Posição de preço (percentil de desconto; menor = melhor). Gradual, sem cliff.
   const pd = nums.percentil_desconto;
@@ -106,9 +151,6 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
 
   const vm = nums.percentual_mercado;
   add("Preço vs. média do modelo", vm == null ? null : porFaixa(-vm, [[0, 2], [3, 3], [8, 4], [13, 5]]), "Benchmark interno");
-
-  const kmp = nums.km_percentil;
-  add("Quilometragem", kmp == null ? null : kmp <= 20 ? 5 : kmp <= 40 ? 4 : kmp <= 60 ? 3 : kmp <= 80 ? 2 : 1, "Benchmark interno");
 
   // Procedência + Nível de Informações vêm dos atributos do anúncio.
   const attr = (k: string) => anuncio.atributos_olx?.[k]?.value ?? null;
@@ -124,11 +166,9 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
   return fichas;
 }
 
-/** Parecer INSTRUTIVO (veredito → motivo → posição). Menos %, mais prática. */
-function montarParecer(classificacao: string, nPos: number, nums: Numeros, ehLeilao: boolean): string {
-  if (nPos === 0 && !ehLeilao) return "Ainda não reunimos evidências suficientes para um parecer neste anúncio.";
+/** Parecer INSTRUTIVO (veredito → posição). Sem contagem de "pontos" (soava fraco). */
+function montarParecer(classificacao: string, nums: Numeros): string {
   let txt = `**${classificacao}.**`;
-  if (nPos > 0) txt += ` Reúne ${nPos} ${nPos === 1 ? "ponto positivo" : "pontos positivos"} acima da média da nossa base.`;
   if (nums.posicao && nums.coorteTamanho) {
     txt += ` Está na ${nums.posicao}ª posição de melhor preço entre ${nums.coorteTamanho} veículos monitorados.`;
   }
