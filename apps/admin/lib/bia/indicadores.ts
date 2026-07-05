@@ -184,7 +184,7 @@ export function exclusividade({ anuncio, universo }: CtxIndicador): ResultadoInd
 /** KM baixo — ABSOLUTO (a estrela de KM usa a escala do usuário; aqui só o ✔). */
 export function kmRaridade({ anuncio }: CtxIndicador): ResultadoIndicador {
   const km = anuncio.km;
-  if (km == null || km <= 0) return nada;
+  if (km == null || km < 1000) return nada; // km sujo (<1000) não vira destaque
   const ev: Evidencia | null =
     km <= 75000
       ? { chave: "km", tipo: "positivo", texto: km <= 50000 ? "Quilometragem baixa" : "Quilometragem boa para a idade", origem: "Anúncio", peso: km <= 50000 ? 2 : 1 }

@@ -117,7 +117,9 @@ function estrelasMargem(m: number | null): number | null {
 
 /** Estrelas de KM — ABSOLUTO (expertise do usuário), não percentil. Meia-estrela. */
 function estrelasKm(km: number | null): number | null {
-  if (km == null || km <= 0) return null;
+  // Guard de plausibilidade: km < 1000 num usado é dado sujo (0 = não preenchido,
+  // ou vendedor digitou "105" = 105 mil). Não avalia — não inventa 5★ pra km falso.
+  if (km == null || km < 1000) return null;
   if (km <= 30000) return 5;
   if (km <= 50000) return 4.5;
   if (km <= 75000) return 4;
