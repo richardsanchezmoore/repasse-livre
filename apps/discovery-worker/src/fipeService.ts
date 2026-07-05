@@ -815,6 +815,59 @@ export async function resolverReferenciaFipeProximaDoValor(
   };
 }
 
+/**
+ * Resolve por TEXTO (sem valor de âncora), respeitando os guards de combustível e
+ * cilindrada. Retorna o PRIMEIRO candidato (melhor texto) que casa combustível +
+ * cilindrada + ano — pro backfill de anúncios com FIPE errada (ML antigos não têm
+ * o tooltip guardado, então não dá pra ancorar por valor). Nunca cruza motor/combustível.
+ */
+export async function resolverReferenciaFipePorTexto(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null
+): Promise<ReferenciaFipe | null> {
+  const marcas = await buscarMarcas();
+  const marcasEnc = marcasCandidatas(marcas, marca);
+  if (marcasEnc.length === 0) return null;
+  const fuelAlvo = classeCombustivel(`${variante ?? ""} ${modelo}`);
+  const cilAlvo = cilindrada(`${variante ?? ""} ${modelo}`);
+  try {
+    for (const marcaEncontrada of marcasEnc) {
+      const modelos = await buscarModelos(marcaEncontrada.code);
+      const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 12);
+      for (const candidato of candidatos) {
+        const fuelCand = classeCombustivel(candidato.name);
+        if (fuelAlvo && fuelCand && fuelAlvo !== fuelCand) continue;
+        const cilCand = cilindrada(candidato.name);
+        if (cilAlvo && cilCand && cilAlvo !== cilCand) continue;
+        const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+        const refAno = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+        if (!refAno) continue;
+        const fuelAno = classeCombustivel(refAno.name);
+        if (fuelAlvo && fuelAno && fuelAlvo !== fuelAno) continue;
+        const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
+        const { mes, ano: anoRef } = parseMesReferencia(valor.MesReferencia);
+        return {
+          marca: marcaEncontrada.name,
+          modelo: candidato.name,
+          ano: refAno.name,
+          valor: parsePrecoFipe(valor.Valor),
+          mesReferencia: valor.MesReferencia.trim(),
+          codigoFipe: valor.CodigoFipe,
+          anoModelo: Number.parseInt(refAno.name, 10),
+          siglaCombustivel: (valor.SiglaCombustivel ?? "").toLowerCase(),
+          mesReferenciaNum: mes,
+          anoReferencia: anoRef,
+        };
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 // ==========================================================================
 // PARALLELUM v2 — fonte PRIMÁRIA de resolução por valor.
 // ==========================================================================
