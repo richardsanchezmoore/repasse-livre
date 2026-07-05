@@ -152,9 +152,10 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
   // o ranking não tem coorte. A posição exata ("12ª de 43") fica no parecer.
   const pd = nums.percentil_desconto;
   const vm = nums.percentual_mercado;
+  // Faixas com MEIA-ESTRELA (cada intervalo dividido no meio) — decisão do usuário.
   const estrelasMercado =
     pd != null
-      ? pd <= 5 ? 5 : pd <= 15 ? 4 : pd <= 33 ? 3 : pd <= 60 ? 2 : 1
+      ? pd <= 5 ? 5 : pd <= 10 ? 4.5 : pd <= 15 ? 4 : pd <= 24 ? 3.5 : pd <= 33 ? 3 : pd <= 46 ? 2.5 : pd <= 60 ? 2 : pd <= 80 ? 1.5 : 1
       : vm != null
         ? porFaixa(-vm, [[0, 1.5], [3, 2.5], [6, 3.5], [10, 4.5], [14, 5]])
         : null;
