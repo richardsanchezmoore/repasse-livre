@@ -82,7 +82,7 @@ export async function gerarParecerLLM(fs: FactSheet, ctx: ContextoParecer): Prom
       max_tokens: 400,
       ...(SUPORTA_EFFORT ? { output_config: { effort: "low" as const } } : {}),
       system: SYSTEM,
-      messages: [{ role: "user", content: JSON.stringify(montarMaterial(fs, ctx), null, 2) }],
+      messages: [{ role: "user", content: JSON.stringify(montarMaterial(fs, ctx)) }],
     });
 
     const bloco = resposta.content.find((b) => b.type === "text");
