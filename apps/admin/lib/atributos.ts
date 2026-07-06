@@ -77,7 +77,18 @@ function normalizarValor(campo: CampoCanonico, valor: string): string {
     case "doors":
       return /^\d+$/.test(valor.trim()) ? `${valor.trim()} portas` : valor; // "5" → "5 portas"
     case "cartype":
-      return valor === "Pick-Up" ? "Pick-up" : valor === "Van" ? "Van/Utilitário" : valor;
+      // OLX é o vocabulário-alvo (Hatch/Sedã/SUV/Pick-up/Perua/Van/Utilitário).
+      // ML: "Pick-Up"/"Van". Webmotors: "Utilitário esportivo"/"Hatchback"/"Picape"/"Perua/SW".
+      return (
+        {
+          "Pick-Up": "Pick-up", // ML
+          Van: "Van/Utilitário", // ML
+          "Utilitário esportivo": "SUV", // Webmotors
+          Hatchback: "Hatch", // Webmotors
+          Picape: "Pick-up", // Webmotors
+          "Perua/SW": "Perua", // Webmotors
+        } as Record<string, string>
+      )[valor] ?? valor;
     case "carcolor":
       if (valor === "Prateado") return "Prata";
       if (valor.startsWith("Cinza")) return "Cinza"; // "Cinza-escuro" → "Cinza"
