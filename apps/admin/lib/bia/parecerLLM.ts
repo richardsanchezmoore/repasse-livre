@@ -52,8 +52,9 @@ function montarMaterial(fs: FactSheet, ctx: ContextoParecer) {
     avaliacoes: fs.fichas
       .filter((f) => f.estrelas != null)
       .map((f) => ({ categoria: f.categoria, estrelas: f.estrelas })),
+    // Nota: NÃO enviamos fs.destaques — é cópia dos evidencias positivos (mesma
+    // info, tokens de entrada à toa). O modelo já vê os positivos em evidencias.
     evidencias: fs.evidencias.map((e) => ({ tipo: e.tipo, texto: e.texto })),
-    destaques: fs.destaques,
   };
 }
 
