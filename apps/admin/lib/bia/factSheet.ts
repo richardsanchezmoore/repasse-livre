@@ -1,5 +1,6 @@
 import type { AnuncioBia, FactSheet, FichaCategoria, PontoPreco } from "./tipos";
 import { INDICADORES, type CtxIndicador, type Numeros } from "./indicadores";
+import { atributoSim } from "../atributos";
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -188,14 +189,14 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
   // Procedência = HISTÓRICO do carro (não estado financeiro). Régua do usuário:
   // base 3; leilão trava em 1; único dono +1; revisões em concessionária +1.
   // IPVA/multas/quitado são estado FINANCEIRO → fora da procedência (decisão do usuário).
-  const attr = (k: string) => anuncio.atributos_olx?.[k]?.value ?? null;
-  const temAtributos = Object.keys(anuncio.atributos_olx ?? {}).length > 0;
+  const attrs = anuncio.atributos_olx;
+  const temAtributos = Object.keys(attrs ?? {}).length > 0;
   const procedencia = () => {
-    if (attr("has_auction") === "Sim") return 1; // leilão trava
+    if (atributoSim(attrs, "has_auction")) return 1; // leilão trava
     let e = 3;
-    if (attr("owner") === "Sim") e += 1; // único dono
-    if (attr("dealership_review") === "Sim") e += 1; // revisões em concessionária
-    if (attr("warranty") === "Sim") e += 1; // com garantia (quase sempre fábrica) — confiança
+    if (atributoSim(attrs, "owner")) e += 1; // único dono
+    if (atributoSim(attrs, "dealership_review")) e += 1; // revisões em concessionária
+    if (atributoSim(attrs, "warranty")) e += 1; // com garantia (quase sempre fábrica) — confiança
     return Math.min(5, e);
   };
   add("Procedência", !temAtributos ? null : procedencia(), "Anúncio");

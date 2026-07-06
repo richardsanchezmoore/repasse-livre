@@ -1,5 +1,6 @@
 import type { AnuncioBia, Evidencia, FactSheet, PontoPreco } from "./tipos";
 import { montarCoorte } from "./coorte";
+import { atributoSim, lerAtributo } from "../atributos";
 
 /**
  * Cada indicador recebe o contexto e devolve uma evidência (ou null se o gate de
@@ -29,7 +30,6 @@ export interface ResultadoIndicador {
   numeros?: Numeros;
 }
 
-const attr = (a: AnuncioBia, chave: string): string | null => a.atributos_olx?.[chave]?.value ?? null;
 const nada: ResultadoIndicador = { evidencia: null };
 
 // ---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ export function descontoFipe({ anuncio }: CtxIndicador): ResultadoIndicador {
 }
 
 export function alertaLeilao({ anuncio }: CtxIndicador): ResultadoIndicador {
-  if (attr(anuncio, "has_auction") !== "Sim") return nada;
+  if (!atributoSim(anuncio.atributos_olx, "has_auction")) return nada;
   return {
     evidencia: {
       chave: "leilao",
@@ -65,14 +65,14 @@ export function alertaLeilao({ anuncio }: CtxIndicador): ResultadoIndicador {
 }
 
 export function unicoDono({ anuncio }: CtxIndicador): ResultadoIndicador {
-  if (attr(anuncio, "owner") !== "Sim") return nada;
+  if (!atributoSim(anuncio.atributos_olx, "owner")) return nada;
   return {
     evidencia: { chave: "unico_dono", tipo: "positivo", texto: "Único dono", origem: "Anúncio", peso: 1 },
   };
 }
 
 export function quitado({ anuncio }: CtxIndicador): ResultadoIndicador {
-  if (attr(anuncio, "is_settled") !== "Sim") return nada;
+  if (!atributoSim(anuncio.atributos_olx, "is_settled")) return nada;
   return {
     evidencia: { chave: "quitado", tipo: "positivo", texto: "Quitado", origem: "Anúncio", peso: 1 },
   };
@@ -202,11 +202,11 @@ export function kmRaridade({ anuncio }: CtxIndicador): ResultadoIndicador {
 
 /** Cor pouco comum — fato NEUTRO (raro nem sempre é bom pra revenda). */
 export function corRaridade({ anuncio, universo }: CtxIndicador): ResultadoIndicador {
-  const cor = attr(anuncio, "carcolor");
+  const cor = lerAtributo(anuncio.atributos_olx, "carcolor");
   if (!cor) return nada;
-  const comCor = universo.filter((x) => attr(x, "carcolor"));
+  const comCor = universo.filter((x) => lerAtributo(x.atributos_olx, "carcolor"));
   if (comCor.length < 20) return nada;
-  const mesma = comCor.filter((x) => attr(x, "carcolor") === cor).length;
+  const mesma = comCor.filter((x) => lerAtributo(x.atributos_olx, "carcolor") === cor).length;
   const pct = Math.round((mesma / comCor.length) * 100);
   if (pct > 12) return nada; // só destaca se realmente incomum
   return {

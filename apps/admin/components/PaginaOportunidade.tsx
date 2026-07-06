@@ -6,6 +6,7 @@ import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemet
 import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
 import { ocultarTelefonesNaDescricao } from "@/lib/mascaras";
 import { urlOportunidade } from "@/lib/site";
+import { lerAtributo, chavesFonte, type CampoCanonico } from "@/lib/atributos";
 import { BotaoWhatsapp } from "./BotaoWhatsapp";
 import { GaleriaFotos } from "./GaleriaFotos";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
@@ -74,22 +75,23 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
   // potência) entram na <dl> ao lado de ano/km/câmbio; o resto (único dono,
   // troca, documentação) entra como chips na seção "Detalhes".
   const atributos = oportunidade.atributos_olx ?? {};
-  // Ficha central: rótulo fixo → 1ª chave presente. Cobre OLX (carcolor/fuel/…) E
-  // Mercado Livre (cor/tipo_de_combustível/…), que usam esquemas de chave diferentes
-  // — antes a ficha do ML ficava vazia (cor/combustível não apareciam).
-  const FICHA_CENTRAL: { rotulo: string; chaves: string[] }[] = [
-    { rotulo: "Tipo de veículo", chaves: ["cartype", "tipo_de_carroceria"] },
-    { rotulo: "Cor", chaves: ["carcolor", "cor"] },
-    { rotulo: "Combustível", chaves: ["fuel", "tipo_de_combustível", "tipo_de_combustivel"] },
-    { rotulo: "Portas", chaves: ["doors", "portas"] },
-    { rotulo: "Direção", chaves: ["car_steering", "direção", "direcao"] },
-    { rotulo: "Potência do motor", chaves: ["motorpower", "motor"] },
+  // Ficha central: rótulo fixo → campo canônico. O leitor cobre OLX (carcolor/
+  // fuel/…) E Mercado Livre (cor/tipo_de_combustível/…), que usam esquemas de
+  // chave/valor diferentes, e normaliza o valor (ex.: "Gasolina e álcool"→"Flex",
+  // "5"→"5 portas") — antes a ficha do ML ficava vazia ou com valor cru.
+  const FICHA_CENTRAL: { rotulo: string; campo: CampoCanonico }[] = [
+    { rotulo: "Tipo de veículo", campo: "cartype" },
+    { rotulo: "Cor", campo: "carcolor" },
+    { rotulo: "Combustível", campo: "fuel" },
+    { rotulo: "Portas", campo: "doors" },
+    { rotulo: "Direção", campo: "car_steering" },
+    { rotulo: "Potência do motor", campo: "motorpower" },
   ];
-  const fichaItens = FICHA_CENTRAL.map(({ rotulo, chaves }) => {
-    const chave = chaves.find((k) => atributos[k]?.value);
-    return chave ? { rotulo, value: atributos[chave]!.value } : null;
+  const fichaItens = FICHA_CENTRAL.map(({ rotulo, campo }) => {
+    const value = lerAtributo(atributos, campo);
+    return value ? { rotulo, value } : null;
   }).filter((x): x is { rotulo: string; value: string } => x !== null);
-  const CHAVES_CENTRAIS = new Set(FICHA_CENTRAL.flatMap((f) => f.chaves));
+  const CHAVES_CENTRAIS = chavesFonte(FICHA_CENTRAL.map((f) => f.campo));
   // Os atributos fora da ficha central são todos booleanos (único dono,
   // aceita troca, documentação etc.) — só vale mostrar os "Sim": um "Não"
   // pra cada um deles é ruído (ex.: "Com multas: Não"), não informação que
