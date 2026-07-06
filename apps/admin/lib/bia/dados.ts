@@ -1,10 +1,9 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { computarFactSheet } from "./factSheet";
-import { gerarParecerLLM } from "./parecerLLM";
 import type { AnuncioBia, FactSheet, PontoPreco } from "./tipos";
 
 const CAMPOS =
-  "id, fipe_codigo, veiculo, ano, estado, preco, fipe_valor, margem_percentual, km, data_captura, foto_principal, fotos_secundarias, descricao, atributos_olx, link_origem, status";
+  "id, fipe_codigo, veiculo, ano, estado, preco, fipe_valor, margem_percentual, km, data_captura, foto_principal, fotos_secundarias, descricao, atributos_olx, link_origem, status, copiloto_parecer";
 
 // A coorte representa o MERCADO monitorado comparável — tudo que não foi
 // rejeitado (aprovada/descoberta/enviada). Rejeitada não é oferta real.
@@ -27,6 +26,7 @@ export async function gerarFactSheet(anuncioId: string): Promise<FactSheet | nul
     status: string | null;
     veiculo: string | null;
     ano: string | null;
+    copiloto_parecer: string | null;
   };
 
   const universo: AnuncioBia[] = [];
@@ -48,12 +48,12 @@ export async function gerarFactSheet(anuncioId: string): Promise<FactSheet | nul
 
   const fs = computarFactSheet(anuncio, universo, (log as PontoPreco[] | null) ?? []);
 
-  // Fase C — a prosa do parecer via LLM. Reescreve o `copiloto` determinístico
-  // em prosa de especialista (nunca inventa número). Sem ANTHROPIC_API_KEY ou em
-  // falha, gerarParecerLLM devolve null e mantemos o parecer-base. Ver
-  // project_repasse_livre_copiloto_compra_instrumentacao.
-  const prosa = await gerarParecerLLM(fs, { veiculo: anuncio.veiculo, ano: anuncio.ano });
-  if (prosa) fs.copiloto = prosa;
+  // Fase C — a prosa do parecer é gerada FORA da leitura (script batch
+  // gerar:pareceres) e armazenada. Aqui só LEMOS: se há prosa gravada, ela
+  // substitui o parecer-base determinístico — zero delay, zero custo por view.
+  // Sem prosa gravada (anúncio novo/ainda não processado) → mantém o template.
+  // Ver project_repasse_livre_copiloto_compra_instrumentacao.
+  if (anuncio.copiloto_parecer) fs.copiloto = anuncio.copiloto_parecer;
 
   return fs;
 }

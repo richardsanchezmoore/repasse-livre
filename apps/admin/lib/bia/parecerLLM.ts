@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import type { FactSheet } from "./tipos";
 
@@ -11,31 +12,38 @@ import type { FactSheet } from "./tipos";
  * especialista, podendo tecer as evidências e o nome do carro. Nunca inventa
  * número: o material factual é a fronteira.
  *
- * SERVER-ONLY: importado só por lib/bia/dados.ts (que já é server-only). Lê
- * ANTHROPIC_API_KEY do ambiente. SEM chave ou em QUALQUER falha → retorna null,
- * e o chamador mantém o parecer-base determinístico (degrada gracioso; a página
- * nunca quebra). Ativar em produção = setar ANTHROPIC_API_KEY no Vercel.
+ * NÃO roda no acesso à página (era o delay ~4s). É chamada pelo script batch
+ * `gerar:pareceres` (scripts/gerarPareceres.ts), que grava a prosa em
+ * opportunities.copiloto_parecer; a página só LÊ. Lê ANTHROPIC_API_KEY do
+ * ambiente; SEM chave ou em QUALQUER falha → retorna null (o chamador mantém o
+ * parecer determinístico).
+ *
+ * Modelo: default claude-haiku-4-5 (7× mais barato e 2× mais rápido que Opus,
+ * qualidade ~igual pra esta reescrita). Trocar via env COPILOTO_MODELO.
  */
 
-const MODELO = "claude-opus-4-8";
+const MODELO = process.env.COPILOTO_MODELO?.trim() || "claude-haiku-4-5";
+// O Haiku 4.5 NÃO aceita output_config.effort (400). Opus/Sonnet aceitam.
+const SUPORTA_EFFORT = !MODELO.startsWith("claude-haiku");
 
 const SYSTEM = `Você é o Copiloto de Compra do Repasse Livre: um consultor automotivo experiente que avalia anúncios de carros usados aplicando a régua de especialistas com anos de atuação no mercado. Sua função é escrever um PARECER curto e instrutivo para um comprador leigo, a partir de um material de fatos JÁ VALIDADOS.
 
 REGRAS INVIOLÁVEIS:
 - Escreva SOMENTE com base no material fornecido. NUNCA invente, calcule nem estime números, percentuais, posições ou fatos que não estejam explícitos no material. Se um dado não está lá, ele não existe para você.
 - O campo "parecer_base" já traz o veredito e os números corretos. Sua tarefa é REESCREVÊ-LO em prosa natural, clara e acolhedora de especialista — pode incorporar as evidências e o nome do veículo, mas sem acrescentar nenhum número novo.
+- Se o material trouxer a POSIÇÃO/ranking (ex.: "na 4ª posição de melhor preço entre 31 veículos"), CITE o número EXATO no parecer — é um argumento de venda forte. NÃO generalize para "entre os melhores".
 - Camadas de confiança: trate FATO (desconto sobre a FIPE, quilometragem) com firmeza; ESTIMATIVA com honestidade (diga "estimada"); PROXY como tendência, nunca como certeza.
 - Tom: instrutivo e direto, como um especialista ao lado do comprador. SEM jargão técnico, SEM "N/D", SEM linguagem de máquina, SEM elogio vazio.
 - Comece com o veredito em NEGRITO usando **asteriscos** (ex.: **Boa oportunidade.**).
 - 2 a 3 frases, no máximo. Português do Brasil.
 - Responda APENAS com o parecer final: sem introdução, sem aspas, sem comentários, sem cabeçalho.`;
 
-interface ContextoParecer {
+export interface ContextoParecer {
   veiculo: string | null;
   ano: string | null;
 }
 
-/** Monta o material de fatos que a LLM pode usar — só o que já foi validado. */
+/** Material de fatos que a LLM pode usar — só o que já foi validado. */
 function montarMaterial(fs: FactSheet, ctx: ContextoParecer) {
   return {
     veiculo: ctx.veiculo,
@@ -50,8 +58,18 @@ function montarMaterial(fs: FactSheet, ctx: ContextoParecer) {
 }
 
 /**
+ * Hash dos fatos que DIRIGEM a prosa (parecer-base determinístico + fichas +
+ * evidências + veículo). O batch compara com o fingerprint gravado e só chama a
+ * LLM quando muda — mantém a posição/percentil frescos sem custo à toa.
+ */
+export function fingerprintParecer(fs: FactSheet, ctx: ContextoParecer): string {
+  const material = montarMaterial(fs, ctx);
+  return createHash("sha1").update(JSON.stringify(material)).digest("hex");
+}
+
+/**
  * Reescreve o parecer em prosa via Claude. Retorna null quando não há chave ou
- * em qualquer erro — o chamador então mantém o `copiloto` determinístico.
+ * em qualquer erro — o chamador mantém o parecer determinístico.
  */
 export async function gerarParecerLLM(fs: FactSheet, ctx: ContextoParecer): Promise<string | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -59,20 +77,17 @@ export async function gerarParecerLLM(fs: FactSheet, ctx: ContextoParecer): Prom
 
   try {
     const client = new Anthropic({ apiKey });
-    const material = montarMaterial(fs, ctx);
-
     const resposta = await client.messages.create({
       model: MODELO,
       max_tokens: 400,
-      output_config: { effort: "low" }, // tarefa simples de reescrita; prioriza latência/custo
+      ...(SUPORTA_EFFORT ? { output_config: { effort: "low" as const } } : {}),
       system: SYSTEM,
-      messages: [{ role: "user", content: JSON.stringify(material, null, 2) }],
+      messages: [{ role: "user", content: JSON.stringify(montarMaterial(fs, ctx), null, 2) }],
     });
 
     const bloco = resposta.content.find((b) => b.type === "text");
     const prosa = bloco?.type === "text" ? bloco.text.trim() : "";
-    // Guarda de sanidade: precisa parecer um parecer (com veredito em negrito),
-    // senão volta pro determinístico.
+    // Guarda de sanidade: precisa parecer um parecer (veredito em negrito).
     return prosa.length >= 20 && prosa.includes("**") ? prosa : null;
   } catch {
     return null;
