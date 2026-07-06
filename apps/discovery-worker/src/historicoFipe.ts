@@ -116,9 +116,24 @@ export async function garantirHistoricoFipe(codigoFipe: string, anoModelo: numbe
       `"codigo_fipe"='${codigoFipe}' AND "ano_modelo"=${anoModelo} AND "tipo_veiculo"='carro' AND "ano_referencia">=${anoLimite}`
     );
     const url = `${DATASETS_SERVER}/filter?dataset=${MIRROR}&config=default&split=train&where=${where}&offset=0&length=100`;
-    const resp = await fetch(url);
-    const dados = await resp.json();
-    if (dados.error || !Array.isArray(dados.rows)) return;
+
+    // O índice do mirror (Hugging Face datasets-server) às vezes está FRIO e
+    // responde {error:"the dataset index is loading, this can take a minute"}.
+    // É transitório — antes o best-effort desistia em silêncio e a série ficava
+    // num toco de 1 ponto pra sempre (nada re-dispara o backfill de quem já tem
+    // código). Re-tenta algumas vezes; o resto fica pro job de reparo.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dados: any = null;
+    for (let tentativa = 0; tentativa < 4; tentativa++) {
+      const resp = await fetch(url);
+      dados = await resp.json();
+      if (dados?.error && /loading/i.test(String(dados.error))) {
+        await new Promise((r) => setTimeout(r, 2000));
+        continue;
+      }
+      break;
+    }
+    if (!dados || dados.error || !Array.isArray(dados.rows)) return;
 
     const linhas = (dados.rows as { row: LinhaMirror }[]).map((x) => x.row);
     // Dedup por (mês, ano, combustível) — o mirror devolve linhas repetidas.
