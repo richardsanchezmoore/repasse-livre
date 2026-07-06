@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { buscarCoordenadasCidade } from "./geocodingService.js";
+import { dispararEnriquecimento } from "./enriquecer.js";
 import type { Oportunidade } from "./types.js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -31,10 +32,18 @@ export async function salvarOportunidade(oportunidade: Oportunidade): Promise<vo
 
   // Só loga MUDANÇA de preço (o baseline já está em opportunities: data_captura +
   // preco). Best-effort: nunca derruba a captação por causa do log.
-  if (existente && Number(existente.preco) !== Number(oportunidade.preco)) {
+  const mudouPreco = existente != null && Number(existente.preco) !== Number(oportunidade.preco);
+  if (mudouPreco) {
     await supabase
       .from("anuncio_preco_log")
       .insert({ link_origem: oportunidade.link_origem, preco: oportunidade.preco, origem: "scraper" });
+  }
+
+  // Event spine: anúncio NOVO ou mudança de preço → enriquece na hora (parecer do
+  // Copiloto + FUTURO: notificações) via endpoint do admin. Best-effort/fail-open
+  // (ver enriquecer.ts). É o único gatilho — cobre todos os motores.
+  if (!existente || mudouPreco) {
+    await dispararEnriquecimento(oportunidade.link_origem, existente ? "preco" : "novo");
   }
 }
 
