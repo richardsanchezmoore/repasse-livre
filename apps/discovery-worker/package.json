@@ -20,6 +20,7 @@
     "recalcular:fipe-mensal": "tsx src/recalcularFipeMensal.ts",
     "fipe:mensal": "tsx src/avancarFipeMes.ts && tsx src/recalcularFipeMensal.ts --aplicar",
     "rematch:fipe": "tsx src/rematchFipeSemCodigo.ts",
+    "aprender:fipe-manual": "tsx src/aprenderCodigoFipeManual.ts",
     "backfill:descricoes": "tsx src/backfillDescricoes.ts",
     "limpar:duplicados": "tsx src/limparDuplicados.ts",
     "backfill:coordenadas": "tsx src/backfillCoordenadas.ts",

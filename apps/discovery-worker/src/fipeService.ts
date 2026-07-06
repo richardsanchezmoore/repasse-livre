@@ -44,6 +44,33 @@ function normalizar(texto: string): string {
   return texto.normalize("NFD").replace(DIACRITICOS, "").toLowerCase().trim();
 }
 
+/**
+ * Marcas da FIPE com DUAS palavras. O split ingênuo (marca = 1ª palavra,
+ * modelo = 2ª) quebra nelas: "Land Rover Discovery Sport…" virava marca="Land",
+ * modelo="Rover" — e "Rover" casa "Range Rover", NUNCA "Discovery". Reconhecê-las
+ * primeiro conserta a classe inteira (Land Rover, Alfa Romeo, Aston Martin…).
+ */
+const MARCAS_COMPOSTAS = ["Land Rover", "Alfa Romeo", "Aston Martin", "Great Wall"];
+
+/**
+ * Extrai (marca, modelo) do texto livre do veículo. Reconhece as marcas
+ * compostas; o resto cai no split simples por espaço. Retorna só o 1º token do
+ * modelo — a variante + a âncora de valor desempatam o trim (ex.: "Discovery" vs
+ * "Discovery Sport": ambos entram como candidatos, o valor escolhe).
+ */
+export function separarMarcaModelo(veiculo: string): { marca: string; modelo: string } {
+  const norm = normalizar(veiculo.trim());
+  for (const marca of MARCAS_COMPOSTAS) {
+    if (norm.startsWith(normalizar(marca) + " ")) {
+      const nPalavras = marca.split(/\s+/).length; // conta tokens (imune a acento)
+      const modelo = veiculo.trim().split(/\s+/).slice(nPalavras)[0] ?? "";
+      return { marca, modelo };
+    }
+  }
+  const partes = veiculo.trim().split(/\s+/);
+  return { marca: partes[0] ?? "", modelo: partes[1] ?? "" };
+}
+
 function parsePrecoFipe(precoTexto: string): number {
   const numerico = precoTexto
     .replace("R$", "")
