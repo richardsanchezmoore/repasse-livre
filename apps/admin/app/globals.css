@@ -2383,6 +2383,208 @@ body {
   cursor: pointer;
 }
 
+/* ===== Overlay premium — trava ofertas acima do limite (funil de monetização) ===== */
+.card-bloqueado {
+  position: relative;
+}
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(17, 22, 32, 0.84), rgba(17, 22, 32, 0.95));
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.card-overlay-tease-titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  max-width: 92%;
+}
+.card-overlay-tease-ganho {
+  margin: 6px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: -0.5px;
+}
+.card-overlay-tease-margem {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.card-overlay-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 999px;
+}
+.card-overlay-beneficios {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+}
+.card-overlay-beneficios li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #e2e8f0;
+}
+.card-overlay-beneficios li svg {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+/* ===== Página de planos (funil premium) ===== */
+.planos {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+.planos-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #54656f;
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+.planos-voltar:hover {
+  color: #111b21;
+}
+.planos-hero {
+  text-align: center;
+  padding: 12px 0 32px;
+}
+.planos-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a5d2c;
+  background: #eafaf0;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.planos-titulo {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
+  color: #111b21;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin: 16px auto 0;
+  max-width: 640px;
+}
+.planos-sub {
+  font-size: clamp(15px, 1.8vw, 17px);
+  color: #54656f;
+  line-height: 1.55;
+  margin: 16px auto 0;
+  max-width: 600px;
+}
+.planos-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 26px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.planos-cta:hover {
+  background: #128a3e;
+}
+.planos-cta-nota {
+  font-size: 13px;
+  color: #9aa2b1;
+  margin: 12px 0 0;
+}
+.planos-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.planos-card {
+  background: #fff;
+  border: 1px solid #e0e3e7;
+  border-radius: 14px;
+  padding: 22px;
+}
+.planos-card-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #eafaf0;
+  color: #0a5d2c;
+}
+.planos-card-titulo {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111b21;
+  margin: 14px 0 0;
+}
+.planos-card-texto {
+  font-size: 14px;
+  color: #54656f;
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+.planos-rodape {
+  margin-top: 36px;
+  padding: 28px 20px;
+  border-radius: 16px;
+  background: #111b21;
+  text-align: center;
+}
+.planos-rodape-lista {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin-bottom: 22px;
+}
+.planos-rodape-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.planos-rodape-item svg {
+  color: #34d399;
+}
+
 .foto-wrapper {
   position: relative;
 }

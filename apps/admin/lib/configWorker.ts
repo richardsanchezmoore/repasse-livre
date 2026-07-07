@@ -17,3 +17,17 @@ export async function buscarPisoMargem(): Promise<number> {
   const n = Number(data?.valor);
   return Number.isFinite(n) && n > 0 ? n : MARGEM_MINIMA_PADRAO;
 }
+
+/** Limite (%) a partir do qual a oferta é PREMIUM — fica atrás do overlay pra
+ *  quem não é premium/admin. Config `worker_config.MARGEM_PREMIUM_PERCENTUAL`;
+ *  default 10% (trava Prata+ e deixa Bronze 3–10% livre). Server-only. */
+export const MARGEM_PREMIUM_PADRAO = 10;
+export async function buscarMargemPremium(): Promise<number> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "MARGEM_PREMIUM_PERCENTUAL")
+    .maybeSingle();
+  const n = Number(data?.valor);
+  return Number.isFinite(n) && n > 0 ? n : MARGEM_PREMIUM_PADRAO;
+}

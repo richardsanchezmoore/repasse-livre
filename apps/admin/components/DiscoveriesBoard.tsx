@@ -3,6 +3,7 @@ import type { Usuario } from "@/lib/supabase-server";
 import type { Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
 import { MARGEM_MINIMA_PADRAO } from "@/lib/margin";
+import { buscarMargemPremium } from "@/lib/configWorker";
 import { extrairMarca } from "@/lib/marca";
 import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
@@ -474,6 +475,11 @@ export async function Board({
   proximidadeDisponivel?: boolean;
 }) {
   const { itens: oportunidades, total } = await buscarOportunidades(aba, filtros, usuario, pagina);
+  // Gate premium: admin e assinante veem tudo; o resto encara o overlay nas ofertas
+  // acima do limite (config). Só lê o limite quando o gate pode valer (economiza query).
+  const ehAdmin = usuario?.role === "admin";
+  const podeBloquear = !ehAdmin && !usuario?.premium;
+  const margemPremium = podeBloquear ? await buscarMargemPremium() : Infinity;
   const idsFavoritados = aba === "favoritos"
     ? new Set(oportunidades.map((o) => o.id))
     : usuario
@@ -525,8 +531,9 @@ export async function Board({
             key={oportunidade.id}
             oportunidade={oportunidade}
             favoritado={idsFavoritados.has(oportunidade.id)}
-            isAdmin={usuario?.role === "admin"}
+            isAdmin={ehAdmin}
             usuarioLogado={Boolean(usuario)}
+            bloqueado={(oportunidade.margem_percentual ?? 0) > margemPremium}
           />
         ))}
       </div>

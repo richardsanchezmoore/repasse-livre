@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Clock, Heart, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
+import { Check, Clock, Gem, Heart, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
   apagarOportunidade,
@@ -27,11 +27,14 @@ export function OpportunityCard({
   favoritado,
   isAdmin,
   usuarioLogado,
+  bloqueado = false,
 }: {
   oportunidade: Oportunidade;
   favoritado: boolean;
   isAdmin: boolean;
   usuarioLogado: boolean;
+  /** Oferta premium travada pra este usuário (margem > limite e não é premium/admin). */
+  bloqueado?: boolean;
 }) {
   const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();
@@ -103,7 +106,7 @@ export function OpportunityCard({
       : oportunidade.veiculo;
 
   return (
-    <div className="card card-clicavel">
+    <div className={`card card-clicavel${bloqueado ? " card-bloqueado" : ""}`}>
       <div className="foto-wrapper" onClick={aoClicarFoto}>
         {oportunidade.foto_principal ? (
           <ImagemThumbnail
@@ -291,6 +294,32 @@ export function OpportunityCard({
           <Share2 size={14} strokeWidth={2} className="icone-inline" /> Compartilhar
         </button>
       </div>
+      )}
+
+      {bloqueado && (
+        <Link
+          href="/planos"
+          className="card-overlay"
+          onClick={() => registrarEvento("clique_overlay_premium", { origem: "card" }, oportunidade.id)}
+        >
+          <div className="card-overlay-tease">
+            <p className="card-overlay-tease-titulo">{titulo}</p>
+            <p className="card-overlay-tease-ganho">{formatarMoeda(diferencaValor)}</p>
+            <p className="card-overlay-tease-margem">
+              {oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE
+            </p>
+          </div>
+          <span className="card-overlay-cta">
+            <Gem size={16} strokeWidth={2} /> Fazer upgrade
+          </span>
+          <ul className="card-overlay-beneficios">
+            <li><Check size={13} strokeWidth={2.5} /> Acesso ao anúncio</li>
+            <li><Check size={13} strokeWidth={2.5} /> Análise do Copiloto</li>
+            <li><Check size={13} strokeWidth={2.5} /> Radar do Investidor</li>
+            <li><Check size={13} strokeWidth={2.5} /> Tendências de mercado</li>
+            <li><Check size={13} strokeWidth={2.5} /> Alertas instantâneos</li>
+          </ul>
+        </Link>
       )}
     </div>
   );
