@@ -38,14 +38,18 @@ const nada: ResultadoIndicador = { evidencia: null };
 
 export function descontoFipe({ anuncio }: CtxIndicador): ResultadoIndicador {
   const m = anuncio.margem_percentual;
-  if (m == null || m < 5) return nada;
+  // Piso do FATO de desconto = piso de captação (3%). ANTES era 5% (resquício do
+  // piso antigo): carro 3–5% não gerava a evidência "X% abaixo da FIPE" e a LLM,
+  // sem esse fato, alucinava "acima da FIPE / sem vantagem" — mesmo o carro
+  // estando abaixo (ex.: Pajero 4,6% = R$14.803 de ganho). O desconto é FATO.
+  if (m == null || m < 3) return nada;
   return {
     evidencia: {
       chave: "desconto_fipe",
       tipo: "positivo",
       texto: `${m.toFixed(1).replace(".", ",")}% abaixo da FIPE`,
       origem: "Calculado",
-      peso: m >= 10 ? 3 : 2,
+      peso: m >= 10 ? 3 : m >= 5 ? 2 : 1, // 3–5% é desconto modesto → peso menor
     },
     numeros: { percentual_fipe: Number(m.toFixed(1)) },
   };
