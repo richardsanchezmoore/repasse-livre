@@ -4352,10 +4352,13 @@ body {
 /* ===== Painel comparativo: Histórico FIPE + Preços de referência ===== */
 .painel-comparativo {
   /* ABAS por padrão em QUALQUER largura (antes: lado a lado no desktop — o usuário
-     achou poluído com 2 painéis densos). Coluna única, só o painel ativo aparece;
-     max-width mantém ~o tamanho que cada painel tinha como metade (não estica). */
-  margin: 16px 0;
-  max-width: 600px;
+     achou poluído com 2 painéis densos). Coluna única, só o painel ativo aparece.
+     CENTRALIZADO (margin auto) e com largura contida: o conteúdo do desktop vai a
+     1040px, e a barra de Referência foi desenhada pra ~600px — deixar à esquerda
+     criava uma ilha estreita flutuando (ficava "falho"); centralizar alinha com o
+     herói "Ganho" acima, sem esticar a barra. */
+  margin: 16px auto;
+  max-width: 680px;
 }
 .painel-comparativo .historico-precos,
 .painel-comparativo .referencia-preco {
