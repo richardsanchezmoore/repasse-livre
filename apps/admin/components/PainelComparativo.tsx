@@ -21,7 +21,7 @@ export function PainelComparativo({
   referencia: Referencia | null;
   precoAnuncio: number;
 }) {
-  const [aba, setAba] = useState<"historico" | "referencia">("historico");
+  const [aba, setAba] = useState<"historico" | "referencia">("referencia");
 
   const temHistorico = historico.length >= 2;
   const temReferencia = referencia !== null;
@@ -42,28 +42,28 @@ export function PainelComparativo({
         <button
           type="button"
           role="tab"
-          aria-selected={aba === "historico"}
-          className={`painel-comparativo-aba${aba === "historico" ? " painel-comparativo-aba-ativa" : ""}`}
-          onClick={() => setAba("historico")}
-        >
-          Histórico FIPE
-        </button>
-        <button
-          type="button"
-          role="tab"
           aria-selected={aba === "referencia"}
           className={`painel-comparativo-aba${aba === "referencia" ? " painel-comparativo-aba-ativa" : ""}`}
           onClick={() => setAba("referencia")}
         >
           Preços Referência
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={aba === "historico"}
+          className={`painel-comparativo-aba${aba === "historico" ? " painel-comparativo-aba-ativa" : ""}`}
+          onClick={() => setAba("historico")}
+        >
+          Histórico FIPE
+        </button>
       </div>
 
-      <div className="painel-comparativo-item" data-ativo={aba === "historico"}>
-        <HistoricoPrecos serie={historico} />
-      </div>
       <div className="painel-comparativo-item" data-ativo={aba === "referencia"}>
         {painelReferencia}
+      </div>
+      <div className="painel-comparativo-item" data-ativo={aba === "historico"}>
+        <HistoricoPrecos serie={historico} />
       </div>
     </div>
   );
