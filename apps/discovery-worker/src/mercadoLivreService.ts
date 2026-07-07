@@ -531,7 +531,7 @@ async function coletarElegiveis(
     if (!referenciaFipe) { if (contabilizar) resultado.semFipe++; continue; }
     const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
     if (!ehElegivel(margemPercentual, margemMinima)) { if (contabilizar) resultado.descartados++; continue; }
-    const classificacao: Classificacao | null = classificar(margemPercentual);
+    const classificacao: Classificacao | null = classificar(margemPercentual, margemMinima);
     if (!classificacao) { if (contabilizar) resultado.descartados++; continue; }
 
     elegiveis.push({ anuncio, mlbId, preco: anuncio.preco, ano: anuncio.ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao });
@@ -578,7 +578,7 @@ async function corrigirFipeComAncora(
   if (!ref) return { el, descartar: false }; // âncora não confia → mantém o do fuzzy
 
   const margem = calcularMargemPercentual(el.preco, ref.valor);
-  const classificacao = ehElegivel(margem, margemMinima) ? classificar(margem) : null;
+  const classificacao = ehElegivel(margem, margemMinima) ? classificar(margem, margemMinima) : null;
   if (!classificacao) {
     console.log(
       `[motor-descoberta-mercadolivre] ✗ falso positivo: ${el.anuncio.titulo} — FIPE real R$${ref.valor} (fuzzy dava R$${el.referenciaFipe.valor}) → margem ${margem.toFixed(1)}% < ${margemMinima}%, descartado`

@@ -141,7 +141,7 @@ async function processarAnuncio(
     return;
   }
 
-  const classificacao = classificar(margemPercentual);
+  const classificacao = classificar(margemPercentual, margemMinima);
   if (!classificacao) {
     resultado.descartados++;
     return;

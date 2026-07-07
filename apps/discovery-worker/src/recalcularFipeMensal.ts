@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { supabase } from "./supabaseClient.js";
+import { supabase, lerConfig } from "./supabaseClient.js";
 import { calcularMargemPercentual, classificar, MARGEM_MINIMA_PADRAO } from "./margin.js";
 
 /**
@@ -13,10 +13,11 @@ import { calcularMargemPercentual, classificar, MARGEM_MINIMA_PADRAO } from "./m
  * passo separado, por modelo, do cron mensal.
  *
  * Por anúncio DESCOBERTO (OLX/ML/Webmotors; não mexe em inserção direta):
- *  - margem < 3% (MARGEM_EXCLUSAO) → sai da base (log em oportunidades_historico
- *    + delete). Carro sem margem não é oportunidade.
- *  - margem >= 3% → atualiza fipe_valor/margem/classificacao/fipe_data_referencia.
- *    (3-5% fica sem selo + ganha o aviso de negociação; captação segue piso 5%.)
+ *  - margem < piso (config MARGEM_MINIMA_PERCENTUAL) → sai da base (log em
+ *    oportunidades_historico + delete). Carro sem margem não é oportunidade.
+ *  - margem >= piso → atualiza fipe_valor/margem/classificacao/fipe_data_referencia.
+ *    (Bronze vale a partir do piso — MESMO critério da captação, pra o recálculo
+ *    não rebaixar mensalmente os 3–5% que a captação passou a aceitar.)
  *  - sem fipe_codigo ou sem histórico → mantido como está.
  *
  * DRY-RUN por padrão (só relatório). Pra aplicar: --aplicar.
@@ -24,7 +25,6 @@ import { calcularMargemPercentual, classificar, MARGEM_MINIMA_PADRAO } from "./m
  *      npm run recalcular:fipe-mensal -- --aplicar
  */
 
-const MARGEM_EXCLUSAO = 3;
 const APLICAR = process.argv.includes("--aplicar");
 const MESES_PT = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
@@ -64,7 +64,8 @@ async function main(): Promise<void> {
     anuncios.push(...(data ?? []));
     if (!data || data.length < TAM) break;
   }
-  console.log(`[recalcular-fipe] ${anuncios.length} anúncios descobertos. Modo: ${APLICAR ? "APLICAR" : "DRY-RUN (sem escrever)"}.`);
+  const piso = Number((await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO);
+  console.log(`[recalcular-fipe] ${anuncios.length} anúncios descobertos. Piso: ${piso}%. Modo: ${APLICAR ? "APLICAR" : "DRY-RUN (sem escrever)"}.`);
 
   let atualizados = 0, excluidos = 0, semFipe = 0, viraramSemSelo = 0, subiram = 0, cairam = 0, iguais = 0;
   let ordemRefMax = 0, refMes = 0, refAno = 0;
@@ -90,20 +91,20 @@ async function main(): Promise<void> {
       else iguais++;
     }
 
-    if (margem < MARGEM_EXCLUSAO) {
+    if (margem < piso) {
       excluidos++;
       if (APLICAR) {
         await supabase.from("oportunidades_historico").insert({
           origem_tipo: a.origem_tipo, fonte: a.fonte, classificacao: a.classificacao,
           margem_percentual: Number(margem.toFixed(2)), status: a.status, data_captura: a.data_captura,
-          motivo: "fipe_sem_margem", // exclusão por margem < 3% — NÃO é liquidez
+          motivo: "fipe_sem_margem", // exclusão por margem < piso configurado — NÃO é liquidez
         });
         await supabase.from("opportunities").delete().eq("id", a.id);
       }
       continue;
     }
 
-    const novaClassificacao = classificar(margem);
+    const novaClassificacao = classificar(margem, piso);
     if (novaClassificacao === null) viraramSemSelo++;
     if (APLICAR) {
       const dataRef = `${MESES_PT[fipe.mes_referencia - 1]} de ${fipe.ano_referencia}`;
@@ -118,8 +119,8 @@ async function main(): Promise<void> {
   }
 
   console.log(`[recalcular-fipe] ${APLICAR ? "APLICADO" : "SIMULAÇÃO"}:`);
-  console.log(`  ${atualizados} atualizados | ${excluidos} excluídos (<${MARGEM_EXCLUSAO}%) | ${viraramSemSelo} ficaram 3-5% (sem selo + aviso) | ${semFipe} sem fipe_codigo/histórico (mantidos)`);
-  console.log(`  variação vs margem atual: ${subiram} subiram | ${cairam} caíram | ${iguais} ~iguais | piso de captação segue ${MARGEM_MINIMA_PADRAO}%`);
+  console.log(`  ${atualizados} atualizados | ${excluidos} excluídos (<${piso}%) | ${viraramSemSelo} sem selo | ${semFipe} sem fipe_codigo/histórico (mantidos)`);
+  console.log(`  variação vs margem atual: ${subiram} subiram | ${cairam} caíram | ${iguais} ~iguais | piso de captação: ${piso}%`);
 
   // Persiste o resumo pra BIA (série de saúde de margem da base) — só quando
   // aplica de verdade. Upsert por dia (idempotente se rodar 2x no mesmo dia).

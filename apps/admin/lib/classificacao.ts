@@ -15,7 +15,10 @@ export const ROTULO_CLASSIFICACAO: Record<Classificacao, string> = {
 };
 
 export const ROTULO_CLASSIFICACAO_FILTRO: Record<Classificacao, string> = {
-  oportunidade: "Bronze 5%+",
+  // Bronze começa no PISO de captação (config MARGEM_MINIMA_PERCENTUAL, hoje 3%).
+  // Este número acompanha o piso: se mudar o piso na config, ajuste aqui.
+  // Prata/Ouro/Diamante têm limiares fixos.
+  oportunidade: "Bronze 3%+",
   grande_oportunidade: "Prata 10%+",
   oportunidade_premium: "Ouro 15%+",
   top_oportunidade: "Diamante 20%+",

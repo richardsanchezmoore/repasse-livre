@@ -216,7 +216,7 @@ export async function avaliarAnuncioWebmotors(
     return { oportunidade: null, motivoDescarte: "fora_da_margem" };
   }
 
-  const classificacao: Classificacao | null = classificar(margemPercentual);
+  const classificacao: Classificacao | null = classificar(margemPercentual, margemMinima);
   if (!classificacao) {
     return { oportunidade: null, motivoDescarte: "fora_da_margem" };
   }
