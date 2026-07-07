@@ -28,4 +28,4 @@ async function computar(): Promise<KpisTopo> {
   };
 }
 
-export const buscarKpisTopo = unstable_cache(computar, ["kpis-topo"], { revalidate: 900 });
+export const buscarKpisTopo = unstable_cache(computar, ["kpis-topo"], { revalidate: 1800 }); // 30 min

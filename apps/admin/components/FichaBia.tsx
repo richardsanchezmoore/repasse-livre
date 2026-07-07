@@ -1,20 +1,22 @@
 import type { FactSheet } from "@/lib/bia/tipos";
 import { PrecoVsMercado } from "./PrecoVsMercado";
 
-/** 5 estrelas com preenchimento FRACIONÁRIO (meia-estrela) via clip de largura. */
-function Estrelas({ n }: { n: number | null }) {
+/**
+ * Barra de avaliação: a nota da dimensão (0–5) vira 0–100% num trilho com
+ * gradiente verde + o percentual ao lado. Mais claro e "dinâmico" que a estrela
+ * (evolução pedida pelo usuário). O "Preço vs. mercado" segue com o percentil
+ * concreto ("Melhor que X%"), que já é a leitura mais forte daquela linha.
+ */
+function BarraAvaliacao({ n }: { n: number | null }) {
   if (n == null) return null;
-  const pct = Math.max(0, Math.min(100, (n / 5) * 100));
+  const pct = Math.round(Math.max(0, Math.min(100, (n / 5) * 100)));
   return (
-    <span
-      style={{ position: "relative", display: "inline-block", letterSpacing: 2, whiteSpace: "nowrap", fontSize: 15 }}
-      aria-label={`${n} de 5`}
-    >
-      <span style={{ color: "#e5e7eb" }}>★★★★★</span>
-      <span style={{ position: "absolute", left: 0, top: 0, width: `${pct}%`, overflow: "hidden", color: "#f59e0b" }}>
-        ★★★★★
-      </span>
-    </span>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10 }} aria-label={`${pct} de 100`}>
+      <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1f2e", minWidth: 30, textAlign: "right" }}>{pct}%</span>
+      <div style={{ width: 170, flexShrink: 0, height: 8, background: "#eef0f3", borderRadius: 999, overflow: "hidden" }}>
+        <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: "linear-gradient(90deg, #16a34a, #7fd14a)" }} />
+      </div>
+    </div>
   );
 }
 
@@ -102,13 +104,12 @@ export function FichaBia({ fs }: { fs: FactSheet }) {
                 <td style={{ padding: "9px 0", color: "#374151" }}>{f.categoria}</td>
                 <td style={{ padding: "9px 0", textAlign: "right" }}>
                   {/* "Preço vs. mercado" é um PERCENTIL de verdade → mostra o número
-                      concreto ("Melhor que X%") + aba Estado/Brasil, em vez da estrela
-                      abstrata (pedido do usuário: "1 estrela = quão ruim?"). As outras
-                      linhas são intrínsecas, seguem com estrela. */}
+                      concreto ("Melhor que X%") + aba Estado/Brasil. As outras linhas
+                      viram BARRA + percentual (evolução da estrela — mais clara). */}
                   {f.categoria === "Preço vs. mercado" && fs.mercado_escopos.length > 0 ? (
                     <PrecoVsMercado escopos={fs.mercado_escopos} padrao={fs.mercado_padrao} />
                   ) : (
-                    <Estrelas n={f.estrelas} />
+                    <BarraAvaliacao n={f.estrelas} />
                   )}
                 </td>
               </tr>
