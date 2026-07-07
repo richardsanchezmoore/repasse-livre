@@ -101,7 +101,7 @@ export function FichaBia({ fs }: { fs: FactSheet }) {
           <tbody>
             {fs.fichas.map((f) => (
               <tr key={f.categoria} style={{ borderTop: "1px solid #f3f4f6" }}>
-                <td style={{ padding: "9px 0", color: "#374151" }}>{f.categoria}</td>
+                <td style={{ padding: "9px 0", color: "#1f2937", fontWeight: 700 }}>{f.categoria}</td>
                 <td style={{ padding: "9px 0", textAlign: "right" }}>
                   {/* "Preço vs. mercado" é um PERCENTIL de verdade → mostra o número
                       concreto ("Melhor que X%") + aba Estado/Brasil. As outras linhas
