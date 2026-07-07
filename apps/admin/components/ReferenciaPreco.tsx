@@ -43,9 +43,10 @@ export function ReferenciaPreco({
 
   return (
     <section className="referencia-preco">
-      <h2 className="referencia-preco-titulo">Preços de referência</h2>
+      {/* Sem título próprio — a aba "Preços Referência" já nomeia o painel. */}
       <p className="referencia-preco-subtitulo">
-        {total} ofertas semelhantes {escopo} · preço médio {reaisCompacto(media)}
+        <strong className="referencia-preco-subtitulo-forte">{total} ofertas</strong> semelhantes{" "}
+        {escopo} · preço médio {reaisCompacto(media)}
       </p>
 
       <div className="referencia-preco-grafico">
