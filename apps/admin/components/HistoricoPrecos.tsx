@@ -7,7 +7,7 @@ import type { PontoHistoricoFipe } from "@/lib/fipeHistorico";
 /**
  * Gráfico "Histórico de Preços" da página individual — variação da FIPE do
  * modelo ao longo dos meses, com seletor de período (3/6 meses/1 ano),
- * default 3. Recebe a série pronta por props (ver lib/fipeHistorico.ts,
+ * default 6. Recebe a série pronta por props (ver lib/fipeHistorico.ts,
  * server-only). Ver project_repasse_livre_fipe_historico (Bloco C).
  */
 
@@ -26,7 +26,7 @@ function formatarReais(valor: number): string {
 }
 
 export function HistoricoPrecos({ serie }: { serie: PontoHistoricoFipe[] }) {
-  const [meses, setMeses] = useState<number>(3);
+  const [meses, setMeses] = useState<number>(6);
 
   const dados = serie.slice(-meses);
   if (dados.length < 2) return null;
