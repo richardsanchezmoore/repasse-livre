@@ -30,10 +30,11 @@ function formatarMesRefFipe(ref: string): string {
   return compacto.charAt(0).toUpperCase() + compacto.slice(1);
 }
 
-// Faixa em que a margem, após o recálculo mensal, caiu abaixo do piso de
-// captação (5%) mas ainda está na base (>=3%) — mostra o aviso de negociação.
-const MARGEM_PISO_CAPTACAO = 5;
-const MARGEM_MINIMA_BASE = 3;
+// Faixa "margem apertada" que dispara o aviso de negociação na página: margem
+// abaixo de 5% (teto) mas ainda >= 2% (piso de tolerância). Abaixo de 2% o
+// recálculo mensal descarta o anúncio (ver recalcularFipeMensal no worker).
+const MARGEM_ALERTA_TETO = 5;
+const MARGEM_ALERTA_PISO = 2;
 
 export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
   const [historicoFipe, referenciaPreco] = await Promise.all([
@@ -64,7 +65,7 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
   // a FIPE muda no recálculo) — sinaliza a queda e convida a negociar.
   const margemFipe = oportunidade.margem_percentual;
   const avisoQuedaFipe =
-    margemFipe !== null && margemFipe >= MARGEM_MINIMA_BASE && margemFipe < MARGEM_PISO_CAPTACAO;
+    margemFipe !== null && margemFipe >= MARGEM_ALERTA_PISO && margemFipe < MARGEM_ALERTA_TETO;
   // Só admin chega aqui com um anúncio não-aprovado (ver buscarOportunidadePorId):
   // sinaliza que é prévia de revisão, não a página pública.
   const ehPreviaNaoAprovada = oportunidade.status !== "aprovada";

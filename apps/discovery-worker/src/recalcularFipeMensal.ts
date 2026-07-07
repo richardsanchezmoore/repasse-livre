@@ -13,11 +13,12 @@ import { calcularMargemPercentual, classificar, MARGEM_MINIMA_PADRAO } from "./m
  * passo separado, por modelo, do cron mensal.
  *
  * Por anúncio DESCOBERTO (OLX/ML/Webmotors; não mexe em inserção direta):
- *  - margem < piso (config MARGEM_MINIMA_PERCENTUAL) → sai da base (log em
- *    oportunidades_historico + delete). Carro sem margem não é oportunidade.
- *  - margem >= piso → atualiza fipe_valor/margem/classificacao/fipe_data_referencia.
- *    (Bronze vale a partir do piso — MESMO critério da captação, pra o recálculo
- *    não rebaixar mensalmente os 3–5% que a captação passou a aceitar.)
+ *  - margem < 2% (MARGEM_TOLERANCIA_FIPE) → sai da base (log em oportunidades_
+ *    historico + delete). Abaixo de 2% não vale nem negociando.
+ *  - margem >= 2% → mantido e reclassificado: >= piso vira Bronze+, e a franja
+ *    2%–piso fica SEM selo (o recálculo da FIPE a derrubou abaixo do piso de
+ *    captação, mas toleramos + aviso "FIPE caiu, negocie" na página — a captação
+ *    exige piso pra anúncio NOVO, o recálculo só churna abaixo de 2%).
  *  - sem fipe_codigo ou sem histórico → mantido como está.
  *
  * DRY-RUN por padrão (só relatório). Pra aplicar: --aplicar.
@@ -26,6 +27,11 @@ import { calcularMargemPercentual, classificar, MARGEM_MINIMA_PADRAO } from "./m
  */
 
 const APLICAR = process.argv.includes("--aplicar");
+// Piso de DESCARTE do recálculo — separado do piso de CAPTAÇÃO (config, hoje 3%).
+// Um anúncio já capturado que o recálculo da FIPE derruba abaixo do piso não é
+// churnado na hora: fica na base (sem selo entre 2% e o piso) com o aviso
+// "FIPE caiu, negocie" até cruzar isto. Abaixo de 2% não vale nem negociando.
+const MARGEM_TOLERANCIA_FIPE = 2;
 const MESES_PT = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
 interface ValorFipe {
@@ -91,13 +97,13 @@ async function main(): Promise<void> {
       else iguais++;
     }
 
-    if (margem < piso) {
+    if (margem < MARGEM_TOLERANCIA_FIPE) {
       excluidos++;
       if (APLICAR) {
         await supabase.from("oportunidades_historico").insert({
           origem_tipo: a.origem_tipo, fonte: a.fonte, classificacao: a.classificacao,
           margem_percentual: Number(margem.toFixed(2)), status: a.status, data_captura: a.data_captura,
-          motivo: "fipe_sem_margem", // exclusão por margem < piso configurado — NÃO é liquidez
+          motivo: "fipe_sem_margem", // exclusão por margem < 2% (tolerância FIPE) — NÃO é liquidez
         });
         await supabase.from("opportunities").delete().eq("id", a.id);
       }
@@ -119,8 +125,8 @@ async function main(): Promise<void> {
   }
 
   console.log(`[recalcular-fipe] ${APLICAR ? "APLICADO" : "SIMULAÇÃO"}:`);
-  console.log(`  ${atualizados} atualizados | ${excluidos} excluídos (<${piso}%) | ${viraramSemSelo} sem selo | ${semFipe} sem fipe_codigo/histórico (mantidos)`);
-  console.log(`  variação vs margem atual: ${subiram} subiram | ${cairam} caíram | ${iguais} ~iguais | piso de captação: ${piso}%`);
+  console.log(`  ${atualizados} atualizados | ${excluidos} excluídos (<${MARGEM_TOLERANCIA_FIPE}%) | ${viraramSemSelo} sem selo (${MARGEM_TOLERANCIA_FIPE}%–${piso}%) | ${semFipe} sem fipe_codigo/histórico (mantidos)`);
+  console.log(`  variação vs margem atual: ${subiram} subiram | ${cairam} caíram | ${iguais} ~iguais | piso captação: ${piso}% | descarte: ${MARGEM_TOLERANCIA_FIPE}%`);
 
   // Persiste o resumo pra BIA (série de saúde de margem da base) — só quando
   // aplica de verdade. Upsert por dia (idempotente se rodar 2x no mesmo dia).
