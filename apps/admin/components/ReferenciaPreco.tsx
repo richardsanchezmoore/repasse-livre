@@ -41,7 +41,7 @@ export function ReferenciaPreco({
   fipeValor: number | null;
   mesRef: string | null;
 }) {
-  const { min, media, max, total } = referencia;
+  const { min, media, max, total, escopo } = referencia;
   // Posição DENTRO da faixa das ofertas (0 = mín, 1 = máx) — proporcional, é o
   // que importa: onde o anúncio cai entre o menor e o maior preço do modelo.
   const fracao = max > min ? (precoAnuncio - min) / (max - min) : 0.5;
@@ -69,7 +69,7 @@ export function ReferenciaPreco({
         </span>
       </div>
       <p className="referencia-preco-subtitulo">
-        {total} ofertas semelhantes · preço médio {reaisCompacto(media)}
+        {total} ofertas semelhantes {escopo} · preço médio {reaisCompacto(media)}
       </p>
 
       <div className="referencia-preco-grafico">

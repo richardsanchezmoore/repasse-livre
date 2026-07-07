@@ -38,7 +38,7 @@ const MARGEM_MINIMA_BASE = 3;
 export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
   const [historicoFipe, referenciaPreco] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
-    buscarReferenciaPreco(oportunidade.fipe_codigo, oportunidade.ano, oportunidade.fipe_valor),
+    buscarReferenciaPreco(oportunidade.fipe_codigo, oportunidade.ano, oportunidade.fipe_valor, oportunidade.estado),
   ]);
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
   // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
