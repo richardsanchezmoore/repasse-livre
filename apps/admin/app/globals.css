@@ -4353,12 +4353,10 @@ body {
 .painel-comparativo {
   /* ABAS por padrão em QUALQUER largura (antes: lado a lado no desktop — o usuário
      achou poluído com 2 painéis densos). Coluna única, só o painel ativo aparece.
-     CENTRALIZADO (margin auto) e com largura contida: o conteúdo do desktop vai a
-     1040px, e a barra de Referência foi desenhada pra ~600px — deixar à esquerda
-     criava uma ilha estreita flutuando (ficava "falho"); centralizar alinha com o
-     herói "Ganho" acima, sem esticar a barra. */
-  margin: 16px auto;
-  max-width: 680px;
+     Enche a largura TOTAL do box — igual à seção Oferta/FIPE acima e à ficha
+     abaixo (edge-to-edge). Constringir/centralizar deixava uma ilha estreita
+     flutuando ("falho"); o usuário quer o painel ampliando ao total do box. */
+  margin: 16px 0;
 }
 .painel-comparativo .historico-precos,
 .painel-comparativo .referencia-preco {
