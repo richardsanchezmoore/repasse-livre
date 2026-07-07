@@ -2439,7 +2439,7 @@ body {
   margin: 1px 0 0;
   font-size: 28px;
   font-weight: 800;
-  color: #34d399;
+  color: #39e578; /* isca PRINCIPAL — verde vivo pra saltar no grafite (é o CTA de fato) */
   letter-spacing: -0.5px;
 }
 .card-overlay-tease-margem {
