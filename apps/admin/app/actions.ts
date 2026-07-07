@@ -136,6 +136,15 @@ export async function alterarRolePerfil(userId: string, novaRole: "admin" | "pub
   revalidatePath("/usuarios");
 }
 
+export async function alterarPremiumPerfil(userId: string, premium: boolean): Promise<void> {
+  await exigirAdmin();
+  const { error } = await supabaseAdmin.from("perfis").update({ premium }).eq("user_id", userId);
+  if (error) {
+    throw new Error(`Falha ao alterar assinatura premium: ${error.message}`);
+  }
+  revalidatePath("/usuarios");
+}
+
 export async function apagarUsuario(userId: string): Promise<void> {
   await exigirAdmin();
   const usuarioAtual = await obterUsuarioAtual();

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
-import { alterarRolePerfil, apagarUsuario } from "@/app/actions";
+import { Gem, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
+import { alterarPremiumPerfil, alterarRolePerfil, apagarUsuario } from "@/app/actions";
 
 export interface UsuarioComRole {
   userId: string;
   email: string | null;
   role: "admin" | "publico";
+  premium: boolean;
 }
 
 export function ListaUsuarios({
@@ -32,6 +33,20 @@ export function ListaUsuarios({
         await alterarRolePerfil(userId, novaRole);
       } catch (erroCapturado) {
         setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao alterar permissão.");
+      } finally {
+        setIdEmAlteracao(null);
+      }
+    });
+  }
+
+  function alterarPremium(userId: string, premium: boolean) {
+    setErro(null);
+    setIdEmAlteracao(userId);
+    iniciarTransicao(async () => {
+      try {
+        await alterarPremiumPerfil(userId, premium);
+      } catch (erroCapturado) {
+        setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao alterar assinatura.");
       } finally {
         setIdEmAlteracao(null);
       }
@@ -67,6 +82,7 @@ export function ListaUsuarios({
           <tr>
             <th>E-mail</th>
             <th>Permissão</th>
+            <th>Premium</th>
             <th></th>
           </tr>
         </thead>
@@ -82,7 +98,21 @@ export function ListaUsuarios({
                     {usuario.role === "admin" ? "Admin" : "Público"}
                   </span>
                 </td>
+                <td>
+                  <span className={`usuarios-selo ${usuario.premium ? "usuarios-selo-premium" : "usuarios-selo-publico"}`}>
+                    {usuario.premium ? "Premium" : "—"}
+                  </span>
+                </td>
                 <td className="usuarios-acoes">
+                  <button
+                    type="button"
+                    className="usuarios-botao usuarios-botao-premium"
+                    disabled={carregando}
+                    onClick={() => alterarPremium(usuario.userId, !usuario.premium)}
+                  >
+                    <Gem size={16} strokeWidth={1.75} />
+                    {carregando ? "…" : usuario.premium ? "Remover premium" : "Tornar premium"}
+                  </button>
                   {usuario.role === "admin" ? (
                     <button
                       type="button"

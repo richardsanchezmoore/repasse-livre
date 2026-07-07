@@ -634,6 +634,21 @@ body {
   color: #fff;
 }
 
+.usuarios-selo-premium {
+  background: #eafaf0;
+  color: #0a5d2c;
+  border: 1px solid #a7e0bf;
+}
+
+.usuarios-botao-premium {
+  background: #eafaf0;
+  color: #0a5d2c;
+}
+
+.usuarios-botao-premium:hover:not(:disabled) {
+  background: #d9f5e4;
+}
+
 .usuarios-selo-publico {
   background: #e7e9eb;
   color: #54656f;
