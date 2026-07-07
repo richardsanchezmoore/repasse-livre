@@ -11,6 +11,7 @@ import {
 import { buscarMarcasComContagem } from "@/lib/marcas";
 import { buscarPisoMargem } from "@/lib/configWorker";
 import { BoardArea } from "@/components/BoardArea";
+import { KpisTopo } from "@/components/KpisTopo";
 import { DetectorLocalizacao } from "@/components/DetectorLocalizacao";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -157,6 +158,7 @@ export default async function CentralDeOportunidadesPage({
             usuarioLogado={Boolean(usuario)}
           />
           <main className="conteudo">
+            <KpisTopo />
             <BoardArea>
               <Board
                 aba={abaAtiva}
