@@ -2410,34 +2410,60 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 20px 16px;
+  gap: 11px;
+  padding: 18px 14px;
   text-align: center;
   text-decoration: none;
   color: #fff;
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(17, 22, 32, 0.84), rgba(17, 22, 32, 0.95));
+  background: linear-gradient(180deg, rgba(17, 22, 32, 0.85), rgba(17, 22, 32, 0.95));
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
 }
 .card-overlay-tease-titulo {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.3;
-  max-width: 92%;
+  line-height: 1.28;
+  max-width: 94%;
+}
+.card-overlay-tease-ganho-rotulo {
+  margin: 9px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9aa6b8;
 }
 .card-overlay-tease-ganho {
-  margin: 6px 0 0;
-  font-size: 26px;
+  margin: 1px 0 0;
+  font-size: 28px;
   font-weight: 800;
   color: #34d399;
   letter-spacing: -0.5px;
 }
 .card-overlay-tease-margem {
-  margin: 2px 0 0;
-  font-size: 12px;
+  margin: 3px 0 0;
+  font-size: 13px;
   color: #cbd5e1;
+}
+.card-overlay-painel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 220px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.card-overlay-painel-frase {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6ebf2;
 }
 .card-overlay-cta {
   display: inline-flex;
@@ -2445,24 +2471,38 @@ body {
   gap: 6px;
   background: #16a34a;
   color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 22px;
+  border-radius: 999px;
+}
+.card-overlay-desbloqueie {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 2px 0 0;
   font-size: 14px;
   font-weight: 700;
-  padding: 10px 20px;
-  border-radius: 999px;
+  letter-spacing: 0.4px;
+  color: #fff;
+}
+.card-overlay-desbloqueie svg {
+  color: #34d399;
 }
 .card-overlay-beneficios {
   list-style: none;
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 .card-overlay-beneficios li {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
-  color: #e2e8f0;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8edf3;
 }
 .card-overlay-beneficios li svg {
   color: #34d399;

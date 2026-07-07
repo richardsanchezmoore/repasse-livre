@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Clock, Gem, Heart, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
+import { Check, Clock, Gem, Heart, Lock, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
   apagarOportunidade,
@@ -304,20 +304,29 @@ export function OpportunityCard({
         >
           <div className="card-overlay-tease">
             <p className="card-overlay-tease-titulo">{titulo}</p>
+            <p className="card-overlay-tease-ganho-rotulo">Ganho</p>
             <p className="card-overlay-tease-ganho">{formatarMoeda(diferencaValor)}</p>
             <p className="card-overlay-tease-margem">
-              {oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE
+              Margem de {oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE
             </p>
           </div>
-          <span className="card-overlay-cta">
-            <Gem size={16} strokeWidth={2} /> Fazer upgrade
-          </span>
+
+          <div className="card-overlay-painel">
+            <p className="card-overlay-painel-frase">Disponível apenas no plano</p>
+            <span className="card-overlay-cta">
+              <Gem size={17} strokeWidth={2} /> Fazer upgrade
+            </span>
+          </div>
+
+          <p className="card-overlay-desbloqueie">
+            <Lock size={15} strokeWidth={2.25} /> Desbloqueie
+          </p>
           <ul className="card-overlay-beneficios">
-            <li><Check size={13} strokeWidth={2.5} /> Acesso ao anúncio</li>
-            <li><Check size={13} strokeWidth={2.5} /> Análise do Copiloto</li>
-            <li><Check size={13} strokeWidth={2.5} /> Radar do Investidor</li>
-            <li><Check size={13} strokeWidth={2.5} /> Tendências de mercado</li>
-            <li><Check size={13} strokeWidth={2.5} /> Alertas instantâneos</li>
+            <li><Check size={14} strokeWidth={2.75} /> Acesso ao anúncio</li>
+            <li><Check size={14} strokeWidth={2.75} /> Análise do Copiloto</li>
+            <li><Check size={14} strokeWidth={2.75} /> Radar do Investidor</li>
+            <li><Check size={14} strokeWidth={2.75} /> Tendências de mercado</li>
+            <li><Check size={14} strokeWidth={2.75} /> Alertas instantâneos</li>
           </ul>
         </Link>
       )}
