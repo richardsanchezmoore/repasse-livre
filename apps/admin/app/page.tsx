@@ -8,6 +8,7 @@ import {
   type FiltrosBoard,
   type Ordem,
 } from "@/components/DiscoveriesBoard";
+import { buscarMarcasComContagem } from "@/lib/marcas";
 import { BoardArea } from "@/components/BoardArea";
 import { DetectorLocalizacao } from "@/components/DetectorLocalizacao";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
@@ -66,10 +67,11 @@ export default async function CentralDeOportunidadesPage({
     ordem?: string;
     anunciante?: string;
     fonte?: string;
+    marca?: string;
     pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, pagina } =
+  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, marca, pagina } =
     await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
@@ -97,6 +99,7 @@ export default async function CentralDeOportunidadesPage({
   const anuncianteAtivo = anunciante === "profissional" || anunciante === "particular" ? anunciante : undefined;
   const FONTES_VALIDAS = ["OLX", "WEBMOTORS", "MERCADO_LIVRE"];
   const fonteAtiva = FONTES_VALIDAS.includes(fonte ?? "") ? fonte : undefined;
+  const marcaAtiva = marca?.trim() || undefined;
   const anoMinAtivo = /^\d{4}$/.test(anoMin ?? "") ? anoMin : undefined;
   const anoMaxAtivo = /^\d{4}$/.test(anoMax ?? "") ? anoMax : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
@@ -121,14 +124,16 @@ export default async function CentralDeOportunidadesPage({
     anoMax: anoMaxAtivo,
     anunciante: anuncianteAtivo,
     fonte: fonteAtiva,
+    marca: marcaAtiva,
     ordem: ordemAtiva,
     lat: ordemAtiva === "proximidade" ? coordsUsuario?.lat : undefined,
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,
   };
 
-  const [contagens, estadosDisponiveis] = await Promise.all([
+  const [contagens, estadosDisponiveis, marcasDisponiveis] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(abaAtiva, usuario),
+    buscarMarcasComContagem(),
   ]);
 
   return (
@@ -157,6 +162,7 @@ export default async function CentralDeOportunidadesPage({
                 usuario={usuario}
                 pagina={paginaAtiva}
                 estadosDisponiveis={estadosDisponiveis}
+                marcasDisponiveis={marcasDisponiveis}
                 proximidadeDisponivel={proximidadeDisponivel}
               />
             </BoardArea>

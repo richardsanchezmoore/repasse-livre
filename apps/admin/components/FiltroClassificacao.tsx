@@ -3,13 +3,17 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUpDown, ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { registrarEvento } from "@/lib/eventosAnalytics";
 import { IconDropdown } from "./IconDropdown";
+import { ModalMarcas } from "./ModalMarcas";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba, Ordem } from "./DiscoveriesBoard";
+import type { MarcaContagem } from "@/lib/marcas";
+
+const TOP_MARCAS = 9;
 
 const ROTULO_ORDEM: Record<Ordem, string> = {
   recente: "Mais recente",
@@ -31,6 +35,8 @@ export function FiltroClassificacao({
   anoMax,
   anunciante,
   fonte,
+  marca,
+  marcas = [],
   proximidadeDisponivel = false,
 }: {
   aba: Aba;
@@ -42,6 +48,8 @@ export function FiltroClassificacao({
   anoMax?: string;
   anunciante?: "profissional" | "particular";
   fonte?: string;
+  marca?: string;
+  marcas?: MarcaContagem[];
   proximidadeDisponivel?: boolean;
 }) {
   // "Perto de mim" só aparece quando temos coordenada do usuário (ver
@@ -57,6 +65,8 @@ export function FiltroClassificacao({
   // usuário clica em "Aplicar" (nem todos percebem que seria automático).
   const [anuncianteLocal, setAnuncianteLocal] = useState(anunciante);
   const [fonteLocal, setFonteLocal] = useState(fonte);
+  const [marcaLocal, setMarcaLocal] = useState(marca);
+  const [modalMarcasAberto, setModalMarcasAberto] = useState(false);
   const [chipsAbertos, setChipsAbertos] = useState(false);
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   // O drawer é portalizado pro body (fora do contexto de empilhamento aninhado,
@@ -133,6 +143,7 @@ export function FiltroClassificacao({
       anoMax: anoMaxDigitos || undefined,
       anunciante: anuncianteLocal,
       fonte: fonteLocal,
+      marca: marcaLocal,
     });
     registrarEvento("busca", { filtro: "painel", aba });
     setFiltrosAbertos(false);
@@ -145,6 +156,7 @@ export function FiltroClassificacao({
     setAnoMaxDigitos("");
     setAnuncianteLocal(undefined);
     setFonteLocal(undefined);
+    setMarcaLocal(undefined);
     atualizarParams({
       precoMin: undefined,
       precoMax: undefined,
@@ -152,12 +164,18 @@ export function FiltroClassificacao({
       anoMax: undefined,
       anunciante: undefined,
       fonte: undefined,
+      marca: undefined,
     });
   }
 
   // O ícone de Filtros fica "ativo" (destacado) se qualquer filtro do painel
   // estiver aplicado.
-  const algumFiltroAtivo = Boolean(precoMin || precoMax || anoMin || anoMax || anunciante || fonte);
+  const algumFiltroAtivo = Boolean(precoMin || precoMax || anoMin || anoMax || anunciante || fonte || marca);
+
+  // Grid do painel: as top marcas por volume. Se a marca aplicada não estiver
+  // entre elas (veio do modal), garante um chip pra ela também.
+  const topMarcas = marcas.slice(0, TOP_MARCAS).map((m) => m.marca);
+  const marcasGrid = marcaLocal && !topMarcas.includes(marcaLocal) ? [marcaLocal, ...topMarcas].slice(0, TOP_MARCAS) : topMarcas;
 
   return (
     <div className="filtro-classificacao">
@@ -244,7 +262,35 @@ export function FiltroClassificacao({
           </button>
         </header>
         <div className="painel-filtros-corpo">
-          <p className="icon-dropdown-titulo">Faixa de Preço</p>
+          {marcas.length > 0 && (
+            <>
+              <p className="icon-dropdown-titulo">Marca</p>
+              <div className="painel-filtros-opcoes">
+                <button
+                  type="button"
+                  className={`icon-dropdown-opcao ${!marcaLocal ? "icon-dropdown-opcao-ativa" : ""}`}
+                  onClick={() => setMarcaLocal(undefined)}
+                >
+                  Todas
+                </button>
+                {marcasGrid.map((m) => (
+                  <button
+                    type="button"
+                    key={m}
+                    className={`icon-dropdown-opcao ${marcaLocal === m ? "icon-dropdown-opcao-ativa" : ""}`}
+                    onClick={() => setMarcaLocal(m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="filtro-marca-vertodas" onClick={() => setModalMarcasAberto(true)}>
+                Ver todas as marcas <ChevronRight size={15} strokeWidth={2.25} />
+              </button>
+            </>
+          )}
+
+          <p className={`icon-dropdown-titulo${marcas.length > 0 ? " icon-dropdown-secao" : ""}`}>Faixa de Preço</p>
           <div className="icon-dropdown-faixa">
             <input
               id="preco-min"
@@ -345,6 +391,18 @@ export function FiltroClassificacao({
           </>,
           document.body
         )}
+
+      {montado && modalMarcasAberto && (
+        <ModalMarcas
+          marcas={marcas}
+          selecionada={marcaLocal}
+          onSelecionar={(m) => {
+            setMarcaLocal(m);
+            setModalMarcasAberto(false);
+          }}
+          onFechar={() => setModalMarcasAberto(false)}
+        />
+      )}
     </div>
   );
 }

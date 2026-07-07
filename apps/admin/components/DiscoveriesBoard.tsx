@@ -3,6 +3,7 @@ import type { Usuario } from "@/lib/supabase-server";
 import type { Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
 import { extrairMarca } from "@/lib/marca";
+import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
@@ -50,6 +51,8 @@ export interface FiltrosBoard {
   anunciante?: "profissional" | "particular";
   /** Fonte única selecionada (OLX/WEBMOTORS/MERCADO_LIVRE) — undefined = todas. */
   fonte?: string;
+  /** Marca (1ª palavra do veiculo) — filtra por prefixo. undefined = todas. */
+  marca?: string;
 }
 
 const TITULO_POR_ABA: Record<Aba, string> = {
@@ -129,6 +132,7 @@ async function buscarOportunidades(
       p_ano_min: filtros.anoMin ?? null,
       p_ano_max: filtros.anoMax ?? null,
       p_fonte: filtros.fonte ?? null,
+      p_marca: filtros.marca ?? null,
       p_limite: ITENS_POR_PAGINA,
       p_deslocamento: inicio,
     });
@@ -199,6 +203,11 @@ async function buscarOportunidades(
   }
   if (filtros.fonte) {
     consulta = consulta.eq("fonte", filtros.fonte);
+  }
+  if (filtros.marca) {
+    // Marca = 1ª palavra do veiculo → filtra por prefixo (mesmo critério das
+    // páginas SEO de marca, buscarMarcaPorSlug).
+    consulta = consulta.ilike("veiculo", `${filtros.marca}%`);
   }
   if (filtros.anunciante) {
     consulta = consulta.eq("anunciante_profissional", filtros.anunciante === "profissional");
@@ -450,6 +459,7 @@ export async function Board({
   usuario = null,
   pagina = 1,
   estadosDisponiveis = [],
+  marcasDisponiveis = [],
   proximidadeDisponivel = false,
 }: {
   aba: Aba;
@@ -457,6 +467,7 @@ export async function Board({
   usuario?: Usuario | null;
   pagina?: number;
   estadosDisponiveis?: string[];
+  marcasDisponiveis?: MarcaContagem[];
   proximidadeDisponivel?: boolean;
 }) {
   const { itens: oportunidades, total } = await buscarOportunidades(aba, filtros, usuario, pagina);
@@ -498,6 +509,8 @@ export async function Board({
         anoMax={filtros.anoMax}
         anunciante={filtros.anunciante}
         fonte={filtros.fonte}
+        marca={filtros.marca}
+        marcas={marcasDisponiveis}
         proximidadeDisponivel={proximidadeDisponivel}
       />
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />
