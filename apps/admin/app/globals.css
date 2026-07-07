@@ -2428,7 +2428,7 @@ body {
   max-width: 94%;
 }
 .card-overlay-tease-ganho-rotulo {
-  margin: 9px 0 0;
+  margin: 15px 0 0;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -2473,15 +2473,15 @@ body {
   color: #fff;
   font-size: 15px;
   font-weight: 700;
-  padding: 11px 22px;
+  padding: 12px 24px;
   border-radius: 999px;
 }
 .card-overlay-desbloqueie {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin: 2px 0 0;
-  font-size: 14px;
+  margin: 12px 0 0;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.4px;
   color: #fff;
@@ -2494,13 +2494,13 @@ body {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
+  gap: 9px;
 }
 .card-overlay-beneficios li {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #e8edf3;
 }
