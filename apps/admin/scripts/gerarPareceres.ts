@@ -19,6 +19,9 @@ import type { AnuncioBia, PontoPreco } from "@/lib/bia/tipos";
 
 const APLICAR = process.argv.includes("--aplicar");
 const LIMITE = Number(process.argv.find((a) => a.startsWith("--limit="))?.split("=")[1]) || Infinity;
+// Só gera pra anúncios com data_captura >= DESDE (ISO). A COORTE segue cheia
+// (posição/percentil corretos); o filtro é só em QUEM ganha parecer.
+const DESDE = process.argv.find((a) => a.startsWith("--desde="))?.split("=")[1] || null;
 
 const CAMPOS =
   "id, fipe_codigo, veiculo, ano, estado, preco, fipe_valor, margem_percentual, km, data_captura, foto_principal, fotos_secundarias, descricao, atributos_olx, link_origem, status, copiloto_fingerprint";
@@ -30,6 +33,7 @@ type Linha = AnuncioBia & {
   status: string | null;
   veiculo: string | null;
   ano: string | null;
+  data_captura: string | null;
   copiloto_fingerprint: string | null;
 };
 
@@ -70,13 +74,15 @@ async function main(): Promise<void> {
     if (linhas.length < 1000) break;
   }
 
-  console.log(`[pareceres] ${total} anúncios em ${grupos.size} coortes (fipe_codigo). Modo: ${APLICAR ? "APLICAR" : "DRY-RUN"}${Number.isFinite(LIMITE) ? ` (limite ${LIMITE})` : ""}.`);
+  console.log(`[pareceres] ${total} anúncios em ${grupos.size} coortes (fipe_codigo). Modo: ${APLICAR ? "APLICAR" : "DRY-RUN"}${Number.isFinite(LIMITE) ? ` (limite ${LIMITE})` : ""}${DESDE ? ` (só data_captura >= ${DESDE})` : ""}.`);
   if (!APLICAR && !process.env.ANTHROPIC_API_KEY) console.log("[pareceres] aviso: sem ANTHROPIC_API_KEY — no --aplicar cairia no template.");
 
-  let pendentes = 0, gerados = 0, jaFrescos = 0, falhas = 0;
+  let pendentes = 0, gerados = 0, jaFrescos = 0, falhas = 0, foraJanela = 0;
   for (const [, universo] of grupos) {
     const precoLog = await carregarPrecoLog(universo.map((a) => a.link_origem));
     for (const anuncio of universo) {
+      // Fora da janela → não gera (mas segue na coorte 'universo' acima).
+      if (DESDE && (!anuncio.data_captura || anuncio.data_captura < DESDE)) { foraJanela++; continue; }
       const fs = computarFactSheet(anuncio, universo, precoLog.get(anuncio.link_origem) ?? []);
       const ctx = { veiculo: anuncio.veiculo, ano: anuncio.ano };
       const fp = fingerprintParecer(fs, ctx);
@@ -105,6 +111,7 @@ async function main(): Promise<void> {
 
   console.log(
     `[pareceres] ${APLICAR ? "APLICADO" : "SIMULAÇÃO"}: ${jaFrescos} já frescos | ${pendentes} pendentes` +
+      (DESDE ? ` | ${foraJanela} fora da janela` : "") +
       (APLICAR ? ` | ${gerados} gerados | ${falhas} falhas` : " (rode com --aplicar pra gerar)")
   );
   process.exit(0);
