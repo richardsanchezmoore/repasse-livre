@@ -40,15 +40,13 @@ export function HistoricoPrecos({ serie }: { serie: PontoHistoricoFipe[] }) {
   return (
     <section className="historico-precos">
       <div className="historico-precos-cabecalho">
-        <div>
-          <h2 className="historico-precos-titulo">Histórico Preços FIPE</h2>
-          <p className="historico-precos-variacao" style={{ color: corVariacao }}>
-            {subiu ? "▲" : "▼"} {Math.abs(variacaoPct).toFixed(1)}%{" "}
-            <span className="historico-precos-variacao-periodo">
-              {meses === 12 ? "em 1 ano" : `em ${meses} meses`}
-            </span>
-          </p>
-        </div>
+        {/* Sem título próprio — a aba "Histórico FIPE" já nomeia o painel. */}
+        <p className="historico-precos-variacao" style={{ color: corVariacao }}>
+          {subiu ? "▲" : "▼"} {Math.abs(variacaoPct).toFixed(1)}%{" "}
+          <span className="historico-precos-variacao-periodo">
+            {meses === 12 ? "em 1 ano" : `em ${meses} meses`}
+          </span>
+        </p>
         <select
           className="historico-precos-select"
           value={meses}
@@ -75,7 +73,7 @@ export function HistoricoPrecos({ serie }: { serie: PontoHistoricoFipe[] }) {
           </defs>
           <XAxis
             dataKey="rotulo"
-            fontSize={11}
+            tick={{ fontSize: 13, fontWeight: 700, fill: "#54656f" }}
             stroke="#9aa2b1"
             tickLine={false}
             axisLine={false}
@@ -96,8 +94,9 @@ export function HistoricoPrecos({ serie }: { serie: PontoHistoricoFipe[] }) {
               dataKey="valor"
               position="top"
               offset={10}
-              fontSize={11}
-              fill="#4b5563"
+              fontSize={12.5}
+              fontWeight={700}
+              fill="#1a1f2e"
               formatter={(v) => (v == null ? "" : formatarReais(Number(v)))}
             />
           </Area>

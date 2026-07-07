@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Scale, LineChart } from "lucide-react";
 import { HistoricoPrecos } from "./HistoricoPrecos";
 import { ReferenciaPreco } from "./ReferenciaPreco";
 import type { PontoHistoricoFipe } from "@/lib/fipeHistorico";
@@ -46,6 +47,7 @@ export function PainelComparativo({
           className={`painel-comparativo-aba${aba === "referencia" ? " painel-comparativo-aba-ativa" : ""}`}
           onClick={() => setAba("referencia")}
         >
+          <Scale className="painel-comparativo-aba-icone" size={15} strokeWidth={2} aria-hidden />
           Preços Referência
         </button>
         <button
@@ -55,6 +57,7 @@ export function PainelComparativo({
           className={`painel-comparativo-aba${aba === "historico" ? " painel-comparativo-aba-ativa" : ""}`}
           onClick={() => setAba("historico")}
         >
+          <LineChart className="painel-comparativo-aba-icone" size={15} strokeWidth={2} aria-hidden />
           Histórico FIPE
         </button>
       </div>
