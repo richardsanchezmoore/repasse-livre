@@ -38,11 +38,13 @@ const nada: ResultadoIndicador = { evidencia: null };
 
 export function descontoFipe({ anuncio }: CtxIndicador): ResultadoIndicador {
   const m = anuncio.margem_percentual;
-  // Piso do FATO de desconto = piso de captação (3%). ANTES era 5% (resquício do
-  // piso antigo): carro 3–5% não gerava a evidência "X% abaixo da FIPE" e a LLM,
-  // sem esse fato, alucinava "acima da FIPE / sem vantagem" — mesmo o carro
-  // estando abaixo (ex.: Pajero 4,6% = R$14.803 de ganho). O desconto é FATO.
-  if (m == null || m < 3) return nada;
+  // O fato do desconto NÃO depende do piso de captação — qualquer carro ABAIXO
+  // da FIPE (margem > 0) tem desconto, e isso é FATO. Amarrar num piso (era 5%,
+  // depois seria 3%) recria a armadilha: a LLM, sem o fato, alucina "acima da
+  // FIPE / sem vantagem" (Pajero 4,6% = R$14.803 dizia "não oferece vantagem").
+  // Independente do piso: some a armadilha pra qualquer valor de piso (e cobre
+  // até o carro que caiu abaixo do piso pela virada da FIPE).
+  if (m == null || m <= 0) return nada;
   return {
     evidencia: {
       chave: "desconto_fipe",

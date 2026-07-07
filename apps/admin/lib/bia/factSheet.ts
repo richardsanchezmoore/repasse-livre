@@ -144,9 +144,11 @@ function classificar(score: number | null, ehLeilao: boolean): string {
   return "Preço na média do mercado";
 }
 
-/** Estrelas de MARGEM (% abaixo da FIPE) — escala de mercado do usuário, meia-estrela. */
+/** Estrelas de MARGEM (% abaixo da FIPE) — escala de mercado do usuário, meia-estrela.
+ *  Piso-independente: sem desconto (margem <= 0 = na/acima da FIPE) → sem estrela;
+ *  qualquer desconto positivo = pelo menos 1★. Não amarra no piso de captação. */
 function estrelasMargem(m: number | null): number | null {
-  if (m == null || m < 3) return null;
+  if (m == null || m <= 0) return null;
   if (m >= 20) return 5;
   if (m >= 17.5) return 4.5;
   if (m >= 15) return 4;
@@ -154,7 +156,7 @@ function estrelasMargem(m: number | null): number | null {
   if (m >= 10) return 3;
   if (m >= 7.5) return 2.5;
   if (m >= 5) return 2;
-  return 1; // 3–5%
+  return 1; // qualquer desconto até 5% = 1★ (modesto)
 }
 
 // Média de km/ano do mercado ATUAL (o povo roda mais hoje que os "10 mil/ano" de
