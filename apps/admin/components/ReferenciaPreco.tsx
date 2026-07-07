@@ -22,7 +22,7 @@ function selo(fracao: number): { rotulo: string; classe: string; icone: boolean 
   // Terços da faixa das ofertas, casando 1:1 com as 3 zonas de cor do trilho.
   if (fracao <= 1 / 3) return { rotulo: "Ótimo preço", classe: "otimo", icone: true };
   if (fracao <= 2 / 3) return { rotulo: "Bom preço", classe: "bom", icone: true };
-  return { rotulo: "Preço de mercado", classe: "mercado", icone: false };
+  return { rotulo: "Margem pequena", classe: "mercado", icone: false };
 }
 
 export function ReferenciaPreco({
