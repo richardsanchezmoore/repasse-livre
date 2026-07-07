@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUpDown, ChevronDown, ChevronRight, SlidersHorizontal, X } from "lucide-react";
-import { CLASSIFICACOES, ROTULO_CLASSIFICACAO_FILTRO, type Classificacao } from "@/lib/classificacao";
+import { CLASSIFICACOES, rotuloClassificacaoFiltro, type Classificacao } from "@/lib/classificacao";
 import { apenasDigitos, formatarMoeda } from "@/lib/mascaras";
 import { registrarEvento } from "@/lib/eventosAnalytics";
 import { IconDropdown } from "./IconDropdown";
@@ -37,6 +37,7 @@ export function FiltroClassificacao({
   fonte,
   marca,
   marcas = [],
+  piso,
   proximidadeDisponivel = false,
 }: {
   aba: Aba;
@@ -50,6 +51,7 @@ export function FiltroClassificacao({
   fonte?: string;
   marca?: string;
   marcas?: MarcaContagem[];
+  piso: number;
   proximidadeDisponivel?: boolean;
 }) {
   // "Perto de mim" só aparece quando temos coordenada do usuário (ver
@@ -185,7 +187,7 @@ export function FiltroClassificacao({
         onClick={() => setChipsAbertos((aberto) => !aberto)}
         aria-expanded={chipsAbertos}
       >
-        <span>{ativa ? ROTULO_CLASSIFICACAO_FILTRO[ativa] : "Margem FIPE"}</span>
+        <span>{ativa ? rotuloClassificacaoFiltro(ativa, piso) : "Margem FIPE"}</span>
         <ChevronDown size={16} strokeWidth={2.25} className={chipsAbertos ? "filtro-toggle-seta-aberta" : ""} />
       </button>
 
@@ -204,7 +206,7 @@ export function FiltroClassificacao({
             onClick={() => selecionar(classificacao)}
             className={`filtro-chip ${ativa === classificacao ? "filtro-chip-ativo" : ""}`}
           >
-            {ROTULO_CLASSIFICACAO_FILTRO[classificacao]}
+            {rotuloClassificacaoFiltro(classificacao, piso)}
           </button>
         ))}
       </div>

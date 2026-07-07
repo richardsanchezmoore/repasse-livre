@@ -9,6 +9,7 @@ import {
   type Ordem,
 } from "@/components/DiscoveriesBoard";
 import { buscarMarcasComContagem } from "@/lib/marcas";
+import { buscarPisoMargem } from "@/lib/configWorker";
 import { BoardArea } from "@/components/BoardArea";
 import { DetectorLocalizacao } from "@/components/DetectorLocalizacao";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
@@ -130,10 +131,11 @@ export default async function CentralDeOportunidadesPage({
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,
   };
 
-  const [contagens, estadosDisponiveis, marcasDisponiveis] = await Promise.all([
+  const [contagens, estadosDisponiveis, marcasDisponiveis, pisoMargem] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(abaAtiva, usuario),
     buscarMarcasComContagem(),
+    buscarPisoMargem(),
   ]);
 
   return (
@@ -163,6 +165,7 @@ export default async function CentralDeOportunidadesPage({
                 pagina={paginaAtiva}
                 estadosDisponiveis={estadosDisponiveis}
                 marcasDisponiveis={marcasDisponiveis}
+                pisoMargem={pisoMargem}
                 proximidadeDisponivel={proximidadeDisponivel}
               />
             </BoardArea>

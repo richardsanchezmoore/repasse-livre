@@ -14,15 +14,24 @@ export const ROTULO_CLASSIFICACAO: Record<Classificacao, string> = {
   top_oportunidade: "Diamante",
 };
 
-export const ROTULO_CLASSIFICACAO_FILTRO: Record<Classificacao, string> = {
-  // Bronze começa no PISO de captação (config MARGEM_MINIMA_PERCENTUAL, hoje 3%).
-  // Este número acompanha o piso: se mudar o piso na config, ajuste aqui.
-  // Prata/Ouro/Diamante têm limiares fixos.
-  oportunidade: "Bronze 3%+",
-  grande_oportunidade: "Prata 10%+",
-  oportunidade_premium: "Ouro 15%+",
-  top_oportunidade: "Diamante 20%+",
+// Limiar de cada medalha pro rótulo do filtro. Bronze é DINÂMICO (null → usa o
+// piso de captação, config MARGEM_MINIMA_PERCENTUAL) — assim o label acompanha
+// sozinho qualquer mudança do piso. Prata/Ouro/Diamante têm limiares fixos.
+const LIMIAR_MEDALHA: Record<Classificacao, number | null> = {
+  oportunidade: null,
+  grande_oportunidade: 10,
+  oportunidade_premium: 15,
+  top_oportunidade: 20,
 };
+
+/**
+ * Rótulo do filtro de margem, ex.: "Bronze 3%+". Bronze usa o `piso` de captação
+ * (dinâmico, vindo da config); as medalhas superiores têm limiares fixos.
+ */
+export function rotuloClassificacaoFiltro(classificacao: Classificacao, piso: number): string {
+  const limiar = LIMIAR_MEDALHA[classificacao] ?? piso;
+  return `${ROTULO_CLASSIFICACAO[classificacao]} ${limiar}%+`;
+}
 
 export const CLASSE_CLASSIFICACAO: Record<Classificacao, string> = {
   oportunidade: "selo-classificacao-oportunidade",

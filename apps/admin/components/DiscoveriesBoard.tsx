@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
 import type { Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
+import { MARGEM_MINIMA_PADRAO } from "@/lib/margin";
 import { extrairMarca } from "@/lib/marca";
 import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
@@ -460,6 +461,7 @@ export async function Board({
   pagina = 1,
   estadosDisponiveis = [],
   marcasDisponiveis = [],
+  pisoMargem = MARGEM_MINIMA_PADRAO,
   proximidadeDisponivel = false,
 }: {
   aba: Aba;
@@ -468,6 +470,7 @@ export async function Board({
   pagina?: number;
   estadosDisponiveis?: string[];
   marcasDisponiveis?: MarcaContagem[];
+  pisoMargem?: number;
   proximidadeDisponivel?: boolean;
 }) {
   const { itens: oportunidades, total } = await buscarOportunidades(aba, filtros, usuario, pagina);
@@ -511,6 +514,7 @@ export async function Board({
         fonte={filtros.fonte}
         marca={filtros.marca}
         marcas={marcasDisponiveis}
+        piso={pisoMargem}
         proximidadeDisponivel={proximidadeDisponivel}
       />
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />
