@@ -13,6 +13,7 @@ import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
 import { PainelComparativo } from "./PainelComparativo";
 import { buscarHistoricoFipe } from "@/lib/fipeHistorico";
 import { buscarReferenciaPreco } from "@/lib/referenciaPreco";
+import { buscarPisoMargem } from "@/lib/configWorker";
 import type { Oportunidade } from "@/lib/types";
 
 const MESES_FIPE_SELO = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -30,16 +31,18 @@ function formatarMesRefFipe(ref: string): string {
   return compacto.charAt(0).toUpperCase() + compacto.slice(1);
 }
 
-// Faixa "margem apertada" que dispara o aviso de negociação na página: margem
-// abaixo de 5% (teto) mas ainda >= 2% (piso de tolerância). Abaixo de 2% o
-// recálculo mensal descarta o anúncio (ver recalcularFipeMensal no worker).
-const MARGEM_ALERTA_TETO = 5;
+// Piso da FRANJA tolerada que dispara o aviso de negociação: 2% <= margem < piso
+// de captação. NESSA faixa o carro só pode ter chegado por QUEDA de FIPE — a
+// captação exige o piso, então anúncio fresco é sempre >= piso; ninguém entra em
+// 2%–piso a não ser caindo. Por isso o "FIPE caiu, negocie" é honesto aqui (o teto
+// é o piso dinâmico da config, não um 5% fixo). Abaixo de 2% o recálculo descarta.
 const MARGEM_ALERTA_PISO = 2;
 
 export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
-  const [historicoFipe, referenciaPreco] = await Promise.all([
+  const [historicoFipe, referenciaPreco, piso] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
     buscarReferenciaPreco(oportunidade.fipe_codigo, oportunidade.ano, oportunidade.fipe_valor, oportunidade.estado),
+    buscarPisoMargem(),
   ]);
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
   // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
@@ -65,7 +68,7 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
   // a FIPE muda no recálculo) — sinaliza a queda e convida a negociar.
   const margemFipe = oportunidade.margem_percentual;
   const avisoQuedaFipe =
-    margemFipe !== null && margemFipe >= MARGEM_ALERTA_PISO && margemFipe < MARGEM_ALERTA_TETO;
+    margemFipe !== null && margemFipe >= MARGEM_ALERTA_PISO && margemFipe < piso;
   // Só admin chega aqui com um anúncio não-aprovado (ver buscarOportunidadePorId):
   // sinaliza que é prévia de revisão, não a página pública.
   const ehPreviaNaoAprovada = oportunidade.status !== "aprovada";
