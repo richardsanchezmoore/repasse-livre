@@ -1,4 +1,5 @@
 import type { FactSheet } from "@/lib/bia/tipos";
+import { PrecoVsMercado } from "./PrecoVsMercado";
 
 /** 5 estrelas com preenchimento FRACIONÁRIO (meia-estrela) via clip de largura. */
 function Estrelas({ n }: { n: number | null }) {
@@ -100,7 +101,15 @@ export function FichaBia({ fs }: { fs: FactSheet }) {
               <tr key={f.categoria} style={{ borderTop: "1px solid #f3f4f6" }}>
                 <td style={{ padding: "9px 0", color: "#374151" }}>{f.categoria}</td>
                 <td style={{ padding: "9px 0", textAlign: "right" }}>
-                  <Estrelas n={f.estrelas} />
+                  {/* "Preço vs. mercado" é um PERCENTIL de verdade → mostra o número
+                      concreto ("Melhor que X%") + aba Estado/Brasil, em vez da estrela
+                      abstrata (pedido do usuário: "1 estrela = quão ruim?"). As outras
+                      linhas são intrínsecas, seguem com estrela. */}
+                  {f.categoria === "Preço vs. mercado" && fs.mercado_escopos.length > 0 ? (
+                    <PrecoVsMercado escopos={fs.mercado_escopos} padrao={fs.mercado_padrao} />
+                  ) : (
+                    <Estrelas n={f.estrelas} />
+                  )}
                 </td>
               </tr>
             ))}

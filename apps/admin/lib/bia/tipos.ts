@@ -46,6 +46,15 @@ export interface EscopoCoorte {
   tamanho: number;
 }
 
+/** Preço vs. mercado num escopo geográfico — pra aba Estado/Brasil da ficha.
+ *  `melhorQue` = % dos anúncios do modelo (naquele escopo) que este preço supera. */
+export interface MercadoEscopo {
+  chave: "estado" | "brasil";
+  rotulo: string; // "em SP" | "no Brasil"
+  total: number;
+  melhorQue: number; // 0–100
+}
+
 /** Linha do fichário técnico (parecer de analista): categoria → estrelas → origem. */
 export interface FichaCategoria {
   categoria: string;
@@ -79,6 +88,9 @@ export interface FactSheet {
   /** Evidências de destaque em linguagem plana (os ✔ do parecer). */
   destaques: string[];
   fichas: FichaCategoria[];
+  /** Preço vs. mercado por escopo (estado/Brasil) + escopo padrão — a aba da ficha. */
+  mercado_escopos: MercadoEscopo[];
+  mercado_padrao: string;
   /** Cru, pra uso interno/Premium (não exibido ao comprador comum). */
   evidencias: Evidencia[];
 }

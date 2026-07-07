@@ -11,6 +11,43 @@ function porFaixa(valor: number, faixas: [limiar: number, estrelas: number][]): 
   return e;
 }
 
+// Piso de amostra pra oferecer um escopo na aba Estado/Brasil (percentil de
+// preço-vs-mercado). Menor que o piso do percentil "oficial" (25) — a aba é um
+// drill-down transparente, e o total é exibido junto (o comprador vê a amostra).
+const MIN_ESCOPO_MERCADO = 10;
+
+/** "top X%" por desconto numa lista — MESMA conta do indicador percentilDesconto
+ *  (quantos têm desconto maior → posição → % do topo). */
+function topPctDesconto(itens: AnuncioBia[], margem: number): number {
+  const melhores = itens.filter((x) => (x.margem_percentual ?? -Infinity) > margem).length;
+  return Math.max(1, Math.round(((melhores + 1) / itens.length) * 100));
+}
+
+/** Preço vs. mercado por ESCOPO (estado + Brasil) pra aba da ficha. `melhorQue` =
+ *  % dos anúncios do modelo que este preço supera. Escopo padrão = igual à escada
+ *  do percentil oficial (estado se ≥25, senão Brasil). */
+function mercadoEscopos(anuncio: AnuncioBia, universo: AnuncioBia[]): {
+  escopos: FactSheet["mercado_escopos"];
+  padrao: string;
+} {
+  if (anuncio.margem_percentual == null) return { escopos: [], padrao: "" };
+  const margem = anuncio.margem_percentual;
+  const noEstado = anuncio.estado ? universo.filter((x) => x.estado === anuncio.estado) : [];
+  const escopos: FactSheet["mercado_escopos"] = [];
+  if (noEstado.length >= MIN_ESCOPO_MERCADO) {
+    escopos.push({ chave: "estado", rotulo: `em ${anuncio.estado}`, total: noEstado.length, melhorQue: 100 - topPctDesconto(noEstado, margem) });
+  }
+  // Brasil só se agrega algo além do estado (senão é a mesma coorte → sem aba).
+  if (universo.length >= MIN_ESCOPO_MERCADO && universo.length > noEstado.length) {
+    escopos.push({ chave: "brasil", rotulo: "no Brasil", total: universo.length, melhorQue: 100 - topPctDesconto(universo, margem) });
+  }
+  const padrao =
+    noEstado.length >= 25 && escopos.some((e) => e.chave === "estado")
+      ? "estado"
+      : escopos.find((e) => e.chave === "brasil")?.chave ?? escopos[0]?.chave ?? "";
+  return { escopos, padrao };
+}
+
 /**
  * BIA Engine — computa o fact-sheet de um anúncio a partir do UNIVERSO atual
  * (anúncios ativos com o mesmo fipe_codigo) e do histórico de preço dele. Roda
@@ -46,6 +83,9 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
   const amostra = Math.min(1, (nums.coorteTamanho ?? 0) / 50);
   const grau_confianca = Math.round(100 * (0.55 * cobertura + 0.45 * amostra));
 
+  const escoposMercado = mercadoEscopos(anuncio, universo);
+  const mercado = { mercado_escopos: escoposMercado.escopos, mercado_padrao: escoposMercado.padrao };
+
   return {
     opportunity_id: anuncio.id,
     calculado_em: new Date().toISOString(),
@@ -63,6 +103,7 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
     copiloto: montarParecer(classificacao, nums, fichas),
     destaques: positivos.map((e) => e.texto),
     fichas,
+    ...mercado,
     evidencias,
   };
 }
