@@ -27,6 +27,10 @@ const DESDE = process.argv.find((a) => a.startsWith("--desde="))?.split("=")[1] 
 // um ajuste na régua de margem, sem tocar no resto).
 const MARGEM_MAX_ARG = process.argv.find((a) => a.startsWith("--margem-max="))?.split("=")[1];
 const MARGEM_MAX = MARGEM_MAX_ARG != null ? Number(MARGEM_MAX_ARG) : null;
+// Só REGENERA quem já tem parecer (fingerprint != null) — não cria pra quem nunca
+// teve. Serve pra CORRIGIR os existentes sem pagar pelo backfill de quem falta
+// (ex.: drift antigo abaixo da FIPE que não vale o gasto).
+const SO_EXISTENTES = process.argv.includes("--so-existentes");
 
 const CAMPOS =
   "id, fipe_codigo, veiculo, ano, estado, preco, fipe_valor, margem_percentual, km, data_captura, foto_principal, fotos_secundarias, descricao, atributos_olx, link_origem, status, copiloto_fingerprint";
@@ -82,13 +86,14 @@ async function main(): Promise<void> {
   console.log(`[pareceres] ${total} anúncios em ${grupos.size} coortes (fipe_codigo). Modo: ${APLICAR ? "APLICAR" : "DRY-RUN"}${Number.isFinite(LIMITE) ? ` (limite ${LIMITE})` : ""}${DESDE ? ` (só data_captura >= ${DESDE})` : ""}.`);
   if (!APLICAR && !process.env.ANTHROPIC_API_KEY) console.log("[pareceres] aviso: sem ANTHROPIC_API_KEY — no --aplicar cairia no template.");
 
-  let pendentes = 0, gerados = 0, jaFrescos = 0, falhas = 0, foraJanela = 0, foraMargem = 0;
+  let pendentes = 0, gerados = 0, jaFrescos = 0, falhas = 0, foraJanela = 0, foraMargem = 0, semParecer = 0;
   for (const [, universo] of grupos) {
     const precoLog = await carregarPrecoLog(universo.map((a) => a.link_origem));
     for (const anuncio of universo) {
       // Fora da janela → não gera (mas segue na coorte 'universo' acima).
       if (DESDE && (!anuncio.data_captura || anuncio.data_captura < DESDE)) { foraJanela++; continue; }
       if (MARGEM_MAX != null && (anuncio.margem_percentual == null || anuncio.margem_percentual > MARGEM_MAX)) { foraMargem++; continue; }
+      if (SO_EXISTENTES && anuncio.copiloto_fingerprint == null) { semParecer++; continue; }
       const fs = computarFactSheet(anuncio, universo, precoLog.get(anuncio.link_origem) ?? []);
       const ctx = { veiculo: anuncio.veiculo, ano: anuncio.ano };
       const fp = fingerprintParecer(fs, ctx);
@@ -119,6 +124,7 @@ async function main(): Promise<void> {
     `[pareceres] ${APLICAR ? "APLICADO" : "SIMULAÇÃO"}: ${jaFrescos} já frescos | ${pendentes} pendentes` +
       (DESDE ? ` | ${foraJanela} fora da janela` : "") +
       (MARGEM_MAX != null ? ` | ${foraMargem} fora da margem (>${MARGEM_MAX}%)` : "") +
+      (SO_EXISTENTES ? ` | ${semParecer} pulados (sem parecer prévio)` : "") +
       (APLICAR ? ` | ${gerados} gerados | ${falhas} falhas` : " (rode com --aplicar pra gerar)")
   );
   process.exit(0);
