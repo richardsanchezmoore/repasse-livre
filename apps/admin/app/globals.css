@@ -4351,56 +4351,39 @@ body {
 
 /* ===== Painel comparativo: Histórico FIPE + Preços de referência ===== */
 .painel-comparativo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  /* ABAS por padrão em QUALQUER largura (antes: lado a lado no desktop — o usuário
+     achou poluído com 2 painéis densos). Coluna única, só o painel ativo aparece;
+     max-width mantém ~o tamanho que cada painel tinha como metade (não estica). */
   margin: 16px 0;
-  align-items: stretch;
+  max-width: 600px;
 }
 .painel-comparativo .historico-precos,
 .painel-comparativo .referencia-preco {
-  margin: 0; /* o gap do grid controla o espaçamento */
-  height: 100%;
+  margin: 0;
 }
 .painel-comparativo-abas {
-  display: none; /* só aparece no mobile */
+  display: flex;
+  gap: 6px;
+  margin: 16px 0 10px;
 }
-@media (min-width: 721px) {
-  /* Desktop: os dois lado a lado sempre; abas escondidas. */
-  .painel-comparativo-item {
-    display: block !important;
-  }
+.painel-comparativo-aba {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #54656f;
+  background: #f0f2f5;
+  border: 1px solid #e0e3e7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
 }
-@media (max-width: 720px) {
-  /* Mobile: coluna única + abas; só o painel ativo aparece. */
-  .painel-comparativo {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  .painel-comparativo-abas {
-    display: flex;
-    gap: 6px;
-    margin: 16px 0 10px;
-  }
-  .painel-comparativo-aba {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 600;
-    color: #54656f;
-    background: #f0f2f5;
-    border: 1px solid #e0e3e7;
-    border-radius: 8px;
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-  .painel-comparativo-aba-ativa {
-    background: #1a1f2e;
-    color: #fff;
-    border-color: #1a1f2e;
-  }
-  .painel-comparativo-item[data-ativo="false"] {
-    display: none;
-  }
+.painel-comparativo-aba-ativa {
+  background: #1a1f2e;
+  color: #fff;
+  border-color: #1a1f2e;
+}
+.painel-comparativo-item[data-ativo="false"] {
+  display: none;
 }
 
 /* ===== Barra "Preços de referência Repasse Livre" ===== */
