@@ -4387,47 +4387,19 @@ body {
   display: none;
 }
 
-/* ===== Barra "Preços de referência Repasse Livre" ===== */
+/* ===== "Preços de referência" — faixa das ofertas semelhantes (sem FIPE) ===== */
 .referencia-preco {
   margin: 16px 0;
-  padding: 16px;
+  padding: 18px 20px 16px;
   border: 1px solid #e0e3e7;
   border-radius: 12px;
   background: #fff;
-}
-.referencia-preco-cabecalho {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 .referencia-preco-titulo {
   font-size: 15px;
   font-weight: 700;
   color: #1a1f2e;
   margin: 0;
-}
-.referencia-preco-selo {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-.referencia-preco-selo-otimo {
-  background: #d9fdd3;
-  color: #0a5d2c;
-}
-.referencia-preco-selo-bom {
-  background: #e3f6ed;
-  color: #0a5d2c;
-}
-.referencia-preco-selo-neutro {
-  background: #f0f2f5;
-  color: #6b7280;
 }
 .referencia-preco-subtitulo {
   font-size: 12px;
@@ -4436,30 +4408,32 @@ body {
 }
 .referencia-preco-grafico {
   position: relative;
-  margin-top: 54px; /* espaço pro marcador "Este anúncio" acima da barra */
-  padding-bottom: 44px; /* espaço pras legendas mín/médio/máx embaixo */
+  margin-top: 58px; /* espaço pro balão "Preço anunciado" acima da barra */
+  padding-bottom: 48px; /* espaço pras legendas mín/médio/máx embaixo */
 }
+/* Balão do preço anunciado (rótulo + valor + selo), ancorado à posição na faixa.
+   No meio centra sobre o ponto; nas bordas ancora no início/fim pra não vazar. */
 .referencia-preco-marcador {
   position: absolute;
-  top: -46px;
-  display: flex;
-  flex-direction: column;
+  top: -50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
+  padding: 5px 8px 5px 12px;
+  background: #f6f7f9;
+  border: 1px solid #e6e8ec;
+  border-radius: 999px;
   z-index: 2;
 }
-/* No meio: centrado sobre a agulha. Nas bordas: ancorado no início/fim do
-   card pra o valor não vazar quando o anúncio é o mais barato/caro da faixa. */
 .referencia-preco-marcador-centro {
   transform: translateX(-50%);
-  align-items: center;
 }
 .referencia-preco-marcador-inicio {
   left: 0;
-  align-items: flex-start;
 }
 .referencia-preco-marcador-fim {
   right: 0;
-  align-items: flex-end;
 }
 .referencia-preco-marcador-rotulo {
   font-size: 10px;
@@ -4467,101 +4441,110 @@ body {
   font-weight: 600;
 }
 .referencia-preco-marcador-valor {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #1a1f2e;
 }
-/* Agulha vertical na posição exata do preço, apontando pra barra. */
+.referencia-preco-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.referencia-preco-selo-otimo {
+  background: #d9fdd3;
+  color: #0a5d2c;
+}
+.referencia-preco-selo-bom {
+  background: #fdeccd;
+  color: #92610b;
+}
+.referencia-preco-selo-mercado {
+  background: #fbe3d8;
+  color: #9a3d1e;
+}
+/* Linha pontilhada do balão até a barra. */
 .referencia-preco-agulha {
   position: absolute;
-  top: -14px;
-  width: 2px;
-  height: 14px;
-  background: #1a1f2e;
+  top: -20px;
+  width: 0;
+  height: 20px;
+  border-left: 2px dashed #b7bdc7;
   transform: translateX(-50%);
-  z-index: 2;
-}
-.referencia-preco-trilho {
-  position: relative;
-  height: 10px;
-  border-radius: 999px;
-  background: #eef0f3;
-  overflow: visible;
-}
-.referencia-preco-faixa {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  border-radius: 999px;
-  /* Tons de verde da plataforma (claro → verde da marca), não azul/roxo. */
-  background: linear-gradient(90deg, #34d399, #16a34a);
-}
-.referencia-preco-tick-medio {
-  position: absolute;
-  top: -3px;
-  width: 3px;
-  height: 16px;
-  background: #fff;
-  border-radius: 2px;
-  transform: translateX(-50%);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
-}
-.referencia-preco-fipe {
-  position: absolute;
-  top: -7px;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   z-index: 1;
 }
-.referencia-preco-fipe-linha {
-  width: 0;
-  height: 24px;
-  border-left: 2px dashed #6b7280;
+/* Trilho tricolor: verde (ótimo) → âmbar (bom) → coral (mercado). */
+.referencia-preco-trilho {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
 }
-.referencia-preco-fipe-rotulo {
-  margin-top: 2px;
-  font-size: 10px;
-  font-weight: 700;
-  color: #6b7280;
-  white-space: nowrap;
+.referencia-preco-zona {
+  height: 100%;
+}
+.referencia-preco-zona-otimo {
+  width: 33.3%;
+  background: #17a24a;
+}
+.referencia-preco-zona-bom {
+  width: 33.3%;
+  background: #f2a020;
+}
+.referencia-preco-zona-mercado {
+  width: 33.4%;
+  background: #e56a3a;
+}
+/* Ponto do anúncio na barra (fora do trilho pra não ser cortado pelo overflow). */
+.referencia-preco-ponto {
+  position: absolute;
+  top: 6px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #1a1f2e;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 }
 .referencia-preco-legendas {
   position: absolute;
   left: 0;
   right: 0;
-  top: 20px;
-  height: 34px;
+  top: 24px;
+  height: 36px;
 }
 .referencia-preco-legenda {
   position: absolute;
   display: flex;
   flex-direction: column;
 }
+.referencia-preco-legenda-inicio {
+  left: 0;
+  align-items: flex-start;
+}
 .referencia-preco-legenda-centro {
+  left: 50%;
   transform: translateX(-50%);
   align-items: center;
 }
 .referencia-preco-legenda-fim {
-  transform: translateX(-100%);
+  right: 0;
   align-items: flex-end;
+}
+.referencia-preco-legenda-valor {
+  font-size: 13px;
+  color: #1a1f2e;
+  font-weight: 700;
 }
 .referencia-preco-legenda-rotulo {
   font-size: 10px;
   color: #9aa2b1;
   font-weight: 600;
-}
-.referencia-preco-legenda-valor {
-  font-size: 12px;
-  color: #4b5563;
-  font-weight: 600;
-}
-.referencia-preco-mes {
-  font-size: 11px;
-  color: #9aa2b1;
-  margin: 10px 0 0;
 }
 
 /* Selo do mês de referência da FIPE (sob a margem) — ver PaginaOportunidade */

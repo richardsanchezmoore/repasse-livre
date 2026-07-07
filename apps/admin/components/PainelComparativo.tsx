@@ -16,14 +16,10 @@ export function PainelComparativo({
   historico,
   referencia,
   precoAnuncio,
-  fipeValor,
-  mesRef,
 }: {
   historico: PontoHistoricoFipe[];
   referencia: Referencia | null;
   precoAnuncio: number;
-  fipeValor: number | null;
-  mesRef: string | null;
 }) {
   const [aba, setAba] = useState<"historico" | "referencia">("historico");
 
@@ -33,12 +29,7 @@ export function PainelComparativo({
   if (!temHistorico && !temReferencia) return null;
 
   const painelReferencia = referencia && (
-    <ReferenciaPreco
-      referencia={referencia}
-      precoAnuncio={precoAnuncio}
-      fipeValor={fipeValor}
-      mesRef={mesRef}
-    />
+    <ReferenciaPreco referencia={referencia} precoAnuncio={precoAnuncio} />
   );
 
   // Só um dos dois → largura total, sem abas.

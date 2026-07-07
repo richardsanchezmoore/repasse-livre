@@ -166,8 +166,6 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
           historico={historicoFipe}
           referencia={referenciaPreco}
           precoAnuncio={oportunidade.preco}
-          fipeValor={oportunidade.fipe_valor}
-          mesRef={mesRefFipe}
         />
 
         <dl className="pagina-oportunidade-ficha">
