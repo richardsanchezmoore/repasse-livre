@@ -333,18 +333,26 @@ export async function marcarVarreduraRecuperada(
   resultado: ResultadoVarreduraRegistro,
   snapshotId: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from("discovery_runs")
-    .update({
-      status: "sucesso",
-      finalizado_em: new Date().toISOString(),
-      novos: resultado.novos,
-      elegiveis: resultado.elegiveis,
-      descartados: resultado.descartados,
-      sem_fipe: resultado.semFipe,
-      observacao: `Recuperado do snapshot ${snapshotId}.`,
-    })
-    .eq("id", id);
+  const base = {
+    status: "sucesso",
+    finalizado_em: new Date().toISOString(),
+    observacao: `Recuperado do snapshot ${snapshotId}.`,
+  };
+  // Só sobrescreve os contadores quando a reingestão REALMENTE salvou algo — assim
+  // re-rodar a recuperação de um snapshot já recuperado (tudo dedupado → 0
+  // elegíveis) não apaga os números verdadeiros da 1ª recuperação no histórico.
+  const atualizacao =
+    resultado.elegiveis > 0
+      ? {
+          ...base,
+          novos: resultado.novos,
+          elegiveis: resultado.elegiveis,
+          descartados: resultado.descartados,
+          sem_fipe: resultado.semFipe,
+        }
+      : base;
+
+  const { error } = await supabase.from("discovery_runs").update(atualizacao).eq("id", id);
   if (error) {
     throw new Error(`Falha ao marcar varredura recuperada: ${error.message}`);
   }
