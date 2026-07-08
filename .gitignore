@@ -4,3 +4,6 @@ dist/
 *.tsbuildinfo
 .env
 *.local
+
+# Dumps de scrape (Bright Data) — não versionar
+docs/sd_*.json
