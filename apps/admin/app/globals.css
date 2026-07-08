@@ -3876,11 +3876,11 @@ body {
   position: absolute;
   top: -2px;
   right: -2px;
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #2bac60;
-  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 4px color-mix(in oklab, #00d923 25%, transparent);
   pointer-events: none;
 }
 
