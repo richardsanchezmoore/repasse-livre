@@ -13,6 +13,7 @@
     "backfill:codigo-local-olx": "npx tsx src/backfillCodigoLocalOlx.ts",
     "backfill:webmotors-local": "tsx src/backfillWebmotorsLocal.ts",
     "importar:snapshots-webmotors": "tsx src/importarSnapshotsWebmotors.ts",
+    "recuperar:snapshots-webmotors": "tsx src/recuperarSnapshotsWebmotors.ts",
     "backfill:titulos": "tsx src/backfillTitulos.ts",
     "backfill:titulos-multifonte": "tsx src/backfillTitulosMultifonte.ts",
     "bootstrap:historico-fipe": "tsx src/bootstrapHistoricoFipe.ts",

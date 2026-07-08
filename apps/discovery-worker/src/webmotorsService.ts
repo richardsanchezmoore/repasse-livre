@@ -60,17 +60,52 @@ async function esperarSnapshotPronto(snapshotId: string, headers: Record<string,
   throw new Error(`Snapshot ${snapshotId} não ficou pronto em ${maxMinutos}min.`);
 }
 
-/** Baixa o snapshot pronto. O arquivo leva alguns segundos extras após "ready" → retry no 202. */
-async function baixarSnapshot(snapshotId: string, headers: Record<string, string>, maxTentativas = 20): Promise<unknown[]> {
-  for (let i = 0; i < maxTentativas; i++) {
+/**
+ * Baixa o snapshot pronto. DEPOIS do "ready" o Bright Data ainda "monta o
+ * arquivo de entrega" e nesse meio-tempo responde 202 (building) ou 200 com um
+ * objeto `{status:"building"}` em vez do array — isso pode levar VÁRIOS minutos
+ * sob carga. A versão antiga desistia em 120s (20×6s) e estourava "não
+ * completou" mesmo com os registros prontos (foi o que derrubou os runs de
+ * 07-08/07). Agora espera até `maxMinutos` e loga o último status real pra
+ * diagnóstico. Ver project_repasse_livre_webmotors_async_e_custo.
+ */
+async function baixarSnapshot(snapshotId: string, headers: Record<string, string>, maxMinutos = 12): Promise<unknown[]> {
+  const inicio = Date.now();
+  let ultimoStatus = "sem resposta";
+  while (Date.now() - inicio < maxMinutos * 60_000) {
     const r = await fetch(`${BRIGHTDATA_BASE}/snapshot/${snapshotId}?format=json`, { headers });
+    const texto = await r.text();
     if (r.status === 200) {
-      const dados = await r.json();
-      if (Array.isArray(dados)) return dados;
+      try {
+        const dados = JSON.parse(texto);
+        if (Array.isArray(dados)) return dados;
+        // 200 mas ainda "building" (objeto com status) — continua esperando.
+        ultimoStatus = `200 ${(dados as { status?: string })?.status ?? "objeto-nao-array"}`;
+      } catch {
+        ultimoStatus = `200 nao-json(${texto.length}b)`;
+      }
+    } else {
+      // 202 = building; 4xx/5xx = captura corpo pro log.
+      ultimoStatus = `HTTP ${r.status} ${texto.slice(0, 100)}`;
     }
-    await sleep(6_000);
+    await sleep(8_000);
   }
-  throw new Error(`Download do snapshot ${snapshotId} não completou.`);
+  throw new Error(`Download do snapshot ${snapshotId} não completou em ${maxMinutos}min (último status: ${ultimoStatus}).`);
+}
+
+/**
+ * Baixa E ingere um snapshot que JÁ existe no Bright Data (pelo id), sem
+ * re-disparar coleta (nem re-pagar). Usado na recuperação de snapshots que
+ * completaram no BD mas cujo run falhou no download/morreu — ver
+ * recuperarSnapshotsWebmotors.ts.
+ */
+export async function coletarSnapshotWebmotorsPorId(snapshotId: string): Promise<AnuncioWebmotorsBruto[]> {
+  const apiToken = process.env.BRIGHTDATA_API_TOKEN;
+  if (!apiToken) throw new Error("BRIGHTDATA_API_TOKEN não configurado.");
+  const headers = { Authorization: `Bearer ${apiToken}` };
+  await esperarSnapshotPronto(snapshotId, headers);
+  const dados = await baixarSnapshot(snapshotId, headers);
+  return filtrarValidos(dados);
 }
 
 /**
