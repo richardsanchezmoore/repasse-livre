@@ -2568,7 +2568,6 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 14px;
-  min-height: 250px;
   margin-top: 4px;
 }
 .copiloto-teaser-amostra {
@@ -2586,19 +2585,19 @@ body {
   line-height: 1.55;
   color: #1f2937;
 }
+/* Card de upgrade NO FLUXO, logo abaixo das 2 linhas; sobe um pouco (margin-top
+   negativo) pra "comer" a cauda da 2ª linha, e o gradiente é um fade FININHO só
+   na beirada do topo (~30px) — o resto é grafite chapado. */
 .acesso-bloqueado-gradiente {
-  position: absolute;
-  inset: 0;
-  margin-top: 0;
-  justify-content: flex-end;
-  padding: 0 20px 26px;
+  position: relative;
+  margin-top: -20px;
+  padding: 42px 20px 26px;
   border-radius: 14px;
   background: linear-gradient(
     180deg,
-    rgba(15, 20, 28, 0) 0%,
-    rgba(15, 20, 28, 0) 30%,
-    rgba(15, 20, 28, 0.86) 56%,
-    #0f141c 76%
+    rgba(15, 20, 28, 0) 0,
+    rgba(15, 20, 28, 0.75) 18px,
+    #0f141c 32px
   );
 }
 

@@ -8,10 +8,10 @@
 export function resumirParecer(parecer: string | null): string | null {
   if (!parecer) return null;
   const limpo = parecer.replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
-  if (limpo.length <= 180) return limpo;
-  const corte = limpo.slice(0, 180);
+  if (limpo.length <= 165) return limpo;
+  const corte = limpo.slice(0, 165);
   const ultimoEspaco = corte.lastIndexOf(" ");
-  return `${corte.slice(0, ultimoEspaco > 120 ? ultimoEspaco : 180).trimEnd()}…`;
+  return `${corte.slice(0, ultimoEspaco > 110 ? ultimoEspaco : 165).trimEnd()}…`;
 }
 
 /**
