@@ -1,0 +1,4762 @@
+[
+  {
+    "id": 72802036,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2022,
+    "preco": 179900,
+    "fipe": 191745,
+    "margem": 6.2,
+    "elegivel": true
+  },
+  {
+    "id": 73034066,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2025,
+    "preco": 118390,
+    "fipe": 119541,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 73048875,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 157790,
+    "fipe": 164142,
+    "margem": 3.9,
+    "elegivel": false
+  },
+  {
+    "id": 71926287,
+    "marca": "KIA",
+    "modelo": "SPORTAGE",
+    "ano": 2024,
+    "preco": 186990,
+    "fipe": 202565,
+    "margem": 7.7,
+    "elegivel": true
+  },
+  {
+    "id": 72922035,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 84790,
+    "fipe": 96447,
+    "margem": 12.1,
+    "elegivel": true
+  },
+  {
+    "id": 71127727,
+    "marca": "FORD",
+    "modelo": "MUSTANG MACH-e",
+    "ano": 2023,
+    "preco": 292900,
+    "fipe": 320992,
+    "margem": 8.8,
+    "elegivel": true
+  },
+  {
+    "id": 63698977,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2023,
+    "preco": 96390,
+    "fipe": 99845,
+    "margem": 3.5,
+    "elegivel": false
+  },
+  {
+    "id": 72018861,
+    "marca": "BMW",
+    "modelo": "X4",
+    "ano": 2016,
+    "preco": 114900,
+    "fipe": 130406,
+    "margem": 11.9,
+    "elegivel": true
+  },
+  {
+    "id": 64499309,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2023,
+    "preco": 163900,
+    "fipe": 168458,
+    "margem": 2.7,
+    "elegivel": false
+  },
+  {
+    "id": 73018175,
+    "marca": "HYUNDAI",
+    "modelo": "CRETA",
+    "ano": 2025,
+    "preco": 105800,
+    "fipe": 106333,
+    "margem": 0.5,
+    "elegivel": false
+  },
+  {
+    "id": 72443399,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2023,
+    "preco": 289990,
+    "fipe": 352396,
+    "margem": 17.7,
+    "elegivel": true
+  },
+  {
+    "id": 68502511,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2023,
+    "preco": 428000,
+    "fipe": 440052,
+    "margem": 2.7,
+    "elegivel": false
+  },
+  {
+    "id": 67169056,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 66899278,
+    "marca": "LEXUS",
+    "modelo": "NX 450h+",
+    "ano": 2026,
+    "preco": 480990,
+    "fipe": 413332,
+    "margem": -16.4,
+    "elegivel": false
+  },
+  {
+    "id": 64475973,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2024,
+    "preco": 133490,
+    "fipe": 150989,
+    "margem": 11.6,
+    "elegivel": true
+  },
+  {
+    "id": 71171863,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 155290,
+    "fipe": 164142,
+    "margem": 5.4,
+    "elegivel": true
+  },
+  {
+    "id": 71998762,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 115900,
+    "fipe": 120037,
+    "margem": 3.4,
+    "elegivel": false
+  },
+  {
+    "id": 69995593,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2024,
+    "preco": 129800,
+    "fipe": 131860,
+    "margem": 1.6,
+    "elegivel": false
+  },
+  {
+    "id": 70354761,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 135790,
+    "fipe": 141785,
+    "margem": 4.2,
+    "elegivel": false
+  },
+  {
+    "id": 71460916,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 131900,
+    "fipe": 141785,
+    "margem": 7,
+    "elegivel": true
+  },
+  {
+    "id": 65906048,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2022,
+    "preco": 126690,
+    "fipe": 128036,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 71917257,
+    "marca": "LEXUS",
+    "modelo": "UX 250h",
+    "ano": 2024,
+    "preco": 209900,
+    "fipe": 221774,
+    "margem": 5.4,
+    "elegivel": true
+  },
+  {
+    "id": 63912447,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 104790,
+    "fipe": 105514,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 70635659,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 67385259,
+    "marca": "LEXUS",
+    "modelo": "RX 450h+",
+    "ano": 2026,
+    "preco": 609900,
+    "fipe": 413332,
+    "margem": -47.6,
+    "elegivel": false
+  },
+  {
+    "id": 72916916,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2018,
+    "preco": 92990,
+    "fipe": 100808,
+    "margem": 7.8,
+    "elegivel": true
+  },
+  {
+    "id": 65738446,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2024,
+    "preco": 116990,
+    "fipe": 118645,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 70635505,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72880245,
+    "marca": "HYUNDAI",
+    "modelo": "CRETA",
+    "ano": 2025,
+    "preco": 139900,
+    "fipe": 144988,
+    "margem": 3.5,
+    "elegivel": false
+  },
+  {
+    "id": 72919894,
+    "marca": "HYUNDAI",
+    "modelo": "CRETA",
+    "ano": 2025,
+    "preco": 99990,
+    "fipe": 106333,
+    "margem": 6,
+    "elegivel": true
+  },
+  {
+    "id": 64924639,
+    "marca": "AUDI",
+    "modelo": "Q5",
+    "ano": 2018,
+    "preco": 135900,
+    "fipe": 142693,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 71373591,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2025,
+    "preco": 93900,
+    "fipe": 96297,
+    "margem": 2.5,
+    "elegivel": false
+  },
+  {
+    "id": 72080796,
+    "marca": "RENAULT",
+    "modelo": "KWID",
+    "ano": 2023,
+    "preco": 43900,
+    "fipe": 50131,
+    "margem": 12.4,
+    "elegivel": true
+  },
+  {
+    "id": 71455852,
+    "marca": "AUDI",
+    "modelo": "RS3",
+    "ano": 2026,
+    "preco": 659990,
+    "fipe": 593634,
+    "margem": -11.2,
+    "elegivel": false
+  },
+  {
+    "id": 63698114,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2024,
+    "preco": 114990,
+    "fipe": 118645,
+    "margem": 3.1,
+    "elegivel": false
+  },
+  {
+    "id": 73005439,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2022,
+    "preco": 104900,
+    "fipe": 109049,
+    "margem": 3.8,
+    "elegivel": false
+  },
+  {
+    "id": 72796772,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2024,
+    "preco": 109790,
+    "fipe": 110963,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 72096966,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2026,
+    "preco": 261500,
+    "fipe": 262562,
+    "margem": 0.4,
+    "elegivel": false
+  },
+  {
+    "id": 72804233,
+    "marca": "PORSCHE",
+    "modelo": "CAYENNE",
+    "ano": 2026,
+    "preco": 1022191,
+    "fipe": 874093,
+    "margem": -16.9,
+    "elegivel": false
+  },
+  {
+    "id": 72906618,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2026,
+    "preco": 414900,
+    "fipe": 419435,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 70633524,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139690,
+    "fipe": 141665,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 70710881,
+    "marca": "PORSCHE",
+    "modelo": "911",
+    "ano": 2022,
+    "preco": 899000,
+    "fipe": 968714,
+    "margem": 7.2,
+    "elegivel": true
+  },
+  {
+    "id": 67130629,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2020,
+    "preco": 279890,
+    "fipe": 321998,
+    "margem": 13.1,
+    "elegivel": true
+  },
+  {
+    "id": 70866146,
+    "marca": "RAM",
+    "modelo": "RAMPAGE",
+    "ano": 2025,
+    "preco": 199900,
+    "fipe": 202016,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 66986342,
+    "marca": "LEXUS",
+    "modelo": "RX 500h",
+    "ano": 2026,
+    "preco": 599900,
+    "fipe": 413332,
+    "margem": -45.1,
+    "elegivel": false
+  },
+  {
+    "id": 65433371,
+    "marca": "RENAULT",
+    "modelo": "SANDERO",
+    "ano": 2018,
+    "preco": 39900,
+    "fipe": 40330,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 72467296,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 131900,
+    "fipe": 136493,
+    "margem": 3.4,
+    "elegivel": false
+  },
+  {
+    "id": 72915950,
+    "marca": "HYUNDAI",
+    "modelo": "CRETA",
+    "ano": 2025,
+    "preco": 99990,
+    "fipe": 106333,
+    "margem": 6,
+    "elegivel": true
+  },
+  {
+    "id": 66898811,
+    "marca": "LEXUS",
+    "modelo": "NX 450h+",
+    "ano": 2026,
+    "preco": 480990,
+    "fipe": 413332,
+    "margem": -16.4,
+    "elegivel": false
+  },
+  {
+    "id": 72901603,
+    "marca": "FIAT",
+    "modelo": "ARGO",
+    "ano": 2026,
+    "preco": 80300,
+    "fipe": 80848,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 72903906,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA",
+    "ano": 2023,
+    "preco": 125900,
+    "fipe": 127845,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 71274130,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 125490,
+    "fipe": 129479,
+    "margem": 3.1,
+    "elegivel": false
+  },
+  {
+    "id": 72837413,
+    "marca": "RENAULT",
+    "modelo": "KWID",
+    "ano": 2025,
+    "preco": 54900,
+    "fipe": 56860,
+    "margem": 3.4,
+    "elegivel": false
+  },
+  {
+    "id": 72565632,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TIGUAN",
+    "ano": 2019,
+    "preco": 99900,
+    "fipe": 112309,
+    "margem": 11,
+    "elegivel": true
+  },
+  {
+    "id": 72915659,
+    "marca": "RENAULT",
+    "modelo": "KWID",
+    "ano": 2025,
+    "preco": 53990,
+    "fipe": 56860,
+    "margem": 5,
+    "elegivel": true
+  },
+  {
+    "id": 71748404,
+    "marca": "VOLKSWAGEN",
+    "modelo": "FOX",
+    "ano": 2012,
+    "preco": 30989,
+    "fipe": 31725,
+    "margem": 2.3,
+    "elegivel": false
+  },
+  {
+    "id": 72890519,
+    "marca": "LAND ROVER",
+    "modelo": "DEFENDER",
+    "ano": 2026,
+    "preco": 844990,
+    "fipe": 801042,
+    "margem": -5.5,
+    "elegivel": false
+  },
+  {
+    "id": 71875554,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2023,
+    "preco": 398990,
+    "fipe": 440052,
+    "margem": 9.3,
+    "elegivel": true
+  },
+  {
+    "id": 65508028,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2024,
+    "preco": 117990,
+    "fipe": 108140,
+    "margem": -9.1,
+    "elegivel": false
+  },
+  {
+    "id": 63793968,
+    "marca": "NISSAN",
+    "modelo": "KICKS",
+    "ano": 2024,
+    "preco": 94790,
+    "fipe": 96597,
+    "margem": 1.9,
+    "elegivel": false
+  },
+  {
+    "id": 72555434,
+    "marca": "AUDI",
+    "modelo": "A3",
+    "ano": 2026,
+    "preco": 374990,
+    "fipe": 321537,
+    "margem": -16.6,
+    "elegivel": false
+  },
+  {
+    "id": 72904385,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 154590,
+    "fipe": 161119,
+    "margem": 4.1,
+    "elegivel": false
+  },
+  {
+    "id": 70350285,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 135790,
+    "fipe": 141785,
+    "margem": 4.2,
+    "elegivel": false
+  },
+  {
+    "id": 70644407,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 111490,
+    "fipe": 120037,
+    "margem": 7.1,
+    "elegivel": true
+  },
+  {
+    "id": 72903530,
+    "marca": "VOLKSWAGEN",
+    "modelo": "NIVUS",
+    "ano": 2025,
+    "preco": 124190,
+    "fipe": 129944,
+    "margem": 4.4,
+    "elegivel": false
+  },
+  {
+    "id": 70638819,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 157390,
+    "fipe": 164142,
+    "margem": 4.1,
+    "elegivel": false
+  },
+  {
+    "id": 70795415,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2026,
+    "preco": 180990,
+    "fipe": 178044,
+    "margem": -1.7,
+    "elegivel": false
+  },
+  {
+    "id": 72479244,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2025,
+    "preco": 104990,
+    "fipe": 119541,
+    "margem": 12.2,
+    "elegivel": true
+  },
+  {
+    "id": 72237111,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2022,
+    "preco": 267890,
+    "fipe": 329967,
+    "margem": 18.8,
+    "elegivel": true
+  },
+  {
+    "id": 70656088,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 158890,
+    "fipe": 161119,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 70483914,
+    "marca": "VOLKSWAGEN",
+    "modelo": "VIRTUS",
+    "ano": 2025,
+    "preco": 109900,
+    "fipe": 113179,
+    "margem": 2.9,
+    "elegivel": false
+  },
+  {
+    "id": 72331703,
+    "marca": "GWM",
+    "modelo": "HAVAL H6",
+    "ano": 2025,
+    "preco": 192890,
+    "fipe": 199499,
+    "margem": 3.3,
+    "elegivel": false
+  },
+  {
+    "id": 71865066,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2023,
+    "preco": 119900,
+    "fipe": 124222,
+    "margem": 3.5,
+    "elegivel": false
+  },
+  {
+    "id": 70353410,
+    "marca": "VOLKSWAGEN",
+    "modelo": "AMAROK",
+    "ano": 2026,
+    "preco": 369900,
+    "fipe": 305451,
+    "margem": -21.1,
+    "elegivel": false
+  },
+  {
+    "id": 72560506,
+    "marca": "AUDI",
+    "modelo": "SQ5",
+    "ano": 2026,
+    "preco": 659990,
+    "fipe": 605521,
+    "margem": -9,
+    "elegivel": false
+  },
+  {
+    "id": 72915920,
+    "marca": "HYUNDAI",
+    "modelo": "CRETA",
+    "ano": 2025,
+    "preco": 99990,
+    "fipe": 106333,
+    "margem": 6,
+    "elegivel": true
+  },
+  {
+    "id": 68351540,
+    "marca": "PORSCHE",
+    "modelo": "911",
+    "ano": 2022,
+    "preco": 898750,
+    "fipe": 968714,
+    "margem": 7.2,
+    "elegivel": true
+  },
+  {
+    "id": 71996207,
+    "marca": "GWM",
+    "modelo": "HAVAL H6",
+    "ano": 2025,
+    "preco": 211900,
+    "fipe": 222258,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 70725269,
+    "marca": "PORSCHE",
+    "modelo": "718",
+    "ano": 2023,
+    "preco": 1650000,
+    "fipe": 1666663,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 71994809,
+    "marca": "FIAT",
+    "modelo": "FASTBACK",
+    "ano": 2024,
+    "preco": 108900,
+    "fipe": 101695,
+    "margem": -7.1,
+    "elegivel": false
+  },
+  {
+    "id": 71997803,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA",
+    "ano": 2024,
+    "preco": 140900,
+    "fipe": 142891,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 71737860,
+    "marca": "BYD",
+    "modelo": "SONG PLUS",
+    "ano": 2026,
+    "preco": 219900,
+    "fipe": 225110,
+    "margem": 2.3,
+    "elegivel": false
+  },
+  {
+    "id": 70676809,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 159190,
+    "fipe": 161119,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70782296,
+    "marca": "RAM",
+    "modelo": "RAMPAGE",
+    "ano": 2024,
+    "preco": 186900,
+    "fipe": 192055,
+    "margem": 2.7,
+    "elegivel": false
+  },
+  {
+    "id": 70338787,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 139690,
+    "fipe": 174645,
+    "margem": 20,
+    "elegivel": true
+  },
+  {
+    "id": 71733255,
+    "marca": "GWM",
+    "modelo": "HAVAL H6",
+    "ano": 2024,
+    "preco": 196900,
+    "fipe": 207582,
+    "margem": 5.1,
+    "elegivel": true
+  },
+  {
+    "id": 72776599,
+    "marca": "FIAT",
+    "modelo": "STRADA",
+    "ano": 2025,
+    "preco": 118890,
+    "fipe": 114618,
+    "margem": -3.7,
+    "elegivel": false
+  },
+  {
+    "id": 71382855,
+    "marca": "CHEVROLET",
+    "modelo": "S10",
+    "ano": 2024,
+    "preco": 178900,
+    "fipe": 180513,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 72111808,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA CROSS",
+    "ano": 2026,
+    "preco": 182900,
+    "fipe": 193034,
+    "margem": 5.2,
+    "elegivel": true
+  },
+  {
+    "id": 71877150,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TIGUAN",
+    "ano": 2025,
+    "preco": 245000,
+    "fipe": 246898,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 71687069,
+    "marca": "HONDA",
+    "modelo": "CITY",
+    "ano": 2023,
+    "preco": 110999,
+    "fipe": 111903,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 72890698,
+    "marca": "PORSCHE",
+    "modelo": "911",
+    "ano": 2023,
+    "preco": 979000,
+    "fipe": 1061119,
+    "margem": 7.7,
+    "elegivel": true
+  },
+  {
+    "id": 70704948,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 111490,
+    "fipe": 118877,
+    "margem": 6.2,
+    "elegivel": true
+  },
+  {
+    "id": 67382421,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2024,
+    "preco": 105990,
+    "fipe": 110963,
+    "margem": 4.5,
+    "elegivel": false
+  },
+  {
+    "id": 72479761,
+    "marca": "HYUNDAI",
+    "modelo": "KONA",
+    "ano": 2026,
+    "preco": 179900,
+    "fipe": 185780,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 69261299,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2018,
+    "preco": 275890,
+    "fipe": 300209,
+    "margem": 8.1,
+    "elegivel": true
+  },
+  {
+    "id": 71563196,
+    "marca": "GWM",
+    "modelo": "HAVAL H6 GT",
+    "ano": 2025,
+    "preco": 234900,
+    "fipe": 245856,
+    "margem": 4.5,
+    "elegivel": false
+  },
+  {
+    "id": 71538346,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "C 200",
+    "ano": 2023,
+    "preco": 269900,
+    "fipe": 249080,
+    "margem": -8.4,
+    "elegivel": false
+  },
+  {
+    "id": 72257412,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2019,
+    "preco": 107990,
+    "fipe": 108964,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 71388086,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2026,
+    "preco": 259500,
+    "fipe": 262562,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72020870,
+    "marca": "JAGUAR",
+    "modelo": "E-PACE",
+    "ano": 2023,
+    "preco": 250000,
+    "fipe": 270239,
+    "margem": 7.5,
+    "elegivel": true
+  },
+  {
+    "id": 71184078,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2023,
+    "preco": 138990,
+    "fipe": 143064,
+    "margem": 2.8,
+    "elegivel": false
+  },
+  {
+    "id": 72595028,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2024,
+    "preco": 237950,
+    "fipe": 259569,
+    "margem": 8.3,
+    "elegivel": true
+  },
+  {
+    "id": 70635874,
+    "marca": "FIAT",
+    "modelo": "STRADA",
+    "ano": 2025,
+    "preco": 85390,
+    "fipe": 86660,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 72106910,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2022,
+    "preco": 129880,
+    "fipe": 137607,
+    "margem": 5.6,
+    "elegivel": true
+  },
+  {
+    "id": 72234124,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER EVOQUE",
+    "ano": 2015,
+    "preco": 82900,
+    "fipe": 96372,
+    "margem": 14,
+    "elegivel": true
+  },
+  {
+    "id": 72766169,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2023,
+    "preco": 164990,
+    "fipe": 179385,
+    "margem": 8,
+    "elegivel": true
+  },
+  {
+    "id": 72117809,
+    "marca": "LAND ROVER",
+    "modelo": "DISCOVERY",
+    "ano": 2019,
+    "preco": 254900,
+    "fipe": 263297,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 72114157,
+    "marca": "CHEVROLET",
+    "modelo": "EQUINOX",
+    "ano": 2022,
+    "preco": 128900,
+    "fipe": 132245,
+    "margem": 2.5,
+    "elegivel": false
+  },
+  {
+    "id": 68778340,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER",
+    "ano": 2025,
+    "preco": 1190880,
+    "fipe": 1014475,
+    "margem": -17.4,
+    "elegivel": false
+  },
+  {
+    "id": 70638560,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2025,
+    "preco": 71790,
+    "fipe": 73476,
+    "margem": 2.3,
+    "elegivel": false
+  },
+  {
+    "id": 72826240,
+    "marca": "FIAT",
+    "modelo": "TITANO",
+    "ano": 2025,
+    "preco": 169000,
+    "fipe": 185250,
+    "margem": 8.8,
+    "elegivel": true
+  },
+  {
+    "id": 72097000,
+    "marca": "BMW",
+    "modelo": "X5",
+    "ano": 2018,
+    "preco": 179900,
+    "fipe": 188631,
+    "margem": 4.6,
+    "elegivel": false
+  },
+  {
+    "id": 71457684,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 159900,
+    "fipe": 164142,
+    "margem": 2.6,
+    "elegivel": false
+  },
+  {
+    "id": 72574845,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2025,
+    "preco": 279900,
+    "fipe": 297622,
+    "margem": 6,
+    "elegivel": true
+  },
+  {
+    "id": 71992530,
+    "marca": "MITSUBISHI",
+    "modelo": "PAJERO SPORT",
+    "ano": 2021,
+    "preco": 202890,
+    "fipe": 224909,
+    "margem": 9.8,
+    "elegivel": true
+  },
+  {
+    "id": 72215838,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "CLA 200",
+    "ano": 2015,
+    "preco": 97900,
+    "fipe": 82058,
+    "margem": -19.3,
+    "elegivel": false
+  },
+  {
+    "id": 72251695,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER VELAR",
+    "ano": 2019,
+    "preco": 279890,
+    "fipe": 136837,
+    "margem": -104.5,
+    "elegivel": false
+  },
+  {
+    "id": 72466296,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLE 53 AMG",
+    "ano": 2024,
+    "preco": 694900,
+    "fipe": 748784,
+    "margem": 7.2,
+    "elegivel": true
+  },
+  {
+    "id": 70347511,
+    "marca": "VOLKSWAGEN",
+    "modelo": "POLO",
+    "ano": 2025,
+    "preco": 74690,
+    "fipe": 76853,
+    "margem": 2.8,
+    "elegivel": false
+  },
+  {
+    "id": 67772849,
+    "marca": "FIAT",
+    "modelo": "TORO",
+    "ano": 2023,
+    "preco": 113900,
+    "fipe": 114604,
+    "margem": 0.6,
+    "elegivel": false
+  },
+  {
+    "id": 71916686,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2024,
+    "preco": 269900,
+    "fipe": 268444,
+    "margem": -0.5,
+    "elegivel": false
+  },
+  {
+    "id": 70471578,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TIGUAN",
+    "ano": 2024,
+    "preco": 191900,
+    "fipe": 217661,
+    "margem": 11.8,
+    "elegivel": true
+  },
+  {
+    "id": 70327989,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 104290,
+    "fipe": 105514,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 71760458,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 127900,
+    "fipe": 129479,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72017664,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2019,
+    "preco": 107900,
+    "fipe": 108964,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 71884089,
+    "marca": "TROLLER",
+    "modelo": "T4",
+    "ano": 2013,
+    "preco": 101900,
+    "fipe": 115451,
+    "margem": 11.7,
+    "elegivel": true
+  },
+  {
+    "id": 71455457,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2026,
+    "preco": 97900,
+    "fipe": 107342,
+    "margem": 8.8,
+    "elegivel": true
+  },
+  {
+    "id": 67012650,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70365862,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72906854,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2022,
+    "preco": 208900,
+    "fipe": 219437,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 72240320,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER VELAR",
+    "ano": 2019,
+    "preco": 275000,
+    "fipe": 136837,
+    "margem": -101,
+    "elegivel": false
+  },
+  {
+    "id": 72906596,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLA 200",
+    "ano": 2026,
+    "preco": 328900,
+    "fipe": 336613,
+    "margem": 2.3,
+    "elegivel": false
+  },
+  {
+    "id": 70152514,
+    "marca": "CITROËN",
+    "modelo": "C3",
+    "ano": 2025,
+    "preco": 71900,
+    "fipe": 73530,
+    "margem": 2.2,
+    "elegivel": false
+  },
+  {
+    "id": 71882036,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER VELAR",
+    "ano": 2019,
+    "preco": 259900,
+    "fipe": 136837,
+    "margem": -89.9,
+    "elegivel": false
+  },
+  {
+    "id": 72110289,
+    "marca": "FORD",
+    "modelo": "F-150",
+    "ano": 2023,
+    "preco": 349800,
+    "fipe": 354984,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 71472162,
+    "marca": "PORSCHE",
+    "modelo": "CAYENNE",
+    "ano": 2023,
+    "preco": 575000,
+    "fipe": 629294,
+    "margem": 8.6,
+    "elegivel": true
+  },
+  {
+    "id": 72016502,
+    "marca": "PORSCHE",
+    "modelo": "718",
+    "ano": 2024,
+    "preco": 550000,
+    "fipe": 590521,
+    "margem": 6.9,
+    "elegivel": true
+  },
+  {
+    "id": 72099899,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER SPORT",
+    "ano": 2014,
+    "preco": 149900,
+    "fipe": 152950,
+    "margem": 2,
+    "elegivel": false
+  },
+  {
+    "id": 71906921,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER EVOQUE",
+    "ano": 2014,
+    "preco": 95900,
+    "fipe": 86825,
+    "margem": -10.5,
+    "elegivel": false
+  },
+  {
+    "id": 71764348,
+    "marca": "AUDI",
+    "modelo": "RS Q3",
+    "ano": 2021,
+    "preco": 389900,
+    "fipe": 373945,
+    "margem": -4.3,
+    "elegivel": false
+  },
+  {
+    "id": 68728345,
+    "marca": "PORSCHE",
+    "modelo": "911",
+    "ano": 2024,
+    "preco": 899500,
+    "fipe": 1116479,
+    "margem": 19.4,
+    "elegivel": true
+  },
+  {
+    "id": 71186695,
+    "marca": "AUDI",
+    "modelo": "RS6",
+    "ano": 2023,
+    "preco": 849000,
+    "fipe": 951678,
+    "margem": 10.8,
+    "elegivel": true
+  },
+  {
+    "id": 67270392,
+    "marca": "VOLKSWAGEN",
+    "modelo": "NIVUS",
+    "ano": 2024,
+    "preco": 116590,
+    "fipe": 117338,
+    "margem": 0.6,
+    "elegivel": false
+  },
+  {
+    "id": 72674691,
+    "marca": "LAND ROVER",
+    "modelo": "DISCOVERY SPORT",
+    "ano": 2017,
+    "preco": 95900,
+    "fipe": 109516,
+    "margem": 12.4,
+    "elegivel": true
+  },
+  {
+    "id": 71996254,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2023,
+    "preco": 95000,
+    "fipe": 99845,
+    "margem": 4.9,
+    "elegivel": false
+  },
+  {
+    "id": 72002014,
+    "marca": "LEXUS",
+    "modelo": "RX 450h+",
+    "ano": 2025,
+    "preco": 469900,
+    "fipe": 356408,
+    "margem": -31.8,
+    "elegivel": false
+  },
+  {
+    "id": 71887216,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2022,
+    "preco": 154900,
+    "fipe": 159960,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 72080348,
+    "marca": "FORD",
+    "modelo": "TRANSIT",
+    "ano": 2024,
+    "preco": 195900,
+    "fipe": 229284,
+    "margem": 14.6,
+    "elegivel": true
+  },
+  {
+    "id": 71999430,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA",
+    "ano": 2025,
+    "preco": 153900,
+    "fipe": 158528,
+    "margem": 2.9,
+    "elegivel": false
+  },
+  {
+    "id": 71949794,
+    "marca": "FORD",
+    "modelo": "F-250",
+    "ano": 2007,
+    "preco": 159990,
+    "fipe": 169771,
+    "margem": 5.8,
+    "elegivel": true
+  },
+  {
+    "id": 68644558,
+    "marca": "JAGUAR",
+    "modelo": "F-TYPE",
+    "ano": 2023,
+    "preco": 419000,
+    "fipe": 471342,
+    "margem": 11.1,
+    "elegivel": true
+  },
+  {
+    "id": 69697871,
+    "marca": "PORSCHE",
+    "modelo": "CAYENNE",
+    "ano": 2022,
+    "preco": 505000,
+    "fipe": 536465,
+    "margem": 5.9,
+    "elegivel": true
+  },
+  {
+    "id": 71454708,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2024,
+    "preco": 149900,
+    "fipe": 155993,
+    "margem": 3.9,
+    "elegivel": false
+  },
+  {
+    "id": 72007398,
+    "marca": "BMW",
+    "modelo": "M8",
+    "ano": 2022,
+    "preco": 790000,
+    "fipe": 858108,
+    "margem": 7.9,
+    "elegivel": true
+  },
+  {
+    "id": 72228335,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLB 35 AMG",
+    "ano": 2023,
+    "preco": 309990,
+    "fipe": 352414,
+    "margem": 12,
+    "elegivel": true
+  },
+  {
+    "id": 72162608,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2019,
+    "preco": 99900,
+    "fipe": 108964,
+    "margem": 8.3,
+    "elegivel": true
+  },
+  {
+    "id": 71452479,
+    "marca": "HONDA",
+    "modelo": "CITY",
+    "ano": 2024,
+    "preco": 119900,
+    "fipe": 122084,
+    "margem": 1.8,
+    "elegivel": false
+  },
+  {
+    "id": 71890335,
+    "marca": "MINI",
+    "modelo": "COOPER",
+    "ano": 2026,
+    "preco": 297990,
+    "fipe": 309110,
+    "margem": 3.6,
+    "elegivel": false
+  },
+  {
+    "id": 71912770,
+    "marca": "AUDI",
+    "modelo": "SQ5",
+    "ano": 2018,
+    "preco": 209000,
+    "fipe": 223452,
+    "margem": 6.5,
+    "elegivel": true
+  },
+  {
+    "id": 71997399,
+    "marca": "TOYOTA",
+    "modelo": "RAV4",
+    "ano": 2023,
+    "preco": 228900,
+    "fipe": 241686,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 71898874,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 126990,
+    "fipe": 129479,
+    "margem": 1.9,
+    "elegivel": false
+  },
+  {
+    "id": 72233065,
+    "marca": "PORSCHE",
+    "modelo": "718",
+    "ano": 2024,
+    "preco": 649000,
+    "fipe": 685256,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 67385330,
+    "marca": "LEXUS",
+    "modelo": "RX 450h+",
+    "ano": 2026,
+    "preco": 609900,
+    "fipe": 413332,
+    "margem": -47.6,
+    "elegivel": false
+  },
+  {
+    "id": 72108620,
+    "marca": "VOLKSWAGEN",
+    "modelo": "SAVEIRO",
+    "ano": 2025,
+    "preco": 83000,
+    "fipe": 83621,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 71877559,
+    "marca": "NISSAN",
+    "modelo": "FRONTIER",
+    "ano": 2024,
+    "preco": 185000,
+    "fipe": 194178,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 72022217,
+    "marca": "LAND ROVER",
+    "modelo": "DISCOVERY SPORT",
+    "ano": 2018,
+    "preco": 110997,
+    "fipe": 120957,
+    "margem": 8.2,
+    "elegivel": true
+  },
+  {
+    "id": 71901267,
+    "marca": "BMW",
+    "modelo": "X5",
+    "ano": 2018,
+    "preco": 179900,
+    "fipe": 188631,
+    "margem": 4.6,
+    "elegivel": false
+  },
+  {
+    "id": 72119902,
+    "marca": "AUDI",
+    "modelo": "S3",
+    "ano": 2015,
+    "preco": 164990,
+    "fipe": 189938,
+    "margem": 13.1,
+    "elegivel": true
+  },
+  {
+    "id": 72117658,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2022,
+    "preco": 126999,
+    "fipe": 128036,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 71888127,
+    "marca": "JEEP",
+    "modelo": "GRAND CHEROKEE",
+    "ano": 2014,
+    "preco": 98900,
+    "fipe": 90480,
+    "margem": -9.3,
+    "elegivel": false
+  },
+  {
+    "id": 71897661,
+    "marca": "AUDI",
+    "modelo": "A3",
+    "ano": 2025,
+    "preco": 249990,
+    "fipe": 278773,
+    "margem": 10.3,
+    "elegivel": true
+  },
+  {
+    "id": 72256106,
+    "marca": "BMW",
+    "modelo": "428i",
+    "ano": 2016,
+    "preco": 138900,
+    "fipe": 151194,
+    "margem": 8.1,
+    "elegivel": true
+  },
+  {
+    "id": 71894607,
+    "marca": "PORSCHE",
+    "modelo": "TAYCAN",
+    "ano": 2025,
+    "preco": 749900,
+    "fipe": 869965,
+    "margem": 13.8,
+    "elegivel": true
+  },
+  {
+    "id": 72105193,
+    "marca": "FIAT",
+    "modelo": "PULSE",
+    "ano": 2024,
+    "preco": 96900,
+    "fipe": 99166,
+    "margem": 2.3,
+    "elegivel": false
+  },
+  {
+    "id": 72452224,
+    "marca": "MINI",
+    "modelo": "COUNTRYMAN",
+    "ano": 2011,
+    "preco": 79990,
+    "fipe": 90946,
+    "margem": 12,
+    "elegivel": true
+  },
+  {
+    "id": 71480566,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "CLA 200",
+    "ano": 2025,
+    "preco": 249900,
+    "fipe": 288635,
+    "margem": 13.4,
+    "elegivel": true
+  },
+  {
+    "id": 71995709,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER SPORT",
+    "ano": 2018,
+    "preco": 249990,
+    "fipe": 265065,
+    "margem": 5.7,
+    "elegivel": true
+  },
+  {
+    "id": 72003292,
+    "marca": "PORSCHE",
+    "modelo": "PANAMERA",
+    "ano": 2016,
+    "preco": 349000,
+    "fipe": 386972,
+    "margem": 9.8,
+    "elegivel": true
+  },
+  {
+    "id": 71896804,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TIGUAN",
+    "ano": 2024,
+    "preco": 205890,
+    "fipe": 217661,
+    "margem": 5.4,
+    "elegivel": true
+  },
+  {
+    "id": 72008592,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2025,
+    "preco": 304000,
+    "fipe": 299432,
+    "margem": -1.5,
+    "elegivel": false
+  },
+  {
+    "id": 72106988,
+    "marca": "HONDA",
+    "modelo": "CITY",
+    "ano": 2024,
+    "preco": 119800,
+    "fipe": 121177,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 72090869,
+    "marca": "PORSCHE",
+    "modelo": "CAYENNE",
+    "ano": 2019,
+    "preco": 299900,
+    "fipe": 341768,
+    "margem": 12.3,
+    "elegivel": true
+  },
+  {
+    "id": 71923270,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2022,
+    "preco": 209900,
+    "fipe": 196458,
+    "margem": -6.8,
+    "elegivel": false
+  },
+  {
+    "id": 72782951,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2018,
+    "preco": 215800,
+    "fipe": 217537,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 71862464,
+    "marca": "VOLKSWAGEN",
+    "modelo": "GOL",
+    "ano": 2022,
+    "preco": 48990,
+    "fipe": 52221,
+    "margem": 6.2,
+    "elegivel": true
+  },
+  {
+    "id": 72011074,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLA 250",
+    "ano": 2015,
+    "preco": 100877,
+    "fipe": 111082,
+    "margem": 9.2,
+    "elegivel": true
+  },
+  {
+    "id": 72023033,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2023,
+    "preco": 114900,
+    "fipe": 115550,
+    "margem": 0.6,
+    "elegivel": false
+  },
+  {
+    "id": 71910621,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "SLK 250",
+    "ano": 2013,
+    "preco": 182500,
+    "fipe": 75664,
+    "margem": -141.2,
+    "elegivel": false
+  },
+  {
+    "id": 71885281,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2024,
+    "preco": 459900,
+    "fipe": 474999,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 71000566,
+    "marca": "AUDI",
+    "modelo": "Q8",
+    "ano": 2019,
+    "preco": 299000,
+    "fipe": 324933,
+    "margem": 8,
+    "elegivel": true
+  },
+  {
+    "id": 72326589,
+    "marca": "HONDA",
+    "modelo": "HR-V",
+    "ano": 2025,
+    "preco": 136900,
+    "fipe": 144567,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 72325382,
+    "marca": "FORD",
+    "modelo": "BRONCO SPORT",
+    "ano": 2022,
+    "preco": 147900,
+    "fipe": 161661,
+    "margem": 8.5,
+    "elegivel": true
+  },
+  {
+    "id": 70470590,
+    "marca": "BMW",
+    "modelo": "X5",
+    "ano": 2025,
+    "preco": 639880,
+    "fipe": 667836,
+    "margem": 4.2,
+    "elegivel": false
+  },
+  {
+    "id": 72254285,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2024,
+    "preco": 269990,
+    "fipe": 268444,
+    "margem": -0.6,
+    "elegivel": false
+  },
+  {
+    "id": 72136149,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2018,
+    "preco": 88000,
+    "fipe": 88584,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 72250325,
+    "marca": "MITSUBISHI",
+    "modelo": "ECLIPSE CROSS",
+    "ano": 2025,
+    "preco": 167990,
+    "fipe": 170895,
+    "margem": 1.7,
+    "elegivel": false
+  },
+  {
+    "id": 70326229,
+    "marca": "RENAULT",
+    "modelo": "MASTER",
+    "ano": 2020,
+    "preco": 147800,
+    "fipe": 170803,
+    "margem": 13.5,
+    "elegivel": true
+  },
+  {
+    "id": 72024829,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2017,
+    "preco": 199990,
+    "fipe": 231584,
+    "margem": 13.6,
+    "elegivel": true
+  },
+  {
+    "id": 71923393,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2024,
+    "preco": 108000,
+    "fipe": 110963,
+    "margem": 2.7,
+    "elegivel": false
+  },
+  {
+    "id": 71879963,
+    "marca": "VOLVO",
+    "modelo": "XC40",
+    "ano": 2022,
+    "preco": 189900,
+    "fipe": 195731,
+    "margem": 3,
+    "elegivel": false
+  },
+  {
+    "id": 71994106,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2023,
+    "preco": 150150,
+    "fipe": 140439,
+    "margem": -6.9,
+    "elegivel": false
+  },
+  {
+    "id": 72117343,
+    "marca": "FORD",
+    "modelo": "BRONCO SPORT",
+    "ano": 2023,
+    "preco": 170000,
+    "fipe": 179625,
+    "margem": 5.4,
+    "elegivel": true
+  },
+  {
+    "id": 69422571,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER VELAR",
+    "ano": 2024,
+    "preco": 419880,
+    "fipe": 473100,
+    "margem": 11.2,
+    "elegivel": true
+  },
+  {
+    "id": 71788032,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER EVOQUE",
+    "ano": 2017,
+    "preco": 109900,
+    "fipe": 119081,
+    "margem": 7.7,
+    "elegivel": true
+  },
+  {
+    "id": 71733273,
+    "marca": "PEUGEOT",
+    "modelo": "2008",
+    "ano": 2025,
+    "preco": 114900,
+    "fipe": 120530,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 72000214,
+    "marca": "BMW",
+    "modelo": "118i",
+    "ano": 2024,
+    "preco": 219800,
+    "fipe": 244785,
+    "margem": 10.2,
+    "elegivel": true
+  },
+  {
+    "id": 71907421,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2018,
+    "preco": 79900,
+    "fipe": 84738,
+    "margem": 5.7,
+    "elegivel": true
+  },
+  {
+    "id": 71756880,
+    "marca": "TOYOTA",
+    "modelo": "ETIOS",
+    "ano": 2014,
+    "preco": 42990,
+    "fipe": 43433,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 71899350,
+    "marca": "AUDI",
+    "modelo": "Q7",
+    "ano": 2015,
+    "preco": 109900,
+    "fipe": 123241,
+    "margem": 10.8,
+    "elegivel": true
+  },
+  {
+    "id": 72006174,
+    "marca": "BMW",
+    "modelo": "330e",
+    "ano": 2025,
+    "preco": 355950,
+    "fipe": 368077,
+    "margem": 3.3,
+    "elegivel": false
+  },
+  {
+    "id": 62293769,
+    "marca": "JEEP",
+    "modelo": "GLADIATOR",
+    "ano": 2023,
+    "preco": 295000,
+    "fipe": 344446,
+    "margem": 14.4,
+    "elegivel": true
+  },
+  {
+    "id": 72331086,
+    "marca": "AUDI",
+    "modelo": "Q7",
+    "ano": 2022,
+    "preco": 329990,
+    "fipe": 331028,
+    "margem": 0.3,
+    "elegivel": false
+  },
+  {
+    "id": 72045252,
+    "marca": "PORSCHE",
+    "modelo": "718",
+    "ano": 2020,
+    "preco": 545900,
+    "fipe": 572978,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 72773281,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2026,
+    "preco": 119900,
+    "fipe": 107354,
+    "margem": -11.7,
+    "elegivel": false
+  },
+  {
+    "id": 72254250,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2018,
+    "preco": 99900,
+    "fipe": 100808,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 71026507,
+    "marca": "LAND ROVER",
+    "modelo": "DISCOVERY SPORT",
+    "ano": 2019,
+    "preco": 119890,
+    "fipe": 131623,
+    "margem": 8.9,
+    "elegivel": true
+  },
+  {
+    "id": 71013540,
+    "marca": "PORSCHE",
+    "modelo": "911",
+    "ano": 2024,
+    "preco": 798000,
+    "fipe": 1116479,
+    "margem": 28.5,
+    "elegivel": true
+  },
+  {
+    "id": 72217963,
+    "marca": "BMW",
+    "modelo": "X6",
+    "ano": 2025,
+    "preco": 699900,
+    "fipe": 733575,
+    "margem": 4.6,
+    "elegivel": false
+  },
+  {
+    "id": 70663968,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 145390,
+    "fipe": 174645,
+    "margem": 16.8,
+    "elegivel": true
+  },
+  {
+    "id": 71873165,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2026,
+    "preco": 152980,
+    "fipe": 161463,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 72114557,
+    "marca": "FIAT",
+    "modelo": "FASTBACK",
+    "ano": 2023,
+    "preco": 109900,
+    "fipe": 112261,
+    "margem": 2.1,
+    "elegivel": false
+  },
+  {
+    "id": 72467453,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 71756896,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLE 450d",
+    "ano": 2025,
+    "preco": 619900,
+    "fipe": 630311,
+    "margem": 1.7,
+    "elegivel": false
+  },
+  {
+    "id": 72462730,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 103790,
+    "fipe": 105514,
+    "margem": 1.6,
+    "elegivel": false
+  },
+  {
+    "id": 65708368,
+    "marca": "JAGUAR",
+    "modelo": "E-PACE",
+    "ano": 2023,
+    "preco": 259000,
+    "fipe": 270239,
+    "margem": 4.2,
+    "elegivel": false
+  },
+  {
+    "id": 72030411,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2025,
+    "preco": 219700,
+    "fipe": 234929,
+    "margem": 6.5,
+    "elegivel": true
+  },
+  {
+    "id": 65771707,
+    "marca": "HYUNDAI",
+    "modelo": "CRETA",
+    "ano": 2025,
+    "preco": 149900,
+    "fipe": 151364,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 72111471,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2020,
+    "preco": 103690,
+    "fipe": 105434,
+    "margem": 1.7,
+    "elegivel": false
+  },
+  {
+    "id": 67270976,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2024,
+    "preco": 117990,
+    "fipe": 108140,
+    "margem": -9.1,
+    "elegivel": false
+  },
+  {
+    "id": 72907104,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2022,
+    "preco": 117990,
+    "fipe": 128036,
+    "margem": 7.8,
+    "elegivel": true
+  },
+  {
+    "id": 72001723,
+    "marca": "BMW",
+    "modelo": "330e",
+    "ano": 2024,
+    "preco": 299990,
+    "fipe": 317068,
+    "margem": 5.4,
+    "elegivel": true
+  },
+  {
+    "id": 71742326,
+    "marca": "NISSAN",
+    "modelo": "SENTRA",
+    "ano": 2025,
+    "preco": 131000,
+    "fipe": 132601,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 71910484,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLE 63 AMG",
+    "ano": 2019,
+    "preco": 469900,
+    "fipe": 528451,
+    "margem": 11.1,
+    "elegivel": true
+  },
+  {
+    "id": 71389893,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TIGUAN",
+    "ano": 2019,
+    "preco": 135890,
+    "fipe": 143847,
+    "margem": 5.5,
+    "elegivel": true
+  },
+  {
+    "id": 71793460,
+    "marca": "HYUNDAI",
+    "modelo": "HB20",
+    "ano": 2022,
+    "preco": 66000,
+    "fipe": 66565,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 70635645,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 161390,
+    "fipe": 164142,
+    "margem": 1.7,
+    "elegivel": false
+  },
+  {
+    "id": 72224640,
+    "marca": "CHEVROLET",
+    "modelo": "SILVERADO",
+    "ano": 2024,
+    "preco": 386900,
+    "fipe": 395652,
+    "margem": 2.2,
+    "elegivel": false
+  },
+  {
+    "id": 72110445,
+    "marca": "VOLKSWAGEN",
+    "modelo": "POLO",
+    "ano": 2019,
+    "preco": 68900,
+    "fipe": 71529,
+    "margem": 3.7,
+    "elegivel": false
+  },
+  {
+    "id": 71471199,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2026,
+    "preco": 209900,
+    "fipe": 211038,
+    "margem": 0.5,
+    "elegivel": false
+  },
+  {
+    "id": 72479034,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2020,
+    "preco": 97990,
+    "fipe": 99182,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70663618,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 162690,
+    "fipe": 164142,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 71917259,
+    "marca": "LEXUS",
+    "modelo": "NX 350h",
+    "ano": 2023,
+    "preco": 259900,
+    "fipe": 290421,
+    "margem": 10.5,
+    "elegivel": true
+  },
+  {
+    "id": 72237602,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2018,
+    "preco": 89990,
+    "fipe": 93014,
+    "margem": 3.3,
+    "elegivel": false
+  },
+  {
+    "id": 70328423,
+    "marca": "VOLKSWAGEN",
+    "modelo": "POLO",
+    "ano": 2024,
+    "preco": 70990,
+    "fipe": 74562,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 72028246,
+    "marca": "NISSAN",
+    "modelo": "VERSA",
+    "ano": 2017,
+    "preco": 55500,
+    "fipe": 57135,
+    "margem": 2.9,
+    "elegivel": false
+  },
+  {
+    "id": 72672681,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 114800,
+    "fipe": 120037,
+    "margem": 4.4,
+    "elegivel": false
+  },
+  {
+    "id": 72674608,
+    "marca": "RAM",
+    "modelo": "2500",
+    "ano": 2021,
+    "preco": 283900,
+    "fipe": 321534,
+    "margem": 11.7,
+    "elegivel": true
+  },
+  {
+    "id": 72100783,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2018,
+    "preco": 83500,
+    "fipe": 84264,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 72102381,
+    "marca": "PORSCHE",
+    "modelo": "BOXSTER",
+    "ano": 2011,
+    "preco": 349990,
+    "fipe": 359321,
+    "margem": 2.6,
+    "elegivel": false
+  },
+  {
+    "id": 70245765,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 136890,
+    "fipe": 141665,
+    "margem": 3.4,
+    "elegivel": false
+  },
+  {
+    "id": 72911551,
+    "marca": "FORD",
+    "modelo": "MAVERICK",
+    "ano": 2025,
+    "preco": 212900,
+    "fipe": 218386,
+    "margem": 2.5,
+    "elegivel": false
+  },
+  {
+    "id": 72019384,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2018,
+    "preco": 99900,
+    "fipe": 100808,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 72325014,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER SPORT",
+    "ano": 2020,
+    "preco": 299000,
+    "fipe": 313633,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 71914281,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 160690,
+    "fipe": 164142,
+    "margem": 2.1,
+    "elegivel": false
+  },
+  {
+    "id": 71737665,
+    "marca": "CHEVROLET",
+    "modelo": "EQUINOX",
+    "ano": 2026,
+    "preco": 248000,
+    "fipe": 249549,
+    "margem": 0.6,
+    "elegivel": false
+  },
+  {
+    "id": 72575743,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 113900,
+    "fipe": 118877,
+    "margem": 4.2,
+    "elegivel": false
+  },
+  {
+    "id": 70365807,
+    "marca": "VOLKSWAGEN",
+    "modelo": "NIVUS",
+    "ano": 2025,
+    "preco": 129190,
+    "fipe": 129944,
+    "margem": 0.6,
+    "elegivel": false
+  },
+  {
+    "id": 70633492,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70642994,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70707368,
+    "marca": "BMW",
+    "modelo": "X1",
+    "ano": 2026,
+    "preco": 309900,
+    "fipe": 289414,
+    "margem": -7.1,
+    "elegivel": false
+  },
+  {
+    "id": 72029216,
+    "marca": "CHEVROLET",
+    "modelo": "EQUINOX",
+    "ano": 2022,
+    "preco": 129900,
+    "fipe": 132245,
+    "margem": 1.8,
+    "elegivel": false
+  },
+  {
+    "id": 71789544,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2026,
+    "preco": 129900,
+    "fipe": 117996,
+    "margem": -10.1,
+    "elegivel": false
+  },
+  {
+    "id": 72684033,
+    "marca": "RAM",
+    "modelo": "RAMPAGE",
+    "ano": 2026,
+    "preco": 189990,
+    "fipe": 198726,
+    "margem": 4.4,
+    "elegivel": false
+  },
+  {
+    "id": 72780479,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 109990,
+    "fipe": 120037,
+    "margem": 8.4,
+    "elegivel": true
+  },
+  {
+    "id": 70334210,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2024,
+    "preco": 131590,
+    "fipe": 150989,
+    "margem": 12.8,
+    "elegivel": true
+  },
+  {
+    "id": 70684090,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2023,
+    "preco": 99900,
+    "fipe": 102528,
+    "margem": 2.6,
+    "elegivel": false
+  },
+  {
+    "id": 72002040,
+    "marca": "LEXUS",
+    "modelo": "RX 500h",
+    "ano": 2025,
+    "preco": 469900,
+    "fipe": 356408,
+    "margem": -31.8,
+    "elegivel": false
+  },
+  {
+    "id": 66624364,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2023,
+    "preco": 155790,
+    "fipe": 158287,
+    "margem": 1.6,
+    "elegivel": false
+  },
+  {
+    "id": 67271609,
+    "marca": "HYUNDAI",
+    "modelo": "HB20",
+    "ano": 2025,
+    "preco": 69490,
+    "fipe": 74319,
+    "margem": 6.5,
+    "elegivel": true
+  },
+  {
+    "id": 72100414,
+    "marca": "HONDA",
+    "modelo": "HR-V",
+    "ano": 2020,
+    "preco": 122000,
+    "fipe": 124145,
+    "margem": 1.7,
+    "elegivel": false
+  },
+  {
+    "id": 70941279,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 144190,
+    "fipe": 174645,
+    "margem": 17.4,
+    "elegivel": true
+  },
+  {
+    "id": 70806233,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2024,
+    "preco": 158790,
+    "fipe": 161119,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 72251738,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER VELAR",
+    "ano": 2020,
+    "preco": 289890,
+    "fipe": 549844,
+    "margem": 47.3,
+    "elegivel": true
+  },
+  {
+    "id": 71742177,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2023,
+    "preco": 100900,
+    "fipe": 102528,
+    "margem": 1.6,
+    "elegivel": false
+  },
+  {
+    "id": 71885563,
+    "marca": "VOLVO",
+    "modelo": "EX90",
+    "ano": 2025,
+    "preco": 589900,
+    "fipe": 625628,
+    "margem": 5.7,
+    "elegivel": true
+  },
+  {
+    "id": 72478931,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA CROSS",
+    "ano": 2026,
+    "preco": 189900,
+    "fipe": 194700,
+    "margem": 2.5,
+    "elegivel": false
+  },
+  {
+    "id": 71636877,
+    "marca": "NISSAN",
+    "modelo": "KICKS",
+    "ano": 2023,
+    "preco": 97900,
+    "fipe": 100305,
+    "margem": 2.4,
+    "elegivel": false
+  },
+  {
+    "id": 70655939,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72887450,
+    "marca": "CAOA CHERY",
+    "modelo": "TIGGO 8",
+    "ano": 2022,
+    "preco": 124900,
+    "fipe": 124551,
+    "margem": -0.3,
+    "elegivel": false
+  },
+  {
+    "id": 70638522,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139690,
+    "fipe": 141665,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 70244141,
+    "marca": "VOLKSWAGEN",
+    "modelo": "NIVUS",
+    "ano": 2024,
+    "preco": 116090,
+    "fipe": 117338,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 72115320,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2024,
+    "preco": 112900,
+    "fipe": 108140,
+    "margem": -4.4,
+    "elegivel": false
+  },
+  {
+    "id": 71780193,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2025,
+    "preco": 279500,
+    "fipe": 297622,
+    "margem": 6.1,
+    "elegivel": true
+  },
+  {
+    "id": 60033209,
+    "marca": "PORSCHE",
+    "modelo": "718",
+    "ano": 2022,
+    "preco": 699000,
+    "fipe": 745111,
+    "margem": 6.2,
+    "elegivel": true
+  },
+  {
+    "id": 67912751,
+    "marca": "LAND ROVER",
+    "modelo": "DEFENDER",
+    "ano": 2024,
+    "preco": 539880,
+    "fipe": 602190,
+    "margem": 10.3,
+    "elegivel": true
+  },
+  {
+    "id": 71884979,
+    "marca": "VOLKSWAGEN",
+    "modelo": "JETTA",
+    "ano": 2018,
+    "preco": 104000,
+    "fipe": 104756,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 72009790,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2016,
+    "preco": 74000,
+    "fipe": 77629,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 70652948,
+    "marca": "CHEVROLET",
+    "modelo": "S10",
+    "ano": 2023,
+    "preco": 138990,
+    "fipe": 142635,
+    "margem": 2.6,
+    "elegivel": false
+  },
+  {
+    "id": 72112629,
+    "marca": "KIA",
+    "modelo": "SPORTAGE",
+    "ano": 2017,
+    "preco": 88497,
+    "fipe": 90518,
+    "margem": 2.2,
+    "elegivel": false
+  },
+  {
+    "id": 72880114,
+    "marca": "MITSUBISHI",
+    "modelo": "OUTLANDER",
+    "ano": 2022,
+    "preco": 114800,
+    "fipe": 123546,
+    "margem": 7.1,
+    "elegivel": true
+  },
+  {
+    "id": 72226849,
+    "marca": "VOLKSWAGEN",
+    "modelo": "NIVUS",
+    "ano": 2026,
+    "preco": 158999,
+    "fipe": 160683,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 72228988,
+    "marca": "AUDI",
+    "modelo": "A5",
+    "ano": 2025,
+    "preco": 304900,
+    "fipe": 350335,
+    "margem": 13,
+    "elegivel": true
+  },
+  {
+    "id": 70633506,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72015070,
+    "marca": "CAOA CHERY",
+    "modelo": "TIGGO 8 PRO",
+    "ano": 2023,
+    "preco": 160000,
+    "fipe": 112490,
+    "margem": -42.2,
+    "elegivel": false
+  },
+  {
+    "id": 72660974,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 94590,
+    "fipe": 96447,
+    "margem": 1.9,
+    "elegivel": false
+  },
+  {
+    "id": 72436228,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2026,
+    "preco": 259500,
+    "fipe": 262562,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70654163,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72112789,
+    "marca": "MITSUBISHI",
+    "modelo": "PAJERO TR4",
+    "ano": 2015,
+    "preco": 71000,
+    "fipe": 73791,
+    "margem": 3.8,
+    "elegivel": false
+  },
+  {
+    "id": 71689358,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2019,
+    "preco": 219000,
+    "fipe": 230107,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 71909128,
+    "marca": "AUDI",
+    "modelo": "A5",
+    "ano": 2025,
+    "preco": 323900,
+    "fipe": 350335,
+    "margem": 7.5,
+    "elegivel": true
+  },
+  {
+    "id": 71374272,
+    "marca": "FIAT",
+    "modelo": "FIORINO",
+    "ano": 2024,
+    "preco": 87900,
+    "fipe": 89667,
+    "margem": 2,
+    "elegivel": false
+  },
+  {
+    "id": 71481451,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 165900,
+    "fipe": 174645,
+    "margem": 5,
+    "elegivel": true
+  },
+  {
+    "id": 71930648,
+    "marca": "AUDI",
+    "modelo": "A3",
+    "ano": 2015,
+    "preco": 82000,
+    "fipe": 83754,
+    "margem": 2.1,
+    "elegivel": false
+  },
+  {
+    "id": 71997522,
+    "marca": "PEUGEOT",
+    "modelo": "208",
+    "ano": 2019,
+    "preco": 70900,
+    "fipe": 71555,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 71852976,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2025,
+    "preco": 87500,
+    "fipe": 93893,
+    "margem": 6.8,
+    "elegivel": true
+  },
+  {
+    "id": 71794830,
+    "marca": "MITSUBISHI",
+    "modelo": "PAJERO SPORT",
+    "ano": 2023,
+    "preco": 259890,
+    "fipe": 272882,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 72226393,
+    "marca": "MITSUBISHI",
+    "modelo": "ASX",
+    "ano": 2019,
+    "preco": 85000,
+    "fipe": 92819,
+    "margem": 8.4,
+    "elegivel": true
+  },
+  {
+    "id": 72098527,
+    "marca": "FIAT",
+    "modelo": "TORO",
+    "ano": 2022,
+    "preco": 99000,
+    "fipe": 99792,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 71458589,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2023,
+    "preco": 122900,
+    "fipe": 124222,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 72223162,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 134000,
+    "fipe": 136493,
+    "margem": 1.8,
+    "elegivel": false
+  },
+  {
+    "id": 72090150,
+    "marca": "CITROËN",
+    "modelo": "JUMPY",
+    "ano": 2022,
+    "preco": 149000,
+    "fipe": 158132,
+    "margem": 5.8,
+    "elegivel": true
+  },
+  {
+    "id": 71888714,
+    "marca": "CAOA CHERY",
+    "modelo": "TIGGO 7 PRO",
+    "ano": 2024,
+    "preco": 138000,
+    "fipe": 139870,
+    "margem": 1.3,
+    "elegivel": false
+  },
+  {
+    "id": 66023588,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2023,
+    "preco": 135790,
+    "fipe": 143064,
+    "margem": 5.1,
+    "elegivel": true
+  },
+  {
+    "id": 71766690,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2025,
+    "preco": 268500,
+    "fipe": 297622,
+    "margem": 9.8,
+    "elegivel": true
+  },
+  {
+    "id": 67675230,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "A 200",
+    "ano": 2025,
+    "preco": 285900,
+    "fipe": 310729,
+    "margem": 8,
+    "elegivel": true
+  },
+  {
+    "id": 72808005,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2019,
+    "preco": 76900,
+    "fipe": 78364,
+    "margem": 1.9,
+    "elegivel": false
+  },
+  {
+    "id": 71766758,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2020,
+    "preco": 144500,
+    "fipe": 148912,
+    "margem": 3,
+    "elegivel": false
+  },
+  {
+    "id": 70633530,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139690,
+    "fipe": 141665,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 72780258,
+    "marca": "FIAT",
+    "modelo": "FIORINO",
+    "ano": 2025,
+    "preco": 89990,
+    "fipe": 98269,
+    "margem": 8.4,
+    "elegivel": true
+  },
+  {
+    "id": 71542573,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 168800,
+    "fipe": 174645,
+    "margem": 3.3,
+    "elegivel": false
+  },
+  {
+    "id": 67789593,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 94990,
+    "fipe": 96447,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 72117010,
+    "marca": "RENAULT",
+    "modelo": "LOGAN",
+    "ano": 2017,
+    "preco": 33500,
+    "fipe": 35962,
+    "margem": 6.8,
+    "elegivel": true
+  },
+  {
+    "id": 71812562,
+    "marca": "NISSAN",
+    "modelo": "VERSA",
+    "ano": 2017,
+    "preco": 55000,
+    "fipe": 57135,
+    "margem": 3.7,
+    "elegivel": false
+  },
+  {
+    "id": 72208837,
+    "marca": "FIAT",
+    "modelo": "TORO",
+    "ano": 2019,
+    "preco": 95000,
+    "fipe": 101030,
+    "margem": 6,
+    "elegivel": true
+  },
+  {
+    "id": 70221736,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 140290,
+    "fipe": 174645,
+    "margem": 19.7,
+    "elegivel": true
+  },
+  {
+    "id": 71287926,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2026,
+    "preco": 309900,
+    "fipe": 316336,
+    "margem": 2,
+    "elegivel": false
+  },
+  {
+    "id": 72887843,
+    "marca": "AUDI",
+    "modelo": "Q3",
+    "ano": 2024,
+    "preco": 255900,
+    "fipe": 268444,
+    "margem": 4.7,
+    "elegivel": false
+  },
+  {
+    "id": 72675442,
+    "marca": "VOLKSWAGEN",
+    "modelo": "AMAROK",
+    "ano": 2024,
+    "preco": 229900,
+    "fipe": 236769,
+    "margem": 2.9,
+    "elegivel": false
+  },
+  {
+    "id": 72024659,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2020,
+    "preco": 180000,
+    "fipe": 193827,
+    "margem": 7.1,
+    "elegivel": true
+  },
+  {
+    "id": 71553750,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2024,
+    "preco": 117900,
+    "fipe": 108140,
+    "margem": -9,
+    "elegivel": false
+  },
+  {
+    "id": 71879312,
+    "marca": "NISSAN",
+    "modelo": "KICKS",
+    "ano": 2022,
+    "preco": 82000,
+    "fipe": 93021,
+    "margem": 11.8,
+    "elegivel": true
+  },
+  {
+    "id": 72462739,
+    "marca": "CHEVROLET",
+    "modelo": "CAMARO",
+    "ano": 2020,
+    "preco": 369900,
+    "fipe": 392457,
+    "margem": 5.7,
+    "elegivel": true
+  },
+  {
+    "id": 71766553,
+    "marca": "HYUNDAI",
+    "modelo": "TUCSON",
+    "ano": 2025,
+    "preco": 148900,
+    "fipe": 162001,
+    "margem": 8.1,
+    "elegivel": true
+  },
+  {
+    "id": 71742786,
+    "marca": "MITSUBISHI",
+    "modelo": "ECLIPSE CROSS",
+    "ano": 2019,
+    "preco": 101000,
+    "fipe": 106731,
+    "margem": 5.4,
+    "elegivel": true
+  },
+  {
+    "id": 71925574,
+    "marca": "FORD",
+    "modelo": "FUSION",
+    "ano": 2018,
+    "preco": 106900,
+    "fipe": 89850,
+    "margem": -19,
+    "elegivel": false
+  },
+  {
+    "id": 71568001,
+    "marca": "VOLKSWAGEN",
+    "modelo": "AMAROK",
+    "ano": 2023,
+    "preco": 210900,
+    "fipe": 165159,
+    "margem": -27.7,
+    "elegivel": false
+  },
+  {
+    "id": 70635408,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 70633379,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 71907837,
+    "marca": "VOLKSWAGEN",
+    "modelo": "AMAROK",
+    "ano": 2018,
+    "preco": 127000,
+    "fipe": 133982,
+    "margem": 5.2,
+    "elegivel": true
+  },
+  {
+    "id": 68470129,
+    "marca": "LAND ROVER",
+    "modelo": "DEFENDER",
+    "ano": 2026,
+    "preco": 899990,
+    "fipe": 801042,
+    "margem": -12.4,
+    "elegivel": false
+  },
+  {
+    "id": 51784377,
+    "marca": "CHEVROLET",
+    "modelo": "S10",
+    "ano": 2018,
+    "preco": 129900,
+    "fipe": 133301,
+    "margem": 2.6,
+    "elegivel": false
+  },
+  {
+    "id": 72675985,
+    "marca": "CAOA CHERY",
+    "modelo": "TIGGO 8",
+    "ano": 2022,
+    "preco": 119900,
+    "fipe": 124551,
+    "margem": 3.7,
+    "elegivel": false
+  },
+  {
+    "id": 70642778,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 122890,
+    "fipe": 129479,
+    "margem": 5.1,
+    "elegivel": true
+  },
+  {
+    "id": 72224900,
+    "marca": "VOLKSWAGEN",
+    "modelo": "AMAROK",
+    "ano": 2021,
+    "preco": 139999,
+    "fipe": 160799,
+    "margem": 12.9,
+    "elegivel": true
+  },
+  {
+    "id": 71881108,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "GLB 200",
+    "ano": 2022,
+    "preco": 186890,
+    "fipe": 190682,
+    "margem": 2,
+    "elegivel": false
+  },
+  {
+    "id": 70664402,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 117590,
+    "fipe": 120037,
+    "margem": 2,
+    "elegivel": false
+  },
+  {
+    "id": 72000143,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 129900,
+    "fipe": 120037,
+    "margem": -8.2,
+    "elegivel": false
+  },
+  {
+    "id": 71897411,
+    "marca": "MINI",
+    "modelo": "COOPER",
+    "ano": 2013,
+    "preco": 75900,
+    "fipe": 80935,
+    "margem": 6.2,
+    "elegivel": true
+  },
+  {
+    "id": 72226912,
+    "marca": "VOLKSWAGEN",
+    "modelo": "GOLF",
+    "ano": 2014,
+    "preco": 75000,
+    "fipe": 76070,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 71766612,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2024,
+    "preco": 383800,
+    "fipe": 275593,
+    "margem": -39.3,
+    "elegivel": false
+  },
+  {
+    "id": 72022264,
+    "marca": "JAGUAR",
+    "modelo": "E-PACE",
+    "ano": 2019,
+    "preco": 139900,
+    "fipe": 158018,
+    "margem": 11.5,
+    "elegivel": true
+  },
+  {
+    "id": 72237598,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2024,
+    "preco": 102890,
+    "fipe": 110963,
+    "margem": 7.3,
+    "elegivel": true
+  },
+  {
+    "id": 72838240,
+    "marca": "VOLKSWAGEN",
+    "modelo": "POLO",
+    "ano": 2024,
+    "preco": 84300,
+    "fipe": 89416,
+    "margem": 5.7,
+    "elegivel": true
+  },
+  {
+    "id": 70376872,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TAOS",
+    "ano": 2023,
+    "preco": 136690,
+    "fipe": 143064,
+    "margem": 4.5,
+    "elegivel": false
+  },
+  {
+    "id": 71880763,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2015,
+    "preco": 135000,
+    "fipe": 148496,
+    "margem": 9.1,
+    "elegivel": true
+  },
+  {
+    "id": 71292345,
+    "marca": "BMW",
+    "modelo": "X1",
+    "ano": 2023,
+    "preco": 249800,
+    "fipe": 262451,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 72110577,
+    "marca": "MITSUBISHI",
+    "modelo": "ASX",
+    "ano": 2020,
+    "preco": 98990,
+    "fipe": 102452,
+    "margem": 3.4,
+    "elegivel": false
+  },
+  {
+    "id": 72882705,
+    "marca": "NISSAN",
+    "modelo": "FRONTIER",
+    "ano": 2024,
+    "preco": 191777,
+    "fipe": 150550,
+    "margem": -27.4,
+    "elegivel": false
+  },
+  {
+    "id": 69344604,
+    "marca": "BMW",
+    "modelo": "X2",
+    "ano": 2019,
+    "preco": 154990,
+    "fipe": 212372,
+    "margem": 27,
+    "elegivel": true
+  },
+  {
+    "id": 72674638,
+    "marca": "VOLKSWAGEN",
+    "modelo": "VIRTUS",
+    "ano": 2024,
+    "preco": 89900,
+    "fipe": 106086,
+    "margem": 15.3,
+    "elegivel": true
+  },
+  {
+    "id": 72479334,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 107980,
+    "fipe": 108541,
+    "margem": 0.5,
+    "elegivel": false
+  },
+  {
+    "id": 67585729,
+    "marca": "RAM",
+    "modelo": "1500",
+    "ano": 2025,
+    "preco": 499880,
+    "fipe": 519611,
+    "margem": 3.8,
+    "elegivel": false
+  },
+  {
+    "id": 71538548,
+    "marca": "FIAT",
+    "modelo": "STRADA",
+    "ano": 2025,
+    "preco": 94900,
+    "fipe": 108497,
+    "margem": 12.5,
+    "elegivel": true
+  },
+  {
+    "id": 71999855,
+    "marca": "LAND ROVER",
+    "modelo": "DISCOVERY",
+    "ano": 2018,
+    "preco": 229900,
+    "fipe": 247111,
+    "margem": 7,
+    "elegivel": true
+  },
+  {
+    "id": 70856802,
+    "marca": "FORD",
+    "modelo": "ECOSPORT",
+    "ano": 2019,
+    "preco": 64900,
+    "fipe": 66444,
+    "margem": 2.3,
+    "elegivel": false
+  },
+  {
+    "id": 64033710,
+    "marca": "NISSAN",
+    "modelo": "SENTRA",
+    "ano": 2024,
+    "preco": 122290,
+    "fipe": 123392,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 72780345,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 89990,
+    "fipe": 96447,
+    "margem": 6.7,
+    "elegivel": true
+  },
+  {
+    "id": 72089670,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2022,
+    "preco": 369990,
+    "fipe": 407799,
+    "margem": 9.3,
+    "elegivel": true
+  },
+  {
+    "id": 71745232,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TIGUAN",
+    "ano": 2021,
+    "preco": 153700,
+    "fipe": 165889,
+    "margem": 7.3,
+    "elegivel": true
+  },
+  {
+    "id": 71991902,
+    "marca": "FORD",
+    "modelo": "FOCUS",
+    "ano": 2016,
+    "preco": 58000,
+    "fipe": 56952,
+    "margem": -1.8,
+    "elegivel": false
+  },
+  {
+    "id": 72334540,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2026,
+    "preco": 159900,
+    "fipe": 167011,
+    "margem": 4.3,
+    "elegivel": false
+  },
+  {
+    "id": 67863771,
+    "marca": "PORSCHE",
+    "modelo": "911",
+    "ano": 2021,
+    "preco": 845000,
+    "fipe": 892346,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 71935300,
+    "marca": "TOYOTA",
+    "modelo": "HIACE",
+    "ano": 2026,
+    "preco": 310491,
+    "fipe": 327125,
+    "margem": 5.1,
+    "elegivel": true
+  },
+  {
+    "id": 70149144,
+    "marca": "FIAT",
+    "modelo": "PULSE",
+    "ano": 2024,
+    "preco": 88900,
+    "fipe": 92670,
+    "margem": 4.1,
+    "elegivel": false
+  },
+  {
+    "id": 70638134,
+    "marca": "VOLKSWAGEN",
+    "modelo": "NIVUS",
+    "ano": 2025,
+    "preco": 126890,
+    "fipe": 129944,
+    "margem": 2.4,
+    "elegivel": false
+  },
+  {
+    "id": 72584267,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2021,
+    "preco": 98900,
+    "fipe": 104030,
+    "margem": 4.9,
+    "elegivel": false
+  },
+  {
+    "id": 71399020,
+    "marca": "CHEVROLET",
+    "modelo": "SPIN",
+    "ano": 2025,
+    "preco": 120990,
+    "fipe": 124030,
+    "margem": 2.5,
+    "elegivel": false
+  },
+  {
+    "id": 72263256,
+    "marca": "VOLVO",
+    "modelo": "EX90",
+    "ano": 2025,
+    "preco": 569950,
+    "fipe": 625628,
+    "margem": 8.9,
+    "elegivel": true
+  },
+  {
+    "id": 66749744,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "C 200",
+    "ano": 2024,
+    "preco": 288880,
+    "fipe": 262726,
+    "margem": -10,
+    "elegivel": false
+  },
+  {
+    "id": 70655369,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 135590,
+    "fipe": 141665,
+    "margem": 4.3,
+    "elegivel": false
+  },
+  {
+    "id": 70638513,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139690,
+    "fipe": 141665,
+    "margem": 1.4,
+    "elegivel": false
+  },
+  {
+    "id": 71784477,
+    "marca": "RAM",
+    "modelo": "RAMPAGE",
+    "ano": 2024,
+    "preco": 185890,
+    "fipe": 192055,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 66200905,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER",
+    "ano": 2025,
+    "preco": 1710000,
+    "fipe": 1014475,
+    "margem": -68.6,
+    "elegivel": false
+  },
+  {
+    "id": 72481278,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2024,
+    "preco": 89900,
+    "fipe": 92985,
+    "margem": 3.3,
+    "elegivel": false
+  },
+  {
+    "id": 72475843,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2025,
+    "preco": 166900,
+    "fipe": 168388,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 67632425,
+    "marca": "TOYOTA",
+    "modelo": "HILUX SW4",
+    "ano": 2025,
+    "preco": 359800,
+    "fipe": 373813,
+    "margem": 3.7,
+    "elegivel": false
+  },
+  {
+    "id": 72092203,
+    "marca": "FIAT",
+    "modelo": "TORO",
+    "ano": 2018,
+    "preco": 83990,
+    "fipe": 84831,
+    "margem": 1,
+    "elegivel": false
+  },
+  {
+    "id": 70638754,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 71890148,
+    "marca": "BMW",
+    "modelo": "645CI",
+    "ano": 2005,
+    "preco": 129900,
+    "fipe": 140552,
+    "margem": 7.6,
+    "elegivel": true
+  },
+  {
+    "id": 71805518,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2020,
+    "preco": 83500,
+    "fipe": 84576,
+    "margem": 1.3,
+    "elegivel": false
+  },
+  {
+    "id": 72477921,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER SPORT",
+    "ano": 2022,
+    "preco": 379950,
+    "fipe": 384754,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72116180,
+    "marca": "RAM",
+    "modelo": "RAMPAGE",
+    "ano": 2024,
+    "preco": 185900,
+    "fipe": 192055,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 71129912,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 117590,
+    "fipe": 120037,
+    "margem": 2,
+    "elegivel": false
+  },
+  {
+    "id": 71018329,
+    "marca": "BMW",
+    "modelo": "M3",
+    "ano": 2024,
+    "preco": 645000,
+    "fipe": 650345,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 72557197,
+    "marca": "FORD",
+    "modelo": "RANGER",
+    "ano": 2026,
+    "preco": 259500,
+    "fipe": 262562,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72088557,
+    "marca": "LEXUS",
+    "modelo": "NX 350h",
+    "ano": 2023,
+    "preco": 264900,
+    "fipe": 302750,
+    "margem": 12.5,
+    "elegivel": true
+  },
+  {
+    "id": 71761872,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 116990,
+    "fipe": 129479,
+    "margem": 9.6,
+    "elegivel": true
+  },
+  {
+    "id": 72043483,
+    "marca": "VOLKSWAGEN",
+    "modelo": "GOLF",
+    "ano": 2015,
+    "preco": 66000,
+    "fipe": 73457,
+    "margem": 10.2,
+    "elegivel": true
+  },
+  {
+    "id": 72586801,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER EVOQUE",
+    "ano": 2018,
+    "preco": 140990,
+    "fipe": 167128,
+    "margem": 15.6,
+    "elegivel": true
+  },
+  {
+    "id": 72440835,
+    "marca": "NISSAN",
+    "modelo": "KICKS",
+    "ano": 2022,
+    "preco": 91900,
+    "fipe": 98914,
+    "margem": 7.1,
+    "elegivel": true
+  },
+  {
+    "id": 71903003,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER SPORT",
+    "ano": 2025,
+    "preco": 1070880,
+    "fipe": 1014475,
+    "margem": -5.6,
+    "elegivel": false
+  },
+  {
+    "id": 72000864,
+    "marca": "BMW",
+    "modelo": "M3",
+    "ano": 2026,
+    "preco": 784900,
+    "fipe": 807181,
+    "margem": 2.8,
+    "elegivel": false
+  },
+  {
+    "id": 71812982,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "A 250",
+    "ano": 2022,
+    "preco": 215000,
+    "fipe": 220896,
+    "margem": 2.7,
+    "elegivel": false
+  },
+  {
+    "id": 72807838,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2024,
+    "preco": 81990,
+    "fipe": 71207,
+    "margem": -15.1,
+    "elegivel": false
+  },
+  {
+    "id": 72221194,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2017,
+    "preco": 72000,
+    "fipe": 79607,
+    "margem": 9.6,
+    "elegivel": true
+  },
+  {
+    "id": 71733202,
+    "marca": "MITSUBISHI",
+    "modelo": "TRITON",
+    "ano": 2026,
+    "preco": 284900,
+    "fipe": 297127,
+    "margem": 4.1,
+    "elegivel": false
+  },
+  {
+    "id": 70633781,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72091723,
+    "marca": "GWM",
+    "modelo": "HAVAL H6 GT",
+    "ano": 2025,
+    "preco": 215000,
+    "fipe": 245856,
+    "margem": 12.6,
+    "elegivel": true
+  },
+  {
+    "id": 71809184,
+    "marca": "HONDA",
+    "modelo": "HR-V",
+    "ano": 2023,
+    "preco": 136500,
+    "fipe": 137584,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 71896694,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2023,
+    "preco": 74900,
+    "fipe": 76771,
+    "margem": 2.4,
+    "elegivel": false
+  },
+  {
+    "id": 70998417,
+    "marca": "BMW",
+    "modelo": "X2",
+    "ano": 2025,
+    "preco": 429990,
+    "fipe": 454961,
+    "margem": 5.5,
+    "elegivel": true
+  },
+  {
+    "id": 72515756,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 94990,
+    "fipe": 96447,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 70633353,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 139990,
+    "fipe": 141665,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72906583,
+    "marca": "BMW",
+    "modelo": "X2",
+    "ano": 2025,
+    "preco": 348000,
+    "fipe": 454961,
+    "margem": 23.5,
+    "elegivel": true
+  },
+  {
+    "id": 71897863,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 94990,
+    "fipe": 96447,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 71991206,
+    "marca": "FORD",
+    "modelo": "KA",
+    "ano": 2020,
+    "preco": 45500,
+    "fipe": 50571,
+    "margem": 10,
+    "elegivel": true
+  },
+  {
+    "id": 72015198,
+    "marca": "VOLKSWAGEN",
+    "modelo": "JETTA",
+    "ano": 2013,
+    "preco": 62500,
+    "fipe": 70498,
+    "margem": 11.3,
+    "elegivel": true
+  },
+  {
+    "id": 72116065,
+    "marca": "BMW",
+    "modelo": "X3",
+    "ano": 2021,
+    "preco": 216900,
+    "fipe": 237030,
+    "margem": 8.5,
+    "elegivel": true
+  },
+  {
+    "id": 72101567,
+    "marca": "PORSCHE",
+    "modelo": "MACAN",
+    "ano": 2022,
+    "preco": 390000,
+    "fipe": 407799,
+    "margem": 4.4,
+    "elegivel": false
+  },
+  {
+    "id": 71721974,
+    "marca": "BMW",
+    "modelo": "420i",
+    "ano": 2023,
+    "preco": 361000,
+    "fipe": 364162,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 72111256,
+    "marca": "LAND ROVER",
+    "modelo": "DEFENDER",
+    "ano": 2023,
+    "preco": 455000,
+    "fipe": 524467,
+    "margem": 13.2,
+    "elegivel": true
+  },
+  {
+    "id": 58344723,
+    "marca": "CHEVROLET",
+    "modelo": "OMEGA",
+    "ano": 2009,
+    "preco": 55000,
+    "fipe": 59014,
+    "margem": 6.8,
+    "elegivel": true
+  },
+  {
+    "id": 71903310,
+    "marca": "VOLKSWAGEN",
+    "modelo": "SAVEIRO",
+    "ano": 2026,
+    "preco": 113000,
+    "fipe": 116838,
+    "margem": 3.3,
+    "elegivel": false
+  },
+  {
+    "id": 72009218,
+    "marca": "FIAT",
+    "modelo": "UNO",
+    "ano": 2014,
+    "preco": 33000,
+    "fipe": 34838,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 71897955,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2023,
+    "preco": 119590,
+    "fipe": 124222,
+    "margem": 3.7,
+    "elegivel": false
+  },
+  {
+    "id": 68357322,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2024,
+    "preco": 99900,
+    "fipe": 101553,
+    "margem": 1.6,
+    "elegivel": false
+  },
+  {
+    "id": 72110721,
+    "marca": "LAND ROVER",
+    "modelo": "DISCOVERY",
+    "ano": 2018,
+    "preco": 245000,
+    "fipe": 247111,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 68559447,
+    "marca": "HONDA",
+    "modelo": "CITY",
+    "ano": 2024,
+    "preco": 104990,
+    "fipe": 121177,
+    "margem": 13.4,
+    "elegivel": true
+  },
+  {
+    "id": 71997778,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2023,
+    "preco": 98000,
+    "fipe": 102528,
+    "margem": 4.4,
+    "elegivel": false
+  },
+  {
+    "id": 70574868,
+    "marca": "VOLVO",
+    "modelo": "XC40",
+    "ano": 2021,
+    "preco": 172500,
+    "fipe": 178194,
+    "margem": 3.2,
+    "elegivel": false
+  },
+  {
+    "id": 72038799,
+    "marca": "HONDA",
+    "modelo": "FIT",
+    "ano": 2008,
+    "preco": 31000,
+    "fipe": 36524,
+    "margem": 15.1,
+    "elegivel": true
+  },
+  {
+    "id": 71992108,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2025,
+    "preco": 83700,
+    "fipe": 96297,
+    "margem": 13.1,
+    "elegivel": true
+  },
+  {
+    "id": 72096875,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2017,
+    "preco": 79499,
+    "fipe": 80067,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 71687036,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2025,
+    "preco": 129999,
+    "fipe": 136493,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 72035059,
+    "marca": "CAOA CHERY",
+    "modelo": "TIGGO 8",
+    "ano": 2024,
+    "preco": 146000,
+    "fipe": 139870,
+    "margem": -4.4,
+    "elegivel": false
+  },
+  {
+    "id": 71995148,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2017,
+    "preco": 74600,
+    "fipe": 80067,
+    "margem": 6.8,
+    "elegivel": true
+  },
+  {
+    "id": 72337451,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA",
+    "ano": 2019,
+    "preco": 101900,
+    "fipe": 102756,
+    "margem": 0.8,
+    "elegivel": false
+  },
+  {
+    "id": 71919032,
+    "marca": "FORD",
+    "modelo": "ECOSPORT",
+    "ano": 2020,
+    "preco": 67000,
+    "fipe": 74112,
+    "margem": 9.6,
+    "elegivel": true
+  },
+  {
+    "id": 72906700,
+    "marca": "FORD",
+    "modelo": "TERRITORY",
+    "ano": 2024,
+    "preco": 159500,
+    "fipe": 167585,
+    "margem": 4.8,
+    "elegivel": false
+  },
+  {
+    "id": 70637994,
+    "marca": "HONDA",
+    "modelo": "ZR-V",
+    "ano": 2025,
+    "preco": 162990,
+    "fipe": 164142,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 72473405,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2022,
+    "preco": 124900,
+    "fipe": 128036,
+    "margem": 2.4,
+    "elegivel": false
+  },
+  {
+    "id": 69372928,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2026,
+    "preco": 105000,
+    "fipe": 114972,
+    "margem": 8.7,
+    "elegivel": true
+  },
+  {
+    "id": 71773399,
+    "marca": "RENAULT",
+    "modelo": "KARDIAN",
+    "ano": 2025,
+    "preco": 94990,
+    "fipe": 96447,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 72114637,
+    "marca": "GWM",
+    "modelo": "HAVAL H6",
+    "ano": 2024,
+    "preco": 196600,
+    "fipe": 207582,
+    "margem": 5.3,
+    "elegivel": true
+  },
+  {
+    "id": 71750119,
+    "marca": "BMW",
+    "modelo": "X5",
+    "ano": 2018,
+    "preco": 169900,
+    "fipe": 188631,
+    "margem": 9.9,
+    "elegivel": true
+  },
+  {
+    "id": 72003995,
+    "marca": "FIAT",
+    "modelo": "PULSE",
+    "ano": 2025,
+    "preco": 109190,
+    "fipe": 105429,
+    "margem": -3.6,
+    "elegivel": false
+  },
+  {
+    "id": 72034083,
+    "marca": "VOLKSWAGEN",
+    "modelo": "JETTA",
+    "ano": 2011,
+    "preco": 50000,
+    "fipe": 53176,
+    "margem": 6,
+    "elegivel": true
+  },
+  {
+    "id": 71789405,
+    "marca": "CHEVROLET",
+    "modelo": "ONIX",
+    "ano": 2024,
+    "preco": 88900,
+    "fipe": 69344,
+    "margem": -28.2,
+    "elegivel": false
+  },
+  {
+    "id": 71866505,
+    "marca": "FORD",
+    "modelo": "F-250",
+    "ano": 2009,
+    "preco": 155000,
+    "fipe": 160805,
+    "margem": 3.6,
+    "elegivel": false
+  },
+  {
+    "id": 71735741,
+    "marca": "CITROËN",
+    "modelo": "C3",
+    "ano": 2015,
+    "preco": 38000,
+    "fipe": 40309,
+    "margem": 5.7,
+    "elegivel": true
+  },
+  {
+    "id": 71766488,
+    "marca": "FORD",
+    "modelo": "BRONCO SPORT",
+    "ano": 2023,
+    "preco": 166500,
+    "fipe": 179625,
+    "margem": 7.3,
+    "elegivel": true
+  },
+  {
+    "id": 72917127,
+    "marca": "FIAT",
+    "modelo": "CRONOS",
+    "ano": 2024,
+    "preco": 75100,
+    "fipe": 81333,
+    "margem": 7.7,
+    "elegivel": true
+  },
+  {
+    "id": 71904235,
+    "marca": "VOLKSWAGEN",
+    "modelo": "JETTA",
+    "ano": 2013,
+    "preco": 54600,
+    "fipe": 61927,
+    "margem": 11.8,
+    "elegivel": true
+  },
+  {
+    "id": 70350580,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2025,
+    "preco": 124990,
+    "fipe": 120037,
+    "margem": -4.1,
+    "elegivel": false
+  },
+  {
+    "id": 72102487,
+    "marca": "GWM",
+    "modelo": "ORA 03",
+    "ano": 2024,
+    "preco": 118900,
+    "fipe": 120274,
+    "margem": 1.1,
+    "elegivel": false
+  },
+  {
+    "id": 72792490,
+    "marca": "VOLKSWAGEN",
+    "modelo": "T-CROSS",
+    "ano": 2024,
+    "preco": 98600,
+    "fipe": 108140,
+    "margem": 8.8,
+    "elegivel": true
+  },
+  {
+    "id": 71733195,
+    "marca": "AUDI",
+    "modelo": "A5",
+    "ano": 2025,
+    "preco": 339900,
+    "fipe": 350335,
+    "margem": 3,
+    "elegivel": false
+  },
+  {
+    "id": 70349609,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2025,
+    "preco": 164990,
+    "fipe": 177539,
+    "margem": 7.1,
+    "elegivel": true
+  },
+  {
+    "id": 65395198,
+    "marca": "BMW",
+    "modelo": "X4",
+    "ano": 2024,
+    "preco": 359880,
+    "fipe": 369529,
+    "margem": 2.6,
+    "elegivel": false
+  },
+  {
+    "id": 70633876,
+    "marca": "CHEVROLET",
+    "modelo": "TRACKER",
+    "ano": 2025,
+    "preco": 127490,
+    "fipe": 129479,
+    "margem": 1.5,
+    "elegivel": false
+  },
+  {
+    "id": 72232793,
+    "marca": "TOYOTA",
+    "modelo": "COROLLA CROSS",
+    "ano": 2026,
+    "preco": 189890,
+    "fipe": 194700,
+    "margem": 2.5,
+    "elegivel": false
+  },
+  {
+    "id": 71552930,
+    "marca": "NISSAN",
+    "modelo": "KICKS PLAY",
+    "ano": 2025,
+    "preco": 113900,
+    "fipe": 114658,
+    "margem": 0.7,
+    "elegivel": false
+  },
+  {
+    "id": 72887869,
+    "marca": "MERCEDES-BENZ",
+    "modelo": "CLA 35 AMG",
+    "ano": 2023,
+    "preco": 324900,
+    "fipe": 405521,
+    "margem": 19.9,
+    "elegivel": true
+  },
+  {
+    "id": 72223592,
+    "marca": "LAND ROVER",
+    "modelo": "RANGE ROVER EVOQUE",
+    "ano": 2018,
+    "preco": 136500,
+    "fipe": 167128,
+    "margem": 18.3,
+    "elegivel": true
+  },
+  {
+    "id": 71733307,
+    "marca": "FIAT",
+    "modelo": "FASTBACK",
+    "ano": 2023,
+    "preco": 105990,
+    "fipe": 112261,
+    "margem": 5.6,
+    "elegivel": true
+  },
+  {
+    "id": 70653350,
+    "marca": "VOLKSWAGEN",
+    "modelo": "AMAROK",
+    "ano": 2023,
+    "preco": 160490,
+    "fipe": 165159,
+    "margem": 2.8,
+    "elegivel": false
+  },
+  {
+    "id": 72480639,
+    "marca": "JEEP",
+    "modelo": "COMPASS",
+    "ano": 2019,
+    "preco": 99990,
+    "fipe": 100897,
+    "margem": 0.9,
+    "elegivel": false
+  },
+  {
+    "id": 72118274,
+    "marca": "VOLKSWAGEN",
+    "modelo": "TOUAREG",
+    "ano": 2012,
+    "preco": 62000,
+    "fipe": 69847,
+    "margem": 11.2,
+    "elegivel": true
+  },
+  {
+    "id": 72006912,
+    "marca": "JEEP",
+    "modelo": "RENEGADE",
+    "ano": 2022,
+    "preco": 104800,
+    "fipe": 110877,
+    "margem": 5.5,
+    "elegivel": true
+  },
+  {
+    "id": 71538817,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2024,
+    "preco": 194690,
+    "fipe": 197140,
+    "margem": 1.2,
+    "elegivel": false
+  },
+  {
+    "id": 72029544,
+    "marca": "NISSAN",
+    "modelo": "KICKS",
+    "ano": 2024,
+    "preco": 99990,
+    "fipe": 106299,
+    "margem": 5.9,
+    "elegivel": true
+  },
+  {
+    "id": 71766355,
+    "marca": "TOYOTA",
+    "modelo": "HILUX",
+    "ano": 2024,
+    "preco": 294500,
+    "fipe": 226738,
+    "margem": -29.9,
+    "elegivel": false
+  },
+  {
+    "id": 70325377,
+    "marca": "FIAT",
+    "modelo": "PULSE",
+    "ano": 2025,
+    "preco": 99290,
+    "fipe": 105429,
+    "margem": 5.8,
+    "elegivel": true
+  },
+  {
+    "id": 70633837,
+    "marca": "JEEP",
+    "modelo": "COMMANDER",
+    "ano": 2025,
+    "preco": 172190,
+    "fipe": 177539,
+    "margem": 3,
+    "elegivel": false
+  },
+  {
+    "id": 72011175,
+    "marca": "VOLKSWAGEN",
+    "modelo": "VIRTUS",
+    "ano": 2024,
+    "preco": 97900,
+    "fipe": 106086,
+    "margem": 7.7,
+    "elegivel": true
+  }
+]

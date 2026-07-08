@@ -13,6 +13,7 @@ import { OpportunityCard } from "@/components/OpportunityCard";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
+import { buscarMargemPremium } from "@/lib/configWorker";
 import { resolverLocalidade } from "@/lib/localidade";
 import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo, type ChaveSeoPagina } from "@/lib/seo";
@@ -166,6 +167,10 @@ export default async function PaginaLocalidade({
 
   const oportunidades = (data ?? []) as Oportunidade[];
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
+  // Gate premium (mesmo critério do DiscoveriesBoard) — trava as ofertas gordas
+  // também nas páginas SEO públicas, senão o funil vaza por aqui.
+  const ehAdmin = usuario?.role === "admin";
+  const margemPremium = !ehAdmin && !usuario?.premium ? await buscarMargemPremium() : Infinity;
   const total = count ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
 
@@ -200,8 +205,9 @@ export default async function PaginaLocalidade({
                     key={oportunidade.id}
                     oportunidade={oportunidade}
                     favoritado={idsFavoritados.has(oportunidade.id)}
-                    isAdmin={usuario?.role === "admin"}
+                    isAdmin={ehAdmin}
                     usuarioLogado={Boolean(usuario)}
+                    bloqueado={(oportunidade.margem_percentual ?? 0) > margemPremium}
                   />
                 ))}
               </div>

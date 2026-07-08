@@ -1,5 +1,6 @@
 import { buscarIdsFavoritados } from "./DiscoveriesBoard";
 import { OpportunityCard } from "./OpportunityCard";
+import { buscarMargemPremium } from "@/lib/configWorker";
 import { extrairMarcaModelo } from "@/lib/marca";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
@@ -75,6 +76,13 @@ export async function OfertasRelacionadas({
 
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
 
+  // Gate premium — mesmo critério do DiscoveriesBoard: admin e assinante veem
+  // tudo; o resto encara o overlay nas ofertas acima do limite (config). Só lê
+  // o limite quando o gate pode valer (economiza a query de config).
+  const ehAdmin = usuario?.role === "admin";
+  const podeBloquear = !ehAdmin && !usuario?.premium;
+  const margemPremium = podeBloquear ? await buscarMargemPremium() : Infinity;
+
   return (
     <section className="ofertas-relacionadas">
       <h2 className="ofertas-relacionadas-titulo">Ofertas relacionadas</h2>
@@ -84,8 +92,9 @@ export async function OfertasRelacionadas({
             key={relacionada.id}
             oportunidade={relacionada}
             favoritado={idsFavoritados.has(relacionada.id)}
-            isAdmin={usuario?.role === "admin"}
+            isAdmin={ehAdmin}
             usuarioLogado={Boolean(usuario)}
+            bloqueado={(relacionada.margem_percentual ?? 0) > margemPremium}
           />
         ))}
       </div>
