@@ -16,7 +16,6 @@ import { OfertasRelacionadas } from "@/components/OfertasRelacionadas";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
 import { RegistradorVisualizacao } from "@/components/RegistradorVisualizacao";
-import { FichaBia } from "@/components/FichaBia";
 import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
@@ -371,8 +370,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               veiculo={oportunidade.veiculo}
               estado={oportunidade.estado}
             />
-            <PaginaOportunidade oportunidade={oportunidade} bloqueado={bloqueado} />
-            {factSheetBia && <FichaBia fs={factSheetBia} />}
+            <PaginaOportunidade oportunidade={oportunidade} bloqueado={bloqueado} factSheet={factSheetBia} />
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
         </div>

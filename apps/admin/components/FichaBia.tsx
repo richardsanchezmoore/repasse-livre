@@ -47,12 +47,11 @@ export function FichaBia({ fs }: { fs: FactSheet }) {
   return (
     <section
       style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: 14,
-        padding: "20px 22px",
-        margin: "24px 0",
-        background: "#fff",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        // Vive dentro da aba "Copiloto" do PainelComparativo — flush (sem borda/
+        // sombra/margem de card, senão vira card-dentro-de-card).
+        padding: "4px 0 0",
+        margin: 0,
+        background: "transparent",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>

@@ -15,6 +15,7 @@ import { PainelComparativo } from "./PainelComparativo";
 import { buscarHistoricoFipe } from "@/lib/fipeHistorico";
 import { buscarReferenciaPreco } from "@/lib/referenciaPreco";
 import { buscarPisoMargem } from "@/lib/configWorker";
+import type { FactSheet } from "@/lib/bia/tipos";
 import type { Oportunidade } from "@/lib/types";
 
 const MESES_FIPE_SELO = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -42,8 +43,12 @@ const MARGEM_ALERTA_PISO = 2;
 export async function PaginaOportunidade({
   oportunidade,
   bloqueado = false,
+  factSheet = null,
 }: {
   oportunidade: Oportunidade;
+  /** Análise do Copiloto (FactSheet da BIA) — vira a aba "Copiloto" do painel.
+   * null = não mostra a aba (hoje só admin recebe; gate premium vem depois). */
+  factSheet?: FactSheet | null;
   /** Oferta premium travada (margem > limite e usuário não é premium/admin) — a
    * página fica ABERTA (foto/ganho/ficha/análise, bom p/ Ads e SEO); só o ACESSO
    * ao anúncio original (link + WhatsApp do vendedor) é trocado pelo bloco de
@@ -177,6 +182,7 @@ export async function PaginaOportunidade({
           historico={historicoFipe}
           referencia={referenciaPreco}
           precoAnuncio={oportunidade.preco}
+          copiloto={factSheet}
         />
 
         <dl className="pagina-oportunidade-ficha">
