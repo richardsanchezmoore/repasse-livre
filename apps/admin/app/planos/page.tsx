@@ -3,16 +3,13 @@ import Link from "next/link";
 import { Gem, Unlock, ScanSearch, Radar, TrendingUp, Bell, Check, ArrowLeft } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
+import { buscarPrecoExibicao } from "@/lib/assinatura";
 
 export const metadata: Metadata = {
   title: "Planos — Repasse Livre",
   description:
     "Inteligência de mercado pra quem compra carro pra revender: acesso às melhores ofertas abaixo da FIPE, análise do Copiloto, tendências e alertas.",
 };
-
-// Só o valor de vitrine (a cobrança de verdade é o preço configurado no Stripe,
-// STRIPE_PRICE_ID). Se mudar o preço no Stripe, atualizar aqui também.
-const PRECO = "R$ 99";
 
 const BENEFICIOS = [
   { Icone: Unlock, titulo: "Todas as ofertas liberadas", texto: "Inclusive as de maior margem abaixo da FIPE — as que dão o melhor repasse ficam trancadas no plano gratuito." },
@@ -28,7 +25,7 @@ export default async function PlanosPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const usuario = await obterUsuarioAtual();
+  const [usuario, preco] = await Promise.all([obterUsuarioAtual(), buscarPrecoExibicao()]);
   // Tem um registro de assinatura no Stripe (qualquer status) → botão Gerenciar.
   const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
   const estado: "entrar" | "assinar" | "gerenciar" = !usuario
@@ -64,8 +61,8 @@ export default async function PlanosPage({
           está abaixo da FIPE — com o parecer que diz se vale e quanto negociar. O plano premium destrava tudo.
         </p>
         <p className="planos-preco">
-          <strong>{PRECO}</strong>
-          <span>/mês</span>
+          <strong>{preco.valor}</strong>
+          <span>{preco.intervalo}</span>
         </p>
         <AcaoAssinatura estado={estado} />
         <p className="planos-cta-nota">

@@ -31,3 +31,20 @@ export async function buscarMargemPremium(): Promise<number> {
   const n = Number(data?.valor);
   return Number.isFinite(n) && n > 0 ? n : MARGEM_PREMIUM_PADRAO;
 }
+
+/**
+ * Price id do plano premium no Stripe. Vem do painel (`worker_config.
+ * STRIPE_PRICE_ID`) pra trocar de plano/preço SEM deploy; cai no env
+ * `STRIPE_PRICE_ID` como fallback. null = ainda não configurado. Server-only.
+ */
+export async function buscarStripePriceId(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "STRIPE_PRICE_ID")
+    .maybeSingle();
+  const doPainel = (data?.valor ?? "").trim();
+  if (doPainel) return doPainel;
+  const doEnv = (process.env.STRIPE_PRICE_ID ?? "").trim();
+  return doEnv || null;
+}

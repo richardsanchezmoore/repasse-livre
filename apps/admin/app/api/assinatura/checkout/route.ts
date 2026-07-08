@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
-import { getStripe, precoPremiumId } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
+import { buscarStripePriceId } from "@/lib/configWorker";
 import { garantirClienteStripe } from "@/lib/assinatura";
 
 /**
@@ -16,13 +17,16 @@ export async function POST(): Promise<Response> {
   const usuario = await obterUsuarioAtual();
   if (!usuario) return NextResponse.json({ erro: "nao_logado" }, { status: 401 });
 
+  const priceId = await buscarStripePriceId();
+  if (!priceId) return NextResponse.json({ erro: "preco_nao_configurado" }, { status: 500 });
+
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   try {
     const customerId = await garantirClienteStripe(usuario.id, usuario.email);
     const sessao = await getStripe().checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
-      line_items: [{ price: precoPremiumId(), quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       success_url: `${site}/planos?assinatura=sucesso`,
       cancel_url: `${site}/planos?assinatura=cancelado`,

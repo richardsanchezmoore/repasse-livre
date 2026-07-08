@@ -13,11 +13,16 @@ function CampoConfig({
   chave,
   valorInicial,
   titulo,
+  tipo = "numero",
+  placeholder,
   children,
 }: {
   chave: string;
   valorInicial: string;
   titulo: string;
+  /** "numero" = input % (coage p/ Number ao salvar); "texto" = string crua. */
+  tipo?: "numero" | "texto";
+  placeholder?: string;
   children: ReactNode;
 }) {
   const [valor, setValor] = useState(valorInicial);
@@ -28,9 +33,11 @@ function CampoConfig({
   function salvar() {
     setErro(null);
     setSalvo(false);
+    // Número → normaliza (String(Number)); texto → salva cru (trim).
+    const aSalvar = tipo === "numero" ? String(Number(valor)) : valor.trim();
     iniciar(async () => {
       try {
-        await salvarConfigWorker(chave, String(Number(valor)).trim());
+        await salvarConfigWorker(chave, aSalvar);
         setSalvo(true);
       } catch (e) {
         setErro(e instanceof Error ? e.message : "Falha ao salvar.");
@@ -44,20 +51,19 @@ function CampoConfig({
       <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 13.5, lineHeight: 1.5 }}>{children}</p>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: 140 }}>
+        <div style={{ position: "relative", width: tipo === "texto" ? 320 : 140 }}>
           <input
-            type="number"
+            type={tipo === "texto" ? "text" : "number"}
             value={valor}
-            min={0}
-            max={100}
-            step={0.5}
+            placeholder={placeholder}
+            {...(tipo === "numero" ? { min: 0, max: 100, step: 0.5 } : {})}
             onChange={(e) => {
               setValor(e.target.value);
               setSalvo(false);
             }}
-            style={{ width: "100%", padding: "10px 30px 10px 12px", fontSize: 16, border: "1px solid #d1d5db", borderRadius: 10, outline: "none" }}
+            style={{ width: "100%", padding: tipo === "texto" ? "10px 12px" : "10px 30px 10px 12px", fontSize: tipo === "texto" ? 14 : 16, border: "1px solid #d1d5db", borderRadius: 10, outline: "none", fontFamily: tipo === "texto" ? "ui-monospace, monospace" : "inherit" }}
           />
-          <span style={{ position: "absolute", right: 12, top: 11, color: "#9ca3af", fontSize: 15 }}>%</span>
+          {tipo === "numero" && <span style={{ position: "absolute", right: 12, top: 11, color: "#9ca3af", fontSize: 15 }}>%</span>}
         </div>
 
         <button
@@ -105,6 +111,18 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
       <CampoConfig chave="MARGEM_PREMIUM_PERCENTUAL" valorInicial={configs["MARGEM_PREMIUM_PERCENTUAL"] ?? "10"} titulo="Limite premium (overlay)">
         Ofertas com margem <strong>acima</strong> deste valor ficam atrás do overlay premium pra quem não é assinante —
         as melhores (ex.: 10%+) viram isca pro upgrade; Bronze abaixo disso fica livre. Vale quase na hora (cache da página).
+      </CampoConfig>
+
+      <CampoConfig
+        chave="STRIPE_PRICE_ID"
+        valorInicial={configs["STRIPE_PRICE_ID"] ?? ""}
+        titulo="Plano premium — Price ID do Stripe"
+        tipo="texto"
+        placeholder="price_..."
+      >
+        O <strong>ID do preço</strong> (não do produto) que o checkout cobra. Pra trocar de plano/valor: cria um novo
+        preço no Stripe e cola o <code>price_…</code> aqui — o valor exibido na página de planos acompanha sozinho, sem
+        deploy. As chaves secretas (secret key, webhook) seguem no ambiente, não aqui.
       </CampoConfig>
     </div>
   );

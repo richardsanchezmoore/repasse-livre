@@ -2,6 +2,46 @@ import "server-only";
 import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getStripe } from "@/lib/stripe";
+import { buscarStripePriceId } from "@/lib/configWorker";
+
+export interface PrecoExibicao {
+  /** Ex.: "R$ 99" (sem centavos quando redondo). */
+  valor: string;
+  /** Ex.: "/mês" | "/ano". */
+  intervalo: string;
+}
+
+const PRECO_FALLBACK: PrecoExibicao = { valor: "R$ 99", intervalo: "/mês" };
+let cachePreco: { em: number; valor: PrecoExibicao } | null = null;
+const PRECO_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * Preço a EXIBIR na /planos, derivado do próprio Stripe (fonte única: muda o
+ * Price ID no painel e o valor acompanha, sem risco de divergir do que é
+ * cobrado). Cacheado 5min; cai num fallback se o Stripe ainda não está
+ * configurado ou a chamada falha (a página nunca quebra por causa do preço).
+ */
+export async function buscarPrecoExibicao(): Promise<PrecoExibicao> {
+  if (cachePreco && Date.now() - cachePreco.em < PRECO_TTL_MS) return cachePreco.valor;
+  try {
+    const priceId = await buscarStripePriceId();
+    if (!priceId) return PRECO_FALLBACK;
+    const preco = await getStripe().prices.retrieve(priceId);
+    if (!preco.unit_amount || !preco.currency) return PRECO_FALLBACK;
+    const formatado = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: preco.currency.toUpperCase(),
+    }).format(preco.unit_amount / 100);
+    const valor: PrecoExibicao = {
+      valor: formatado.replace(/,00$/, ""), // "R$ 99,00" → "R$ 99"
+      intervalo: preco.recurring?.interval === "year" ? "/ano" : "/mês",
+    };
+    cachePreco = { em: Date.now(), valor };
+    return valor;
+  } catch {
+    return PRECO_FALLBACK;
+  }
+}
 
 /**
  * Fim do período pago da assinatura, em ISO. O campo mudou de lugar entre

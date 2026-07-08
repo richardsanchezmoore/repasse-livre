@@ -17,10 +17,3 @@ export function getStripe(): Stripe {
   }
   return cliente;
 }
-
-/** Price id do plano premium mensal (criado no Stripe — ver scripts/stripeSetup.ts). */
-export function precoPremiumId(): string {
-  const id = process.env.STRIPE_PRICE_ID;
-  if (!id) throw new Error("STRIPE_PRICE_ID não configurado.");
-  return id;
-}

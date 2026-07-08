@@ -25,8 +25,9 @@ async function main(): Promise<void> {
 
   console.log("✔ Produto criado:", produto.id);
   console.log("✔ Preço mensal R$ 99 criado:", preco.id);
-  console.log("\nCole no .env.local (e nas variáveis da Vercel):");
-  console.log(`STRIPE_PRICE_ID=${preco.id}`);
+  console.log("\nCole o Price ID em Configurações → 'Plano premium — Price ID do Stripe'");
+  console.log("(ou, como fallback, no .env.local / Vercel: STRIPE_PRICE_ID=…):");
+  console.log(preco.id);
 }
 
 main().catch((erro) => {
