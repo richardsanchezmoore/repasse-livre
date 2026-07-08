@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Gem, Unlock, ScanSearch, Radar, TrendingUp, Bell, Check, ArrowLeft } from "lucide-react";
+import { AcaoAssinatura } from "@/components/AcaoAssinatura";
+import { obterUsuarioAtual } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Planos — Repasse Livre",
@@ -8,10 +10,9 @@ export const metadata: Metadata = {
     "Inteligência de mercado pra quem compra carro pra revender: acesso às melhores ofertas abaixo da FIPE, análise do Copiloto, tendências e alertas.",
 };
 
-// 1º estágio (funil, sem checkout): CTA leva pro WhatsApp de vendas. Trocar o
-// número pelo oficial quando definir (ou plugar o gateway no 2º estágio).
-const WHATSAPP_VENDAS = "5599999999999";
-const MSG = encodeURIComponent("Olá! Quero saber sobre o plano premium do Repasse Livre.");
+// Só o valor de vitrine (a cobrança de verdade é o preço configurado no Stripe,
+// STRIPE_PRICE_ID). Se mudar o preço no Stripe, atualizar aqui também.
+const PRECO = "R$ 99";
 
 const BENEFICIOS = [
   { Icone: Unlock, titulo: "Todas as ofertas liberadas", texto: "Inclusive as de maior margem abaixo da FIPE — as que dão o melhor repasse ficam trancadas no plano gratuito." },
@@ -21,12 +22,37 @@ const BENEFICIOS = [
   { Icone: Bell, titulo: "Alertas instantâneos", texto: "Definiu “quero uma Duster até R$80k”? Recebe no WhatsApp assim que o anúncio entra — na frente de todo mundo." },
 ];
 
-export default function PlanosPage() {
+export default async function PlanosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ assinatura?: string }>;
+}) {
+  const { assinatura } = await searchParams;
+  const usuario = await obterUsuarioAtual();
+  // Tem um registro de assinatura no Stripe (qualquer status) → botão Gerenciar.
+  const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
+  const estado: "entrar" | "assinar" | "gerenciar" = !usuario
+    ? "entrar"
+    : temAssinaturaStripe
+      ? "gerenciar"
+      : "assinar";
+  const jaPremium = Boolean(usuario?.premium);
+
   return (
     <main className="planos">
       <Link href="/" className="planos-voltar">
         <ArrowLeft size={16} strokeWidth={2} /> Voltar às ofertas
       </Link>
+
+      {assinatura === "sucesso" && (
+        <div className="planos-aviso planos-aviso-ok">
+          <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso premium é liberado em
+          instantes — se ainda não apareceu, recarregue a página em alguns segundos.
+        </div>
+      )}
+      {assinatura === "cancelado" && (
+        <div className="planos-aviso">Checkout cancelado. Quando quiser, é só voltar e assinar.</div>
+      )}
 
       <section className="planos-hero">
         <span className="planos-selo">
@@ -37,15 +63,16 @@ export default function PlanosPage() {
           O Repasse Livre mapeia dezenas de milhares de anúncios por semana e entrega, na sua mão, só o que
           está abaixo da FIPE — com o parecer que diz se vale e quanto negociar. O plano premium destrava tudo.
         </p>
-        <a
-          href={`https://wa.me/${WHATSAPP_VENDAS}?text=${MSG}`}
-          target="_blank"
-          rel="noreferrer"
-          className="planos-cta"
-        >
-          <Gem size={17} strokeWidth={2} /> Quero ser premium
-        </a>
-        <p className="planos-cta-nota">Fale com a gente e comece a operar com vantagem hoje.</p>
+        <p className="planos-preco">
+          <strong>{PRECO}</strong>
+          <span>/mês</span>
+        </p>
+        <AcaoAssinatura estado={estado} />
+        <p className="planos-cta-nota">
+          {jaPremium
+            ? "Você já é premium. Gerencie ou cancele quando quiser."
+            : "Cancele quando quiser, direto no seu painel de assinatura."}
+        </p>
       </section>
 
       <section className="planos-grade">
@@ -68,14 +95,7 @@ export default function PlanosPage() {
             </span>
           ))}
         </div>
-        <a
-          href={`https://wa.me/${WHATSAPP_VENDAS}?text=${MSG}`}
-          target="_blank"
-          rel="noreferrer"
-          className="planos-cta"
-        >
-          <Gem size={17} strokeWidth={2} /> Quero ser premium
-        </a>
+        <AcaoAssinatura estado={estado} />
       </section>
     </main>
   );

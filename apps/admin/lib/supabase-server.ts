@@ -40,8 +40,12 @@ export interface Usuario {
   /** Capturado ao anunciar (ver enviar/actions.ts) ou em /completar-dados — null até a conta "completar dados" alguma vez. */
   whatsapp: string | null;
   role: "admin" | "publico";
-  /** Assinante premium (manual por ora — sem gateway). Admin vê tudo de qualquer forma. */
+  /** Premium EFETIVO = override manual (perfis.premium) OU assinatura Stripe
+   * ativa e dentro da validade. Todos os gates olham este booleano. */
   premium: boolean;
+  /** Status cru da assinatura Stripe (active/trialing/past_due/canceled/…), ou
+   * null se nunca assinou. `/planos` usa pra decidir Assinar × Gerenciar. */
+  assinaturaStatus: string | null;
 }
 
 /** Sessão + perfil (role, nome, whatsapp) do usuário atual, ou null se deslogado. */
@@ -53,9 +57,18 @@ export async function obterUsuarioAtual(): Promise<Usuario | null> {
 
   const { data: perfil } = await supabase
     .from("perfis")
-    .select("role, nome, whatsapp, premium")
+    .select("role, nome, whatsapp, premium, assinatura_status, premium_expira_em")
     .eq("user_id", user.id)
     .single();
+
+  // Assinatura vale enquanto o status é ativo/trial E o período pago não expirou
+  // (cobre "cancelar no fim do período": status segue active até virar). O
+  // override manual (perfis.premium) libera independentemente (cortesia/admin).
+  const statusAtivo = perfil?.assinatura_status === "active" || perfil?.assinatura_status === "trialing";
+  const dentroDaValidade = perfil?.premium_expira_em
+    ? new Date(perfil.premium_expira_em).getTime() > Date.now()
+    : false;
+  const assinaturaAtiva = statusAtivo && dentroDaValidade;
 
   // Login com Google traz nome em user_metadata (full_name/name); login por
   // e-mail/senha não tem esse dado. `perfis.nome` (capturado ao anunciar ou
@@ -70,6 +83,7 @@ export async function obterUsuarioAtual(): Promise<Usuario | null> {
     nome,
     whatsapp: perfil?.whatsapp ?? null,
     role: perfil?.role === "admin" ? "admin" : "publico",
-    premium: perfil?.premium === true,
+    premium: perfil?.premium === true || assinaturaAtiva,
+    assinaturaStatus: perfil?.assinatura_status ?? null,
   };
 }
