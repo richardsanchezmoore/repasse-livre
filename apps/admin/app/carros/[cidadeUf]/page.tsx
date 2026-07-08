@@ -14,6 +14,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { buscarMargemPremium } from "@/lib/configWorker";
+import { semParecer } from "@/lib/copilotoResumo";
 import { resolverLocalidade } from "@/lib/localidade";
 import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo, type ChaveSeoPagina } from "@/lib/seo";
@@ -165,7 +166,7 @@ export default async function PaginaLocalidade({
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
   }
 
-  const oportunidades = (data ?? []) as Oportunidade[];
+  const oportunidades = semParecer((data ?? []) as Oportunidade[]);
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
   // Gate premium (mesmo critério do DiscoveriesBoard) — trava as ofertas gordas
   // também nas páginas SEO públicas, senão o funil vaza por aqui.

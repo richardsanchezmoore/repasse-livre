@@ -1,6 +1,7 @@
 import { buscarIdsFavoritados } from "./DiscoveriesBoard";
 import { OpportunityCard } from "./OpportunityCard";
 import { buscarMargemPremium } from "@/lib/configWorker";
+import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarcaModelo } from "@/lib/marca";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
@@ -71,7 +72,7 @@ export async function OfertasRelacionadas({
   oportunidade: Oportunidade;
   usuario: Usuario | null;
 }) {
-  const relacionadas = await buscarOfertasRelacionadas(oportunidade);
+  const relacionadas = semParecer(await buscarOfertasRelacionadas(oportunidade));
   if (relacionadas.length === 0) return null;
 
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();

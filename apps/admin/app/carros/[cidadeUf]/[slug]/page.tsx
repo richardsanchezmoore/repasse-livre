@@ -21,6 +21,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { buscarMargemPremium } from "@/lib/configWorker";
+import { resumirParecer, semParecer } from "@/lib/copilotoResumo";
 import { resolverLocalidade } from "@/lib/localidade";
 import { extrairMarca } from "@/lib/marca";
 import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
@@ -188,7 +189,7 @@ async function PaginaMarca({
     throw new Error(`Falha ao buscar oportunidades da marca: ${error.message}`);
   }
 
-  const oportunidades = (data ?? []) as Oportunidade[];
+  const oportunidades = semParecer((data ?? []) as Oportunidade[]);
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
   // Gate premium (mesmo critério do DiscoveriesBoard) — trava as ofertas gordas
   // também nesta página SEO pública, senão o funil vaza por aqui.
@@ -327,14 +328,25 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     },
   };
 
-  // Copiloto de Compra (BIA Engine) — prévia admin-only por ora; o gate Premium
-  // substitui esta checagem quando os planos existirem. Recalculado na leitura.
-  const factSheetBia = usuario?.role === "admin" ? await gerarFactSheet(oportunidade.id) : null;
-
-  // Gate premium (mesmo critério do board/relacionadas) — na página individual o
-  // overlay cobre o corpo (galeria fica livre pro tráfego de Ads); conteúdo fica
-  // borrado no DOM, preservando SEO. Ver project_repasse_livre_premium_monetizacao.
   const ehAdminPagina = usuario?.role === "admin";
+  const podeVerCopiloto = ehAdminPagina || Boolean(usuario?.premium);
+
+  // Copiloto de Compra (BIA Engine) — item do PLANO PAGO. Só computa o fact-sheet
+  // (query pesada de coorte) p/ quem PODE ver (admin/premium); o não-pago recebe
+  // o teaser, que lê só o parecer já persistido (sem coorte). Isso evita pagar a
+  // query no tráfego de Ads. copilotoBloqueado independe da margem (o Copiloto é
+  // pago sempre, não só nas ofertas gordas).
+  const factSheetBia = podeVerCopiloto ? await gerarFactSheet(oportunidade.id) : null;
+  const copilotoBloqueado = !podeVerCopiloto;
+  // Resumo de 2 linhas p/ o teaser + BLINDAGEM: o parecer completo NUNCA vai pro
+  // cliente (BotaoCompartilharPagina e outros client comps serializam o objeto
+  // inteiro no payload RSC → daria pra ler tudo via inspeção). Só o resumo passa.
+  const copilotoResumo = copilotoBloqueado ? resumirParecer(oportunidade.copiloto_parecer) : null;
+  oportunidade.copiloto_parecer = null;
+
+  // Gate premium do ACESSO ao anúncio (link + WhatsApp) — na página individual só
+  // esse acesso é travado (galeria/ganho/ficha ficam abertos p/ Ads e SEO); vale
+  // só nas ofertas acima do limite. Ver project_repasse_livre_premium_monetizacao.
   const margemPremiumPagina =
     !ehAdminPagina && !usuario?.premium ? await buscarMargemPremium() : Infinity;
   const bloqueado = (oportunidade.margem_percentual ?? 0) > margemPremiumPagina;
@@ -370,7 +382,13 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               veiculo={oportunidade.veiculo}
               estado={oportunidade.estado}
             />
-            <PaginaOportunidade oportunidade={oportunidade} bloqueado={bloqueado} factSheet={factSheetBia} />
+            <PaginaOportunidade
+              oportunidade={oportunidade}
+              bloqueado={bloqueado}
+              factSheet={factSheetBia}
+              copilotoBloqueado={copilotoBloqueado}
+              copilotoResumo={copilotoResumo}
+            />
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
         </div>

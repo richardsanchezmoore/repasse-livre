@@ -38,4 +38,7 @@ export interface Oportunidade {
   ultimo_visto: string | null;
   atributos_olx: Record<string, { label: string; value: string }>;
   anunciante_profissional: boolean | null;
+  /** Prosa do parecer do Copiloto já persistida (batch gerar:pareceres). Usada
+   * no TEASER dos não-pagos (2 primeiras linhas) sem recomputar o fact-sheet. */
+  copiloto_parecer: string | null;
 }

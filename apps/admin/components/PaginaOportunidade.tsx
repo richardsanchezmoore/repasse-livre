@@ -9,6 +9,8 @@ import { urlOportunidade } from "@/lib/site";
 import { lerAtributo, chavesFonte, type CampoCanonico } from "@/lib/atributos";
 import { BotaoWhatsapp } from "./BotaoWhatsapp";
 import { GaleriaFotos } from "./GaleriaFotos";
+import { FichaBia } from "./FichaBia";
+import { CopilotoTeaser } from "./CopilotoTeaser";
 import { BlocoAcessoBloqueado } from "./BlocoAcessoBloqueado";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
 import { PainelComparativo } from "./PainelComparativo";
@@ -44,16 +46,24 @@ export async function PaginaOportunidade({
   oportunidade,
   bloqueado = false,
   factSheet = null,
+  copilotoBloqueado = false,
+  copilotoResumo = null,
 }: {
   oportunidade: Oportunidade;
-  /** Análise do Copiloto (FactSheet da BIA) — vira a aba "Copiloto" do painel.
-   * null = não mostra a aba (hoje só admin recebe; gate premium vem depois). */
+  /** FactSheet da BIA (só computado p/ premium/admin) — vira a aba "Copiloto"
+   * completa. Nulo p/ não-pagos (que veem o teaser). */
   factSheet?: FactSheet | null;
   /** Oferta premium travada (margem > limite e usuário não é premium/admin) — a
    * página fica ABERTA (foto/ganho/ficha/análise, bom p/ Ads e SEO); só o ACESSO
    * ao anúncio original (link + WhatsApp do vendedor) é trocado pelo bloco de
    * upgrade. Ver project_repasse_livre_premium_monetizacao. */
   bloqueado?: boolean;
+  /** Copiloto é item do plano pago → não-pagos veem o TEASER na aba (2 linhas do
+   * parecer persistido + gradiente + upgrade), não a ficha completa. */
+  copilotoBloqueado?: boolean;
+  /** Resumo (2 linhas) já pronto do parecer, computado no server — o ÚNICO
+   * pedaço do parecer que pode ir pro cliente. Ver lib/copilotoResumo. */
+  copilotoResumo?: string | null;
 }) {
   const [historicoFipe, referenciaPreco, piso] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
@@ -74,6 +84,15 @@ export async function PaginaOportunidade({
   const diferencaValor =
     oportunidade.fipe_valor !== null ? oportunidade.fipe_valor - oportunidade.preco : null;
   const ehInsercaoDireta = oportunidade.origem_tipo === "insercao_direta";
+
+  // Conteúdo da aba "Copiloto": pagos/admin veem a ficha completa (ao vivo);
+  // não-pagos veem o teaser (só as 2 primeiras linhas do parecer PERSISTIDO —
+  // o resto nem vai pro DOM). A aba some se não há nem factSheet nem parecer.
+  const copilotoNode = copilotoBloqueado
+    ? <CopilotoTeaser resumo={copilotoResumo} oportunidadeId={oportunidade.id} />
+    : factSheet
+      ? <FichaBia fs={factSheet} />
+      : null;
   const titulo =
     ehInsercaoDireta && oportunidade.versao ? oportunidade.versao : oportunidade.veiculo;
 
@@ -182,7 +201,7 @@ export async function PaginaOportunidade({
           historico={historicoFipe}
           referencia={referenciaPreco}
           precoAnuncio={oportunidade.preco}
-          copiloto={factSheet}
+          copiloto={copilotoNode}
         />
 
         <dl className="pagina-oportunidade-ficha">

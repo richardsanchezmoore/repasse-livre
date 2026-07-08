@@ -5,10 +5,8 @@ import type { ReactNode } from "react";
 import { Scale, LineChart, Compass } from "lucide-react";
 import { HistoricoPrecos } from "./HistoricoPrecos";
 import { ReferenciaPreco } from "./ReferenciaPreco";
-import { FichaBia } from "./FichaBia";
 import type { PontoHistoricoFipe } from "@/lib/fipeHistorico";
 import type { ReferenciaPreco as Referencia } from "@/lib/referenciaPreco";
-import type { FactSheet } from "@/lib/bia/tipos";
 
 type AbaId = "referencia" | "copiloto" | "historico";
 
@@ -29,10 +27,12 @@ export function PainelComparativo({
   historico: PontoHistoricoFipe[];
   referencia: Referencia | null;
   precoAnuncio: number;
-  copiloto?: FactSheet | null;
+  /** Conteúdo já montado da aba Copiloto (FichaBia completa p/ pagos ou o teaser
+   * p/ não-pagos) — a página decide qual; aqui só vira a aba do meio. */
+  copiloto?: ReactNode;
 }) {
   const temReferencia = referencia !== null;
-  const temCopiloto = copiloto !== null;
+  const temCopiloto = copiloto != null;
   const temHistorico = historico.length >= 2;
 
   const abaInicial: AbaId = temReferencia ? "referencia" : temCopiloto ? "copiloto" : "historico";
@@ -48,7 +48,7 @@ export function PainelComparativo({
     });
   }
   if (temCopiloto) {
-    abas.push({ id: "copiloto", label: "Copiloto", Icone: Compass, conteudo: <FichaBia fs={copiloto!} /> });
+    abas.push({ id: "copiloto", label: "Copiloto", Icone: Compass, conteudo: copiloto });
   }
   if (temHistorico) {
     abas.push({ id: "historico", label: "Hist. FIPE", Icone: LineChart, conteudo: <HistoricoPrecos serie={historico} /> });

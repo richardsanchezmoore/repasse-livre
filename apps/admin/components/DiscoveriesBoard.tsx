@@ -4,6 +4,7 @@ import type { Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
 import { MARGEM_MINIMA_PADRAO } from "@/lib/margin";
 import { buscarMargemPremium } from "@/lib/configWorker";
+import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarca } from "@/lib/marca";
 import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
@@ -172,7 +173,7 @@ async function buscarOportunidades(
 
     const { data, error, count } = await consultaFavoritos;
     if (error) throw new Error(`Falha ao buscar oportunidades favoritadas: ${error.message}`);
-    return { itens: (data ?? []) as Oportunidade[], total: count ?? 0 };
+    return { itens: semParecer((data ?? []) as Oportunidade[]), total: count ?? 0 };
   }
 
   let consulta = supabaseAdmin.from("opportunities").select("*", { count: "exact" });
