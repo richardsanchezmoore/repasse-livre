@@ -332,6 +332,14 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   // substitui esta checagem quando os planos existirem. Recalculado na leitura.
   const factSheetBia = usuario?.role === "admin" ? await gerarFactSheet(oportunidade.id) : null;
 
+  // Gate premium (mesmo critério do board/relacionadas) — na página individual o
+  // overlay cobre o corpo (galeria fica livre pro tráfego de Ads); conteúdo fica
+  // borrado no DOM, preservando SEO. Ver project_repasse_livre_premium_monetizacao.
+  const ehAdminPagina = usuario?.role === "admin";
+  const margemPremiumPagina =
+    !ehAdminPagina && !usuario?.premium ? await buscarMargemPremium() : Infinity;
+  const bloqueado = (oportunidade.margem_percentual ?? 0) > margemPremiumPagina;
+
   return (
     <NavegacaoProvider>
       <SelecaoMultiplaProvider>
@@ -363,7 +371,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               veiculo={oportunidade.veiculo}
               estado={oportunidade.estado}
             />
-            <PaginaOportunidade oportunidade={oportunidade} />
+            <PaginaOportunidade oportunidade={oportunidade} bloqueado={bloqueado} />
             {factSheetBia && <FichaBia fs={factSheetBia} />}
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>

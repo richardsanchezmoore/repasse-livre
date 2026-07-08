@@ -9,6 +9,7 @@ import { urlOportunidade } from "@/lib/site";
 import { lerAtributo, chavesFonte, type CampoCanonico } from "@/lib/atributos";
 import { BotaoWhatsapp } from "./BotaoWhatsapp";
 import { GaleriaFotos } from "./GaleriaFotos";
+import { BlocoAcessoBloqueado } from "./BlocoAcessoBloqueado";
 import { BotaoCompartilharPagina } from "./BotaoCompartilharPagina";
 import { PainelComparativo } from "./PainelComparativo";
 import { buscarHistoricoFipe } from "@/lib/fipeHistorico";
@@ -38,7 +39,17 @@ function formatarMesRefFipe(ref: string): string {
 // é o piso dinâmico da config, não um 5% fixo). Abaixo de 2% o recálculo descarta.
 const MARGEM_ALERTA_PISO = 2;
 
-export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oportunidade }) {
+export async function PaginaOportunidade({
+  oportunidade,
+  bloqueado = false,
+}: {
+  oportunidade: Oportunidade;
+  /** Oferta premium travada (margem > limite e usuário não é premium/admin) — a
+   * página fica ABERTA (foto/ganho/ficha/análise, bom p/ Ads e SEO); só o ACESSO
+   * ao anúncio original (link + WhatsApp do vendedor) é trocado pelo bloco de
+   * upgrade. Ver project_repasse_livre_premium_monetizacao. */
+  bloqueado?: boolean;
+}) {
   const [historicoFipe, referenciaPreco, piso] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
     buscarReferenciaPreco(oportunidade.fipe_codigo, oportunidade.ano, oportunidade.fipe_valor, oportunidade.estado),
@@ -289,21 +300,27 @@ export async function PaginaOportunidade({ oportunidade }: { oportunidade: Oport
           Publicado em {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
         </p>
 
-        {oportunidade.whatsapp && (
-          <BotaoWhatsapp
-            opportunityId={oportunidade.id}
-            whatsapp={oportunidade.whatsapp}
-            nomeRemetente={oportunidade.nome_remetente}
-          />
-        )}
+        {bloqueado ? (
+          <BlocoAcessoBloqueado oportunidadeId={oportunidade.id} />
+        ) : (
+          <>
+            {oportunidade.whatsapp && (
+              <BotaoWhatsapp
+                opportunityId={oportunidade.id}
+                whatsapp={oportunidade.whatsapp}
+                nomeRemetente={oportunidade.nome_remetente}
+              />
+            )}
 
-        {!oportunidade.link_origem.startsWith("insercao-direta:") && (
-          <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
-            <span className="link-origem-texto">
-              <ExternalLink size={14} strokeWidth={1.75} className="icone-inline" /> Abrir anúncio original
-            </span>
-            <span aria-hidden="true">›</span>
-          </a>
+            {!oportunidade.link_origem.startsWith("insercao-direta:") && (
+              <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
+                <span className="link-origem-texto">
+                  <ExternalLink size={14} strokeWidth={1.75} className="icone-inline" /> Abrir anúncio original
+                </span>
+                <span aria-hidden="true">›</span>
+              </a>
+            )}
+          </>
         )}
 
         <BotaoCompartilharPagina oportunidade={oportunidade} url={urlOportunidade(oportunidade)} />
