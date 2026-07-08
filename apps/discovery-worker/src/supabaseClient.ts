@@ -294,3 +294,58 @@ export async function finalizarRegistroVarreduraComErro(id: string, erroMensagem
     throw new Error(`Falha ao registrar erro da varredura: ${error.message}`);
   }
 }
+
+/**
+ * Grava o snapshot_id do Bright Data no run — chamado assim que o snapshot é
+ * DISPARADO (antes do download), pra sobreviver a falha de download/processo
+ * morto e permitir a recuperação em 1 clique. Não derruba o run se falhar
+ * (é metadado de recuperação, não bloqueia a varredura em si).
+ */
+export async function registrarSnapshotIdVarredura(id: string, snapshotId: string): Promise<void> {
+  const { error } = await supabase.from("discovery_runs").update({ snapshot_id: snapshotId }).eq("id", id);
+  if (error) {
+    console.warn(`[varredura] não consegui gravar snapshot_id no run ${id}: ${error.message}`);
+  }
+}
+
+/**
+ * Runs da Webmotors que falharam (erro) ou travaram (em_andamento) mas têm o
+ * snapshot_id salvo → recuperáveis sem re-pagar. Base do `recuperar:snapshots-
+ * webmotors` sem argumentos (1 clique). Ver recuperarSnapshotsWebmotors.ts.
+ */
+export async function buscarRunsWebmotorsRecuperaveis(): Promise<{ id: string; snapshot_id: string }[]> {
+  const { data, error } = await supabase
+    .from("discovery_runs")
+    .select("id, snapshot_id")
+    .eq("modo", "webmotors")
+    .in("status", ["erro", "em_andamento"])
+    .not("snapshot_id", "is", null)
+    .order("iniciado_em", { ascending: false });
+  if (error) {
+    throw new Error(`Falha ao buscar runs recuperáveis: ${error.message}`);
+  }
+  return (data ?? []) as { id: string; snapshot_id: string }[];
+}
+
+/** Marca um run como recuperado (sucesso) com os contadores da reingestão. */
+export async function marcarVarreduraRecuperada(
+  id: string,
+  resultado: ResultadoVarreduraRegistro,
+  snapshotId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("discovery_runs")
+    .update({
+      status: "sucesso",
+      finalizado_em: new Date().toISOString(),
+      novos: resultado.novos,
+      elegiveis: resultado.elegiveis,
+      descartados: resultado.descartados,
+      sem_fipe: resultado.semFipe,
+      observacao: `Recuperado do snapshot ${snapshotId}.`,
+    })
+    .eq("id", id);
+  if (error) {
+    throw new Error(`Falha ao marcar varredura recuperada: ${error.message}`);
+  }
+}

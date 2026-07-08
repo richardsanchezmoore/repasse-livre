@@ -121,7 +121,10 @@ export async function coletarSnapshotWebmotorsPorId(snapshotId: string): Promise
  * limita quantos anúncios coletar (Bright Data cobra por registro; default 150
  * corta ~70% do custo vs sem limite).
  */
-export async function buscarAnunciosWebmotors(categoryUrl: string): Promise<AnuncioWebmotorsBruto[]> {
+export async function buscarAnunciosWebmotors(
+  categoryUrl: string,
+  onSnapshotId?: (snapshotId: string) => Promise<void> | void
+): Promise<AnuncioWebmotorsBruto[]> {
   const apiToken = process.env.BRIGHTDATA_API_TOKEN;
   if (!apiToken) {
     throw new Error("BRIGHTDATA_API_TOKEN não configurado.");
@@ -153,6 +156,9 @@ export async function buscarAnunciosWebmotors(categoryUrl: string): Promise<Anun
   }
 
   console.log(`[motor-descoberta-webmotors] Snapshot ${snapshotId} disparado (limite ${limite}), aguardando coleta…`);
+  // Persiste o id JÁ (antes de esperar/baixar) → se o download falhar ou o
+  // processo morrer, o run guarda o id e a recuperação reingere sem re-pagar.
+  await onSnapshotId?.(snapshotId);
   await esperarSnapshotPronto(snapshotId, headers);
   const dados = await baixarSnapshot(snapshotId, headers);
   const anuncios = filtrarValidos(dados);

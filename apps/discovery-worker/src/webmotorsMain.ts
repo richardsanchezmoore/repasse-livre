@@ -7,6 +7,7 @@ import {
   finalizarRegistroVarreduraComSucesso,
   iniciarRegistroVarredura,
   lerConfig,
+  registrarSnapshotIdVarredura,
 } from "./supabaseClient.js";
 
 const MODO = "webmotors";
@@ -34,7 +35,10 @@ async function obterJanelaDias(): Promise<number> {
   return Number(valor);
 }
 
-async function executarVarreduraWebmotors(categoryUrl: string): Promise<ResultadoLoteWebmotors> {
+async function executarVarreduraWebmotors(
+  categoryUrl: string,
+  onSnapshotId?: (snapshotId: string) => Promise<void> | void
+): Promise<ResultadoLoteWebmotors> {
   const margemMinima = Number(
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
   );
@@ -42,7 +46,7 @@ async function executarVarreduraWebmotors(categoryUrl: string): Promise<Resultad
 
   console.log(`[motor-descoberta-webmotors] Categoria: ${categoryUrl} | janela: ${janelaDias} dias | margem mínima: ${margemMinima}%`);
 
-  const anuncios = await buscarAnunciosWebmotors(categoryUrl);
+  const anuncios = await buscarAnunciosWebmotors(categoryUrl, onSnapshotId);
   console.log(`[motor-descoberta-webmotors] ${anuncios.length} anúncios retornados pela Bright Data.`);
 
   const resultado = await processarLoteAnunciosWebmotors(anuncios, margemMinima, janelaDias);
@@ -57,7 +61,9 @@ async function executarVarreduraWebmotors(categoryUrl: string): Promise<Resultad
 async function executarComRegistro(categoryUrl: string): Promise<void> {
   const registroId = await iniciarRegistroVarredura(categoryUrl, MODO);
   try {
-    const resultado = await executarVarreduraWebmotors(categoryUrl);
+    const resultado = await executarVarreduraWebmotors(categoryUrl, (sid) =>
+      registrarSnapshotIdVarredura(registroId, sid)
+    );
     await finalizarRegistroVarreduraComSucesso(registroId, resultado);
   } catch (erro) {
     const mensagem = erro instanceof Error ? erro.message : String(erro);
