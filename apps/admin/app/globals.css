@@ -1956,7 +1956,9 @@ body {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  z-index: 10;
+  /* Acima do overlay dos cards pagos (z-index 20) — mesmo motivo do dropdown de
+     estados; abaixo da TopBar (40). */
+  z-index: 30;
   min-width: 200px;
   background: #ffffff;
   border: 1px solid #e0e3e7;
@@ -2186,7 +2188,9 @@ body {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 10;
+  /* Acima do overlay dos cards pagos (z-index 20), senão o dropdown some atrás
+     deles; abaixo da TopBar (40) pra rolar por baixo dela. */
+  z-index: 30;
   min-width: 160px;
   max-height: 280px;
   overflow-y: auto;
