@@ -8,6 +8,7 @@ export function IconDropdown({
   rotulo,
   ativo,
   mostrarRotulo,
+  avatarUrl,
   children,
 }: {
   Icone: LucideIcon;
@@ -15,9 +16,12 @@ export function IconDropdown({
   ativo?: boolean;
   /** Mostra o `rotulo` como texto ao lado do ícone (em vez de só tooltip). */
   mostrarRotulo?: boolean;
+  /** Se informado (e carregar), mostra a foto circular no lugar do ícone. */
+  avatarUrl?: string | null;
   children: ReactNode;
 }) {
   const [aberto, setAberto] = useState(false);
+  const [fotoOk, setFotoOk] = useState(true);
   const fechamentoPendente = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +60,18 @@ export function IconDropdown({
         aria-label={rotulo}
         title={rotulo}
       >
-        <Icone size={18} strokeWidth={1.75} />
+        {avatarUrl && fotoOk ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatarUrl}
+            alt=""
+            className="icon-dropdown-avatar"
+            referrerPolicy="no-referrer"
+            onError={() => setFotoOk(false)}
+          />
+        ) : (
+          <Icone size={18} strokeWidth={1.75} />
+        )}
         {mostrarRotulo && <span className="icon-dropdown-botao-rotulo">{rotulo}</span>}
       </button>
       {aberto && <div className="icon-dropdown-box">{children}</div>}

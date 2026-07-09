@@ -46,6 +46,9 @@ export interface Usuario {
   /** Status cru da assinatura Stripe (active/trialing/past_due/canceled/…), ou
    * null se nunca assinou. `/planos` usa pra decidir Assinar × Gerenciar. */
   assinaturaStatus: string | null;
+  /** Foto de perfil (login Google traz em avatar_url/picture) — substitui o
+   * ícone de usuário quando existe. null p/ login por e-mail. */
+  avatarUrl: string | null;
 }
 
 /** Sessão + perfil (role, nome, whatsapp) do usuário atual, ou null se deslogado. */
@@ -77,6 +80,10 @@ export async function obterUsuarioAtual(): Promise<Usuario | null> {
   const nomeGoogle = user.user_metadata?.full_name ?? user.user_metadata?.name ?? null;
   const nome = perfil?.nome ?? (typeof nomeGoogle === "string" ? nomeGoogle : null);
 
+  // Foto do Google (avatar_url no OAuth; alguns provedores usam "picture").
+  const fotoBruta = user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
+  const avatarUrl = typeof fotoBruta === "string" && fotoBruta.startsWith("http") ? fotoBruta : null;
+
   return {
     id: user.id,
     email: user.email ?? null,
@@ -85,5 +92,6 @@ export async function obterUsuarioAtual(): Promise<Usuario | null> {
     role: perfil?.role === "admin" ? "admin" : "publico",
     premium: perfil?.premium === true || assinaturaAtiva,
     assinaturaStatus: perfil?.assinatura_status ?? null,
+    avatarUrl,
   };
 }

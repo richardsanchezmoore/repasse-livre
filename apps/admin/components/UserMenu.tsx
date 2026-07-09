@@ -36,9 +36,25 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
 
   return (
     <div className="usuario-icone-wrapper">
-      <IconDropdown Icone={UserRound} rotulo={usuario.nome ?? usuario.email ?? "Usuário"}>
+      <IconDropdown
+        Icone={UserRound}
+        rotulo={usuario.nome ?? usuario.email ?? "Usuário"}
+        avatarUrl={usuario.avatarUrl}
+      >
         <div className="usuario-menu-botao">
-          <span className="usuario-menu-avatar">{inicial}</span>
+          <span className="usuario-menu-avatar">
+            {usuario.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={usuario.avatarUrl}
+                alt=""
+                className="usuario-menu-avatar-img"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              inicial
+            )}
+          </span>
           <span className="usuario-menu-email">{usuario.nome ?? usuario.email}</span>
         </div>
         {dadosIncompletos && (

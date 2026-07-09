@@ -2005,6 +2005,14 @@ body {
   color: #54656f;
   cursor: pointer;
 }
+/* Foto de perfil (Google) no lugar do ícone — círculo dentro do botão 36px. */
+.icon-dropdown-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
 
 .icon-dropdown-botao:hover {
   background: #f0f2f5;
@@ -3983,6 +3991,13 @@ body {
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
+  overflow: hidden;
+}
+.usuario-menu-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .usuario-menu-email {
