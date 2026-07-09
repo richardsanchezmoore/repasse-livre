@@ -988,11 +988,11 @@ body {
 /* Toggle — pílula arredondada (ativo = pílula preta) */
 .bia2-toggle {
   display: flex;
-  gap: 3px;
-  background: #eef1f4;
-  border: 1px solid #e2e5ea;
+  gap: 2px;
+  background: #cbd0d7;
+  border: none;
   border-radius: 999px;
-  padding: 3px;
+  padding: 4px;
 }
 
 .bia2-toggle-opcao {
@@ -1007,15 +1007,15 @@ body {
   cursor: pointer;
   transition: background 0.14s, color 0.14s, box-shadow 0.14s;
   background: transparent;
-  color: #6b7280;
+  color: #5b636d;
 }
 
-/* Ativo = pílula branca com sombra leve (variação de fundo próxima, não inversão preta) */
+/* Ativo = pílula preta com sombra (conforme o print de referência) */
 .bia2-toggle-opcao-ativa {
-  background: #fff;
-  color: #111;
+  background: #111;
+  color: #fff;
   font-weight: 700;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
 }
 
 /* Card genérico — moldura 3px preta, sem radius/sombra */
