@@ -214,6 +214,7 @@ export function Sidebar({
             <X size={20} strokeWidth={1.75} />
           </button>
         </div>
+        <p className="sidebar-grupo-titulo">Explorar</p>
         <ul className="sidebar-lista">
           {itensVisiveis.map((item) => (
             <li key={item.aba}>
@@ -247,6 +248,7 @@ export function Sidebar({
         </ul>
         {/* Minha área — Favoritos + Buscas + Conta juntos (pessoal do usuário) */}
         <div className="sidebar-rodape">
+          <p className="sidebar-grupo-titulo">Minha área</p>
           <button
             type="button"
             onClick={() => navegarEFechar("/?aba=favoritos")}
@@ -282,6 +284,7 @@ export function Sidebar({
         </div>
         {role === "admin" && (
           <div className="sidebar-rodape">
+            <p className="sidebar-grupo-titulo">Administração</p>
             <button
               type="button"
               onClick={() => navegarEFechar("/worker")}
