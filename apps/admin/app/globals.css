@@ -1548,6 +1548,121 @@ body {
   }
 }
 
+/* ===== Tendências do mês (principais modelos: oferta × margem + leitura) ===== */
+.bia2-tend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.bia2-tend-card {
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bia2-tend-cabecalho {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.bia2-tend-ponto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.bia2-tend-modelo {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #111;
+}
+
+.bia2-tend-marca {
+  font-size: 11.5px;
+  color: #6b7280;
+}
+
+.bia2-tend-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bia2-tend-stat {
+  flex: 1;
+  min-width: 140px;
+  background: #f6f8fa;
+  border-radius: 10px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bia2-tend-stat-rotulo {
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8696a0;
+}
+
+.bia2-tend-stat-valor {
+  font-family: "Space Mono", monospace;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bia2-tend-seta {
+  color: #b6bcc6;
+}
+
+.bia2-tend-chip {
+  font-family: "Space Mono", monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 5px;
+  margin-left: 2px;
+}
+
+.bia2-tend-chip-alta {
+  color: #0a7d33;
+  background: #e6f6ec;
+}
+
+.bia2-tend-chip-baixa {
+  color: #b42318;
+  background: #fdecea;
+}
+
+.bia2-tend-chip-estavel {
+  color: #6b7280;
+  background: #eef1f4;
+}
+
+.bia2-tend-msg {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #3a4046;
+  margin: 0;
+}
+
 /* ===== Marcas de luxo ===== */
 .bia2-grid-marcas {
   display: grid;

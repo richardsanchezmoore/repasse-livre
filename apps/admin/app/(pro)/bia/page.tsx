@@ -9,7 +9,7 @@ import {
   buscarMaisDisputados,
   buscarMarcasLuxoPorEstado,
   buscarResumoBia,
-  buscarTendenciaDestaques,
+  buscarTendenciaPrincipais,
   buscarValorPotencialHistorico,
 } from "@/lib/biaDashboard";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -31,7 +31,7 @@ export default async function BiaPage() {
     marcasLuxo,
     estadosAtivos,
     cidadesAtivas,
-    tendenciaDestaques,
+    tendencias,
   ] = await Promise.all([
     contarOportunidades(usuarioAtual),
     buscarResumoBia(),
@@ -42,7 +42,7 @@ export default async function BiaPage() {
     buscarMarcasLuxoPorEstado(),
     buscarEstadosMaisAtivos(),
     buscarCidadesMaisAtivas(20),
-    buscarTendenciaDestaques(5),
+    buscarTendenciaPrincipais(6),
   ]);
 
   return (
@@ -76,7 +76,7 @@ export default async function BiaPage() {
               marcasLuxo={marcasLuxo}
               estadosAtivos={estadosAtivos}
               cidadesAtivas={cidadesAtivas}
-              tendenciaDestaques={tendenciaDestaques}
+              tendencias={tendencias}
               isAdmin={usuarioAtual.role === "admin"}
             />
           </div>

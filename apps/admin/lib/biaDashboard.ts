@@ -69,6 +69,12 @@ export interface ItemTendenciaDestaque {
   quantidadeMesAnterior: number;
 }
 
+/** Principais modelos (por volume) com comparativo oferta+margem mês a mês. */
+export interface ItemTendenciaPrincipal extends ItemTendenciaDestaque {
+  mesAtual: string;
+  mesAnterior: string;
+}
+
 function lancarSeErro<T>(resultado: { data: T | null; error: { message: string } | null }, contexto: string): T {
   if (resultado.error) {
     throw new Error(`Falha ao buscar ${contexto}: ${resultado.error.message}`);
@@ -228,5 +234,29 @@ export async function buscarTendenciaDestaques(limite: number): Promise<ItemTend
     margemMesAnterior: linha.margem_mes_anterior,
     quantidadeMesAtual: linha.quantidade_mes_atual,
     quantidadeMesAnterior: linha.quantidade_mes_anterior,
+  }));
+}
+
+export async function buscarTendenciaPrincipais(limite: number): Promise<ItemTendenciaPrincipal[]> {
+  const resultado = await supabaseAdmin.rpc("bia_tendencia_principais", { p_limite: limite });
+  const linhas = lancarSeErro(resultado, "tendência dos principais modelos") as Array<{
+    marca: string;
+    modelo: string;
+    margem_mes_atual: number | null;
+    margem_mes_anterior: number | null;
+    quantidade_mes_atual: number;
+    quantidade_mes_anterior: number;
+    mes_atual: string;
+    mes_anterior: string;
+  }>;
+  return linhas.map((linha) => ({
+    marca: linha.marca,
+    modelo: linha.modelo,
+    margemMesAtual: linha.margem_mes_atual,
+    margemMesAnterior: linha.margem_mes_anterior,
+    quantidadeMesAtual: linha.quantidade_mes_atual,
+    quantidadeMesAnterior: linha.quantidade_mes_anterior,
+    mesAtual: linha.mes_atual,
+    mesAnterior: linha.mes_anterior,
   }));
 }

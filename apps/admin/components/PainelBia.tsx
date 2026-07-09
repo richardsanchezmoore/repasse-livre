@@ -28,12 +28,12 @@ import type {
   ItemDisputado,
   ItemEstadoAtivo,
   ItemMarcaLuxo,
-  ItemTendenciaDestaque,
+  ItemTendenciaPrincipal,
   PontoSerie,
   PontoValor,
   ResumoBia,
 } from "@/lib/biaDashboard";
-import { gerarInsightTendencia } from "@/lib/insightTendencia";
+import { analisarTendencia, type TomTendencia } from "@/lib/insightTendencia";
 
 const HUE_ESTOQUE = 150; // verde da marca (era 230/azul) — mapa e barras de estoque
 const HUE_PRECO = 155; // verde levemente distinto pro "por quanto"
@@ -618,31 +618,83 @@ function SecaoLuxo({ marcasLuxo }: { marcasLuxo: ItemMarcaLuxo[] }) {
   );
 }
 
-function SecaoTendenciaMensal({ destaques }: { destaques: ItemTendenciaDestaque[] }) {
+const MESES_ABREV = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+function mesAbrev(iso: string): string {
+  // iso "2026-07-01" → "jul" (parse do "MM" pra não pegar fuso do new Date)
+  const mm = Number(iso.slice(5, 7));
+  return MESES_ABREV[mm - 1] ?? iso.slice(5, 7);
+}
+
+/** Seta/tom por direção da variação. */
+function ChipVariacao({ tom, texto }: { tom: TomTendencia; texto: string }) {
+  const seta = tom === "alta" ? "↑" : tom === "baixa" ? "↓" : "→";
+  return <span className={`bia2-tend-chip bia2-tend-chip-${tom}`}>{seta} {texto}</span>;
+}
+
+function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincipal[] }) {
+  const mAtual = tendencias[0] ? mesAbrev(tendencias[0].mesAtual) : "";
+  const mAnt = tendencias[0] ? mesAbrev(tendencias[0].mesAnterior) : "";
+
   return (
     <section className="bia2-secao">
       <Eyebrow numero="05" texto="Fase 4 · Tendência mensal" />
       <h2 className="bia2-titulo-secao">Tendências do mês</h2>
       <p className="bia2-paragrafo-apoio">
-        Comparação de margem média e volume de oferta mês a mês, por modelo. A série histórica começou
-        em 27/06/2026 — comparações ficam mais completas conforme a base acumula mais meses.
+        Como os principais modelos se moveram de <strong>{mAnt || "mês anterior"}</strong> para{" "}
+        <strong>{mAtual || "este mês"}</strong> em oferta e margem — com a leitura da BIA sobre o que o
+        comportamento sugere pra sua decisão de compra.
       </p>
 
-      {destaques.length === 0 ? (
+      {tendencias.length === 0 ? (
         <div className="bia2-card">
           <div className="bia2-painel-hover-vazio">
             Ainda não há dois meses completos de histórico pra comparar — volte aqui no próximo mês.
           </div>
         </div>
       ) : (
-        <div className="bia2-card bia2-cidades-lista">
-          {destaques.map((item) => (
-            <div key={`${item.marca}-${item.modelo}`} className="bia2-cidade-linha">
-              <div className="bia2-cidade-nome-grupo">
-                <span className="bia2-cidade-nome">{gerarInsightTendencia(item)}</span>
+        <div className="bia2-tend-grid">
+          {tendencias.map((item) => {
+            const a = analisarTendencia(item);
+            const volAnt = Math.round(a.volAnterior);
+            const volAtual = Math.round(a.volAtual);
+            const volChip =
+              a.volDeltaPct === null ? "novo" : `${Math.round(Math.abs(a.volDeltaPct))}%`;
+            const margemChip =
+              a.margemDeltaPp === null ? "—" : `${Math.abs(a.margemDeltaPp).toFixed(1)}pp`;
+            return (
+              <div key={`${item.marca}-${item.modelo}`} className="bia2-tend-card">
+                <div className="bia2-tend-cabecalho">
+                  <span
+                    className="bia2-tend-ponto"
+                    style={{ background: corDaMarca(item.marca), boxShadow: `0 0 8px ${corDaMarca(item.marca)}` }}
+                  />
+                  <span className="bia2-tend-modelo">{item.modelo}</span>
+                  <span className="bia2-tend-marca">{item.marca}</span>
+                </div>
+
+                <div className="bia2-tend-stats">
+                  <div className="bia2-tend-stat">
+                    <span className="bia2-tend-stat-rotulo">Oferta média</span>
+                    <span className="bia2-tend-stat-valor">
+                      {volAnt} <span className="bia2-tend-seta">→</span> {volAtual}
+                      <ChipVariacao tom={a.volTom} texto={volChip} />
+                    </span>
+                  </div>
+                  <div className="bia2-tend-stat">
+                    <span className="bia2-tend-stat-rotulo">Margem média</span>
+                    <span className="bia2-tend-stat-valor">
+                      {a.margemAnterior !== null ? `${a.margemAnterior.toFixed(1)}%` : "—"}{" "}
+                      <span className="bia2-tend-seta">→</span>{" "}
+                      {a.margemAtual !== null ? `${a.margemAtual.toFixed(1)}%` : "—"}
+                      <ChipVariacao tom={a.margemTom} texto={margemChip} />
+                    </span>
+                  </div>
+                </div>
+
+                <p className="bia2-tend-msg">{a.mensagem}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
@@ -658,7 +710,7 @@ export function PainelBia({
   marcasLuxo,
   estadosAtivos,
   cidadesAtivas,
-  tendenciaDestaques,
+  tendencias,
   isAdmin,
 }: {
   resumo: ResumoBia;
@@ -669,7 +721,7 @@ export function PainelBia({
   marcasLuxo: ItemMarcaLuxo[];
   estadosAtivos: ItemEstadoAtivo[];
   cidadesAtivas: ItemCidadeAtiva[];
-  tendenciaDestaques: ItemTendenciaDestaque[];
+  tendencias: ItemTendenciaPrincipal[];
   /** Seções operacionais (throughput do motor, valor potencial) só pra admin. */
   isAdmin: boolean;
 }) {
@@ -707,7 +759,7 @@ export function PainelBia({
       <SecaoCidades cidades={cidadesAtivas} />
       <SecaoDisputados disputados={maisDisputados} />
       <SecaoLuxo marcasLuxo={marcasLuxo} />
-      <SecaoTendenciaMensal destaques={tendenciaDestaques} />
+      <SecaoTendenciaMensal tendencias={tendencias} />
 
       {isAdmin && (
       <section className="bia2-secao">
