@@ -124,6 +124,18 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         preço no Stripe e cola o <code>price_…</code> aqui — o valor exibido na página de planos acompanha sozinho, sem
         deploy. As chaves secretas (secret key, webhook) seguem no ambiente, não aqui.
       </CampoConfig>
+
+      <CampoConfig
+        chave="WHATSAPP_SUPORTE"
+        valorInicial={configs["WHATSAPP_SUPORTE"] ?? ""}
+        titulo="WhatsApp de vendas/suporte"
+        tipo="texto"
+        placeholder="5548999998888"
+      >
+        Número que aparece no botão <strong>“Ficou com dúvida? Chame no WhatsApp”</strong> da página de planos.
+        Use o formato internacional com <strong>DDI 55 + DDD + número</strong>, só dígitos (ex.: <code>5548999998888</code>).
+        Deixe em branco pra esconder o botão. Vale na hora, sem deploy.
+      </CampoConfig>
     </div>
   );
 }
