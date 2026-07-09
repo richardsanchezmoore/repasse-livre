@@ -3952,7 +3952,8 @@ body {
 }
 
 .top-bar-login,
-.top-bar-cadastro {
+.top-bar-cadastro,
+.top-bar-google {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3963,6 +3964,19 @@ body {
   text-decoration: none;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+/* Botão "Continuar com Google" no menu do ícone-usuário — 1º item. */
+.top-bar-google {
+  gap: 8px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1.5px solid #e0e3e7;
+  cursor: pointer;
+  font-family: inherit;
+}
+.top-bar-google:hover {
+  background: #f4f6f8;
 }
 
 /* Só o menu de login (o que contém .top-bar-login) fica mais largo e arejado —

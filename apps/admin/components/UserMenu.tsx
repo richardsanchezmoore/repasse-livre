@@ -5,14 +5,29 @@ import { useRouter } from "next/navigation";
 import { criarSupabaseBrowser } from "@/lib/supabase-browser";
 import type { Usuario } from "@/lib/supabase-server";
 import { IconDropdown } from "./IconDropdown";
+import { IconeGoogle } from "./IconeGoogle";
 import { UserRound } from "lucide-react";
 
 export function UserMenu({ usuario }: { usuario: Usuario | null }) {
   const router = useRouter();
 
+  async function aoEntrarComGoogle() {
+    const supabase = criarSupabaseBrowser();
+    // Volta pra página atual depois de logar (não força a home).
+    const destino = window.location.pathname + window.location.search;
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destino)}` },
+    });
+  }
+
   if (!usuario) {
     return (
       <IconDropdown Icone={UserRound} rotulo="Entrar ou criar conta">
+        <button type="button" className="top-bar-google" onClick={aoEntrarComGoogle}>
+          <IconeGoogle size={18} />
+          Continuar com Google
+        </button>
         <Link href="/login" className="top-bar-login">
           Login
         </Link>
