@@ -3170,10 +3170,10 @@ body {
    por isso o escopo em `.pagina-oportunidade`): Ganho/Margem com mais presença
    no desktop, via teto maior do clamp; mobile fica igual. */
 .pagina-oportunidade .destaque-margem-valor {
-  font-size: clamp(28px, 7vw, 46px);
+  font-size: clamp(28px, 7vw, 40px);
 }
 .pagina-oportunidade .destaque-margem-percentual {
-  font-size: clamp(17px, 3vw, 23px);
+  font-size: clamp(17px, 3vw, 20px);
 }
 .pagina-oportunidade .destaque-margem-valor-rotulo {
   font-size: 12px;
@@ -3335,7 +3335,7 @@ body {
 }
 
 .precos-grupo-pagina .linha-preco {
-  font-size: clamp(20px, 2.7vw, 30px);
+  font-size: clamp(20px, 2.7vw, 26px);
   padding: 8px 0;
 }
 
@@ -4336,8 +4336,8 @@ body {
 
 .pagina-oportunidade-titulo {
   font-weight: 700;
-  /* Mais presença no desktop (até 30px); mobile segue em 22px. */
-  font-size: clamp(22px, 3vw, 30px);
+  /* Mais presença no desktop (até 26px); mobile segue em 22px. */
+  font-size: clamp(22px, 3vw, 26px);
   line-height: 1.2;
   margin: 0;
 }
