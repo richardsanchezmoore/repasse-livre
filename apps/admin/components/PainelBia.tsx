@@ -637,6 +637,7 @@ export function PainelBia({
   estadosAtivos,
   cidadesAtivas,
   tendenciaDestaques,
+  isAdmin,
 }: {
   resumo: ResumoBia;
   descobertas7d: PontoSerie[];
@@ -647,6 +648,8 @@ export function PainelBia({
   estadosAtivos: ItemEstadoAtivo[];
   cidadesAtivas: ItemCidadeAtiva[];
   tendenciaDestaques: ItemTendenciaDestaque[];
+  /** Seções operacionais (throughput do motor, valor potencial) só pra admin. */
+  isAdmin: boolean;
 }) {
   const [janelaDescobertas, setJanelaDescobertas] = useState<"7" | "30">("7");
   const serieDescobertas = janelaDescobertas === "7" ? descobertas7d : descobertas30d;
@@ -684,6 +687,7 @@ export function PainelBia({
       <SecaoLuxo marcasLuxo={marcasLuxo} />
       <SecaoTendenciaMensal destaques={tendenciaDestaques} />
 
+      {isAdmin && (
       <section className="bia2-secao">
         <Eyebrow numero="06" texto="Tendência diária" />
         <h2 className="bia2-titulo-secao">Oportunidades descobertas por dia</h2>
@@ -713,8 +717,9 @@ export function PainelBia({
           </div>
         </div>
       </section>
+      )}
 
-      {valorPotencialHistorico.length > 1 && (
+      {isAdmin && valorPotencialHistorico.length > 1 && (
         <section className="bia2-secao">
           <h2 className="bia2-titulo-secao">Valor potencial em estoque — histórico</h2>
           <div className="bia2-card" style={{ marginTop: 18 }}>

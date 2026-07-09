@@ -77,6 +77,7 @@ export default async function BiaPage() {
               estadosAtivos={estadosAtivos}
               cidadesAtivas={cidadesAtivas}
               tendenciaDestaques={tendenciaDestaques}
+              isAdmin={usuarioAtual.role === "admin"}
             />
           </div>
         </main>
