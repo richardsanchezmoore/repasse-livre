@@ -428,7 +428,7 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
       <div className="bia2-secao-cabecalho">
         <div>
           <Eyebrow numero="03" texto="Concorrência" />
-          <h2 className="bia2-titulo-secao">Anúncios mais disputados</h2>
+          <h2 className="bia2-titulo-secao">Modelos mais disputados</h2>
         </div>
         <Toggle
           opcoes={[
