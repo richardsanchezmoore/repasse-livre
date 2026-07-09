@@ -48,3 +48,19 @@ export async function buscarStripePriceId(): Promise<string | null> {
   const doEnv = (process.env.STRIPE_PRICE_ID ?? "").trim();
   return doEnv || null;
 }
+
+/**
+ * Número de WhatsApp de suporte/vendas (só dígitos, com DDI 55) exibido na
+ * página de planos pra destravar dúvida antes de assinar. Vem do painel
+ * (`worker_config.WHATSAPP_SUPORTE`) pra trocar sem deploy. null = não
+ * configurado → o botão nem aparece. Server-only.
+ */
+export async function buscarWhatsappSuporte(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "WHATSAPP_SUPORTE")
+    .maybeSingle();
+  const numero = (data?.valor ?? "").replace(/\D/g, "");
+  return numero || null;
+}

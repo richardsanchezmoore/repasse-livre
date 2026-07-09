@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Gem, Unlock, ScanSearch, Radar, TrendingUp, Bell, Check, ArrowLeft } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
+import { BotaoWhatsappSuporte } from "@/components/BotaoWhatsappSuporte";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
+import { buscarWhatsappSuporte } from "@/lib/configWorker";
 
 export const metadata: Metadata = {
   title: "Planos — Repasse Livre",
@@ -25,7 +27,11 @@ export default async function PlanosPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const [usuario, preco] = await Promise.all([obterUsuarioAtual(), buscarPrecoExibicao()]);
+  const [usuario, preco, whatsappSuporte] = await Promise.all([
+    obterUsuarioAtual(),
+    buscarPrecoExibicao(),
+    buscarWhatsappSuporte(),
+  ]);
   // Tem um registro de assinatura no Stripe (qualquer status) → botão Gerenciar.
   const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
   const estado: "entrar" | "assinar" | "gerenciar" = !usuario
@@ -70,6 +76,7 @@ export default async function PlanosPage({
             ? "Você já é premium. Gerencie ou cancele quando quiser."
             : "Cancele quando quiser, direto no seu painel de assinatura."}
         </p>
+        {whatsappSuporte && <BotaoWhatsappSuporte numero={whatsappSuporte} />}
       </section>
 
       <section className="planos-grade">

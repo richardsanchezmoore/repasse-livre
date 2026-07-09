@@ -3058,6 +3058,25 @@ body {
   color: #9aa2b1;
   margin: 12px 0 0;
 }
+.planos-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a5d2c;
+  background: #eafaf0;
+  border: 1px solid #b7e6c9;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.planos-whatsapp:hover {
+  background: #d8f5e4;
+  border-color: #25d366;
+}
 .planos-preco {
   display: flex;
   align-items: baseline;
