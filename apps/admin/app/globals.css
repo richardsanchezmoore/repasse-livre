@@ -3955,13 +3955,23 @@ body {
 .top-bar-cadastro {
   display: flex;
   align-items: center;
-  padding: 7px 16px;
+  justify-content: center;
+  padding: 12px 18px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+/* Só o menu de login (o que contém .top-bar-login) fica mais largo e arejado —
+   escopado via :has pra não afetar os dropdowns de filtro/estado, que usam o
+   mesmo .icon-dropdown-box. */
+.icon-dropdown-box:has(.top-bar-login) {
+  min-width: 240px;
+  gap: 8px;
+  padding: 12px;
 }
 
 .top-bar-login {
