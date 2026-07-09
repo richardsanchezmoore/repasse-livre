@@ -46,6 +46,12 @@ function formatarDiaCurto(diaIso: string): string {
   return `${dia}/${mes}`;
 }
 
+// KM arredondado pra milhares numa leitura rápida: 20.025 → "20mil", 0 → "0".
+function kmMil(v: number): string {
+  const mil = Math.floor(v / 1000);
+  return mil === 0 ? "0" : `${mil}mil`;
+}
+
 const ESTILO_TOOLTIP = {
   contentStyle: {
     background: "#161a23",
@@ -512,9 +518,7 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
               <div className="bia2-disputado-valores">
                 {ordem === "km" ? (
                   <span className="bia2-disputado-kmrange">
-                    {temKm
-                      ? `${formatarInteiro(item.kmMin as number)}–${formatarInteiro(item.kmMax as number)}`
-                      : "—"}
+                    {temKm ? `${kmMil(item.kmMin as number)} – ${kmMil(item.kmMax as number)}` : "—"}
                   </span>
                 ) : (
                   <>
