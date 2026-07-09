@@ -26,12 +26,13 @@ import {
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
 
+// "Explorar" — filas do board. Favoritos saiu daqui: é área pessoal do usuário,
+// não uma fila de moderação (agrupado com Conta/Buscas mais abaixo).
 const ITENS: Array<{ aba: Aba; rotulo: string; Icone: LucideIcon; soAdmin?: boolean }> = [
   { aba: "descobertas", rotulo: "Descobertas", Icone: Search, soAdmin: true },
   { aba: "enviadas", rotulo: "Enviadas", Icone: Send, soAdmin: true },
   { aba: "aprovadas", rotulo: "Oportunidades", Icone: CheckCircle2 },
   { aba: "rejeitadas", rotulo: "Rejeitadas", Icone: XCircle, soAdmin: true },
-  { aba: "favoritos", rotulo: "Favoritos", Icone: Heart },
 ];
 
 export function Sidebar({
@@ -96,36 +97,57 @@ export function Sidebar({
               </button>
             </li>
           ))}
+          {mostrarConta && (
+            <li>
+              <button
+                type="button"
+                onClick={() => navegar("/bia")}
+                className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
+                title="Inteligência de Mercado"
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <BarChart3 size={18} strokeWidth={1.75} />
+                </span>
+              </button>
+            </li>
+          )}
         </ul>
-        {mostrarConta && (
-          <div className="sidebar-rodape">
-            <button
-              type="button"
-              onClick={() => navegar("/conta")}
-              className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
-              title="Minha Conta"
-            >
-              <span className="sidebar-icone" aria-hidden="true">
-                <UserCircle size={18} strokeWidth={1.75} />
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navegar("/bia")}
-              className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
-              title="Inteligência de Mercado"
-            >
-              <span className="sidebar-icone" aria-hidden="true">
-                <BarChart3 size={18} strokeWidth={1.75} />
-              </span>
-            </button>
-            <span className="sidebar-item" style={{ opacity: 0.5, cursor: "default" }} title="Buscas e alertas · em breve">
-              <span className="sidebar-icone" aria-hidden="true">
-                <Bell size={18} strokeWidth={1.75} />
-              </span>
+        {/* Minha área — Favoritos + Buscas + Conta juntos (pessoal do usuário) */}
+        <div className="sidebar-rodape">
+          <button
+            type="button"
+            onClick={() => navegar("/?aba=favoritos")}
+            className={`sidebar-item ${pathname === "/" && abaAtiva === "favoritos" ? "sidebar-item-ativo" : ""}`}
+            title="Favoritos"
+          >
+            <span className="sidebar-icone" aria-hidden="true">
+              <Heart size={18} strokeWidth={1.75} />
             </span>
-          </div>
-        )}
+          </button>
+          {mostrarConta && (
+            <>
+              <span
+                className="sidebar-item"
+                style={{ opacity: 0.5, cursor: "default" }}
+                title="Buscas e alertas · em breve"
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <Bell size={18} strokeWidth={1.75} />
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => navegar("/conta")}
+                className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
+                title="Minha Conta"
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <UserCircle size={18} strokeWidth={1.75} />
+                </span>
+              </button>
+            </>
+          )}
+        </div>
         {role === "admin" && (
           <div className="sidebar-rodape">
             <button
@@ -208,38 +230,56 @@ export function Sidebar({
               </button>
             </li>
           ))}
+          {mostrarConta && (
+            <li>
+              <button
+                type="button"
+                onClick={() => navegarEFechar("/bia")}
+                className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <BarChart3 size={18} strokeWidth={1.75} />
+                </span>
+                <span className="sidebar-rotulo">Inteligência de Mercado</span>
+              </button>
+            </li>
+          )}
         </ul>
-        {mostrarConta && (
-          <div className="sidebar-rodape">
-            <button
-              type="button"
-              onClick={() => navegarEFechar("/conta")}
-              className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
-            >
-              <span className="sidebar-icone" aria-hidden="true">
-                <UserCircle size={18} strokeWidth={1.75} />
-              </span>
-              <span className="sidebar-rotulo">Minha Conta</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navegarEFechar("/bia")}
-              className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
-            >
-              <span className="sidebar-icone" aria-hidden="true">
-                <BarChart3 size={18} strokeWidth={1.75} />
-              </span>
-              <span className="sidebar-rotulo">Inteligência de Mercado</span>
-            </button>
-            <div className="sidebar-item" style={{ opacity: 0.55, cursor: "default" }} aria-disabled="true">
-              <span className="sidebar-icone" aria-hidden="true">
-                <Bell size={18} strokeWidth={1.75} />
-              </span>
-              <span className="sidebar-rotulo">Buscas · Alertas</span>
-              <span className="sidebar-contador">Em breve</span>
-            </div>
-          </div>
-        )}
+        {/* Minha área — Favoritos + Buscas + Conta juntos (pessoal do usuário) */}
+        <div className="sidebar-rodape">
+          <button
+            type="button"
+            onClick={() => navegarEFechar("/?aba=favoritos")}
+            className={`sidebar-item ${pathname === "/" && abaAtiva === "favoritos" ? "sidebar-item-ativo" : ""}`}
+          >
+            <span className="sidebar-icone" aria-hidden="true">
+              <Heart size={18} strokeWidth={1.75} />
+            </span>
+            <span className="sidebar-rotulo">Favoritos</span>
+            <span className="sidebar-contador">{contagens.favoritos}</span>
+          </button>
+          {mostrarConta && (
+            <>
+              <div className="sidebar-item" style={{ opacity: 0.55, cursor: "default" }} aria-disabled="true">
+                <span className="sidebar-icone" aria-hidden="true">
+                  <Bell size={18} strokeWidth={1.75} />
+                </span>
+                <span className="sidebar-rotulo">Buscas · Alertas</span>
+                <span className="sidebar-contador">Em breve</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navegarEFechar("/conta")}
+                className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <UserCircle size={18} strokeWidth={1.75} />
+                </span>
+                <span className="sidebar-rotulo">Minha Conta</span>
+              </button>
+            </>
+          )}
+        </div>
         {role === "admin" && (
           <div className="sidebar-rodape">
             <button
