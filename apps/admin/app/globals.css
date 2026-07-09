@@ -1381,7 +1381,7 @@ body {
 
 .bia2-disputados-cabecalho {
   display: grid;
-  grid-template-columns: 190px 1fr 150px;
+  grid-template-columns: 190px 1fr 175px;
   gap: 16px;
   padding: 12px 0 10px;
   font-family: "Space Mono", monospace;
@@ -1398,7 +1398,7 @@ body {
 
 .bia2-disputado-linha {
   display: grid;
-  grid-template-columns: 190px 1fr 150px;
+  grid-template-columns: 190px 1fr 175px;
   gap: 16px;
   align-items: center;
   padding: 11px 0;
@@ -1440,21 +1440,28 @@ body {
   margin-top: 3px;
 }
 
-.bia2-disputado-barra-grupo {
+/* Coluna da barra (grid col 2) — a BarraSimples/trilho de KM preenche via flex */
+.bia2-disputado-barra {
   display: flex;
   align-items: center;
-  gap: 12px;
+  min-width: 0;
 }
 
 .bia2-disputado-valores {
   font-family: "Space Mono", monospace;
   font-size: 12px;
   font-weight: 700;
-  min-width: 92px;
   display: flex;
   align-items: center;
   gap: 8px;
   justify-content: flex-end;
+}
+
+/* Faixa de KM como texto do valor (modo "Por KM") */
+.bia2-disputado-kmrange {
+  color: #3a4046;
+  font-size: 12.5px;
+  font-weight: 700;
 }
 
 .bia2-disputado-qtd {
@@ -1482,6 +1489,13 @@ body {
   overflow: hidden;
 }
 
+/* Variante "barra principal" do trilho de KM (modo Por KM): alta e ocupa a coluna */
+.bia2-km-trilho-barra {
+  flex: 1;
+  height: 18px;
+  border-radius: 4px;
+}
+
 .bia2-km-fill {
   position: absolute;
   top: 0;
@@ -1490,12 +1504,48 @@ body {
   border-radius: 3px;
 }
 
+.bia2-km-vazio {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: #9aa2ad;
+}
+
 .bia2-km-label {
   font-family: "Space Mono", monospace;
   font-size: 9.5px;
   color: #8696a0;
   margin-top: 4px;
   text-align: right;
+}
+
+/* ===== Disputados no mobile: empilha (modelo + números em cima, barra full-width
+   embaixo) — resolve a barra "espremida a zero" quando 3 colunas não cabem ===== */
+@media (max-width: 640px) {
+  .bia2-disputados-cabecalho {
+    display: none;
+  }
+  .bia2-disputados-card {
+    padding: 10px 14px 14px;
+  }
+  .bia2-disputado-linha {
+    grid-template-columns: 1fr auto;
+    column-gap: 12px;
+    row-gap: 9px;
+    padding: 13px 0;
+  }
+  .bia2-disputado-modelo-grupo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .bia2-disputado-valores {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .bia2-disputado-barra {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }
 
 /* ===== Marcas de luxo ===== */

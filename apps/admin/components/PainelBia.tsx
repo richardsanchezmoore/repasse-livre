@@ -395,12 +395,11 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
   );
 }
 
-type OrdemDisputado = "qtd" | "margem";
+type OrdemDisputado = "margem" | "km" | "qtd";
 
 function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
   const [marcaAtiva, setMarcaAtiva] = useState("Todas");
-  const [ordem, setOrdem] = useState<OrdemDisputado>("qtd");
-  const isVolume = ordem === "qtd";
+  const [ordem, setOrdem] = useState<OrdemDisputado>("margem");
 
   const marcas = useMemo(() => {
     const contagem = new Map<string, number>();
@@ -413,10 +412,16 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
   const kmGlobal = Math.max(...disputados.map((item) => item.kmMax ?? 0), 1);
 
   const filtrados = disputados.filter((item) => marcaAtiva === "Todas" || item.marca === marcaAtiva);
-  const ordenados = [...filtrados].sort((a, b) =>
-    isVolume ? b.quantidade - a.quantidade : (b.melhorMargem ?? 0) - (a.melhorMargem ?? 0)
-  );
-  const maiorValor = Math.max(...ordenados.map((item) => (isVolume ? item.quantidade : item.melhorMargem ?? 0)), 1);
+  const ordenados = [...filtrados].sort((a, b) => {
+    if (ordem === "margem") return (b.melhorMargem ?? 0) - (a.melhorMargem ?? 0);
+    if (ordem === "km") return (b.kmMax ?? 0) - (a.kmMax ?? 0);
+    return b.quantidade - a.quantidade;
+  });
+  const maxQtd = Math.max(...ordenados.map((i) => i.quantidade), 1);
+  const maxMargem = Math.max(...ordenados.map((i) => i.melhorMargem ?? 0), 1);
+
+  const rotuloCol2 = ordem === "margem" ? "Margem" : ordem === "km" ? "Faixa de KM (0–máx do país)" : "Volume de anúncios";
+  const rotuloCol3 = ordem === "km" ? "KM mín–máx" : "Anúncios · margem";
 
   return (
     <section className="bia2-secao">
@@ -427,8 +432,9 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
         </div>
         <Toggle
           opcoes={[
-            { valor: "qtd", rotulo: "Volume" },
             { valor: "margem", rotulo: "Margem" },
+            { valor: "km", rotulo: "Por KM" },
+            { valor: "qtd", rotulo: "Volume" },
           ]}
           ativo={ordem}
           onSelecionar={setOrdem}
@@ -460,16 +466,16 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
       <div className="bia2-card bia2-disputados-card">
         <div className="bia2-disputados-cabecalho">
           <span>Modelo</span>
-          <span>{isVolume ? "Volume de anúncios · margem" : "Melhor margem · volume"}</span>
-          <span className="bia2-alinhar-direita">Faixa de KM</span>
+          <span>{rotuloCol2}</span>
+          <span className="bia2-alinhar-direita">{rotuloCol3}</span>
         </div>
         {ordenados.map((item) => {
-          const valor = isVolume ? item.quantidade : item.melhorMargem ?? 0;
-          const percentual = (valor / maiorValor) * 100;
           const margemAlta = (item.melhorMargem ?? 0) >= 25;
           const temKm = item.kmMin !== null && item.kmMax !== null;
           const kmLeft = temKm ? ((item.kmMin as number) / kmGlobal) * 100 : 0;
-          const kmW = temKm ? Math.max(((item.kmMax as number) - (item.kmMin as number)) / kmGlobal * 100, 1.5) : 0;
+          const kmW = temKm ? Math.max((((item.kmMax as number) - (item.kmMin as number)) / kmGlobal) * 100, 2) : 0;
+          const percentual =
+            ordem === "margem" ? ((item.melhorMargem ?? 0) / maxMargem) * 100 : (item.quantidade / maxQtd) * 100;
           return (
             <div key={`${item.marca}-${item.modelo}`} className="bia2-disputado-linha">
               <div className="bia2-disputado-modelo-grupo">
@@ -485,27 +491,38 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
                   </div>
                 </div>
               </div>
-              <div className="bia2-disputado-barra-grupo">
-                <BarraSimples percentual={percentual} cor={corDaMarca(item.marca)} alturaPx={18} />
-                <span className="bia2-disputado-valores">
-                  <span className="bia2-disputado-qtd">{item.quantidade} un.</span>
-                  <span className={margemAlta ? "bia2-badge-margem" : "bia2-margem-normal"}>
-                    {item.melhorMargem !== null ? formatarPercentual1(item.melhorMargem) : "—"}
-                  </span>
-                </span>
-              </div>
-              <div>
-                {temKm ? (
-                  <>
-                    <div className="bia2-km-trilho">
-                      <div className="bia2-km-fill" style={{ left: `${kmLeft}%`, width: `${kmW}%` }} />
+
+              <div className="bia2-disputado-barra">
+                {ordem === "km" ? (
+                  temKm ? (
+                    <div className="bia2-km-trilho bia2-km-trilho-barra">
+                      <div
+                        className="bia2-km-fill"
+                        style={{ left: `${kmLeft}%`, width: `${kmW}%`, background: corDaMarca(item.marca) }}
+                      />
                     </div>
-                    <div className="bia2-km-label">
-                      {formatarInteiro(item.kmMin as number)}–{formatarInteiro(item.kmMax as number)}
-                    </div>
-                  </>
+                  ) : (
+                    <span className="bia2-km-vazio">sem dado de KM</span>
+                  )
                 ) : (
-                  <div className="bia2-km-label">—</div>
+                  <BarraSimples percentual={percentual} cor={corDaMarca(item.marca)} alturaPx={18} />
+                )}
+              </div>
+
+              <div className="bia2-disputado-valores">
+                {ordem === "km" ? (
+                  <span className="bia2-disputado-kmrange">
+                    {temKm
+                      ? `${formatarInteiro(item.kmMin as number)}–${formatarInteiro(item.kmMax as number)}`
+                      : "—"}
+                  </span>
+                ) : (
+                  <>
+                    <span className="bia2-disputado-qtd">{item.quantidade} un.</span>
+                    <span className={margemAlta ? "bia2-badge-margem" : "bia2-margem-normal"}>
+                      {item.melhorMargem !== null ? formatarPercentual1(item.melhorMargem) : "—"}
+                    </span>
+                  </>
                 )}
               </div>
             </div>
