@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Gem, ScanSearch, IdCard, Car, Heart, ChevronRight, Lock } from "lucide-react";
+import { Gem, ScanSearch, IdCard, Car, Heart, BellRing, ChevronRight, Lock } from "lucide-react";
 import { buscarEstadosDisponiveis, contarOportunidades } from "@/components/DiscoveriesBoard";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -29,7 +29,7 @@ function formatarData(iso: string | null): string | null {
 function rotuloStatus(status: string | null): string {
   switch (status) {
     case "active":
-      return "Ativa";
+      return "Ativo";
     case "trialing":
       return "Em período de teste";
     case "past_due":
@@ -172,6 +172,18 @@ export default async function ContaPage() {
                     </span>
                     <ChevronRight size={18} className="conta-atalho-seta" />
                   </Link>
+
+                  {/* Reserva o lugar do módulo de alertas (buscas salvas → aviso
+                      no WhatsApp/push quando entra anúncio na faixa/modelo). Ainda
+                      não navega — ver project_repasse_livre_notificacoes_predefinicoes. */}
+                  <div className="conta-atalho conta-atalho-embreve" aria-disabled="true">
+                    <BellRing size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                    <span className="conta-atalho-texto">
+                      <span className="conta-atalho-titulo">Buscas salvas</span>
+                      <span className="conta-atalho-sub">Avisos automáticos do carro que você procura</span>
+                    </span>
+                    <span className="conta-atalho-soon">Em breve</span>
+                  </div>
                 </nav>
               </section>
 
