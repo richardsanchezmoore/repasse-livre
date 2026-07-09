@@ -403,6 +403,13 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
 
 type OrdemDisputado = "margem" | "km" | "qtd";
 
+// Quantos modelos mostrar por seleção (Todas ou marca) — a busca traz o pool
+// completo (~400 modelos) pra cada marca render seu próprio top; a exibição
+// corta aqui pra não virar lista infinita.
+const LIMITE_DISPUTADOS = 20;
+// Chips = só as marcas mais relevantes (o pool completo tem ~40 marcas).
+const MAX_CHIPS_MARCA = 12;
+
 function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
   const [marcaAtiva, setMarcaAtiva] = useState("Todas");
   const [ordem, setOrdem] = useState<OrdemDisputado>("margem");
@@ -412,13 +419,19 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
     for (const item of disputados) {
       contagem.set(item.marca, (contagem.get(item.marca) ?? 0) + item.quantidade);
     }
-    return ["Todas", ...[...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([marca]) => marca)];
+    const ordenadas = [...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([marca]) => marca);
+    return ["Todas", ...ordenadas.slice(0, MAX_CHIPS_MARCA)];
   }, [disputados]);
 
   const kmGlobal = Math.max(...disputados.map((item) => item.kmMax ?? 0), 1);
 
+  // disputados já vem volume-desc da RPC. Corta o top por VOLUME (Todas = global;
+  // marca = a própria marca) ANTES de ordenar pela métrica ativa — assim cada
+  // marca entrega sua proporção, sem virar lista infinita nem trocar o recorte
+  // quando muda o toggle.
   const filtrados = disputados.filter((item) => marcaAtiva === "Todas" || item.marca === marcaAtiva);
-  const ordenados = [...filtrados].sort((a, b) => {
+  const topVolume = filtrados.slice(0, LIMITE_DISPUTADOS);
+  const ordenados = [...topVolume].sort((a, b) => {
     if (ordem === "margem") return (b.melhorMargem ?? 0) - (a.melhorMargem ?? 0);
     if (ordem === "km") return (b.kmMax ?? 0) - (a.kmMax ?? 0);
     return b.quantidade - a.quantidade;

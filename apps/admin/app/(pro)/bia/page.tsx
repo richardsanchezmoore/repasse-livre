@@ -38,7 +38,7 @@ export default async function BiaPage() {
     buscarDescobertasPorDia(7),
     buscarDescobertasPorDia(30),
     buscarValorPotencialHistorico(30),
-    buscarMaisDisputados(20),
+    buscarMaisDisputados(500), // pool completo (~400 modelos); o painel corta o top por seleção
     buscarMarcasLuxoPorEstado(),
     buscarEstadosMaisAtivos(),
     buscarCidadesMaisAtivas(20),
