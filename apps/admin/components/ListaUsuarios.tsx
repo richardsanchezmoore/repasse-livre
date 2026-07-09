@@ -9,6 +9,8 @@ export interface UsuarioComRole {
   email: string | null;
   role: "admin" | "publico";
   premium: boolean;
+  /** Foto de perfil do login (Google), ou null → cai na inicial. */
+  avatarUrl: string | null;
   /** Provedor do login: "Google" | "E-mail" | "Facebook" | … */
   origem: string;
   /** ISO cru do created_at (só p/ ordenação no server). */
@@ -17,6 +19,28 @@ export interface UsuarioComRole {
   cadastro: string | null;
   /** Último acesso já formatado, ou null. */
   ultimoAcesso: string | null;
+}
+
+/** Avatar do usuário: foto do login (Google) em círculo, ou a inicial num
+ * fundo verde. Cai na inicial se não tem foto OU se a imagem falhar. */
+function AvatarUsuario({ url, inicial }: { url: string | null; inicial: string }) {
+  const [ok, setOk] = useState(Boolean(url));
+  return (
+    <span className="usuarios-avatar">
+      {url && ok ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt=""
+          className="usuarios-avatar-img"
+          referrerPolicy="no-referrer"
+          onError={() => setOk(false)}
+        />
+      ) : (
+        inicial
+      )}
+    </span>
+  );
 }
 
 export function ListaUsuarios({
@@ -102,7 +126,15 @@ export function ListaUsuarios({
             const carregando = pendente && idEmAlteracao === usuario.userId;
             return (
               <tr key={usuario.userId} className="usuarios-linha">
-                <td>{usuario.email ?? "(sem e-mail)"}</td>
+                <td>
+                  <div className="usuarios-email-cel">
+                    <AvatarUsuario
+                      url={usuario.avatarUrl}
+                      inicial={(usuario.email ?? "?").charAt(0).toUpperCase()}
+                    />
+                    <span>{usuario.email ?? "(sem e-mail)"}</span>
+                  </div>
+                </td>
                 <td>
                   <span
                     className={`usuarios-selo usuarios-selo-origem${

@@ -9,6 +9,12 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
+/** Foto de perfil do login (Google traz em avatar_url/picture), ou null. */
+function avatarDe(u: User | undefined): string | null {
+  const foto = u?.user_metadata?.avatar_url ?? u?.user_metadata?.picture ?? null;
+  return typeof foto === "string" && foto.startsWith("http") ? foto : null;
+}
+
 /** Provedor com que a conta foi criada (google/email/facebook/…). */
 function origemLabel(u: User | undefined): string {
   const provider = u?.app_metadata?.provider ?? u?.identities?.[0]?.provider ?? "email";
@@ -59,6 +65,7 @@ export default async function UsuariosPage() {
         email: auth?.email ?? null,
         role: (perfil.role as "admin" | "publico") ?? "publico",
         premium: (perfil.premium as boolean) ?? false,
+        avatarUrl: avatarDe(auth),
         origem: origemLabel(auth),
         // Ordena por cadastro desc, mas guarda o cru pra ordenar antes de formatar.
         criadoEmIso: auth?.created_at ?? null,
