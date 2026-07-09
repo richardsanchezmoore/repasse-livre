@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#e9e4d6; }
+  ::selection{ background:#111; color:#f4f1e8; }
+</style>
+</helmet>
+<div style="font-family:'Archivo',system-ui,sans-serif; background:#e9e4d6; color:#111; min-height:100vh; -webkit-font-smoothing:antialiased;">
+
+  <main style="max-width:1200px; margin:0 auto; padding:clamp(20px,4vw,44px) clamp(16px,4vw,44px) 70px;">
+
+    <!-- HEADER -->
+    <header style="border:3px solid #111; background:#f4f1e8; margin-bottom:clamp(22px,3vw,34px);">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:20px; padding:clamp(22px,3vw,34px) clamp(22px,3vw,34px) clamp(20px,2.5vw,28px); border-bottom:3px solid #111;">
+        <div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:#111; background:oklch(0.84 0.19 95); display:inline-block; padding:4px 9px; margin-bottom:16px;">Inteligência de Estoque · Seminovos</div>
+          <h1 style="font-family:'Archivo Black',sans-serif; font-size:clamp(40px,6.6vw,76px); line-height:0.86; letter-spacing:-0.02em; text-transform:uppercase; margin:0;">Onde estão<br>os carros</h1>
+        </div>
+        <p style="font-family:'Archivo',sans-serif; font-weight:500; font-size:15px; line-height:1.45; color:#3a362b; margin:0; max-width:280px; border-left:3px solid #111; padding-left:14px;">Distribuição nacional de anúncios, preços médios e disputa por modelo nos principais mercados do país.</p>
+      </div>
+      <!-- KPI row -->
+      <div style="display:grid; grid-template-columns:repeat(4,1fr);">
+        <div style="padding:18px 22px; border-right:3px solid #111;">
+          <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6452;">Estoque nac.</div>
+          <div style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(30px,3.6vw,42px); letter-spacing:-0.04em; margin-top:4px;">{{ kpiEstoque }}</div>
+        </div>
+        <div style="padding:18px 22px; border-right:3px solid #111; background:oklch(0.84 0.19 95);">
+          <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#111;">Ticket médio</div>
+          <div style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(30px,3.6vw,42px); letter-spacing:-0.04em; margin-top:4px;">{{ kpiTicket }}</div>
+        </div>
+        <div style="padding:18px 22px; border-right:3px solid #111;">
+          <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6452;">UFs cobertas</div>
+          <div style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(30px,3.6vw,42px); letter-spacing:-0.04em; margin-top:4px;">{{ kpiEstados }}</div>
+        </div>
+        <div style="padding:18px 22px;">
+          <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6452;">Cidades</div>
+          <div style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(30px,3.6vw,42px); letter-spacing:-0.04em; margin-top:4px;">{{ kpiCidades }}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: MAPA + RANKING -->
+    <section style="margin-bottom:clamp(22px,3vw,34px);">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:baseline; gap:14px;">
+          <span style="font-family:'Archivo Black',sans-serif; font-size:clamp(22px,3vw,30px); background:#111; color:#f4f1e8; padding:2px 10px;">01</span>
+          <h2 style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(22px,3vw,32px); letter-spacing:-0.03em; text-transform:uppercase; margin:0;">Estados mais ativos</h2>
+        </div>
+        <div style="display:flex; border:3px solid #111;">
+          <button onClick="{{ setEstoque }}" style="{{ tabEstoqueStyle }}">Estoque</button>
+          <button onClick="{{ setPreco }}" style="{{ tabPrecoStyle }}">Preço médio</button>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:clamp(16px,2.5vw,24px); align-items:stretch;">
+        <!-- TILE MAP -->
+        <div style="border:3px solid #111; background:#f4f1e8; padding:22px;">
+          <div onMouseLeave="{{ mapOnLeave }}" style="display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; gap:4px; aspect-ratio:7/9; max-width:340px; margin:0 auto;">
+            <sc-for list="{{ mapTiles }}" as="t" hint-placeholder-count="26">
+              <div onMouseEnter="{{ t.onEnter }}" style="grid-row:{{ t.row }}; grid-column:{{ t.col }}; background:{{ t.bg }}; color:{{ t.fg }}; border:{{ t.border }}; display:flex; align-items:center; justify-content:center; cursor:default; padding:1px;">
+                <div style="font-family:'Space Mono',monospace; font-weight:700; font-size:10.5px; line-height:1;">{{ t.uf }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:20px;">
+            <span style="font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; color:#6b6452;">{{ legendLow }}</span>
+            <div style="display:flex; gap:2px; flex:1;">
+              <sc-for list="{{ legendStops }}" as="s" hint-placeholder-count="5">
+                <div style="flex:1; height:10px; border:1.5px solid #111; background:{{ s.bg }};"></div>
+              </sc-for>
+            </div>
+            <span style="font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; color:#6b6452;">{{ legendHigh }}</span>
+          </div>
+          <div style="margin-top:16px; min-height:52px; border-top:3px solid #111; padding-top:14px;">
+            <sc-if value="{{ hoverPresent }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; align-items:baseline; gap:12px;">
+                <div style="font-family:'Archivo Black',sans-serif; font-size:30px; line-height:1;">{{ hoverUf }}</div>
+                <div>
+                  <div style="font-size:13px; font-weight:600; color:#111;">{{ hoverLine1 }}</div>
+                  <div style="font-family:'Space Mono',monospace; font-size:11px; color:#6b6452; margin-top:3px;">{{ hoverLine2 }}</div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hoverEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:13px; font-weight:500; color:#8a8270;">Passe o cursor sobre um estado para ver estoque e preço médio.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <!-- RANKING + INSIGHTS -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div style="border:3px solid #111; background:#f4f1e8; padding:20px 22px; flex:1;">
+            <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#111; font-weight:700; margin-bottom:14px;">Top 12 · {{ mapMetricLabel }}</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <sc-for list="{{ ranking }}" as="r" hint-placeholder-count="12">
+                <div style="display:grid; grid-template-columns:30px 1fr auto; align-items:center; gap:12px;">
+                  <span style="font-family:'Archivo',sans-serif; font-weight:800; font-size:13px;">{{ r.uf }}</span>
+                  <div style="height:15px; border:2px solid #111; overflow:hidden;">
+                    <div style="width:{{ r.barW }}; height:100%; background:{{ r.bg }};"></div>
+                  </div>
+                  <span style="font-family:'Space Mono',monospace; font-weight:700; font-size:11.5px; min-width:80px; text-align:right;">{{ r.valLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:3px solid #111; background:#f4f1e8; padding:18px 22px;">
+            <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#111; font-weight:700; margin-bottom:14px;">Preço · extremos do país</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+              <div>
+                <div style="font-size:10.5px; font-weight:800; letter-spacing:0.04em; margin-bottom:8px; background:oklch(0.62 0.2 25); color:#fff; display:inline-block; padding:2px 7px;">MAIS CAROS</div>
+                <sc-for list="{{ caros }}" as="c" hint-placeholder-count="4">
+                  <div style="display:flex; justify-content:space-between; gap:8px; padding:5px 0; border-bottom:1.5px solid #d8d2c0;">
+                    <span style="font-family:'Archivo',sans-serif; font-weight:800; font-size:12px;">{{ c.uf }}</span>
+                    <span style="font-family:'Space Mono',monospace; font-size:11.5px; color:#3a362b;">{{ c.price }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-size:10.5px; font-weight:800; letter-spacing:0.04em; margin-bottom:8px; background:oklch(0.6 0.16 150); color:#fff; display:inline-block; padding:2px 7px;">ACESSÍVEIS</div>
+                <sc-for list="{{ acessiveis }}" as="c" hint-placeholder-count="4">
+                  <div style="display:flex; justify-content:space-between; gap:8px; padding:5px 0; border-bottom:1.5px solid #d8d2c0;">
+                    <span style="font-family:'Archivo',sans-serif; font-weight:800; font-size:12px;">{{ c.uf }}</span>
+                    <span style="font-family:'Space Mono',monospace; font-size:11.5px; color:#3a362b;">{{ c.price }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: CIDADES -->
+    <section style="margin-bottom:clamp(22px,3vw,34px);">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:baseline; gap:14px;">
+          <span style="font-family:'Archivo Black',sans-serif; font-size:clamp(22px,3vw,30px); background:#111; color:#f4f1e8; padding:2px 10px;">02</span>
+          <h2 style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(22px,3vw,32px); letter-spacing:-0.03em; text-transform:uppercase; margin:0;">Cidades mais ativas</h2>
+        </div>
+        <div style="display:flex; border:3px solid #111;">
+          <button onClick="{{ citySetEstoque }}" style="{{ cityTabEstoqueStyle }}">Estoque</button>
+          <button onClick="{{ citySetPreco }}" style="{{ cityTabPrecoStyle }}">Preço médio</button>
+        </div>
+      </div>
+
+      <div style="border:3px solid #111; background:#f4f1e8; padding:22px 24px; display:flex; flex-direction:column; gap:9px;">
+        <sc-for list="{{ cities }}" as="c" hint-placeholder-count="20">
+          <div style="display:grid; grid-template-columns:185px 1fr; align-items:center; gap:16px;">
+            <div style="display:flex; align-items:baseline; gap:8px; min-width:0;">
+              <span style="font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.nome }}</span>
+              <span style="font-family:'Space Mono',monospace; font-size:9.5px; font-weight:700; color:#111; border:1.5px solid #111; padding:0 4px;">{{ c.uf }}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="flex:1; height:20px; border:2px solid #111; overflow:hidden;">
+                <div style="width:{{ c.barW }}; height:100%; background:{{ c.bg }}; transition:width .35s cubic-bezier(.4,0,.2,1);"></div>
+              </div>
+              <span style="font-family:'Space Mono',monospace; font-size:12px; font-weight:700; min-width:112px; text-align:right;">{{ c.valLabel }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- SECTION 3: DISPUTADOS -->
+    <section style="margin-bottom:clamp(22px,3vw,34px);">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:14px;">
+        <div style="display:flex; align-items:baseline; gap:14px;">
+          <span style="font-family:'Archivo Black',sans-serif; font-size:clamp(22px,3vw,30px); background:#111; color:#f4f1e8; padding:2px 10px;">03</span>
+          <h2 style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(22px,3vw,32px); letter-spacing:-0.03em; text-transform:uppercase; margin:0;">Mais disputados</h2>
+        </div>
+        <div style="display:flex; border:3px solid #111;">
+          <button onClick="{{ dispSetVol }}" style="{{ dispTabVolStyle }}">Volume</button>
+          <button onClick="{{ dispSetMargem }}" style="{{ dispTabMargemStyle }}">Margem</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px;">
+        <sc-for list="{{ brandChips }}" as="b" hint-placeholder-count="6">
+          <button onClick="{{ b.onClick }}" style="{{ b.style }}">
+            <span style="width:9px; height:9px; background:{{ b.dot }}; border:1.5px solid #111; display:inline-block;"></span>
+            {{ b.name }}
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="border:3px solid #111; background:#f4f1e8; padding:6px 24px 14px;">
+        <div style="display:grid; grid-template-columns:170px 1fr 150px; gap:16px; padding:12px 0 10px; font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6452; border-bottom:3px solid #111;">
+          <span>Modelo · UF</span>
+          <span>{{ dispBarLabel }}</span>
+          <span style="text-align:right;">Faixa de KM</span>
+        </div>
+        <sc-for list="{{ disputados }}" as="d" hint-placeholder-count="20">
+          <div style="display:grid; grid-template-columns:170px 1fr 150px; gap:16px; align-items:center; padding:10px 0; border-bottom:1.5px solid #d8d2c0;">
+            <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+              <span style="width:11px; height:11px; background:{{ d.bg }}; border:1.5px solid #111; flex-shrink:0;"></span>
+              <div style="min-width:0;">
+                <div style="font-size:13.5px; font-weight:800; line-height:1.1;">{{ d.modelo }} <span style="font-family:'Space Mono',monospace; font-size:11px; font-weight:400; color:#6b6452;">{{ d.estado }}</span></div>
+                <div style="font-size:10.5px; font-weight:500; color:#8a8270; line-height:1.1; margin-top:2px;">{{ d.marca }}</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="flex:1; height:16px; border:2px solid #111; overflow:hidden;">
+                <div style="width:{{ d.barW }}; height:100%; background:{{ d.bg }}; transition:width .35s cubic-bezier(.4,0,.2,1);"></div>
+              </div>
+              <span style="font-family:'Space Mono',monospace; font-size:11.5px; font-weight:700; min-width:92px; display:flex; gap:8px; justify-content:flex-end;">
+                <span>{{ d.qtdLabel }}</span>
+                <span style="{{ d.margemStyle }}">{{ d.margemLabel }}</span>
+              </span>
+            </div>
+            <div>
+              <div style="height:8px; border:1.5px solid #111; position:relative; overflow:hidden; background:#e9e4d6;">
+                <div style="position:absolute; left:{{ d.kmLeft }}; width:{{ d.kmW }}; top:0; bottom:0; background:#111;"></div>
+              </div>
+              <div style="font-family:'Space Mono',monospace; font-size:9px; color:#6b6452; margin-top:4px; text-align:right;">{{ d.kmLabel }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- SECTION 4: LUXO -->
+    <section>
+      <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:6px;">
+        <span style="font-family:'Archivo Black',sans-serif; font-size:clamp(22px,3vw,30px); background:#111; color:#f4f1e8; padding:2px 10px;">04</span>
+        <h2 style="font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(22px,3vw,32px); letter-spacing:-0.03em; text-transform:uppercase; margin:0;">Marcas de luxo</h2>
+      </div>
+      <p style="font-family:'Archivo',sans-serif; font-weight:500; color:#3a362b; font-size:15px; margin:0 0 16px; max-width:620px;">O Rio Grande do Sul concentra a liderança de quase todas as marcas premium do país.</p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px;">
+        <sc-for list="{{ luxo }}" as="b" hint-placeholder-count="6">
+          <div style="border:3px solid #111; background:#f4f1e8; padding:18px 20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:3px;">
+              <div style="display:flex; align-items:center; gap:9px;">
+                <span style="width:13px; height:13px; background:{{ b.color }}; border:2px solid #111;"></span>
+                <span style="font-family:'Archivo',sans-serif; font-size:20px; font-weight:900; letter-spacing:-0.02em; text-transform:uppercase;">{{ b.brand }}</span>
+              </div>
+              <span style="font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:#111;">{{ b.total }}</span>
+            </div>
+            <div style="font-family:'Space Mono',monospace; font-size:9.5px; color:#6b6452; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:14px;">Lidera: {{ b.leader }} · {{ b.total }} no Brasil</div>
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <sc-for list="{{ b.states }}" as="st" hint-placeholder-count="5">
+                <div style="display:grid; grid-template-columns:28px 1fr 28px; align-items:center; gap:10px;">
+                  <span style="font-family:'Archivo',sans-serif; font-size:11.5px; font-weight:{{ st.weight }}; color:{{ st.labelColor }};">{{ st.uf }}</span>
+                  <div style="height:11px; border:1.5px solid #111; overflow:hidden;">
+                    <div style="width:{{ st.barW }}; height:100%; background:{{ st.bg }};"></div>
+                  </div>
+                  <span style="font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:#3a362b; text-align:right;">{{ st.qty }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <footer style="border-top:3px solid #111; margin-top:clamp(24px,3vw,38px); padding-top:16px; font-family:'Space Mono',monospace; font-size:10.5px; color:#6b6452; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <span>Painel de inteligência de estoque · seminovos</span>
+      <span>Valores em R$ · preços médios por anúncio ativo</span>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { mapMetric:'estoque', citySort:'estoque', dispBrand:'Todas', dispSort:'qtd', hoverUf:null };
+
+  estados = [
+    ['SP',440,95916.09],['RS',330,94874.28],['RJ',261,80357.45],['MG',219,101524.51],
+    ['PR',110,105001.70],['GO',103,115224.07],['SC',91,116933.00],['BA',91,109721.37],
+    ['DF',88,94736.92],['CE',74,98430.54],['PE',68,89713.25],['ES',44,124554.95],
+    ['RN',35,96201.26],['PB',28,98424.64],['MA',28,79865.36],['AM',15,131810.67],
+    ['AL',13,101340.00],['SE',11,102307.09],['PA',10,86075.90],['PI',9,92462.22],
+    ['MT',8,203680.00],['TO',7,107297.14],['MS',4,88465.00],['RO',2,61640.00],
+    ['RR',1,29000.00],['AC',1,20000.00]
+  ];
+
+  cidades = [
+    ['São Paulo','SP',175,92480.25],['Rio de Janeiro','RJ',141,77622.45],['Porto Alegre','RS',140,98566.20],
+    ['Belo Horizonte','MG',123,104159.95],['Goiânia','GO',87,118690.79],['Brasília','DF',86,95383.24],
+    ['Fortaleza','CE',68,99541.32],['Curitiba','PR',53,121376.02],['Salvador','BA',51,99262.25],
+    ['Recife','PE',47,91995.98],['Ribeirão Preto','SP',33,99114.55],['Canoas','RS',28,85023.11],
+    ['Campinas','SP',28,102202.14],['São Luís','MA',27,77452.96],['São Leopoldo','RS',26,66588.08],
+    ['Natal','RN',26,96286.69],['Petrópolis','RJ',25,80432.84],['Contagem','MG',25,84925.20],
+    ['São José','SC',24,101567.75],['São João de Meriti','RJ',22,72176.82]
+  ];
+
+  disputadosRaw = [
+    ['Chevrolet','Onix','SP',49,14.4,12503,134000],['Chevrolet','Onix','RJ',46,15.6,6544,211545],
+    ['Volkswagen','T-Cross','SP',30,12.0,14000,120000],['Volkswagen','Polo','SP',28,16.1,31100,136464],
+    ['Chevrolet','Onix','MG',26,19.6,13450,155000],['Jeep','Compass','SP',20,52.9,0,129000],
+    ['Hyundai','HB20S','SP',19,19.7,40470,144480],['Chevrolet','Onix','MA',17,13.4,23382,64232],
+    ['Chevrolet','Onix','CE',17,15.7,23142,70500],['Volkswagen','Polo','MG',16,11.7,27233,70818],
+    ['Chevrolet','Onix','RS',15,23.0,48000,163000],['Chevrolet','Tracker','SP',13,16.6,0,157000],
+    ['Chevrolet','Onix','PE',12,13.3,8000,106000],['Jeep','Renegade','SP',12,15.3,10000,192995],
+    ['Chevrolet','Onix','PR',12,12.9,22479,124000],['Fiat','Cronos','MG',12,14.7,33145,65522],
+    ['Hyundai','HB20S','SC',11,18.1,44543,55632],['Volkswagen','Polo','RJ',11,15.0,39533,140000],
+    ['Jeep','Compass','RS',11,9.7,34000,136000],['Jeep','Compass','BA',10,19.6,32800,101087]
+  ];
+
+  luxoRaw = [
+    ['Audi',30,'SP',55,[['SP',7],['RJ',6],['RS',4],['PR',3],['MG',2]]],
+    ['BMW',66,'RS',250,[['RS',23],['SP',12],['PR',9],['GO',6],['RJ',4]]],
+    ['Land',37,'RS',150,[['RS',9],['SP',5],['RJ',3],['SC',3],['DF',3]]],
+    ['Lexus',11,'ES',320,[['ES',4],['MG',4],['RJ',1],['RS',1],['CE',1]]],
+    ['Mercedes-Benz',44,'RS',200,[['RS',14],['SP',9],['RJ',6],['SC',4],['PR',2]]],
+    ['Porsche',18,'RS',60,[['RS',5],['SP',4],['MG',4],['SC',2],['PR',1]]]
+  ];
+
+  grid = {
+    RR:[1,4], AP:[1,5],
+    AM:[2,3], PA:[2,4], MA:[2,5], CE:[2,6], RN:[2,7],
+    AC:[3,2], RO:[3,3], TO:[3,4], PI:[3,5], PE:[3,6], PB:[3,7],
+    MT:[4,3], BA:[4,5], AL:[4,6], SE:[4,7],
+    MS:[5,3], GO:[5,4], DF:[5,5],
+    MG:[6,5], ES:[6,6],
+    SP:[7,4], RJ:[7,5],
+    PR:[8,4], SC:[9,4], RS:[10,4]
+  };
+
+  brandColor = {
+    'Chevrolet':'oklch(0.78 0.16 90)','Volkswagen':'oklch(0.55 0.18 250)',
+    'Jeep':'oklch(0.6 0.16 150)','Hyundai':'oklch(0.62 0.13 210)','Fiat':'oklch(0.6 0.2 25)'
+  };
+
+  fmtInt(n){ return Math.round(n).toLocaleString('pt-BR'); }
+  fmtBRL(n){ return 'R$\u00a0' + Math.round(n).toLocaleString('pt-BR'); }
+  fmtPct(n){ return n.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + '%'; }
+
+  // brutalist: solid saturated ramp, single hue (red for estoque, blue for preco)
+  mapColor(t, hue){
+    const L = 0.92 - 0.50*t;
+    const C = 0.03 + 0.18*t;
+    const bg = 'oklch(' + L.toFixed(3) + ' ' + C.toFixed(3) + ' ' + hue + ')';
+    const fg = L < 0.6 ? '#fff' : '#111';
+    return { bg, fg };
+  }
+
+  tabStyle(active){
+    return 'font-family:Space Mono,monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:8px 15px; border:0; cursor:pointer; transition:all .12s;'
+      + (active
+        ? 'background:#111; color:#f4f1e8; font-weight:700;'
+        : 'background:transparent; color:#6b6452; font-weight:400;');
+  }
+
+  renderVals(){
+    const S = this.state;
+    const isEstoque = S.mapMetric === 'estoque';
+    const hue = isEstoque ? 25 : 250; // red / blue
+
+    const totalEstoque = this.estados.reduce((a,e)=>a+e[1],0);
+    const ticket = this.estados.reduce((a,e)=>a+e[1]*e[2],0)/totalEstoque;
+
+    const vals = this.estados.map(e=> isEstoque ? e[1] : e[2]);
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const norm = v => max===min ? 0.5 : Math.sqrt((v-min)/(max-min));
+
+    const mapTiles = this.estados.map(e=>{
+      const uf=e[0], v=isEstoque?e[1]:e[2];
+      const g=this.grid[uf]||[10,1];
+      const {bg,fg}=this.mapColor(norm(v),hue);
+      const hov = S.hoverUf===uf;
+      return {
+        uf, row:g[0], col:g[1], bg, fg,
+        border: hov ? '2.5px solid #111' : '1.5px solid #111',
+        onEnter: ()=>this.setState({hoverUf:uf})
+      };
+    });
+
+    const legendStops = [0.08,0.3,0.52,0.74,0.96].map(t=>({bg:this.mapColor(t,hue).bg}));
+
+    const ranking = [...this.estados].sort((a,b)=> (isEstoque?b[1]-a[1]:b[2]-a[2])).slice(0,12).map(e=>{
+      const v=isEstoque?e[1]:e[2];
+      return { uf:e[0], barW:(norm(v)*100).toFixed(1)+'%', bg:this.mapColor(0.55+0.35*norm(v),hue).bg,
+        valLabel: isEstoque ? this.fmtInt(v) : this.fmtBRL(v) };
+    });
+
+    const byPrice = [...this.estados].sort((a,b)=>b[2]-a[2]);
+    const caros = byPrice.slice(0,4).map(e=>({uf:e[0], price:this.fmtBRL(e[2])}));
+    const acessiveis = byPrice.slice(-4).reverse().map(e=>({uf:e[0], price:this.fmtBRL(e[2])}));
+
+    const hv = S.hoverUf ? this.estados.find(e=>e[0]===S.hoverUf) : null;
+    const hoverPresent = !!hv;
+    let hoverLine1='', hoverLine2='';
+    if(hv){
+      hoverLine1 = this.fmtInt(hv[1]) + ' anúncios · ' + this.fmtBRL(hv[2]) + ' médio';
+      const rkE = [...this.estados].sort((a,b)=>b[1]-a[1]).findIndex(e=>e[0]===hv[0])+1;
+      const rkP = byPrice.findIndex(e=>e[0]===hv[0])+1;
+      hoverLine2 = 'Estoque #' + rkE + '  ·  Preço #' + rkP + ' do país';
+    }
+
+    const cityIsEstoque = S.citySort==='estoque';
+    const cityHue = cityIsEstoque ? 25 : 250;
+    const citySorted = [...this.cidades].sort((a,b)=> cityIsEstoque ? b[2]-a[2] : b[3]-a[3]);
+    const cmax = Math.max(...citySorted.map(c=>cityIsEstoque?c[2]:c[3]));
+    const cities = citySorted.map(c=>{
+      const v = cityIsEstoque?c[2]:c[3];
+      const t = v/cmax;
+      return { nome:c[0], uf:c[1], barW:(t*100).toFixed(1)+'%',
+        bg:this.mapColor(0.55+0.35*t,cityHue).bg,
+        valLabel: cityIsEstoque ? this.fmtInt(v)+' un.' : this.fmtBRL(v) };
+    });
+
+    const dispIsVol = S.dispSort==='qtd';
+    let disp = this.disputadosRaw.filter(d=> S.dispBrand==='Todas' || d[0]===S.dispBrand);
+    disp = [...disp].sort((a,b)=> dispIsVol ? b[3]-a[3] : b[4]-a[4]);
+    const dmax = Math.max(...disp.map(d=> dispIsVol?d[3]:d[4]), 1);
+    const kmGlobal = 211545;
+    const disputados = disp.map(d=>{
+      const v = dispIsVol?d[3]:d[4];
+      const hot = d[4] >= 25;
+      return {
+        marca:d[0], modelo:d[1], estado:d[2],
+        bg:this.brandColor[d[0]],
+        barW:(v/dmax*100).toFixed(1)+'%',
+        qtdLabel: d[3] + ' un.',
+        margemLabel: this.fmtPct(d[4]),
+        margemStyle: hot
+          ? 'color:#fff; background:oklch(0.6 0.2 25); padding:1px 6px;'
+          : 'color:#6b6452;',
+        kmLeft:(d[5]/kmGlobal*100).toFixed(1)+'%',
+        kmW:Math.max((d[6]-d[5])/kmGlobal*100,1.5).toFixed(1)+'%',
+        kmLabel: this.fmtInt(d[5]) + '–' + this.fmtInt(d[6])
+      };
+    });
+
+    const brands = ['Todas','Chevrolet','Volkswagen','Jeep','Hyundai','Fiat'];
+    const brandChips = brands.map(name=>{
+      const active = S.dispBrand===name;
+      const dot = name==='Todas' ? '#111' : this.brandColor[name];
+      return {
+        name, dot,
+        onClick: ()=>this.setState({dispBrand:name}),
+        style: 'display:inline-flex; align-items:center; gap:7px; font-family:Archivo,sans-serif; font-size:12.5px; font-weight:700; padding:6px 12px; cursor:pointer; transition:all .12s; border:2px solid #111; '
+          + (active ? 'background:#111; color:#f4f1e8;' : 'background:#f4f1e8; color:#111;')
+      };
+    });
+
+    const luxo = this.luxoRaw.map(b=>{
+      const lead = b[4][0][1];
+      const color = 'oklch(0.62 0.17 ' + b[3] + ')';
+      return {
+        brand:b[0], total:b[1], leader:b[2], color,
+        states: b[4].map((s,i)=>({
+          uf:s[0], qty:s[1], barW:(s[1]/lead*100).toFixed(1)+'%',
+          bg: i===0 ? color : 'oklch(0.78 0.09 ' + b[3] + ')',
+          weight: i===0 ? 900 : 600,
+          labelColor: i===0 ? '#111' : '#8a8270'
+        }))
+      };
+    });
+
+    return {
+      kpiEstoque:this.fmtInt(totalEstoque), kpiTicket:this.fmtBRL(ticket),
+      kpiEstados:String(this.estados.length), kpiCidades:String(this.cidades.length),
+
+      setEstoque:()=>this.setState({mapMetric:'estoque'}),
+      setPreco:()=>this.setState({mapMetric:'preco'}),
+      tabEstoqueStyle:this.tabStyle(isEstoque), tabPrecoStyle:this.tabStyle(!isEstoque),
+      mapTiles, legendStops,
+      legendLow:isEstoque?'Menos':'Acessível', legendHigh:isEstoque?'Mais':'Caro',
+      mapMetricLabel:isEstoque?'Anúncios em estoque':'Preço médio (R$)',
+      ranking, caros, acessiveis,
+      hoverPresent, hoverEmpty:!hoverPresent, hoverUf:S.hoverUf||'', hoverLine1, hoverLine2,
+      mapOnLeave:()=>this.setState({hoverUf:null}),
+
+      citySetEstoque:()=>this.setState({citySort:'estoque'}),
+      citySetPreco:()=>this.setState({citySort:'preco'}),
+      cityTabEstoqueStyle:this.tabStyle(cityIsEstoque), cityTabPrecoStyle:this.tabStyle(!cityIsEstoque),
+      cities,
+
+      dispSetVol:()=>this.setState({dispSort:'qtd'}),
+      dispSetMargem:()=>this.setState({dispSort:'margem'}),
+      dispTabVolStyle:this.tabStyle(dispIsVol), dispTabMargemStyle:this.tabStyle(!dispIsVol),
+      dispBarLabel: dispIsVol ? 'Volume de anúncios · margem' : 'Melhor margem · volume',
+      brandChips, disputados,
+
+      luxo
+    };
+  }
+}
+</script>
+</body>
+</html>

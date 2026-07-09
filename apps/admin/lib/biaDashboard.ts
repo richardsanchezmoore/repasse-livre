@@ -22,11 +22,13 @@ export interface PontoValor {
 export interface ItemDisputado {
   marca: string;
   modelo: string;
-  estado: string;
   quantidade: number;
   melhorMargem: number | null;
   kmMin: number | null;
   kmMax: number | null;
+  /** UF onde o modelo mais aparece (líder) e em quantas UFs aparece. */
+  ufLider: string;
+  qtdEstados: number;
 }
 
 export interface ItemMarcaLuxo {
@@ -105,24 +107,27 @@ export async function buscarValorPotencialHistorico(dias: number): Promise<Ponto
 }
 
 export async function buscarMaisDisputados(limite: number): Promise<ItemDisputado[]> {
-  const resultado = await supabaseAdmin.rpc("bia_mais_disputados", { p_limite: limite });
+  // Agrupado por MODELO (soma os estados) — não repete o mesmo modelo por UF.
+  const resultado = await supabaseAdmin.rpc("bia_mais_disputados_modelo", { p_limite: limite });
   const linhas = lancarSeErro(resultado, "anúncios mais disputados") as Array<{
     marca: string;
     modelo: string;
-    estado: string;
     quantidade: number;
     melhor_margem: number | null;
     km_min: number | null;
     km_max: number | null;
+    uf_lider: string;
+    qtd_estados: number;
   }>;
   return linhas.map((linha) => ({
     marca: linha.marca,
     modelo: linha.modelo,
-    estado: linha.estado,
     quantidade: linha.quantidade,
     melhorMargem: linha.melhor_margem,
     kmMin: linha.km_min,
     kmMax: linha.km_max,
+    ufLider: linha.uf_lider,
+    qtdEstados: linha.qtd_estados,
   }));
 }
 

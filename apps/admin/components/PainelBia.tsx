@@ -375,7 +375,7 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
 
       <div className="bia2-card bia2-disputados-card">
         <div className="bia2-disputados-cabecalho">
-          <span>Modelo · UF</span>
+          <span>Modelo</span>
           <span>{isVolume ? "Volume de anúncios · margem" : "Melhor margem · volume"}</span>
           <span className="bia2-alinhar-direita">Faixa de KM</span>
         </div>
@@ -387,14 +387,15 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
           const kmLeft = temKm ? ((item.kmMin as number) / kmGlobal) * 100 : 0;
           const kmW = temKm ? Math.max(((item.kmMax as number) - (item.kmMin as number)) / kmGlobal * 100, 1.5) : 0;
           return (
-            <div key={`${item.marca}-${item.modelo}-${item.estado}`} className="bia2-disputado-linha">
+            <div key={`${item.marca}-${item.modelo}`} className="bia2-disputado-linha">
               <div className="bia2-disputado-modelo-grupo">
                 <span className="bia2-disputado-ponto" style={{ background: corDaMarca(item.marca) }} />
                 <div>
-                  <div className="bia2-disputado-modelo">
-                    {item.modelo} <span className="bia2-disputado-uf">{item.estado}</span>
+                  <div className="bia2-disputado-modelo">{item.modelo}</div>
+                  <div className="bia2-disputado-marca">
+                    {item.marca} · líder <span className="bia2-disputado-uf">{item.ufLider}</span> ·{" "}
+                    {item.qtdEstados} {item.qtdEstados === 1 ? "UF" : "UFs"}
                   </div>
-                  <div className="bia2-disputado-marca">{item.marca}</div>
                 </div>
               </div>
               <div className="bia2-disputado-barra-grupo">
