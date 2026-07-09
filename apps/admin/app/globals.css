@@ -714,8 +714,49 @@ body {
 
 .usuarios-acoes {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+/* Ações compactas (ícone só + tooltip) — mantêm a linha baixa num banco grande
+   de usuários, sem os 3 botões de texto empilhando. */
+.usuarios-icone-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e0e3e7;
+  background: #fff;
+  color: #54656f;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.usuarios-icone-btn:hover:not(:disabled) {
+  background: #f4f6f8;
+}
+.usuarios-icone-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.usuarios-icone-premium:hover:not(:disabled),
+.usuarios-icone-premium.ativo {
+  color: #0a5d2c;
+  border-color: #a7e0bf;
+  background: #eafaf0;
+}
+.usuarios-icone-admin:hover:not(:disabled) {
+  color: #0a5d2c;
+  border-color: #a7e0bf;
+  background: #eafaf0;
+}
+.usuarios-icone-apagar {
+  color: #b91c1c;
+}
+.usuarios-icone-apagar:hover:not(:disabled) {
+  background: #fde2e1;
+  border-color: #f3a6a4;
 }
 
 .usuarios-botao-apagar {

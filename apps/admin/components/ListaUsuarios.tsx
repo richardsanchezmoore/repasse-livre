@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Gem, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
+import { Gem, Loader2, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { alterarPremiumPerfil, alterarRolePerfil, apagarUsuario } from "@/app/actions";
 
 export interface UsuarioComRole {
@@ -131,44 +131,46 @@ export function ListaUsuarios({
                 <td className="usuarios-acoes">
                   <button
                     type="button"
-                    className="usuarios-botao usuarios-botao-premium"
+                    className={`usuarios-icone-btn usuarios-icone-premium${usuario.premium ? " ativo" : ""}`}
                     disabled={carregando}
+                    title={usuario.premium ? "Remover premium" : "Tornar premium"}
+                    aria-label={usuario.premium ? "Remover premium" : "Tornar premium"}
                     onClick={() => alterarPremium(usuario.userId, !usuario.premium)}
                   >
-                    <Gem size={16} strokeWidth={1.75} />
-                    {carregando ? "…" : usuario.premium ? "Remover premium" : "Tornar premium"}
+                    {carregando ? <Loader2 size={16} className="animate-spin" /> : <Gem size={16} strokeWidth={1.9} />}
                   </button>
                   {usuario.role === "admin" ? (
                     <button
                       type="button"
-                      className="usuarios-botao usuarios-botao-remover"
+                      className="usuarios-icone-btn usuarios-icone-admin"
                       disabled={ehVoceMesmo || carregando}
-                      title={ehVoceMesmo ? "Você não pode remover sua própria permissão de admin" : undefined}
+                      title={ehVoceMesmo ? "Você não pode remover sua própria permissão de admin" : "Remover admin"}
+                      aria-label="Remover admin"
                       onClick={() => alterarRole(usuario.userId, "publico")}
                     >
-                      <ShieldOff size={16} strokeWidth={1.75} />
-                      {carregando ? "Removendo…" : "Remover admin"}
+                      <ShieldOff size={16} strokeWidth={1.9} />
                     </button>
                   ) : (
                     <button
                       type="button"
-                      className="usuarios-botao usuarios-botao-promover"
+                      className="usuarios-icone-btn usuarios-icone-admin"
                       disabled={carregando}
+                      title="Promover a admin"
+                      aria-label="Promover a admin"
                       onClick={() => alterarRole(usuario.userId, "admin")}
                     >
-                      <ShieldCheck size={16} strokeWidth={1.75} />
-                      {carregando ? "Promovendo…" : "Promover a admin"}
+                      <ShieldCheck size={16} strokeWidth={1.9} />
                     </button>
                   )}
                   <button
                     type="button"
-                    className="usuarios-botao usuarios-botao-apagar"
+                    className="usuarios-icone-btn usuarios-icone-apagar"
                     disabled={ehVoceMesmo || carregando}
                     title={ehVoceMesmo ? "Você não pode excluir sua própria conta por aqui" : "Excluir conta"}
+                    aria-label="Excluir conta"
                     onClick={() => excluirUsuario(usuario.userId, usuario.email)}
                   >
-                    <Trash2 size={16} strokeWidth={1.75} />
-                    {carregando ? "Excluindo…" : "Excluir conta"}
+                    <Trash2 size={16} strokeWidth={1.9} />
                   </button>
                 </td>
               </tr>
