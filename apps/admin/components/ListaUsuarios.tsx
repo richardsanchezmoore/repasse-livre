@@ -9,6 +9,14 @@ export interface UsuarioComRole {
   email: string | null;
   role: "admin" | "publico";
   premium: boolean;
+  /** Provedor do login: "Google" | "E-mail" | "Facebook" | … */
+  origem: string;
+  /** ISO cru do created_at (só p/ ordenação no server). */
+  criadoEmIso: string | null;
+  /** Data/hora de cadastro já formatada (Brasília). */
+  cadastro: string | null;
+  /** Último acesso já formatado, ou null. */
+  ultimoAcesso: string | null;
 }
 
 export function ListaUsuarios({
@@ -81,6 +89,8 @@ export function ListaUsuarios({
         <thead>
           <tr>
             <th>E-mail</th>
+            <th>Origem</th>
+            <th>Cadastro</th>
             <th>Permissão</th>
             <th>Premium</th>
             <th></th>
@@ -93,6 +103,21 @@ export function ListaUsuarios({
             return (
               <tr key={usuario.userId} className="usuarios-linha">
                 <td>{usuario.email ?? "(sem e-mail)"}</td>
+                <td>
+                  <span
+                    className={`usuarios-selo usuarios-selo-origem${
+                      usuario.origem === "Google" ? " usuarios-selo-origem-google" : ""
+                    }`}
+                  >
+                    {usuario.origem}
+                  </span>
+                </td>
+                <td className="usuarios-cadastro">
+                  <span>{usuario.cadastro ?? "—"}</span>
+                  {usuario.ultimoAcesso && (
+                    <span className="usuarios-cadastro-acesso">último acesso {usuario.ultimoAcesso}</span>
+                  )}
+                </td>
                 <td>
                   <span className={`usuarios-selo ${usuario.role === "admin" ? "usuarios-selo-admin" : "usuarios-selo-publico"}`}>
                     {usuario.role === "admin" ? "Admin" : "Público"}

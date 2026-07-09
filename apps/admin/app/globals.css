@@ -654,6 +654,29 @@ body {
   color: #54656f;
 }
 
+.usuarios-selo-origem {
+  background: #eef2f7;
+  color: #475569;
+  border: 1px solid #dbe2ea;
+}
+.usuarios-selo-origem-google {
+  background: #eaf1fe;
+  color: #1a56c4;
+  border-color: #cadcfb;
+}
+.usuarios-cadastro {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: #334155;
+  white-space: nowrap;
+}
+.usuarios-cadastro-acesso {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
 .usuarios-botao {
   display: inline-flex;
   align-items: center;
