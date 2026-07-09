@@ -111,6 +111,19 @@ export async function buscarValorPotencialHistorico(dias: number): Promise<Ponto
 // O initcap do SQL estraga siglas de marca (BMW→Bmw, GM→Gm); reverte as conhecidas.
 const MARCA_CANONICA: Record<string, string> = { Bmw: "BMW", Gm: "GM" };
 
+// Idem pra modelos com sigla/caixa especial que o initcap achata (HB20S→Hb20s).
+// A UNIFICAÇÃO já aconteceu no SQL (mesma chave normalizada); aqui é só o rótulo.
+const MODELO_CANONICO: Record<string, string> = {
+  Hb20: "HB20",
+  Hb20s: "HB20S",
+  Hb20x: "HB20X",
+  "Cr-V": "CR-V",
+  "Hr-V": "HR-V",
+  "Wr-V": "WR-V",
+  Sw4: "SW4",
+  "T-Cross": "T-Cross",
+};
+
 export async function buscarMaisDisputados(limite: number): Promise<ItemDisputado[]> {
   // Agrupado por MODELO (soma os estados) — não repete o mesmo modelo por UF.
   const resultado = await supabaseAdmin.rpc("bia_mais_disputados_modelo", { p_limite: limite });
@@ -126,7 +139,7 @@ export async function buscarMaisDisputados(limite: number): Promise<ItemDisputad
   }>;
   return linhas.map((linha) => ({
     marca: MARCA_CANONICA[linha.marca] ?? linha.marca,
-    modelo: linha.modelo,
+    modelo: MODELO_CANONICO[linha.modelo] ?? linha.modelo,
     quantidade: linha.quantidade,
     melhorMargem: linha.melhor_margem,
     kmMin: linha.km_min,
