@@ -677,9 +677,12 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
                   <div className="bia2-tend-stat">
                     <span className="bia2-tend-stat-rotulo">Oferta média</span>
                     <span className="bia2-tend-stat-valor">
-                      {volAnt} <span className="bia2-tend-seta">→</span>{" "}
                       <span>
-                        {volAtual}
+                        <span className="bia2-tend-mes-mini">{mAnt}</span> {volAnt}
+                      </span>
+                      <span className="bia2-tend-seta">→</span>
+                      <span>
+                        <span className="bia2-tend-mes-mini">{mAtual}</span> {volAtual}
                         <span className="bia2-tend-sufixo"> un.</span>
                       </span>
                     </span>
@@ -690,7 +693,7 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
                     <span className="bia2-tend-stat-valor">
                       {a.margemAnterior !== null ? (
                         <span>
-                          {a.margemAnterior.toFixed(1)}
+                          <span className="bia2-tend-mes-mini">{mAnt}</span> {a.margemAnterior.toFixed(1)}
                           <span className="bia2-tend-sufixo">%</span>
                         </span>
                       ) : (
@@ -699,7 +702,7 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
                       <span className="bia2-tend-seta">→</span>
                       {a.margemAtual !== null ? (
                         <span>
-                          {a.margemAtual.toFixed(1)}
+                          <span className="bia2-tend-mes-mini">{mAtual}</span> {a.margemAtual.toFixed(1)}
                           <span className="bia2-tend-sufixo">%</span>
                         </span>
                       ) : (

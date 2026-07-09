@@ -1641,6 +1641,15 @@ body {
   color: #8696a0;
 }
 
+/* Mês antes de cada valor (JUN 98 → JUL 79) — contexto direto e intuitivo. */
+.bia2-tend-mes-mini {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aa2ad;
+}
+
 .bia2-tend-chip {
   align-self: stretch;
   text-align: center;
