@@ -113,8 +113,8 @@ const META_METRICA: Record<MetricaEstado, { rotulo: string; hue: number; extremo
 };
 
 const OPCOES_METRICA = [
-  { valor: "margem" as const, rotulo: "Margem" },
   { valor: "preco" as const, rotulo: "Preço médio" },
+  { valor: "margem" as const, rotulo: "Margem" },
   { valor: "estoque" as const, rotulo: "Estoque" },
 ];
 
