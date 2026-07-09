@@ -41,6 +41,7 @@ export interface ItemEstadoAtivo {
   estado: string;
   quantidade: number;
   precoMedio: number;
+  margemMedia: number | null;
 }
 
 export interface ItemCidadeAtiva {
@@ -48,6 +49,7 @@ export interface ItemCidadeAtiva {
   estado: string;
   quantidade: number;
   precoMedio: number;
+  margemMedia: number | null;
 }
 
 export interface PontoTendenciaMensal {
@@ -147,8 +149,14 @@ export async function buscarEstadosMaisAtivos(): Promise<ItemEstadoAtivo[]> {
     estado: string;
     quantidade: number;
     preco_medio: number;
+    margem_media: number | null;
   }>;
-  return linhas.map((linha) => ({ estado: linha.estado, quantidade: linha.quantidade, precoMedio: linha.preco_medio }));
+  return linhas.map((linha) => ({
+    estado: linha.estado,
+    quantidade: linha.quantidade,
+    precoMedio: linha.preco_medio,
+    margemMedia: linha.margem_media,
+  }));
 }
 
 export async function buscarCidadesMaisAtivas(limite: number): Promise<ItemCidadeAtiva[]> {
@@ -158,12 +166,14 @@ export async function buscarCidadesMaisAtivas(limite: number): Promise<ItemCidad
     estado: string;
     quantidade: number;
     preco_medio: number;
+    margem_media: number | null;
   }>;
   return linhas.map((linha) => ({
     cidade: linha.cidade,
     estado: linha.estado,
     quantidade: linha.quantidade,
     precoMedio: linha.preco_medio,
+    margemMedia: linha.margem_media,
   }));
 }
 

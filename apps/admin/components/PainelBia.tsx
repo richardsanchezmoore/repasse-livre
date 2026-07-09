@@ -96,15 +96,55 @@ function BarraSimples({ percentual, cor, alturaPx = 10 }: { percentual: number; 
   );
 }
 
-type MetricaEstado = "estoque" | "preco";
+type MetricaEstado = "estoque" | "preco" | "margem";
+
+// Config por métrica: rótulo do toggle/ranking, matiz do mapa e rótulos dos
+// extremos da legenda. Margem é a métrica-herói (valor > volume bruto).
+const META_METRICA: Record<MetricaEstado, { rotulo: string; hue: number; extremoBaixo: string; extremoAlto: string }> = {
+  margem: { rotulo: "Margem média", hue: HUE_ESTOQUE, extremoBaixo: "Menor", extremoAlto: "Maior" },
+  preco: { rotulo: "Preço médio", hue: HUE_PRECO, extremoBaixo: "Acessível", extremoAlto: "Caro" },
+  estoque: { rotulo: "Estoque", hue: HUE_ESTOQUE, extremoBaixo: "Menos", extremoAlto: "Mais" },
+};
+
+const OPCOES_METRICA = [
+  { valor: "margem" as const, rotulo: "Margem" },
+  { valor: "preco" as const, rotulo: "Preço médio" },
+  { valor: "estoque" as const, rotulo: "Estoque" },
+];
+
+// Piso de amostra pra métrica de margem: um estado/cidade com 1-2 anúncios de
+// margem alta é ruído e detonaria a escala do mapa. Abaixo do piso, a margem
+// não é confiável → tile neutro / fora do ranking.
+const MIN_AMOSTRA_MARGEM_UF = 5;
+const MIN_AMOSTRA_MARGEM_CIDADE = 3;
+const COR_TILE_SEM_AMOSTRA = "#e9ecf0";
+const COR_TILE_SEM_AMOSTRA_FG = "#9aa2ad";
 
 function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
-  const [metrica, setMetrica] = useState<MetricaEstado>("estoque");
+  const [metrica, setMetrica] = useState<MetricaEstado>("margem");
   const [hoverUf, setHoverUf] = useState<string | null>(null);
-  const isEstoque = metrica === "estoque";
-  const hue = isEstoque ? HUE_ESTOQUE : HUE_PRECO;
+  const meta = META_METRICA[metrica];
+  const hue = meta.hue;
 
-  const valores = estados.map((e) => (isEstoque ? e.quantidade : e.precoMedio));
+  const valorDe = (e: ItemEstadoAtivo) =>
+    metrica === "estoque" ? e.quantidade : metrica === "preco" ? e.precoMedio : e.margemMedia ?? 0;
+  const rotuloValor = (v: number) =>
+    metrica === "estoque"
+      ? formatarInteiro(v)
+      : metrica === "preco"
+        ? formatarMoedaArredondada(v)
+        : formatarPercentual1(v);
+  const rotuloTile = (v: number) =>
+    metrica === "estoque"
+      ? formatarInteiro(v)
+      : metrica === "preco"
+        ? `${Math.round(v / 1000)}k`
+        : formatarPercentual1(v);
+
+  // Amostra confiável: só filtra na métrica de margem (estoque/preço valem sempre).
+  const amostraOk = (e: ItemEstadoAtivo) => metrica !== "margem" || e.quantidade >= MIN_AMOSTRA_MARGEM_UF;
+
+  const valores = estados.filter(amostraOk).map(valorDe);
   const min = Math.min(...valores);
   const max = Math.max(...valores);
   const norm = (v: number) => normalizar(v, min, max);
@@ -113,7 +153,18 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
     .map((e) => {
       const posicao = posicaoGridUf(e.estado);
       if (!posicao) return null;
-      const valor = isEstoque ? e.quantidade : e.precoMedio;
+      if (!amostraOk(e)) {
+        return {
+          uf: e.estado,
+          row: posicao[0],
+          col: posicao[1],
+          bg: COR_TILE_SEM_AMOSTRA,
+          fg: COR_TILE_SEM_AMOSTRA_FG,
+          valLabel: "—",
+          emHover: hoverUf === e.estado,
+        };
+      }
+      const valor = valorDe(e);
       const { bg, fg } = corMapa(norm(valor), hue);
       return {
         uf: e.estado,
@@ -121,7 +172,7 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
         col: posicao[1],
         bg,
         fg,
-        valLabel: isEstoque ? formatarInteiro(valor) : `${Math.round(valor / 1000)}k`,
+        valLabel: rotuloTile(valor),
         emHover: hoverUf === e.estado,
       };
     })
@@ -130,30 +181,42 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
   const legendaStops = [0.08, 0.3, 0.52, 0.74, 0.96].map((t) => corMapa(t, hue).bg);
 
   const ranking = [...estados]
-    .sort((a, b) => (isEstoque ? b.quantidade - a.quantidade : b.precoMedio - a.precoMedio))
+    .filter(amostraOk)
+    .sort((a, b) => valorDe(b) - valorDe(a))
     .slice(0, 12)
     .map((e) => {
-      const valor = isEstoque ? e.quantidade : e.precoMedio;
+      const valor = valorDe(e);
       return {
         uf: e.estado,
         percentual: norm(valor) * 100,
         cor: corMapa(0.45 + 0.45 * norm(valor), hue).bg,
-        valLabel: isEstoque ? formatarInteiro(valor) : formatarMoedaArredondada(valor),
+        valLabel: rotuloValor(valor),
       };
     });
 
-  const porPreco = [...estados].sort((a, b) => b.precoMedio - a.precoMedio);
-  const caros = porPreco.slice(0, 4);
-  const acessiveis = porPreco.slice(-4).reverse();
+  // Card de extremos acompanha a métrica quando é preço ou margem; pra estoque cai em preço.
+  const metricaExtremos: "preco" | "margem" = metrica === "margem" ? "margem" : "preco";
+  const valorExtremo = (e: ItemEstadoAtivo) => (metricaExtremos === "preco" ? e.precoMedio : e.margemMedia ?? 0);
+  const ordenadoExtremos = [...estados]
+    .filter((e) => metricaExtremos !== "margem" || e.quantidade >= MIN_AMOSTRA_MARGEM_UF)
+    .sort((a, b) => valorExtremo(b) - valorExtremo(a));
+  const topoExtremos = ordenadoExtremos.slice(0, 4);
+  const baseExtremos = ordenadoExtremos.slice(-4).reverse();
+  const fmtExtremo = (e: ItemEstadoAtivo) =>
+    metricaExtremos === "preco" ? formatarMoedaArredondada(e.precoMedio) : formatarPercentual1(e.margemMedia ?? 0);
 
   const estadoHover = hoverUf ? estados.find((e) => e.estado === hoverUf) : null;
   let linha1 = "";
   let linha2 = "";
   if (estadoHover) {
-    linha1 = `${formatarInteiro(estadoHover.quantidade)} anúncios · ${formatarMoedaArredondada(estadoHover.precoMedio)} médio`;
+    const margemTxt =
+      estadoHover.margemMedia != null ? ` · margem ${formatarPercentual1(estadoHover.margemMedia)}` : "";
+    linha1 = `${formatarInteiro(estadoHover.quantidade)} anúncios · ${formatarMoedaArredondada(estadoHover.precoMedio)} médio${margemTxt}`;
     const rkEstoque = [...estados].sort((a, b) => b.quantidade - a.quantidade).findIndex((e) => e.estado === hoverUf) + 1;
-    const rkPreco = porPreco.findIndex((e) => e.estado === hoverUf) + 1;
-    linha2 = `Estoque #${rkEstoque}  ·  Preço #${rkPreco} do país`;
+    const rkPreco = [...estados].sort((a, b) => b.precoMedio - a.precoMedio).findIndex((e) => e.estado === hoverUf) + 1;
+    const rkMargem =
+      [...estados].sort((a, b) => (b.margemMedia ?? 0) - (a.margemMedia ?? 0)).findIndex((e) => e.estado === hoverUf) + 1;
+    linha2 = `Estoque #${rkEstoque}  ·  Preço #${rkPreco}  ·  Margem #${rkMargem}`;
   }
 
   return (
@@ -163,14 +226,7 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
           <Eyebrow numero="01" texto="Geografia do estoque" />
           <h2 className="bia2-titulo-secao">Estados mais ativos</h2>
         </div>
-        <Toggle
-          opcoes={[
-            { valor: "estoque", rotulo: "Estoque" },
-            { valor: "preco", rotulo: "Preço médio" },
-          ]}
-          ativo={metrica}
-          onSelecionar={setMetrica}
-        />
+        <Toggle opcoes={OPCOES_METRICA} ativo={metrica} onSelecionar={setMetrica} />
       </div>
 
       <div className="bia2-grid-2col">
@@ -196,13 +252,13 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
           </div>
 
           <div className="bia2-legenda-mapa">
-            <span className="bia2-legenda-extremo">{isEstoque ? "Menos" : "Acessível"}</span>
+            <span className="bia2-legenda-extremo">{meta.extremoBaixo}</span>
             <div className="bia2-legenda-faixa">
               {legendaStops.map((cor, i) => (
                 <div key={i} className="bia2-legenda-stop" style={{ background: cor }} />
               ))}
             </div>
-            <span className="bia2-legenda-extremo">{isEstoque ? "Mais" : "Caro"}</span>
+            <span className="bia2-legenda-extremo">{meta.extremoAlto}</span>
           </div>
 
           <div className="bia2-painel-hover">
@@ -215,14 +271,14 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
                 </div>
               </div>
             ) : (
-              <div className="bia2-painel-hover-vazio">Passe o cursor sobre um estado para ver estoque e preço médio.</div>
+              <div className="bia2-painel-hover-vazio">Passe o cursor sobre um estado para ver margem, preço e estoque.</div>
             )}
           </div>
         </div>
 
         <div className="bia2-coluna-flex">
           <div className="bia2-card bia2-card-flex">
-            <div className="bia2-rotulo-mono">Top 12 · {isEstoque ? "Anúncios em estoque" : "Preço médio (R$)"}</div>
+            <div className="bia2-rotulo-mono">Top 12 · {meta.rotulo}</div>
             <div className="bia2-ranking-lista">
               {ranking.map((item) => (
                 <div key={item.uf} className="bia2-ranking-linha">
@@ -235,23 +291,29 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
           </div>
 
           <div className="bia2-card">
-            <div className="bia2-rotulo-mono">Preço médio · extremos do país</div>
+            <div className="bia2-rotulo-mono">
+              {metricaExtremos === "margem" ? "Margem média" : "Preço médio"} · extremos do país
+            </div>
             <div className="bia2-extremos-grid">
               <div>
-                <div className="bia2-extremos-titulo bia2-extremos-caro">MAIS CAROS</div>
-                {caros.map((e) => (
+                <div className="bia2-extremos-titulo bia2-extremos-caro">
+                  {metricaExtremos === "margem" ? "MAIOR MARGEM" : "MAIS CAROS"}
+                </div>
+                {topoExtremos.map((e) => (
                   <div key={e.estado} className="bia2-extremos-linha">
                     <span className="bia2-extremos-uf">{e.estado}</span>
-                    <span className="bia2-extremos-valor">{formatarMoedaArredondada(e.precoMedio)}</span>
+                    <span className="bia2-extremos-valor">{fmtExtremo(e)}</span>
                   </div>
                 ))}
               </div>
               <div>
-                <div className="bia2-extremos-titulo bia2-extremos-acessivel">MAIS ACESSÍVEIS</div>
-                {acessiveis.map((e) => (
+                <div className="bia2-extremos-titulo bia2-extremos-acessivel">
+                  {metricaExtremos === "margem" ? "MENOR MARGEM" : "MAIS ACESSÍVEIS"}
+                </div>
+                {baseExtremos.map((e) => (
                   <div key={e.estado} className="bia2-extremos-linha">
                     <span className="bia2-extremos-uf">{e.estado}</span>
-                    <span className="bia2-extremos-valor">{formatarMoedaArredondada(e.precoMedio)}</span>
+                    <span className="bia2-extremos-valor">{fmtExtremo(e)}</span>
                   </div>
                 ))}
               </div>
@@ -264,14 +326,24 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
 }
 
 function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
-  const [metrica, setMetrica] = useState<MetricaEstado>("estoque");
-  const isEstoque = metrica === "estoque";
-  const hue = isEstoque ? HUE_ESTOQUE : HUE_PRECO;
+  const [metrica, setMetrica] = useState<MetricaEstado>("margem");
+  const meta = META_METRICA[metrica];
+  const hue = meta.hue;
 
-  const ordenadas = [...cidades].sort((a, b) =>
-    isEstoque ? b.quantidade - a.quantidade : b.precoMedio - a.precoMedio
-  );
-  const max = Math.max(...ordenadas.map((c) => (isEstoque ? c.quantidade : c.precoMedio)), 1);
+  const valorDe = (c: ItemCidadeAtiva) =>
+    metrica === "estoque" ? c.quantidade : metrica === "preco" ? c.precoMedio : c.margemMedia ?? 0;
+  const rotuloValor = (v: number) =>
+    metrica === "estoque"
+      ? `${formatarInteiro(v)} un.`
+      : metrica === "preco"
+        ? formatarMoedaArredondada(v)
+        : formatarPercentual1(v);
+
+  // Na métrica de margem, tira cidades de amostra minúscula (ruído).
+  const base =
+    metrica === "margem" ? cidades.filter((c) => c.quantidade >= MIN_AMOSTRA_MARGEM_CIDADE) : cidades;
+  const ordenadas = [...base].sort((a, b) => valorDe(b) - valorDe(a));
+  const max = Math.max(...ordenadas.map(valorDe), 1);
 
   return (
     <section className="bia2-secao">
@@ -280,19 +352,12 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
           <Eyebrow numero="02" texto="Praças" />
           <h2 className="bia2-titulo-secao">Cidades mais ativas</h2>
         </div>
-        <Toggle
-          opcoes={[
-            { valor: "estoque", rotulo: "Estoque" },
-            { valor: "preco", rotulo: "Preço médio" },
-          ]}
-          ativo={metrica}
-          onSelecionar={setMetrica}
-        />
+        <Toggle opcoes={OPCOES_METRICA} ativo={metrica} onSelecionar={setMetrica} />
       </div>
 
       <div className="bia2-card bia2-cidades-lista">
         {ordenadas.map((cidade) => {
-          const valor = isEstoque ? cidade.quantidade : cidade.precoMedio;
+          const valor = valorDe(cidade);
           const t = valor / max;
           return (
             <div key={`${cidade.cidade}-${cidade.estado}`} className="bia2-cidade-linha">
@@ -304,9 +369,7 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
               </div>
               <div className="bia2-cidade-barra-grupo">
                 <BarraSimples percentual={t * 100} cor={corMapa(0.5 + 0.4 * t, hue).bg} alturaPx={18} />
-                <span className="bia2-cidade-valor">
-                  {isEstoque ? `${formatarInteiro(valor)} un.` : formatarMoedaArredondada(valor)}
-                </span>
+                <span className="bia2-cidade-valor">{rotuloValor(valor)}</span>
               </div>
             </div>
           );
