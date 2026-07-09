@@ -46,6 +46,8 @@ export interface Usuario {
   /** Status cru da assinatura Stripe (active/trialing/past_due/canceled/…), ou
    * null se nunca assinou. `/planos` usa pra decidir Assinar × Gerenciar. */
   assinaturaStatus: string | null;
+  /** Fim do período pago (ISO), pra "renova/expira em" na página de conta. */
+  premiumExpiraEm: string | null;
   /** Foto de perfil (login Google traz em avatar_url/picture) — substitui o
    * ícone de usuário quando existe. null p/ login por e-mail. */
   avatarUrl: string | null;
@@ -92,6 +94,7 @@ export async function obterUsuarioAtual(): Promise<Usuario | null> {
     role: perfil?.role === "admin" ? "admin" : "publico",
     premium: perfil?.premium === true || assinaturaAtiva,
     assinaturaStatus: perfil?.assinatura_status ?? null,
+    premiumExpiraEm: perfil?.premium_expira_em ?? null,
     avatarUrl,
   };
 }

@@ -19,7 +19,7 @@ export const fetchCache = "force-no-store";
 
 export default async function BiaPage() {
   const usuarioAtual = await obterUsuarioAtual();
-  if (!usuarioAtual) return null; // guarda real já em app/(painel)/layout.tsx
+  if (!usuarioAtual) return null; // guarda real (premium/admin) em app/(pro)/layout.tsx
 
   const [
     contagens,

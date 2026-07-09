@@ -56,7 +56,7 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
         rotulo={usuario.nome ?? usuario.email ?? "Usuário"}
         avatarUrl={usuario.avatarUrl}
       >
-        <div className="usuario-menu-botao">
+        <Link href="/conta" className="usuario-menu-botao usuario-menu-botao-link">
           <span className="usuario-menu-avatar">
             {usuario.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -71,7 +71,10 @@ export function UserMenu({ usuario }: { usuario: Usuario | null }) {
             )}
           </span>
           <span className="usuario-menu-email">{usuario.nome ?? usuario.email}</span>
-        </div>
+        </Link>
+        <Link href="/conta" className="usuario-menu-item">
+          Minha conta
+        </Link>
         {dadosIncompletos && (
           <Link href="/completar-dados" className="usuario-menu-completar-dados">
             Completar Dados
