@@ -1603,10 +1603,11 @@ body {
   min-width: 140px;
   background: #f6f8fa;
   border-radius: 10px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .bia2-tend-stat-rotulo {
@@ -1619,34 +1620,25 @@ body {
 
 .bia2-tend-stat-valor {
   font-family: "Space Mono", monospace;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   color: #111;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 
 .bia2-tend-seta {
   color: #b6bcc6;
 }
 
-.bia2-tend-mes {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #9aa2ad;
-}
-
 .bia2-tend-chip {
+  align-self: flex-start;
   font-family: "Space Mono", monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 5px;
-  margin-left: 2px;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .bia2-tend-chip-alta {

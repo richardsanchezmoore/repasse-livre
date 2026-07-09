@@ -676,22 +676,18 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
                   <div className="bia2-tend-stat">
                     <span className="bia2-tend-stat-rotulo">Oferta média</span>
                     <span className="bia2-tend-stat-valor">
-                      <span className="bia2-tend-mes">{mAnt}</span> {volAnt}
-                      <span className="bia2-tend-seta">→</span>
-                      <span className="bia2-tend-mes">{mAtual}</span> {volAtual}
-                      <ChipVariacao tom={a.volTom} texto={volChip} />
+                      {volAnt} <span className="bia2-tend-seta">→</span> {volAtual}
                     </span>
+                    <ChipVariacao tom={a.volTom} texto={volChip} />
                   </div>
                   <div className="bia2-tend-stat">
                     <span className="bia2-tend-stat-rotulo">Margem média</span>
                     <span className="bia2-tend-stat-valor">
-                      <span className="bia2-tend-mes">{mAnt}</span>{" "}
-                      {a.margemAnterior !== null ? `${a.margemAnterior.toFixed(1)}%` : "—"}
-                      <span className="bia2-tend-seta">→</span>
-                      <span className="bia2-tend-mes">{mAtual}</span>{" "}
+                      {a.margemAnterior !== null ? `${a.margemAnterior.toFixed(1)}%` : "—"}{" "}
+                      <span className="bia2-tend-seta">→</span>{" "}
                       {a.margemAtual !== null ? `${a.margemAtual.toFixed(1)}%` : "—"}
-                      <ChipVariacao tom={a.margemTom} texto={margemChip} />
                     </span>
+                    <ChipVariacao tom={a.margemTom} texto={margemChip} />
                   </div>
                 </div>
 
