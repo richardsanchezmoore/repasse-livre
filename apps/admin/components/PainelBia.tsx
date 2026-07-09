@@ -427,10 +427,15 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
             className={`bia2-chip ${marcaAtiva === marca ? "bia2-chip-ativo" : ""}`}
             onClick={() => setMarcaAtiva(marca)}
           >
-            <span
-              className="bia2-chip-ponto"
-              style={{ background: marca === "Todas" ? "#8b93a3" : corDaMarca(marca) }}
-            />
+            {(() => {
+              const corPonto = marca === "Todas" ? "#8b93a3" : corDaMarca(marca);
+              return (
+                <span
+                  className="bia2-chip-ponto"
+                  style={{ background: corPonto, boxShadow: `0 0 8px ${corPonto}` }}
+                />
+              );
+            })()}
             {marca}
           </button>
         ))}
@@ -452,7 +457,10 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
           return (
             <div key={`${item.marca}-${item.modelo}`} className="bia2-disputado-linha">
               <div className="bia2-disputado-modelo-grupo">
-                <span className="bia2-disputado-ponto" style={{ background: corDaMarca(item.marca) }} />
+                <span
+                  className="bia2-disputado-ponto"
+                  style={{ background: corDaMarca(item.marca), boxShadow: `0 0 8px ${corDaMarca(item.marca)}` }}
+                />
                 <div>
                   <div className="bia2-disputado-modelo">{item.modelo}</div>
                   <div className="bia2-disputado-marca">

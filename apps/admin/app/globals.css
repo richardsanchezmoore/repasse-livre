@@ -988,32 +988,34 @@ body {
 /* Toggle — pílula arredondada (ativo = pílula preta) */
 .bia2-toggle {
   display: flex;
-  gap: 4px;
-  background: #f0f2f5;
-  border: 1px solid #e0e3e7;
+  gap: 3px;
+  background: #eef1f4;
+  border: 1px solid #e2e5ea;
   border-radius: 999px;
-  padding: 4px;
+  padding: 3px;
 }
 
 .bia2-toggle-opcao {
   font-family: "Archivo", sans-serif;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  padding: 7px 16px;
+  padding: 7px 17px;
   border: 0;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.14s, color 0.14s, box-shadow 0.14s;
   background: transparent;
-  color: #54656f;
+  color: #6b7280;
 }
 
+/* Ativo = pílula branca com sombra leve (variação de fundo próxima, não inversão preta) */
 .bia2-toggle-opcao-ativa {
-  background: #111;
-  color: #fff;
+  background: #fff;
+  color: #111;
   font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
 }
 
 /* Card genérico — moldura 3px preta, sem radius/sombra */
@@ -1338,25 +1340,34 @@ body {
   gap: 7px;
   font-family: "Archivo", sans-serif;
   font-size: 12.5px;
-  font-weight: 700;
-  padding: 6px 12px;
+  font-weight: 600;
+  padding: 7px 14px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  background: #f4f1e8;
-  color: #111;
-  border: 2px solid #111;
+  transition: background 0.14s, color 0.14s, border-color 0.14s;
+  background: #f0f2f5;
+  color: #3a4046;
+  border: 1px solid #e2e5ea;
+  border-radius: 999px;
 }
 
-.bia2-chip-ativo {
+.bia2-chip:hover {
+  background: #e7eaef;
+}
+
+.bia2-chip-ativo,
+.bia2-chip-ativo:hover {
   background: #111;
-  color: #f4f1e8;
+  color: #fff;
+  border-color: #111;
+  font-weight: 700;
 }
 
 .bia2-chip-ponto {
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid #111;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .bia2-disputados-card {
@@ -1365,15 +1376,15 @@ body {
 
 .bia2-disputados-cabecalho {
   display: grid;
-  grid-template-columns: 170px 1fr 150px;
+  grid-template-columns: 190px 1fr 150px;
   gap: 16px;
   padding: 12px 0 10px;
   font-family: "Space Mono", monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
+  font-size: 10px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #6b6452;
-  border-bottom: 3px solid #111;
+  color: #8696a0;
+  border-bottom: 1.5px solid #e6e8ec;
 }
 
 .bia2-alinhar-direita {
@@ -1382,29 +1393,29 @@ body {
 
 .bia2-disputado-linha {
   display: grid;
-  grid-template-columns: 170px 1fr 150px;
+  grid-template-columns: 190px 1fr 150px;
   gap: 16px;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1.5px solid #eef1f4;
+  padding: 11px 0;
+  border-bottom: 1px solid #eef1f4;
 }
 
 .bia2-disputado-modelo-grupo {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   min-width: 0;
 }
 
 .bia2-disputado-ponto {
   width: 11px;
   height: 11px;
-  border: 1.5px solid #111;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
 .bia2-disputado-modelo {
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 800;
   line-height: 1.1;
   color: #111;
@@ -1413,15 +1424,15 @@ body {
 .bia2-disputado-uf {
   font-family: "Space Mono", monospace;
   font-size: 11px;
-  font-weight: 400;
-  color: #6b6452;
+  font-weight: 700;
+  color: #5b6470;
 }
 
 .bia2-disputado-marca {
-  font-size: 10.5px;
-  color: #8a8270;
-  line-height: 1.1;
-  margin-top: 2px;
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.15;
+  margin-top: 3px;
 }
 
 .bia2-disputado-barra-grupo {
@@ -1432,34 +1443,36 @@ body {
 
 .bia2-disputado-valores {
   font-family: "Space Mono", monospace;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
-  min-width: 90px;
+  min-width: 92px;
   display: flex;
+  align-items: center;
   gap: 8px;
   justify-content: flex-end;
 }
 
 .bia2-disputado-qtd {
-  color: #3a362b;
+  color: #3a4046;
 }
 
 .bia2-margem-normal {
-  color: #6b6452;
+  color: #5b6470;
 }
 
-/* margem ≥ 25% vira badge vermelho */
+/* margem ≥ 25% vira badge VERDE (margem alta = coisa boa, casa com o tema) */
 .bia2-badge-margem {
   color: #fff;
-  background: oklch(0.6 0.2 25);
-  padding: 1px 6px;
+  background: oklch(0.62 0.17 150);
+  padding: 2px 7px;
+  border-radius: 6px;
 }
 
-/* Faixa de KM — caixa 1.5px, segmento preto sólido */
+/* Faixa de KM — trilho claro arredondado, sem moldura preta */
 .bia2-km-trilho {
   height: 8px;
   background: #eef1f4;
-  border: 1.5px solid #111;
+  border-radius: 3px;
   position: relative;
   overflow: hidden;
 }
@@ -1468,13 +1481,14 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: #111;
+  background: #8696a0;
+  border-radius: 3px;
 }
 
 .bia2-km-label {
   font-family: "Space Mono", monospace;
-  font-size: 9px;
-  color: #6b6452;
+  font-size: 9.5px;
+  color: #8696a0;
   margin-top: 4px;
   text-align: right;
 }
