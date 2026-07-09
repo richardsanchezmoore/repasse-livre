@@ -1070,6 +1070,19 @@ body {
   margin: 0 auto;
 }
 
+/* Mapa real do Brasil (choropleth SVG) — cada UF é um <path> pintado pela métrica */
+.bia2-mapa-svg {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin: 4px auto 0;
+}
+
+.bia2-mapa-svg path {
+  transition: stroke 0.1s ease, stroke-width 0.1s ease;
+}
+
 .bia2-mapa-tile {
   border: none;
   border-radius: 3px;
