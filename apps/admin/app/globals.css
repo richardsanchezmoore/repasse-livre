@@ -1072,50 +1072,52 @@ body {
 }
 
 .bia2-mapa-tile {
-  border: 1.5px solid #111;
+  border: none;
+  border-radius: 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: default;
-  transition: border-width 0.1s ease;
+  transition: box-shadow 0.1s ease;
   padding: 2px;
 }
 
 .bia2-mapa-tile:hover {
-  border-width: 2.5px;
+  box-shadow: 0 0 0 2px #111;
 }
 
 .bia2-mapa-tile-uf {
   font-family: "Space Mono", monospace;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
 }
 
 /* Valor (estoque/preço) embaixo da sigla — deixa o mapa mais "encorpado"/útil */
 .bia2-mapa-tile-valor {
   font-family: "Space Mono", monospace;
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 700;
-  opacity: 0.85;
-  margin-top: 3px;
+  opacity: 0.9;
+  margin-top: 4px;
   line-height: 1;
 }
 
 .bia2-legenda-mapa {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-top: 18px;
 }
 
 .bia2-legenda-extremo {
   font-family: "Space Mono", monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6b6452;
+  color: #111;
 }
 
 .bia2-legenda-faixa {
@@ -1126,8 +1128,9 @@ body {
 
 .bia2-legenda-stop {
   flex: 1;
-  height: 12px;
-  border: 1.5px solid #111;
+  height: 18px;
+  border: none;
+  border-radius: 2px;
 }
 
 /* Painel de hover do mapa — borda-topo preta grossa */
