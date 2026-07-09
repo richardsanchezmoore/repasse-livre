@@ -822,32 +822,29 @@ body {
   padding: 0 clamp(16px, 4vw, 44px);
 }
 
-/* eyebrow "INTELIGÊNCIA DE ESTOQUE" — faixa VERDE da marca (era amarelo) */
+/* eyebrow "INTELIGÊNCIA DE ESTOQUE" — ponto verde com anel + texto mono escuro */
 .bia-status-linha {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  background: oklch(0.78 0.17 150);
-  color: #111;
-  padding: 4px 9px;
-  border: 3px solid #111;
+  gap: 9px;
+  margin-bottom: 14px;
 }
 
 .bia-status-ponto {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: #111;
+  background: oklch(0.68 0.19 150);
+  box-shadow: 0 0 0 4px oklch(0.9 0.08 150);
 }
 
 .bia-eyebrow {
   font-family: "Space Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
-  color: #111;
+  color: #2b2b2b;
   margin: 0;
 }
 
@@ -862,8 +859,8 @@ body {
 .bia-headline {
   font-family: "Archivo Black", "Archivo", sans-serif;
   font-weight: 900;
-  font-size: clamp(40px, 6.6vw, 76px);
-  line-height: 0.86;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 0.92;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   margin: 0;
@@ -872,14 +869,15 @@ body {
 }
 
 .bia-headline-fraco {
-  color: #8a8270;
+  color: oklch(0.6 0.19 150);
 }
 
 .bia-subtitulo {
   font-size: 15px;
   font-weight: 500;
-  color: #3a362b;
-  margin: 12px 0 0;
+  line-height: 1.5;
+  color: #4a4a4a;
+  margin: 15px 0 0;
   max-width: 560px;
 }
 
