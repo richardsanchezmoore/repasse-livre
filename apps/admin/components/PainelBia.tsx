@@ -227,7 +227,7 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
               {ranking.map((item) => (
                 <div key={item.uf} className="bia2-ranking-linha">
                   <span className="bia2-ranking-uf">{item.uf}</span>
-                  <BarraSimples percentual={item.percentual} cor={item.cor} alturaPx={16} />
+                  <BarraSimples percentual={item.percentual} cor={item.cor} alturaPx={18} />
                   <span className="bia2-ranking-valor">{item.valLabel}</span>
                 </div>
               ))}
@@ -303,7 +303,7 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
                 <span className="bia2-cidade-uf">{cidade.estado}</span>
               </div>
               <div className="bia2-cidade-barra-grupo">
-                <BarraSimples percentual={t * 100} cor={corMapa(0.5 + 0.4 * t, hue).bg} />
+                <BarraSimples percentual={t * 100} cor={corMapa(0.5 + 0.4 * t, hue).bg} alturaPx={18} />
                 <span className="bia2-cidade-valor">
                   {isEstoque ? `${formatarInteiro(valor)} un.` : formatarMoedaArredondada(valor)}
                 </span>
@@ -398,7 +398,7 @@ function SecaoDisputados({ disputados }: { disputados: ItemDisputado[] }) {
                 </div>
               </div>
               <div className="bia2-disputado-barra-grupo">
-                <BarraSimples percentual={percentual} cor={corDaMarca(item.marca)} />
+                <BarraSimples percentual={percentual} cor={corDaMarca(item.marca)} alturaPx={18} />
                 <span className="bia2-disputado-valores">
                   <span className="bia2-disputado-qtd">{item.quantidade} un.</span>
                   <span className={margemAlta ? "bia2-badge-margem" : "bia2-margem-normal"}>
