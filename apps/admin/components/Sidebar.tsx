@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Activity,
   BarChart3,
+  Bell,
   CheckCircle2,
   Globe,
   Heart,
@@ -15,6 +16,7 @@ import {
   Search,
   Send,
   Settings,
+  UserCircle,
   UserPlus,
   Users,
   X,
@@ -44,6 +46,8 @@ export function Sidebar({
   usuarioLogado?: boolean;
 }) {
   const itensVisiveis = ITENS.filter((item) => !item.soAdmin || role === "admin");
+  // Acessos do usuário logado (Conta, BIA, Buscas) — antes só no menu flutuante.
+  const mostrarConta = usuarioLogado || role === "admin";
   const { navegar } = useNavegacao();
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
@@ -93,18 +97,37 @@ export function Sidebar({
             </li>
           ))}
         </ul>
-        {role === "admin" && (
+        {mostrarConta && (
           <div className="sidebar-rodape">
+            <button
+              type="button"
+              onClick={() => navegar("/conta")}
+              className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
+              title="Minha Conta"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <UserCircle size={18} strokeWidth={1.75} />
+              </span>
+            </button>
             <button
               type="button"
               onClick={() => navegar("/bia")}
               className={`sidebar-item ${pathname === "/bia" ? "sidebar-item-ativo" : ""}`}
-              title="BIA"
+              title="Inteligência de Mercado"
             >
               <span className="sidebar-icone" aria-hidden="true">
                 <BarChart3 size={18} strokeWidth={1.75} />
               </span>
             </button>
+            <span className="sidebar-item" style={{ opacity: 0.5, cursor: "default" }} title="Buscas e alertas · em breve">
+              <span className="sidebar-icone" aria-hidden="true">
+                <Bell size={18} strokeWidth={1.75} />
+              </span>
+            </span>
+          </div>
+        )}
+        {role === "admin" && (
+          <div className="sidebar-rodape">
             <button
               type="button"
               onClick={() => navegar("/worker")}
@@ -186,8 +209,18 @@ export function Sidebar({
             </li>
           ))}
         </ul>
-        {role === "admin" && (
+        {mostrarConta && (
           <div className="sidebar-rodape">
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/conta")}
+              className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <UserCircle size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Minha Conta</span>
+            </button>
             <button
               type="button"
               onClick={() => navegarEFechar("/bia")}
@@ -196,8 +229,19 @@ export function Sidebar({
               <span className="sidebar-icone" aria-hidden="true">
                 <BarChart3 size={18} strokeWidth={1.75} />
               </span>
-              <span className="sidebar-rotulo">BIA</span>
+              <span className="sidebar-rotulo">Inteligência de Mercado</span>
             </button>
+            <div className="sidebar-item" style={{ opacity: 0.55, cursor: "default" }} aria-disabled="true">
+              <span className="sidebar-icone" aria-hidden="true">
+                <Bell size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Buscas · Alertas</span>
+              <span className="sidebar-contador">Em breve</span>
+            </div>
+          </div>
+        )}
+        {role === "admin" && (
+          <div className="sidebar-rodape">
             <button
               type="button"
               onClick={() => navegarEFechar("/worker")}
