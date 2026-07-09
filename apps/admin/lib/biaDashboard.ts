@@ -108,6 +108,9 @@ export async function buscarValorPotencialHistorico(dias: number): Promise<Ponto
   return linhas.map((linha) => ({ dia: linha.dia, valorPotencial: linha.valor_potencial }));
 }
 
+// O initcap do SQL estraga siglas de marca (BMW→Bmw, GM→Gm); reverte as conhecidas.
+const MARCA_CANONICA: Record<string, string> = { Bmw: "BMW", Gm: "GM" };
+
 export async function buscarMaisDisputados(limite: number): Promise<ItemDisputado[]> {
   // Agrupado por MODELO (soma os estados) — não repete o mesmo modelo por UF.
   const resultado = await supabaseAdmin.rpc("bia_mais_disputados_modelo", { p_limite: limite });
@@ -122,7 +125,7 @@ export async function buscarMaisDisputados(limite: number): Promise<ItemDisputad
     qtd_estados: number;
   }>;
   return linhas.map((linha) => ({
-    marca: linha.marca,
+    marca: MARCA_CANONICA[linha.marca] ?? linha.marca,
     modelo: linha.modelo,
     quantidade: linha.quantidade,
     melhorMargem: linha.melhor_margem,

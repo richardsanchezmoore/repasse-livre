@@ -99,6 +99,8 @@ const CORES_MARCA: Record<string, string> = {
   Renault: "oklch(0.78 0.17 95)",
   Nissan: "oklch(0.55 0.15 250)",
   Ford: "oklch(0.5 0.18 260)",
+  "Land Rover": "oklch(0.5 0.11 160)",
+  BMW: "oklch(0.55 0.11 240)",
 };
 
 export function corDaMarca(marca: string): string {
@@ -106,12 +108,12 @@ export function corDaMarca(marca: string): string {
   return `oklch(0.6 0.16 ${hashString(marca)})`;
 }
 
-// Hue fixo pras marcas de luxo já conhecidas (mesmo critério do handoff) —
-// "Land" é a marca resultante da heurística marca+modelo pra "Land Rover".
+// Hue fixo pras marcas de luxo já conhecidas (mesmo critério do handoff).
+// Marca já vem canônica da RPC (bia_marcas_luxo_por_estado normaliza a caixa).
 const HUE_MARCA_LUXO: Record<string, number> = {
   Audi: 55,
   BMW: 250,
-  Land: 150,
+  "Land Rover": 150,
   Lexus: 320,
   "Mercedes-Benz": 200,
   Porsche: 60,
