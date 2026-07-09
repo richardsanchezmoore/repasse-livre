@@ -640,9 +640,10 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
       <Eyebrow numero="05" texto="Tendência mensal" />
       <h2 className="bia2-titulo-secao">Tendências do mês</h2>
       <p className="bia2-paragrafo-apoio">
-        Como os principais modelos se moveram de <strong>{mAnt || "mês anterior"}</strong> para{" "}
-        <strong>{mAtual || "este mês"}</strong> em oferta e margem — com a leitura da BIA sobre o que o
-        comportamento sugere pra sua decisão de compra.
+        Como os principais modelos se moveram de{" "}
+        <strong>{mAnt ? mAnt.toUpperCase() : "mês anterior"}</strong> para{" "}
+        <strong>{mAtual ? mAtual.toUpperCase() : "este mês"}</strong> em oferta e margem — com a leitura
+        da BIA sobre o que o comportamento sugere pra sua decisão de compra.
       </p>
 
       {tendencias.length === 0 ? (
