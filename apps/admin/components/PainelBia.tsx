@@ -12,7 +12,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import brasilMapa from "@svg-maps/brazil";
 import { formatarMoeda } from "@/lib/formatadores";
 import {
   corDaMarca,
@@ -22,6 +21,7 @@ import {
   formatarPercentual1,
   hueMarcaLuxo,
   normalizar,
+  posicaoGridUf,
 } from "@/lib/biaCores";
 import type {
   ItemCidadeAtiva,
@@ -96,49 +96,6 @@ function BarraSimples({ percentual, cor, alturaPx = 10 }: { percentual: number; 
   );
 }
 
-/** Choropleth real do Brasil (SVG inline). Cada UF pintada pela cor da métrica
- *  ativa; hover destaca o contorno e alimenta o painel lateral. UF sem amostra
- *  cai em cinza neutro. */
-function MapaBrasil({
-  cores,
-  hoverUf,
-  onHover,
-  onSair,
-}: {
-  cores: Map<string, string>;
-  hoverUf: string | null;
-  onHover: (uf: string) => void;
-  onSair: () => void;
-}) {
-  return (
-    <svg
-      viewBox={brasilMapa.viewBox}
-      className="bia2-mapa-svg"
-      role="img"
-      aria-label="Mapa do Brasil por estado"
-      onMouseLeave={onSair}
-    >
-      {brasilMapa.locations.map((loc) => {
-        const uf = loc.id.toUpperCase();
-        const ativo = hoverUf === uf;
-        return (
-          <path
-            key={uf}
-            d={loc.path}
-            fill={cores.get(uf) ?? COR_TILE_SEM_AMOSTRA}
-            stroke={ativo ? "#111" : "#fff"}
-            strokeWidth={ativo ? 1.8 : 0.8}
-            style={{ cursor: "default" }}
-            onMouseEnter={() => onHover(uf)}
-          >
-            <title>{loc.name}</title>
-          </path>
-        );
-      })}
-    </svg>
-  );
-}
-
 type MetricaEstado = "estoque" | "preco" | "margem";
 
 // Config por métrica: rótulo do toggle/ranking, matiz do mapa e rótulos dos
@@ -161,6 +118,7 @@ const OPCOES_METRICA = [
 const MIN_AMOSTRA_MARGEM_UF = 5;
 const MIN_AMOSTRA_MARGEM_CIDADE = 3;
 const COR_TILE_SEM_AMOSTRA = "#e9ecf0";
+const COR_TILE_SEM_AMOSTRA_FG = "#9aa2ad";
 
 function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
   const [metrica, setMetrica] = useState<MetricaEstado>("margem");
@@ -176,6 +134,12 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
       : metrica === "preco"
         ? formatarMoedaArredondada(v)
         : formatarPercentual1(v);
+  const rotuloTile = (v: number) =>
+    metrica === "estoque"
+      ? formatarInteiro(v)
+      : metrica === "preco"
+        ? `${Math.round(v / 1000)}k`
+        : formatarPercentual1(v);
 
   // Amostra confiável: só filtra na métrica de margem (estoque/preço valem sempre).
   const amostraOk = (e: ItemEstadoAtivo) => metrica !== "margem" || e.quantidade >= MIN_AMOSTRA_MARGEM_UF;
@@ -185,11 +149,34 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
   const max = Math.max(...valores);
   const norm = (v: number) => normalizar(v, min, max);
 
-  // Cor de cada UF pro choropleth (sem amostra → cinza neutro).
-  const coresMapa = new Map<string, string>();
-  for (const e of estados) {
-    coresMapa.set(e.estado, amostraOk(e) ? corMapa(norm(valorDe(e)), hue).bg : COR_TILE_SEM_AMOSTRA);
-  }
+  const tiles = estados
+    .map((e) => {
+      const posicao = posicaoGridUf(e.estado);
+      if (!posicao) return null;
+      if (!amostraOk(e)) {
+        return {
+          uf: e.estado,
+          row: posicao[0],
+          col: posicao[1],
+          bg: COR_TILE_SEM_AMOSTRA,
+          fg: COR_TILE_SEM_AMOSTRA_FG,
+          valLabel: "—",
+          emHover: hoverUf === e.estado,
+        };
+      }
+      const valor = valorDe(e);
+      const { bg, fg } = corMapa(norm(valor), hue);
+      return {
+        uf: e.estado,
+        row: posicao[0],
+        col: posicao[1],
+        bg,
+        fg,
+        valLabel: rotuloTile(valor),
+        emHover: hoverUf === e.estado,
+      };
+    })
+    .filter((t): t is NonNullable<typeof t> => t !== null);
 
   const legendaStops = [0.08, 0.3, 0.52, 0.74, 0.96].map((t) => corMapa(t, hue).bg);
 
@@ -244,12 +231,25 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
 
       <div className="bia2-grid-2col">
         <div className="bia2-card">
-          <MapaBrasil
-            cores={coresMapa}
-            hoverUf={hoverUf}
-            onHover={setHoverUf}
-            onSair={() => setHoverUf(null)}
-          />
+          <div className="bia2-mapa" onMouseLeave={() => setHoverUf(null)}>
+            {tiles.map((tile) => (
+              <div
+                key={tile.uf}
+                onMouseEnter={() => setHoverUf(tile.uf)}
+                className="bia2-mapa-tile"
+                style={{
+                  gridRow: tile.row,
+                  gridColumn: tile.col,
+                  background: tile.bg,
+                  color: tile.fg,
+                  boxShadow: tile.emHover ? "0 0 0 2px #eef1f6" : "none",
+                }}
+              >
+                <div className="bia2-mapa-tile-uf">{tile.uf}</div>
+                <div className="bia2-mapa-tile-valor">{tile.valLabel}</div>
+              </div>
+            ))}
+          </div>
 
           <div className="bia2-legenda-mapa">
             <span className="bia2-legenda-extremo">{meta.extremoBaixo}</span>
