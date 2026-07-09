@@ -805,13 +805,13 @@ body {
   flex: 1;
   padding: 0;
   max-width: none;
-  background: #e9e4d6;
+  background: #f0f2f5;
   font-family: "Archivo", system-ui, sans-serif;
   color: #111;
 }
 
 .bia-pagina-fundo {
-  background: #e9e4d6;
+  background: #f0f2f5;
   padding: clamp(16px, 4vw, 44px) 0 clamp(40px, 6vw, 80px);
 }
 
@@ -892,13 +892,11 @@ body {
   gap: clamp(22px, 3vw, 34px);
 }
 
-/* Faixa de 4 KPIs — moldura 3px, divisórias pretas de 3px entre células */
+/* Faixa de 4 KPIs — cards brancos arredondados (como os cards de carro) */
 .bia2-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border: 3px solid #111;
-  background: #111;
-  gap: 3px;
+  gap: 12px;
 }
 
 @media (max-width: 640px) {
@@ -908,13 +906,17 @@ body {
 }
 
 .bia2-kpi {
-  background: #f4f1e8;
-  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 18px 20px;
 }
 
 /* Célula do Ticket médio (a que tem o valor destaque) — fundo VERDE */
 .bia2-kpi:has(.bia2-kpi-valor-destaque) {
   background: oklch(0.78 0.17 150);
+  border-color: oklch(0.68 0.16 150);
 }
 
 .bia2-kpi-rotulo {
@@ -1019,8 +1021,10 @@ body {
 
 /* Card genérico — moldura 3px preta, sem radius/sombra */
 .bia2-card {
-  background: #f4f1e8;
-  border: 3px solid #111;
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   padding: 20px 22px;
 }
 
@@ -1167,7 +1171,7 @@ body {
   position: relative;
   flex: 1;
   border: 2px solid #111;
-  background: #e9e4d6;
+  background: #eef1f4;
 }
 
 .bia2-trilho-fundo {
@@ -1243,7 +1247,7 @@ body {
   justify-content: space-between;
   gap: 8px;
   padding: 5px 0;
-  border-bottom: 1.5px solid #d8d2c0;
+  border-bottom: 1.5px solid #eef1f4;
 }
 
 .bia2-extremos-uf {
@@ -1376,7 +1380,7 @@ body {
   gap: 16px;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1.5px solid #d8d2c0;
+  border-bottom: 1.5px solid #eef1f4;
 }
 
 .bia2-disputado-modelo-grupo {
@@ -1448,7 +1452,7 @@ body {
 /* Faixa de KM — caixa 1.5px, segmento preto sólido */
 .bia2-km-trilho {
   height: 8px;
-  background: #e9e4d6;
+  background: #eef1f4;
   border: 1.5px solid #111;
   position: relative;
   overflow: hidden;
@@ -1478,8 +1482,10 @@ body {
 }
 
 .bia2-card-marca {
-  background: #f4f1e8;
-  border: 3px solid #111;
+  background: #fff;
+  border: 1px solid #e6e8ec;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   padding: 18px 20px;
 }
 

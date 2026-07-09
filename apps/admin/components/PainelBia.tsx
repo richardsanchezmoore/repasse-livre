@@ -35,9 +35,9 @@ import type {
 } from "@/lib/biaDashboard";
 import { gerarInsightTendencia } from "@/lib/insightTendencia";
 
-const HUE_ESTOQUE = 230;
-const HUE_PRECO = 155;
-const COR_VERDE_GRAFICO = "oklch(0.7 0.15 230)";
+const HUE_ESTOQUE = 150; // verde da marca (era 230/azul) — mapa e barras de estoque
+const HUE_PRECO = 155; // verde levemente distinto pro "por quanto"
+const COR_VERDE_GRAFICO = "oklch(0.7 0.15 150)";
 const COR_BORDA_GRAFICO = "#222838";
 const COR_TEXTO_FRACO_GRAFICO = "#7b8395";
 
