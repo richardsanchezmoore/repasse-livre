@@ -676,16 +676,34 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
                   <div className="bia2-tend-stat">
                     <span className="bia2-tend-stat-rotulo">Oferta média</span>
                     <span className="bia2-tend-stat-valor">
-                      {volAnt} <span className="bia2-tend-seta">→</span> {volAtual}
+                      {volAnt} <span className="bia2-tend-seta">→</span>{" "}
+                      <span>
+                        {volAtual}
+                        <span className="bia2-tend-sufixo"> un.</span>
+                      </span>
                     </span>
                     <ChipVariacao tom={a.volTom} texto={volChip} />
                   </div>
                   <div className="bia2-tend-stat">
                     <span className="bia2-tend-stat-rotulo">Margem média</span>
                     <span className="bia2-tend-stat-valor">
-                      {a.margemAnterior !== null ? `${a.margemAnterior.toFixed(1)}%` : "—"}{" "}
-                      <span className="bia2-tend-seta">→</span>{" "}
-                      {a.margemAtual !== null ? `${a.margemAtual.toFixed(1)}%` : "—"}
+                      {a.margemAnterior !== null ? (
+                        <span>
+                          {a.margemAnterior.toFixed(1)}
+                          <span className="bia2-tend-sufixo">%</span>
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                      <span className="bia2-tend-seta">→</span>
+                      {a.margemAtual !== null ? (
+                        <span>
+                          {a.margemAtual.toFixed(1)}
+                          <span className="bia2-tend-sufixo">%</span>
+                        </span>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                     <ChipVariacao tom={a.margemTom} texto={margemChip} />
                   </div>
