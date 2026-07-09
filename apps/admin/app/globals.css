@@ -793,62 +793,61 @@ body {
 .usuarios-botao-apagar:hover:not(:disabled) {
   background: #fde2e1;
 }
-/* BIA — design "neo-fintech" (handoff recebido do usuário via Claude
-   Design, 28/06/2026): fundo escuro com glow radial, Archivo (títulos/
-   números) + Space Mono (rótulos/dados), mapa-tile esquemático do Brasil
-   com escala choroplética OKLCH, barras em pílula, chips de marca. Cores
-   computadas em TS (ver lib/biaCores.ts) e aplicadas via style inline por
-   item; classes abaixo cobrem só a estrutura estática. Escopado a esta
-   página — não usa nenhuma variável do resto do painel admin (light mode). */
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap");
+/* BIA — design "BRUTALIST CLARO" (handoff design_handoff_dashboard_seminovos_B,
+   Claude Design): fundo bege quente, molduras pretas grossas (3px), Archivo Black
+   caixa-alta, blocos de cor sólidos, ZERO radius e ZERO sombra. Acento de sistema
+   = VERDE da marca (o handoff usava amarelo). Cores de mapa/marca vêm de
+   lib/biaCores.ts (rampa clara) via style inline por item. Escopado a esta página.
+   Ver project_repasse_livre_referencia_visual_bia. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap");
 
 .bia-pagina {
   flex: 1;
-  /* Respiro do menu lateral — sem isso o fundo escuro colava direto na
-     borda do menu, sem nenhuma moldura/contenção (reportado pelo usuário
-     com print: "sem container que alinhe o documento"). */
-  padding: 20px 20px 40px;
+  padding: 0;
   max-width: none;
-  background: #f0f2f5;
+  background: #e9e4d6;
   font-family: "Archivo", system-ui, sans-serif;
-  color: #eef1f6;
+  color: #111;
 }
 
 .bia-pagina-fundo {
-  background: radial-gradient(1200px 600px at 20% -10%, #1a1f2b 0%, #0c0e13 60%);
-  background-color: #0c0e13;
-  border-radius: 20px;
-  padding-bottom: 80px;
-  overflow: hidden;
+  background: #e9e4d6;
+  padding: clamp(16px, 4vw, 44px) 0 clamp(40px, 6vw, 80px);
 }
 
+/* Header = caixa única com moldura preta grossa */
 .bia-header {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px clamp(20px, 5vw, 64px) 0;
+  margin: 0 auto clamp(22px, 3vw, 34px);
+  padding: 0 clamp(16px, 4vw, 44px);
 }
 
+/* eyebrow "INTELIGÊNCIA DE ESTOQUE" — faixa VERDE da marca (era amarelo) */
 .bia-status-linha {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  margin-bottom: 22px;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: oklch(0.78 0.17 150);
+  color: #111;
+  padding: 4px 9px;
+  border: 3px solid #111;
 }
 
 .bia-status-ponto {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: oklch(0.72 0.16 230);
-  box-shadow: 0 0 12px oklch(0.72 0.16 230);
+  background: #111;
 }
 
 .bia-eyebrow {
   font-family: "Space Mono", monospace;
   font-size: 11px;
-  letter-spacing: 0.2em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #8b93a3;
+  color: #111;
   margin: 0;
 }
 
@@ -861,66 +860,89 @@ body {
 }
 
 .bia-headline {
-  font-weight: 800;
-  font-size: clamp(36px, 5.4vw, 60px);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
+  font-family: "Archivo Black", "Archivo", sans-serif;
+  font-weight: 900;
+  font-size: clamp(40px, 6.6vw, 76px);
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
   margin: 0;
-  max-width: 600px;
+  max-width: 760px;
+  color: #111;
 }
 
 .bia-headline-fraco {
-  color: #8b93a3;
+  color: #8a8270;
 }
 
 .bia-subtitulo {
-  font-size: 13px;
-  color: #8b93a3;
-  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #3a362b;
+  margin: 12px 0 0;
   max-width: 560px;
 }
 
 .bia-painel {
   max-width: 1200px;
   margin: 0 auto;
-  padding: clamp(36px, 5vw, 56px) clamp(20px, 5vw, 64px) 0;
+  padding: 0 clamp(16px, 4vw, 44px);
   display: flex;
   flex-direction: column;
-  gap: clamp(36px, 5vw, 56px);
+  gap: clamp(22px, 3vw, 34px);
 }
 
+/* Faixa de 4 KPIs — moldura 3px, divisórias pretas de 3px entre células */
 .bia2-kpis {
   display: grid;
-  grid-template-columns: repeat(2, minmax(130px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 3px solid #111;
+  background: #111;
+  gap: 3px;
+}
+
+@media (max-width: 640px) {
+  .bia2-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .bia2-kpi {
-  background: #161a23;
-  border: 1px solid #262b38;
-  border-radius: 12px;
-  padding: 15px 18px;
+  background: #f4f1e8;
+  padding: 16px 18px;
+}
+
+/* Célula do Ticket médio (a que tem o valor destaque) — fundo VERDE */
+.bia2-kpi:has(.bia2-kpi-valor-destaque) {
+  background: oklch(0.78 0.17 150);
 }
 
 .bia2-kpi-rotulo {
   font-family: "Space Mono", monospace;
-  font-size: 9.5px;
+  font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7b8395;
+  color: #6b6452;
+}
+
+.bia2-kpi:has(.bia2-kpi-valor-destaque) .bia2-kpi-rotulo {
+  color: #111;
 }
 
 .bia2-kpi-valor {
-  font-weight: 800;
-  font-size: 30px;
-  letter-spacing: -0.03em;
-  margin-top: 5px;
+  font-family: "Archivo", sans-serif;
+  font-weight: 900;
+  font-size: clamp(30px, 3.6vw, 42px);
+  letter-spacing: -0.04em;
+  margin-top: 6px;
+  color: #111;
 }
 
 .bia2-kpi-valor-destaque {
-  color: oklch(0.8 0.13 230);
+  color: #111;
 }
 
+/* ===== Cabeçalho de seção (badge preto numerado + título Archivo 900) ===== */
 .bia2-secao {
   display: flex;
   flex-direction: column;
@@ -932,65 +954,74 @@ body {
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
+/* Badge de número de seção (01..04): preto sólido, Archivo Black */
 .bia-eyebrow-secao {
-  font-family: "Space Mono", monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  display: inline-block;
+  font-family: "Archivo Black", "Archivo", sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: oklch(0.72 0.13 230);
+  color: #f4f1e8;
+  background: #111;
+  padding: 3px 10px;
 }
 
 .bia2-titulo-secao {
-  font-weight: 800;
-  font-size: clamp(24px, 3.2vw, 34px);
+  font-family: "Archivo", sans-serif;
+  font-weight: 900;
+  font-size: clamp(22px, 3vw, 32px);
   letter-spacing: -0.03em;
+  text-transform: uppercase;
   margin: 8px 0 0;
+  color: #111;
 }
 
 .bia2-paragrafo-apoio {
-  color: #8b93a3;
+  color: #3a362b;
+  font-weight: 500;
   font-size: 15px;
   margin: 8px 0 0;
   max-width: 620px;
 }
 
+/* Toggle — caixa preta, pílula ativa preta sólida */
 .bia2-toggle {
   display: flex;
-  gap: 4px;
-  background: #161a23;
-  border: 1px solid #262b38;
-  padding: 4px;
-  border-radius: 10px;
+  gap: 0;
+  background: #f4f1e8;
+  border: 3px solid #111;
+  padding: 0;
 }
 
 .bia2-toggle-opcao {
   font-family: "Space Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.04em;
-  padding: 7px 14px;
+  text-transform: uppercase;
+  padding: 8px 16px;
   border: 0;
-  border-radius: 7px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s, color 0.12s;
   background: transparent;
-  color: #8b93a3;
+  color: #6b6452;
   font-weight: 400;
 }
 
 .bia2-toggle-opcao-ativa {
-  background: oklch(0.62 0.15 230);
-  color: #0d0f14;
+  background: #111;
+  color: #f4f1e8;
   font-weight: 700;
 }
 
+/* Card genérico — moldura 3px preta, sem radius/sombra */
 .bia2-card {
-  background: #12151c;
-  border: 1px solid #222838;
-  border-radius: 16px;
-  padding: 22px 24px;
+  background: #f4f1e8;
+  border: 3px solid #111;
+  padding: 20px 22px;
 }
 
 .bia2-card-flex {
@@ -1000,13 +1031,13 @@ body {
 .bia2-coluna-flex {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: clamp(16px, 2.5vw, 24px);
 }
 
 .bia2-grid-2col {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(20px, 3vw, 36px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(16px, 2.5vw, 24px);
   align-items: stretch;
 }
 
@@ -1021,30 +1052,34 @@ body {
   font-size: 9.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #7b8395;
+  color: #6b6452;
   margin-bottom: 14px;
 }
 
-/* Mapa-tile esquemático do Brasil */
+/* ===== Mapa-tile esquemático do Brasil ===== */
 .bia2-mapa {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-auto-rows: 1fr;
-  gap: 5px;
+  gap: 4px;
   aspect-ratio: 7 / 9;
-  max-width: 380px;
+  max-width: 340px;
   margin: 0 auto;
 }
 
 .bia2-mapa-tile {
-  border-radius: 5px;
+  border: 1.5px solid #111;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: default;
-  transition: box-shadow 0.12s ease;
+  transition: border-width 0.1s ease;
   padding: 2px;
+}
+
+.bia2-mapa-tile:hover {
+  border-width: 2.5px;
 }
 
 .bia2-mapa-tile-uf {
@@ -1054,19 +1089,16 @@ body {
   line-height: 1;
 }
 
+/* handoff: sem número dentro do tile (valor vem no hover + ranking) */
 .bia2-mapa-tile-valor {
-  font-family: "Space Mono", monospace;
-  font-size: 8.5px;
-  opacity: 0.82;
-  margin-top: 2px;
-  line-height: 1;
+  display: none;
 }
 
 .bia2-legenda-mapa {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .bia2-legenda-extremo {
@@ -1074,25 +1106,26 @@ body {
   font-size: 9.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #7b8395;
+  color: #6b6452;
 }
 
 .bia2-legenda-faixa {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
 }
 
 .bia2-legenda-stop {
   flex: 1;
-  height: 8px;
-  border-radius: 2px;
+  height: 12px;
+  border: 1.5px solid #111;
 }
 
+/* Painel de hover do mapa — borda-topo preta grossa */
 .bia2-painel-hover {
-  margin-top: 18px;
-  min-height: 54px;
-  border-top: 1px solid #222838;
+  margin-top: 16px;
+  min-height: 52px;
+  border-top: 3px solid #111;
   padding-top: 14px;
 }
 
@@ -1103,42 +1136,42 @@ body {
 }
 
 .bia2-painel-hover-uf {
-  font-weight: 800;
+  font-family: "Archivo Black", "Archivo", sans-serif;
+  font-weight: 900;
   font-size: 30px;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: oklch(0.82 0.13 230);
+  color: #111;
 }
 
 .bia2-painel-hover-linha1 {
   font-size: 13px;
-  color: #c4cad6;
+  font-weight: 600;
+  color: #3a362b;
 }
 
 .bia2-painel-hover-linha2 {
   font-family: "Space Mono", monospace;
   font-size: 11px;
-  color: #7b8395;
+  color: #6b6452;
   margin-top: 3px;
 }
 
 .bia2-painel-hover-vazio {
   font-size: 13px;
-  color: #5e6678;
+  color: #8a8270;
 }
 
-/* Trilho/barra-pílula genérica */
+/* ===== Trilho/barra genérica — caixa 2px preta, preenchimento sólido ===== */
 .bia2-trilho {
-  height: 8px;
   position: relative;
   flex: 1;
+  border: 2px solid #111;
+  background: #e9e4d6;
 }
 
 .bia2-trilho-fundo {
-  position: absolute;
-  inset: 0;
-  background: #1b2030;
-  border-radius: 99px;
+  display: none;
 }
 
 .bia2-trilho-fill {
@@ -1146,7 +1179,6 @@ body {
   left: 0;
   top: 0;
   bottom: 0;
-  border-radius: 99px;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1158,26 +1190,28 @@ body {
 
 .bia2-ranking-linha {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 30px 1fr auto;
   align-items: center;
   gap: 12px;
 }
 
 .bia2-ranking-uf {
-  font-family: "Space Mono", monospace;
-  font-weight: 700;
-  font-size: 12px;
-  color: #c4cad6;
+  font-family: "Archivo", sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: #111;
 }
 
 .bia2-ranking-valor {
   font-family: "Space Mono", monospace;
+  font-weight: 700;
   font-size: 11.5px;
-  color: #aeb6c4;
+  color: #3a362b;
   min-width: 80px;
   text-align: right;
 }
 
+/* Extremos de preço — labels em badge (caro/acessível) */
 .bia2-extremos-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1185,18 +1219,23 @@ body {
 }
 
 .bia2-extremos-titulo {
-  font-size: 10.5px;
+  display: inline-block;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  margin-bottom: 8px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  color: #fff;
+  margin-bottom: 10px;
 }
 
 .bia2-extremos-caro {
-  color: oklch(0.72 0.16 25);
+  background: oklch(0.62 0.2 25);
 }
 
 .bia2-extremos-acessivel {
-  color: oklch(0.74 0.15 150);
+  background: oklch(0.6 0.16 150);
 }
 
 .bia2-extremos-linha {
@@ -1204,22 +1243,23 @@ body {
   justify-content: space-between;
   gap: 8px;
   padding: 5px 0;
-  border-bottom: 1px solid #1b2030;
+  border-bottom: 1.5px solid #d8d2c0;
 }
 
 .bia2-extremos-uf {
   font-family: "Space Mono", monospace;
   font-size: 11.5px;
-  color: #c4cad6;
+  font-weight: 700;
+  color: #111;
 }
 
 .bia2-extremos-valor {
   font-family: "Space Mono", monospace;
   font-size: 11.5px;
-  color: #aeb6c4;
+  color: #3a362b;
 }
 
-/* Cidades */
+/* ===== Cidades ===== */
 .bia2-cidades-lista {
   display: flex;
   flex-direction: column;
@@ -1228,7 +1268,7 @@ body {
 
 .bia2-cidade-linha {
   display: grid;
-  grid-template-columns: 190px 1fr;
+  grid-template-columns: 185px 1fr;
   align-items: center;
   gap: 16px;
 }
@@ -1242,7 +1282,8 @@ body {
 
 .bia2-cidade-nome {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+  color: #111;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1251,10 +1292,10 @@ body {
 .bia2-cidade-uf {
   font-family: "Space Mono", monospace;
   font-size: 9.5px;
-  color: #7b8395;
+  font-weight: 700;
+  color: #111;
   padding: 1px 5px;
-  border: 1px solid #2a3142;
-  border-radius: 4px;
+  border: 1.5px solid #111;
   flex-shrink: 0;
 }
 
@@ -1267,13 +1308,13 @@ body {
 .bia2-cidade-valor {
   font-family: "Space Mono", monospace;
   font-size: 12px;
-  color: #eef1f6;
+  color: #111;
   min-width: 112px;
   text-align: right;
   font-weight: 700;
 }
 
-/* Disputados */
+/* ===== Disputados ===== */
 .bia2-chips {
   display: flex;
   flex-wrap: wrap;
@@ -1287,31 +1328,29 @@ body {
   gap: 7px;
   font-family: "Archivo", sans-serif;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 6px 12px;
-  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s;
-  background: #161a23;
-  color: #aeb6c4;
-  border: 1px solid #2a3142;
+  transition: background 0.12s, color 0.12s;
+  background: #f4f1e8;
+  color: #111;
+  border: 2px solid #111;
 }
 
 .bia2-chip-ativo {
-  background: #eef1f6;
-  color: #0d0f14;
-  border-color: #eef1f6;
+  background: #111;
+  color: #f4f1e8;
 }
 
 .bia2-chip-ponto {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid #111;
   display: inline-block;
 }
 
 .bia2-disputados-card {
-  padding: 8px 24px 16px;
+  padding: 8px 22px 16px;
 }
 
 .bia2-disputados-cabecalho {
@@ -1323,8 +1362,8 @@ body {
   font-size: 9.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5e6678;
-  border-bottom: 1px solid #1b2030;
+  color: #6b6452;
+  border-bottom: 3px solid #111;
 }
 
 .bia2-alinhar-direita {
@@ -1337,7 +1376,7 @@ body {
   gap: 16px;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #161b27;
+  border-bottom: 1.5px solid #d8d2c0;
 }
 
 .bia2-disputado-modelo-grupo {
@@ -1348,28 +1387,29 @@ body {
 }
 
 .bia2-disputado-ponto {
-  width: 9px;
-  height: 9px;
-  border-radius: 3px;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid #111;
   flex-shrink: 0;
 }
 
 .bia2-disputado-modelo {
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.1;
+  color: #111;
 }
 
 .bia2-disputado-uf {
   font-family: "Space Mono", monospace;
   font-size: 11px;
   font-weight: 400;
-  color: #7b8395;
+  color: #6b6452;
 }
 
 .bia2-disputado-marca {
   font-size: 10.5px;
-  color: #5e6678;
+  color: #8a8270;
   line-height: 1.1;
   margin-top: 2px;
 }
@@ -1391,24 +1431,25 @@ body {
 }
 
 .bia2-disputado-qtd {
-  color: #aeb6c4;
+  color: #3a362b;
 }
 
 .bia2-margem-normal {
-  color: #7b8395;
+  color: #6b6452;
 }
 
+/* margem ≥ 25% vira badge vermelho */
 .bia2-badge-margem {
-  color: #0d0f14;
-  background: oklch(0.72 0.18 25);
+  color: #fff;
+  background: oklch(0.6 0.2 25);
   padding: 1px 6px;
-  border-radius: 5px;
 }
 
+/* Faixa de KM — caixa 1.5px, segmento preto sólido */
 .bia2-km-trilho {
-  height: 6px;
-  background: #1b2030;
-  border-radius: 3px;
+  height: 8px;
+  background: #e9e4d6;
+  border: 1.5px solid #111;
   position: relative;
   overflow: hidden;
 }
@@ -1417,29 +1458,29 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: #3a4256;
-  border-radius: 3px;
+  background: #111;
 }
 
 .bia2-km-label {
   font-family: "Space Mono", monospace;
   font-size: 9px;
-  color: #5e6678;
+  color: #6b6452;
   margin-top: 4px;
   text-align: right;
 }
 
-/* Marcas de luxo */
+/* ===== Marcas de luxo ===== */
 .bia2-grid-marcas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 12px;
-  margin-top: 22px;
+  margin-top: 20px;
 }
 
 .bia2-card-marca {
-  border-radius: 14px;
-  padding: 20px 22px;
+  background: #f4f1e8;
+  border: 3px solid #111;
+  padding: 18px 20px;
 }
 
 .bia2-card-marca-topo {
@@ -1457,28 +1498,32 @@ body {
 }
 
 .bia2-card-marca-quadrado {
-  width: 11px;
-  height: 11px;
-  border-radius: 4px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #111;
   display: inline-block;
 }
 
 .bia2-card-marca-nome {
+  font-family: "Archivo Black", "Archivo", sans-serif;
   font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #111;
 }
 
 .bia2-card-marca-total {
   font-family: "Space Mono", monospace;
+  font-weight: 700;
   font-size: 11px;
-  color: #7b8395;
+  color: #3a362b;
 }
 
 .bia2-card-marca-lidera {
   font-family: "Space Mono", monospace;
   font-size: 9.5px;
-  color: #5e6678;
+  color: #6b6452;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 14px;
@@ -1505,16 +1550,16 @@ body {
 .bia2-card-marca-qtd {
   font-family: "Space Mono", monospace;
   font-size: 11px;
-  color: #aeb6c4;
+  color: #3a362b;
   text-align: right;
 }
 
 .bia2-rodape {
-  border-top: 1px solid #222838;
+  border-top: 3px solid #111;
   padding-top: 18px;
   font-family: "Space Mono", monospace;
   font-size: 10.5px;
-  color: #5e6678;
+  color: #6b6452;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;

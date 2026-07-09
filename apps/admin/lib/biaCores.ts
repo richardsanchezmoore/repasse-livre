@@ -1,18 +1,21 @@
-// Helpers de cor/formatação pro design "neo-fintech" do /bia — escala
-// choroplética dark em OKLCH e mapeamento de cor por marca, replicando a
-// lógica do handoff de design recebido do usuário (Claude Design).
+// Helpers de cor/formatação pro design "brutalist claro" do /bia — escala
+// choroplética CLARA em OKLCH e mapeamento de cor por marca, seguindo o handoff
+// design_handoff_dashboard_seminovos_B (Claude Design). Ver
+// project_repasse_livre_referencia_visual_bia.
 
 export interface CorMapa {
   bg: string;
   fg: string;
 }
 
-/** Escala choroplética dark: L e C crescem com `t` (0-1), hue fixo por métrica. */
+/** Escala choroplética CLARA (fundo bege): L CAI e C sobe com `t` (0-1), hue
+ *  fixo por métrica. Fórmula do handoff: L = 0.92 − 0.50·t, C = 0.03 + 0.18·t.
+ *  Texto branco quando o tile fica escuro (L < 0.6), senão tinta preta. */
 export function corMapa(t: number, hue: number): CorMapa {
-  const L = 0.3 + 0.5 * t;
-  const C = 0.04 + 0.13 * t;
+  const L = 0.92 - 0.5 * t;
+  const C = 0.03 + 0.18 * t;
   const bg = `oklch(${L.toFixed(3)} ${C.toFixed(3)} ${hue})`;
-  const fg = L < 0.58 ? `oklch(0.95 0.02 ${hue})` : `oklch(0.22 0.04 ${hue})`;
+  const fg = L < 0.6 ? "#fff" : "#111";
   return { bg, fg };
 }
 
@@ -82,22 +85,25 @@ function hashString(texto: string): number {
 // Cores vivas curadas pras marcas mais comuns (mesmos valores do handoff de
 // design) — qualquer marca fora dessa lista cai num hue determinístico (hash
 // do nome), pra nunca repetir cor por acaso entre marcas diferentes.
+// Cores das marcas saturadas pra FUNDO CLARO (valores do handoff brutalist).
+// Marca fora da lista cai num hue determinístico (hash do nome), em L/C que
+// fica legível na moldura preta sobre bege.
 const CORES_MARCA: Record<string, string> = {
-  Chevrolet: "oklch(0.74 0.15 75)",
-  Volkswagen: "oklch(0.68 0.15 255)",
-  Jeep: "oklch(0.72 0.15 150)",
-  Hyundai: "oklch(0.72 0.12 210)",
-  Fiat: "oklch(0.68 0.18 25)",
-  Toyota: "oklch(0.7 0.15 20)",
-  Honda: "oklch(0.65 0.15 25)",
-  Renault: "oklch(0.7 0.16 95)",
-  Nissan: "oklch(0.65 0.13 250)",
-  Ford: "oklch(0.62 0.18 260)",
+  Chevrolet: "oklch(0.78 0.16 90)",
+  Volkswagen: "oklch(0.55 0.18 250)",
+  Jeep: "oklch(0.6 0.16 150)",
+  Hyundai: "oklch(0.62 0.13 210)",
+  Fiat: "oklch(0.6 0.2 25)",
+  Toyota: "oklch(0.58 0.19 25)",
+  Honda: "oklch(0.55 0.17 25)",
+  Renault: "oklch(0.78 0.17 95)",
+  Nissan: "oklch(0.55 0.15 250)",
+  Ford: "oklch(0.5 0.18 260)",
 };
 
 export function corDaMarca(marca: string): string {
   if (CORES_MARCA[marca]) return CORES_MARCA[marca];
-  return `oklch(0.7 0.15 ${hashString(marca)})`;
+  return `oklch(0.6 0.16 ${hashString(marca)})`;
 }
 
 // Hue fixo pras marcas de luxo já conhecidas (mesmo critério do handoff) —
