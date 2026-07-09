@@ -127,6 +127,19 @@ export default async function ContaPage() {
               <section className="conta-card">
                 <h2 className="conta-card-titulo">Acessos</h2>
                 <nav className="conta-atalhos">
+                  <Link href="/completar-dados" className="conta-atalho">
+                    <IdCard size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                    <span className="conta-atalho-texto">
+                      <span className="conta-atalho-titulo">Meus dados</span>
+                      <span className="conta-atalho-sub">Nome e WhatsApp usados ao anunciar</span>
+                    </span>
+                    {dadosIncompletos ? (
+                      <span className="conta-atalho-alerta">Completar</span>
+                    ) : (
+                      <ChevronRight size={18} className="conta-atalho-seta" />
+                    )}
+                  </Link>
+
                   <Link href={podeAbrirBia ? "/bia" : "/planos"} className="conta-atalho">
                     <ScanSearch size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
@@ -142,37 +155,6 @@ export default async function ContaPage() {
                     )}
                   </Link>
 
-                  <Link href="/completar-dados" className="conta-atalho">
-                    <IdCard size={20} strokeWidth={1.9} className="conta-atalho-icone" />
-                    <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Meus dados</span>
-                      <span className="conta-atalho-sub">Nome e WhatsApp usados ao anunciar</span>
-                    </span>
-                    {dadosIncompletos ? (
-                      <span className="conta-atalho-alerta">Completar</span>
-                    ) : (
-                      <ChevronRight size={18} className="conta-atalho-seta" />
-                    )}
-                  </Link>
-
-                  <Link href="/enviar" className="conta-atalho">
-                    <Car size={20} strokeWidth={1.9} className="conta-atalho-icone" />
-                    <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Anunciar um veículo</span>
-                      <span className="conta-atalho-sub">Coloque seu carro na vitrine</span>
-                    </span>
-                    <ChevronRight size={18} className="conta-atalho-seta" />
-                  </Link>
-
-                  <Link href="/?aba=favoritos" className="conta-atalho">
-                    <Heart size={20} strokeWidth={1.9} className="conta-atalho-icone" />
-                    <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Favoritos</span>
-                      <span className="conta-atalho-sub">Anúncios que você salvou</span>
-                    </span>
-                    <ChevronRight size={18} className="conta-atalho-seta" />
-                  </Link>
-
                   {/* Reserva o lugar do módulo de alertas (buscas salvas → aviso
                       no WhatsApp/push quando entra anúncio na faixa/modelo). Ainda
                       não navega — ver project_repasse_livre_notificacoes_predefinicoes. */}
@@ -184,6 +166,24 @@ export default async function ContaPage() {
                     </span>
                     <span className="conta-atalho-soon">Em breve</span>
                   </div>
+
+                  <Link href="/?aba=favoritos" className="conta-atalho">
+                    <Heart size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                    <span className="conta-atalho-texto">
+                      <span className="conta-atalho-titulo">Favoritos</span>
+                      <span className="conta-atalho-sub">Anúncios que você salvou</span>
+                    </span>
+                    <ChevronRight size={18} className="conta-atalho-seta" />
+                  </Link>
+
+                  <Link href="/enviar" className="conta-atalho">
+                    <Car size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                    <span className="conta-atalho-texto">
+                      <span className="conta-atalho-titulo">Anunciar um veículo</span>
+                      <span className="conta-atalho-sub">Coloque seu carro na vitrine</span>
+                    </span>
+                    <ChevronRight size={18} className="conta-atalho-seta" />
+                  </Link>
                 </nav>
               </section>
 
