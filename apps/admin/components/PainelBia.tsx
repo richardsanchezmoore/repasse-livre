@@ -352,6 +352,10 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
     metrica === "margem" ? cidades.filter((c) => c.quantidade >= MIN_AMOSTRA_MARGEM_CIDADE) : cidades;
   const ordenadas = [...base].sort((a, b) => valorDe(b) - valorDe(a));
   const max = Math.max(...ordenadas.map(valorDe), 1);
+  const min = Math.min(...ordenadas.map(valorDe));
+  // Intensidade da cor espalhada no range REAL (min–max) — os valores são
+  // próximos (ex.: margem 8–12%), então valor/max deixaria tudo homogêneo.
+  const intensidade = (v: number) => (max > min ? (v - min) / (max - min) : 0.7);
 
   return (
     <section className="bia2-secao">
@@ -376,7 +380,11 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
                 <span className="bia2-cidade-uf">{cidade.estado}</span>
               </div>
               <div className="bia2-cidade-barra-grupo">
-                <BarraSimples percentual={t * 100} cor={corMapa(0.5 + 0.4 * t, hue).bg} alturaPx={18} />
+                <BarraSimples
+                  percentual={t * 100}
+                  cor={corMapa(0.14 + 0.82 * intensidade(valor), hue).bg}
+                  alturaPx={18}
+                />
                 <span className="bia2-cidade-valor">{rotuloValor(valor)}</span>
               </div>
             </div>
