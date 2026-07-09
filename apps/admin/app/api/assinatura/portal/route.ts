@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getStripe } from "@/lib/stripe";
+import { URL_BASE_SITE } from "@/lib/site";
 
 /**
  * Abre o Customer Portal do Stripe pro assinante gerenciar (trocar cartão,
@@ -23,11 +24,10 @@ export async function POST(): Promise<Response> {
     return NextResponse.json({ erro: "sem_assinatura" }, { status: 400 });
   }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   try {
     const sessao = await getStripe().billingPortal.sessions.create({
       customer: perfil.stripe_customer_id as string,
-      return_url: `${site}/planos`,
+      return_url: `${URL_BASE_SITE}/planos`,
     });
     return NextResponse.json({ url: sessao.url });
   } catch (erro) {

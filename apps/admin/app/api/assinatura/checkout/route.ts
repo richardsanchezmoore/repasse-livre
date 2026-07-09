@@ -3,6 +3,7 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { getStripe } from "@/lib/stripe";
 import { buscarStripePriceId } from "@/lib/configWorker";
 import { garantirClienteStripe } from "@/lib/assinatura";
+import { URL_BASE_SITE } from "@/lib/site";
 
 /**
  * Inicia o checkout de assinatura (Stripe Checkout, mode subscription). Exige
@@ -20,7 +21,6 @@ export async function POST(): Promise<Response> {
   const priceId = await buscarStripePriceId();
   if (!priceId) return NextResponse.json({ erro: "preco_nao_configurado" }, { status: 500 });
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   try {
     const customerId = await garantirClienteStripe(usuario.id, usuario.email);
     const sessao = await getStripe().checkout.sessions.create({
@@ -28,8 +28,8 @@ export async function POST(): Promise<Response> {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
-      success_url: `${site}/planos?assinatura=sucesso`,
-      cancel_url: `${site}/planos?assinatura=cancelado`,
+      success_url: `${URL_BASE_SITE}/planos?assinatura=sucesso`,
+      cancel_url: `${URL_BASE_SITE}/planos?assinatura=cancelado`,
       subscription_data: { metadata: { user_id: usuario.id } },
       metadata: { user_id: usuario.id },
     });
