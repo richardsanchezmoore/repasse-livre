@@ -2030,13 +2030,20 @@ body {
   color: #54656f;
   cursor: pointer;
 }
-/* Foto de perfil (Google) no lugar do ícone — círculo dentro do botão 36px. */
+/* Foto de perfil (Google) no lugar do ícone — preenche o botão de 36px como
+   círculo, SEM o box (borda/fundo). O box só fica no ícone (sem foto). */
 .icon-dropdown-avatar {
-  width: 26px;
-  height: 26px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
+}
+.icon-dropdown-botao-avatar,
+.icon-dropdown-botao-avatar:hover {
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 .icon-dropdown-botao:hover {

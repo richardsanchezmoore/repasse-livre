@@ -44,6 +44,8 @@ export function IconDropdown({
     fechamentoPendente.current = setTimeout(() => setAberto(false), 200);
   }
 
+  const mostrandoFoto = Boolean(avatarUrl) && fotoOk;
+
   return (
     <div
       ref={containerRef}
@@ -55,15 +57,15 @@ export function IconDropdown({
         type="button"
         className={`icon-dropdown-botao ${ativo ? "icon-dropdown-botao-ativo" : ""} ${
           mostrarRotulo ? "icon-dropdown-botao-com-texto" : ""
-        }`}
+        } ${mostrandoFoto ? "icon-dropdown-botao-avatar" : ""}`}
         onClick={() => setAberto(true)}
         aria-label={rotulo}
         title={rotulo}
       >
-        {avatarUrl && fotoOk ? (
+        {mostrandoFoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={avatarUrl}
+            src={avatarUrl as string}
             alt=""
             className="icon-dropdown-avatar"
             referrerPolicy="no-referrer"
