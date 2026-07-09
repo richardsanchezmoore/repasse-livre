@@ -1233,20 +1233,23 @@ body {
 .bia2-extremos-titulo {
   display: inline-block;
   font-family: "Space Mono", monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 4px 9px;
+  border-radius: 3px;
   color: #fff;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.bia2-extremos-caro {
-  background: oklch(0.62 0.2 25);
+/* Cor semântica (não fixa por coluna): a JSX escolhe verde/vermelho conforme a
+   métrica — MAIOR MARGEM é verde, MAIS CAROS é vermelho. */
+.bia2-extremos-vermelho {
+  background: oklch(0.6 0.2 25);
 }
 
-.bia2-extremos-acessivel {
+.bia2-extremos-verde {
   background: oklch(0.6 0.16 150);
 }
 
@@ -1254,21 +1257,21 @@ body {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1.5px solid #eef1f4;
+  padding: 6px 0;
+  border-bottom: 1px solid #eef1f4;
 }
 
 .bia2-extremos-uf {
   font-family: "Space Mono", monospace;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 700;
   color: #111;
 }
 
 .bia2-extremos-valor {
   font-family: "Space Mono", monospace;
-  font-size: 11.5px;
-  color: #3a362b;
+  font-size: 13px;
+  color: #3a4046;
 }
 
 /* ===== Cidades ===== */

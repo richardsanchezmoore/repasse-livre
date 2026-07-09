@@ -296,7 +296,11 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
             </div>
             <div className="bia2-extremos-grid">
               <div>
-                <div className="bia2-extremos-titulo bia2-extremos-caro">
+                <div
+                  className={`bia2-extremos-titulo ${
+                    metricaExtremos === "margem" ? "bia2-extremos-verde" : "bia2-extremos-vermelho"
+                  }`}
+                >
                   {metricaExtremos === "margem" ? "MAIOR MARGEM" : "MAIS CAROS"}
                 </div>
                 {topoExtremos.map((e) => (
@@ -307,7 +311,11 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
                 ))}
               </div>
               <div>
-                <div className="bia2-extremos-titulo bia2-extremos-acessivel">
+                <div
+                  className={`bia2-extremos-titulo ${
+                    metricaExtremos === "margem" ? "bia2-extremos-vermelho" : "bia2-extremos-verde"
+                  }`}
+                >
                   {metricaExtremos === "margem" ? "MENOR MARGEM" : "MAIS ACESSÍVEIS"}
                 </div>
                 {baseExtremos.map((e) => (
