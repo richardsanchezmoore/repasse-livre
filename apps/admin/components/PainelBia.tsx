@@ -227,7 +227,7 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
               {ranking.map((item) => (
                 <div key={item.uf} className="bia2-ranking-linha">
                   <span className="bia2-ranking-uf">{item.uf}</span>
-                  <BarraSimples percentual={item.percentual} cor={item.cor} alturaPx={8} />
+                  <BarraSimples percentual={item.percentual} cor={item.cor} alturaPx={16} />
                   <span className="bia2-ranking-valor">{item.valLabel}</span>
                 </div>
               ))}
