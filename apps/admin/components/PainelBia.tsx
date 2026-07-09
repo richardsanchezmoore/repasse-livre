@@ -468,14 +468,14 @@ function SecaoLuxo({ marcasLuxo }: { marcasLuxo: ItemMarcaLuxo[] }) {
                   <div key={item.estado} className="bia2-card-marca-linha">
                     <span
                       className="bia2-card-marca-uf"
-                      style={{ fontWeight: indice === 0 ? 700 : 400, color: indice === 0 ? "#eef1f6" : "#7b8395" }}
+                      style={{ fontWeight: indice === 0 ? 800 : 500, color: indice === 0 ? "#111" : "#8696a0" }}
                     >
                       {item.estado}
                     </span>
                     <BarraSimples
                       percentual={lider ? (item.quantidade / lider.quantidade) * 100 : 0}
                       cor={indice === 0 ? cor : `oklch(0.5 0.07 ${hue})`}
-                      alturaPx={9}
+                      alturaPx={14}
                     />
                     <span className="bia2-card-marca-qtd">{item.quantidade}</span>
                   </div>

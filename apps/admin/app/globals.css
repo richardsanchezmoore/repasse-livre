@@ -1510,9 +1510,9 @@ body {
 }
 
 .bia2-card-marca-quadrado {
-  width: 13px;
-  height: 13px;
-  border: 2px solid #111;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
   display: inline-block;
 }
 
@@ -1534,10 +1534,11 @@ body {
 
 .bia2-card-marca-lidera {
   font-family: "Space Mono", monospace;
-  font-size: 9.5px;
-  color: #6b6452;
+  font-size: 11px;
+  color: #8696a0;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  margin-top: 12px;
   margin-bottom: 14px;
 }
 
