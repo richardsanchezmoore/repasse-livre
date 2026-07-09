@@ -1,7 +1,9 @@
-import { contarOportunidades } from "@/components/DiscoveriesBoard";
+import { buscarEstadosDisponiveis, contarOportunidades } from "@/components/DiscoveriesBoard";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { PainelBia } from "@/components/PainelBia";
+import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
 import {
   buscarCidadesMaisAtivas,
   buscarDescobertasPorDia,
@@ -32,6 +34,7 @@ export default async function BiaPage() {
     estadosAtivos,
     cidadesAtivas,
     tendencias,
+    estadosDisponiveis,
   ] = await Promise.all([
     contarOportunidades(usuarioAtual),
     buscarResumoBia(),
@@ -43,13 +46,21 @@ export default async function BiaPage() {
     buscarEstadosMaisAtivos(),
     buscarCidadesMaisAtivas(20),
     buscarTendenciaPrincipais(6),
+    buscarEstadosDisponiveis(),
   ]);
 
   return (
     <NavegacaoProvider>
-      <div className="layout">
-        <Sidebar abaAtiva="descobertas" contagens={contagens} role={usuarioAtual.role} />
-        <main className="bia-pagina">
+      <SelecaoMultiplaProvider>
+        <TopBar aba="aprovadas" estadosDisponiveis={estadosDisponiveis} usuario={usuarioAtual} />
+        <div className="layout">
+          <Sidebar
+            abaAtiva="descobertas"
+            contagens={contagens}
+            role={usuarioAtual.role}
+            usuarioLogado={true}
+          />
+          <main className="bia-pagina">
           <div className="bia-pagina-fundo">
             <header className="bia-header">
               <div className="bia-status-linha">
@@ -81,7 +92,8 @@ export default async function BiaPage() {
             />
           </div>
         </main>
-      </div>
+        </div>
+      </SelecaoMultiplaProvider>
     </NavegacaoProvider>
   );
 }

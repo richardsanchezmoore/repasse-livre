@@ -637,7 +637,7 @@ function SecaoTendenciaMensal({ tendencias }: { tendencias: ItemTendenciaPrincip
 
   return (
     <section className="bia2-secao">
-      <Eyebrow numero="05" texto="Fase 4 · Tendência mensal" />
+      <Eyebrow numero="05" texto="Tendência mensal" />
       <h2 className="bia2-titulo-secao">Tendências do mês</h2>
       <p className="bia2-paragrafo-apoio">
         Como os principais modelos se moveram de <strong>{mAnt || "mês anterior"}</strong> para{" "}
