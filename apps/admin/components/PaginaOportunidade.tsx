@@ -48,6 +48,7 @@ export async function PaginaOportunidade({
   factSheet = null,
   copilotoBloqueado = false,
   copilotoResumo = null,
+  ehPremium = false,
 }: {
   oportunidade: Oportunidade;
   /** FactSheet da BIA (só computado p/ premium/admin) — vira a aba "Copiloto"
@@ -64,6 +65,9 @@ export async function PaginaOportunidade({
   /** Resumo (2 linhas) já pronto do parecer, computado no server — o ÚNICO
    * pedaço do parecer que pode ir pro cliente. Ver lib/copilotoResumo. */
   copilotoResumo?: string | null;
+  /** Premium/admin → o "Abrir anúncio original" vira CTA claro (benefício do
+   * plano); não-PRO (em oferta Bronze liberada) vê o mesmo acesso discreto. */
+  ehPremium?: boolean;
 }) {
   const [historicoFipe, referenciaPreco, piso] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
@@ -338,9 +342,15 @@ export async function PaginaOportunidade({
             )}
 
             {!oportunidade.link_origem.startsWith("insercao-direta:") && (
-              <a href={oportunidade.link_origem} target="_blank" rel="noreferrer" className="link-origem">
+              <a
+                href={oportunidade.link_origem}
+                target="_blank"
+                rel="noreferrer"
+                className={`link-origem ${ehPremium ? "link-origem-pro" : "link-origem-discreto"}`}
+              >
                 <span className="link-origem-texto">
-                  <ExternalLink size={14} strokeWidth={1.75} className="icone-inline" /> Abrir anúncio original
+                  <ExternalLink size={ehPremium ? 16 : 13} strokeWidth={1.75} className="icone-inline" /> Abrir
+                  anúncio original
                 </span>
                 <span aria-hidden="true">›</span>
               </a>

@@ -388,6 +388,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               factSheet={factSheetBia}
               copilotoBloqueado={copilotoBloqueado}
               copilotoResumo={copilotoResumo}
+              ehPremium={ehAdminPagina || Boolean(usuario?.premium)}
             />
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
