@@ -454,12 +454,14 @@ function SecaoLuxo({ marcasLuxo }: { marcasLuxo: ItemMarcaLuxo[] }) {
           const lider = itens[0];
           const hue = hueMarcaLuxo(marca);
           const cor = `oklch(0.7 0.14 ${hue})`;
+          // Mercedes-Benz quebra o layout do card (2 linhas); "Mercedes" basta.
+          const nomeExibido = /^mercedes/i.test(marca) ? "Mercedes" : marca;
           return (
             <div key={marca} className="bia2-card bia2-card-marca">
               <div className="bia2-card-marca-topo">
                 <div className="bia2-card-marca-nome-grupo">
                   <span className="bia2-card-marca-quadrado" style={{ background: cor, boxShadow: `0 0 10px ${cor}` }} />
-                  <span className="bia2-card-marca-nome">{marca}</span>
+                  <span className="bia2-card-marca-nome">{nomeExibido}</span>
                 </div>
                 <span className="bia2-card-marca-total">{total} no Brasil</span>
               </div>
