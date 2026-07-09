@@ -1067,7 +1067,7 @@ body {
   grid-auto-rows: 1fr;
   gap: 4px;
   aspect-ratio: 7 / 9;
-  max-width: 340px;
+  max-width: 420px;
   margin: 0 auto;
 }
 
@@ -1089,13 +1089,18 @@ body {
 .bia2-mapa-tile-uf {
   font-family: "Space Mono", monospace;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
 }
 
-/* handoff: sem número dentro do tile (valor vem no hover + ranking) */
+/* Valor (estoque/preço) embaixo da sigla — deixa o mapa mais "encorpado"/útil */
 .bia2-mapa-tile-valor {
-  display: none;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.85;
+  margin-top: 3px;
+  line-height: 1;
 }
 
 .bia2-legenda-mapa {
