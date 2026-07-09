@@ -3166,6 +3166,19 @@ body {
   color: #8696a0;
 }
 
+/* SÓ na página individual (o `.destaque-margem-*` é compartilhado com o card —
+   por isso o escopo em `.pagina-oportunidade`): Ganho/Margem com mais presença
+   no desktop, via teto maior do clamp; mobile fica igual. */
+.pagina-oportunidade .destaque-margem-valor {
+  font-size: clamp(28px, 7vw, 46px);
+}
+.pagina-oportunidade .destaque-margem-percentual {
+  font-size: clamp(17px, 3vw, 23px);
+}
+.pagina-oportunidade .destaque-margem-valor-rotulo {
+  font-size: 12px;
+}
+
 .selo-classificacao {
   display: block;
   width: fit-content;
@@ -3322,7 +3335,7 @@ body {
 }
 
 .precos-grupo-pagina .linha-preco {
-  font-size: clamp(20px, 2.7vw, 24px);
+  font-size: clamp(20px, 2.7vw, 30px);
   padding: 8px 0;
 }
 
@@ -4323,8 +4336,9 @@ body {
 
 .pagina-oportunidade-titulo {
   font-weight: 700;
-  font-size: 22px;
-  line-height: 1.25;
+  /* Mais presença no desktop (até 30px); mobile segue em 22px. */
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.2;
   margin: 0;
 }
 
@@ -4611,6 +4625,22 @@ body {
 
   .pagina-oportunidade-ficha-item:not(:nth-child(4n)) {
     border-right: 1px solid #f0f2f5;
+  }
+
+  /* Mais destaque no desktop (pedido do usuário): rótulo/valor maiores e
+     6px de respiro na altura de cada item. */
+  .pagina-oportunidade-ficha-item {
+    padding: 6px 0;
+  }
+  .pagina-oportunidade-ficha-item dt {
+    font-size: 14px;
+  }
+  .pagina-oportunidade-ficha-item dd {
+    font-size: 18px;
+  }
+  .pagina-oportunidade-chip {
+    font-size: 13.5px;
+    padding: 6px 12px 6px 10px;
   }
 }
 
