@@ -186,19 +186,24 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
 
   const legendaStops = [0.08, 0.3, 0.52, 0.74, 0.96].map((t) => corMapa(t, hue).bg);
 
-  const ranking = [...estados]
+  const rankingBase = [...estados]
     .filter(amostraOk)
     .sort((a, b) => valorDe(b) - valorDe(a))
-    .slice(0, 12)
-    .map((e) => {
-      const valor = valorDe(e);
-      return {
-        uf: e.estado,
-        percentual: norm(valor) * 100,
-        cor: corMapa(0.45 + 0.45 * norm(valor), hue).bg,
-        valLabel: rotuloValor(valor),
-      };
-    });
+    .slice(0, 12);
+  // Cor espalhada no range REAL do top 12 (não na escala global): os 12 do topo
+  // ficam numa faixa estreita, então norm global deixava a cor quase igual.
+  const minTop = Math.min(...rankingBase.map(valorDe));
+  const maxTop = Math.max(...rankingBase.map(valorDe));
+  const intensidadeTop = (v: number) => (maxTop > minTop ? (v - minTop) / (maxTop - minTop) : 0.7);
+  const ranking = rankingBase.map((e) => {
+    const valor = valorDe(e);
+    return {
+      uf: e.estado,
+      percentual: norm(valor) * 100,
+      cor: corMapa(0.14 + 0.82 * intensidadeTop(valor), hue).bg,
+      valLabel: rotuloValor(valor),
+    };
+  });
 
   // Card de extremos acompanha a métrica quando é preço ou margem; pra estoque cai em preço.
   const metricaExtremos: "preco" | "margem" = metrica === "margem" ? "margem" : "preco";
