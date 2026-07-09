@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Globe,
   Heart,
+  Home,
   LogIn,
   Menu,
   Plus,
@@ -83,6 +84,18 @@ export function Sidebar({
           </button>
         </div>
         <ul className="sidebar-lista">
+          <li>
+            <button
+              type="button"
+              onClick={() => navegar("/")}
+              className="sidebar-item"
+              title="Início"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Home size={18} strokeWidth={1.75} />
+              </span>
+            </button>
+          </li>
           {itensVisiveis.map((item) => (
             <li key={item.aba}>
               <button
@@ -216,6 +229,18 @@ export function Sidebar({
         </div>
         <p className="sidebar-grupo-titulo">Explorar</p>
         <ul className="sidebar-lista">
+          <li>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/")}
+              className="sidebar-item"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Home size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Início</span>
+            </button>
+          </li>
           {itensVisiveis.map((item) => (
             <li key={item.aba}>
               <button
