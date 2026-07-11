@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   Gem,
   Check,
-  ArrowLeft,
   ArrowRight,
   TrendingDown,
   Clock,
@@ -159,10 +157,6 @@ export default async function PlanosPage({
       </div>
 
       <div className="vendas-container">
-        <Link href="/" className="planos-voltar">
-          <ArrowLeft size={16} strokeWidth={2} /> Voltar às ofertas
-        </Link>
-
         {assinatura === "sucesso" && (
           <div className="planos-aviso planos-aviso-ok">
             <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso PRO é liberado em instantes —
