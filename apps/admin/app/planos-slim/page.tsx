@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Gem, Check, X, ArrowRight, TrendingDown, ShieldCheck, Clock } from "lucide-react";
+import { Gem, Check, X, ArrowRight, ShieldCheck, Clock } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { BotaoWhatsappSuporte } from "@/components/BotaoWhatsappSuporte";
 import { ContadorOferta } from "@/components/ContadorOferta";
@@ -53,6 +53,25 @@ const DESBLOQUEIA = [
   { emoji: "📈", titulo: "Dashboard do mercado", texto: "Tendências em tempo real" },
 ];
 const PLANO_INCLUI = ["BIA", "Copiloto", "Score", "Alertas", "Dashboard", "Comparativos"];
+
+const FAQ = [
+  {
+    q: "Os anúncios são do Repasse Livre?",
+    a: "Não. O Repasse Livre monitora e organiza oportunidades dos principais marketplaces automotivos do Brasil — OLX, Webmotors e Mercado Livre — transformando milhares de anúncios em inteligência de mercado.",
+  },
+  {
+    q: "Os veículos ficam abaixo da FIPE?",
+    a: "Sim. Nossa plataforma identifica automaticamente anúncios abaixo da FIPE e mostra esse percentual de forma clara, pra facilitar a comparação e a decisão.",
+  },
+  {
+    q: "O que é o Copiloto?",
+    a: "É o sistema de análise do Repasse Livre. Ele compara cada anúncio com veículos semelhantes monitorados pela plataforma e gera um parecer técnico baseado em dados reais do mercado, cruzando com o pensamento de analistas com larga experiência no setor automotivo.",
+  },
+  {
+    q: "O que é o BIA?",
+    a: "O BIA (Banco de Inteligência Automotiva) é o motor de inteligência do Repasse Livre. Ele monitora continuamente o mercado pra transformar dados dispersos em informação estratégica pra tomada de decisão.",
+  },
+];
 
 /** Mockup de celular com um print da plataforma dentro da tela. */
 function Fone({ src, alt }: { src: string; alt: string }) {
@@ -277,11 +296,17 @@ export default async function PlanosSlimPage({
         <h2 className="vendas-h2">Veja por dentro.</h2>
         <GaleriaPrints
           prints={[
+            { src: "/vendas/home.png", alt: "Painel de oportunidades" },
+            { src: "/vendas/anuncio-copiloto.png", alt: "Parecer do Copiloto" },
             { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço" },
             { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE" },
+            { src: "/vendas/bia-parte1-estados.png", alt: "Mapa por estados" },
             { src: "/vendas/bia-parte2-margem-media-top12.png", alt: "Margem média por modelo" },
+            { src: "/vendas/bia-parte3-cidades-mais-ativas.png", alt: "Cidades mais ativas" },
             { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
-            { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Mapa do alto padrão" },
+            { src: "/vendas/bia-parte4-modelos-mais-disputados-por-volume.png", alt: "Mais disputados por volume" },
+            { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão e luxo" },
+            { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências de mercado" },
           ]}
         />
       </section>
@@ -334,17 +359,28 @@ export default async function PlanosSlimPage({
         </div>
       </section>
 
-      {/* ───────── ÚLTIMA PROVOCAÇÃO ───────── */}
+      {/* ───────── FAQ (da /planos) ───────── */}
+      <section className="vendas-secao vendas-container">
+        <h2 className="vendas-h2 vendas-centro">Perguntas frequentes</h2>
+        <div className="vendas-faq">
+          {FAQ.map(({ q, a }) => (
+            <div key={q} className="vendas-faq-item">
+              <h3>{q}</h3>
+              <p>{a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ───────── CTA FINAL (mesmo box da /planos) ───────── */}
       <section className="vendas-container">
         <div className="vendas-cta-final">
-          <TrendingDown size={22} strokeWidth={2} />
+          <Clock size={22} strokeWidth={2} />
           <h2>
-            Um carro por mês ou cinquenta — <span className="vendas-verde">a pergunta é a mesma.</span>
+            Quem compra melhor, <span className="vendas-verde">lucra mais.</span>
           </h2>
-          <p>
-            Competir só com a sua experiência… ou com dados de milhares de anúncios analisados todos os dias?
-          </p>
-          <AcaoAssinatura estado={estado} rotulo="QUERO COMPRAR ANTES DOS OUTROS" />
+          <p>Comece hoje com as condições especiais de lançamento.</p>
+          <AcaoAssinatura estado={estado} rotulo="ACESSAR O REPASSE LIVRE PRO" />
           <span className="vendas-cta-final-nota">
             <ArrowRight size={13} strokeWidth={2.4} /> Enquanto você lia isto, mais carros entraram abaixo da FIPE.
           </span>

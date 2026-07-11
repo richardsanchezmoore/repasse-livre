@@ -293,11 +293,17 @@ export default async function PlanosPage({
         </p>
         <GaleriaPrints
           prints={[
+            { src: "/vendas/home.png", alt: "Painel de oportunidades" },
+            { src: "/vendas/anuncio-copiloto.png", alt: "Parecer do Copiloto" },
             { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço" },
             { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE" },
+            { src: "/vendas/bia-parte1-estados.png", alt: "Mapa por estados" },
             { src: "/vendas/bia-parte2-margem-media-top12.png", alt: "Margem média por modelo" },
+            { src: "/vendas/bia-parte3-cidades-mais-ativas.png", alt: "Cidades mais ativas" },
             { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
-            { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Mapa do alto padrão" },
+            { src: "/vendas/bia-parte4-modelos-mais-disputados-por-volume.png", alt: "Mais disputados por volume" },
+            { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão e luxo" },
+            { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências de mercado" },
           ]}
         />
       </section>
