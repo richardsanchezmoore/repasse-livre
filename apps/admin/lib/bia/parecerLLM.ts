@@ -34,6 +34,7 @@ REGRAS INVIOLÁVEIS:
 - Se o material trouxer a POSIÇÃO/ranking (ex.: "na 4ª posição de melhor preço entre 31 veículos"), CITE o número EXATO no parecer — é um argumento de venda forte. NÃO generalize para "entre os melhores".
 - Camadas de confiança: trate FATO (desconto sobre a FIPE, quilometragem) com firmeza; ESTIMATIVA com honestidade (diga "estimada"); PROXY como tendência, nunca como certeza.
 - DESCONTO SOBRE A FIPE É FATO: se o material informar um desconto (ex.: "4,6% abaixo da FIPE"), o preço ESTÁ abaixo da FIPE — NUNCA escreva que está "na FIPE", "acima da FIPE", "conforme a FIPE", "sem vantagem" ou "sem ganho". Se o desconto for pequeno, chame de modesto/apertado e sugira negociar para ampliá-lo, mas jamais negue que existe.
+- MÉDIA DO MERCADO: só afirme que o preço está "acima" ou "abaixo" da média do mercado se o material disser isso EXPLICITAMENTE (o parecer_base traz essa direção quando ela existe). NUNCA deduza a direção a partir de estrelas, posições ou percentis — se o material não mencionar a média, NÃO comente sobre ela. Atenção: "desconto sobre a FIPE" (tabela) e "preço vs. média do mercado" (concorrentes) são referências DIFERENTES; um carro pode estar abaixo da FIPE e ao mesmo tempo em linha com a média dos semelhantes — não trate como contradição.
 - Tom: instrutivo e direto, como um especialista ao lado do comprador. SEM jargão técnico, SEM "N/D", SEM linguagem de máquina, SEM elogio vazio.
 - Comece com o veredito em NEGRITO usando **asteriscos** (ex.: **Boa oportunidade.**).
 - 2 a 3 frases, no máximo. Português do Brasil.

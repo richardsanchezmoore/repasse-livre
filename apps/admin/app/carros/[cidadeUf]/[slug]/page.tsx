@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Gem } from "lucide-react";
 import {
   buscarEstadosDisponiveis,
   buscarIdsFavoritados,
@@ -20,7 +20,7 @@ import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
-import { buscarMargemPremium } from "@/lib/configWorker";
+import { buscarMargemPremium, buscarDemoOportunidadeId } from "@/lib/configWorker";
 import { resumirParecer, semParecer } from "@/lib/copilotoResumo";
 import { resolverLocalidade } from "@/lib/localidade";
 import { extrairMarca } from "@/lib/marca";
@@ -266,13 +266,14 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   searchParams,
 }: {
   params: Promise<{ cidadeUf: string; slug: string }>;
-  searchParams: Promise<{ pagina?: string }>;
+  searchParams: Promise<{ pagina?: string; embed?: string }>;
 }) {
   const { cidadeUf, slug } = await params;
+  const { pagina: paginaParam, embed: embedParam } = await searchParams;
+  const embed = embedParam === "1" || embedParam === "true";
   const id = extrairIdDaSlug(slug);
 
   if (!id) {
-    const { pagina: paginaParam } = await searchParams;
     return <PaginaMarca cidadeUf={cidadeUf} marcaSlug={slug} pagina={Math.max(1, Number(paginaParam) || 1)} />;
   }
 
@@ -328,8 +329,15 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     },
   };
 
+  // Anúncio-vitrine da /planos (config DEMO_OPPORTUNITY_ID): pra ESSE id só, o
+  // paywall cai (Copiloto completo + acesso liberados) pra qualquer visitante —
+  // exceção de marketing consciente, um anúncio, pra dar a experiência completa
+  // a quem chega de campanha. Ver lib/ofertaDemo + /planos (ExperimenteDemo).
+  const demoId = await buscarDemoOportunidadeId();
+  const ehDemo = demoId === oportunidade.id;
+
   const ehAdminPagina = usuario?.role === "admin";
-  const podeVerCopiloto = ehAdminPagina || Boolean(usuario?.premium);
+  const podeVerCopiloto = ehAdminPagina || Boolean(usuario?.premium) || ehDemo;
 
   // Copiloto de Compra (BIA Engine) — item do PLANO PAGO. Só computa o fact-sheet
   // (query pesada de coorte) p/ quem PODE ver (admin/premium); o não-pago recebe
@@ -348,8 +356,36 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   // esse acesso é travado (galeria/ganho/ficha ficam abertos p/ Ads e SEO); vale
   // só nas ofertas acima do limite. Ver project_repasse_livre_premium_monetizacao.
   const margemPremiumPagina =
-    !ehAdminPagina && !usuario?.premium ? await buscarMargemPremium() : Infinity;
+    ehAdminPagina || usuario?.premium || ehDemo ? Infinity : await buscarMargemPremium();
   const bloqueado = (oportunidade.margem_percentual ?? 0) > margemPremiumPagina;
+  const ehPremiumEfetivo = ehAdminPagina || Boolean(usuario?.premium) || ehDemo;
+
+  // Modo embed (iframe do modal "Experimente" na /planos): a MESMA página, sem o
+  // menu/sidebar/relacionadas — só o anúncio, limpo, dentro do modal de vendas.
+  if (embed) {
+    return (
+      <NavegacaoProvider>
+        <SelecaoMultiplaProvider>
+          <meta name="robots" content="noindex" />
+          <div className="oportunidade-embed">
+            {ehDemo && (
+              <div className="oportunidade-embed-selo">
+                <Gem size={14} strokeWidth={2} /> Oferta de demonstração — acesso liberado
+              </div>
+            )}
+            <PaginaOportunidade
+              oportunidade={oportunidade}
+              bloqueado={bloqueado}
+              factSheet={factSheetBia}
+              copilotoBloqueado={copilotoBloqueado}
+              copilotoResumo={copilotoResumo}
+              ehPremium={ehPremiumEfetivo}
+            />
+          </div>
+        </SelecaoMultiplaProvider>
+      </NavegacaoProvider>
+    );
+  }
 
   return (
     <NavegacaoProvider>
@@ -388,7 +424,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               factSheet={factSheetBia}
               copilotoBloqueado={copilotoBloqueado}
               copilotoResumo={copilotoResumo}
-              ehPremium={ehAdminPagina || Boolean(usuario?.premium)}
+              ehPremium={ehPremiumEfetivo}
             />
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>

@@ -32,6 +32,11 @@ const MARGEM_MAX = MARGEM_MAX_ARG != null ? Number(MARGEM_MAX_ARG) : null;
 // (ex.: drift antigo abaixo da FIPE que não vale o gasto).
 const SO_EXISTENTES = process.argv.includes("--so-existentes");
 
+// Regenera só UM anúncio (--id=<uuid>) — reprocessa um caso específico (ex.: o
+// anúncio-vitrine do demo) sem varrer o resto. A coorte inteira ainda é carregada
+// (a régua precisa dela), mas só esse id é (re)gerado.
+const ALVO_ID = process.argv.find((a) => a.startsWith("--id="))?.split("=")[1] || null;
+
 const CAMPOS =
   "id, fipe_codigo, veiculo, ano, estado, preco, fipe_valor, margem_percentual, km, data_captura, foto_principal, fotos_secundarias, descricao, atributos_olx, link_origem, status, copiloto_fingerprint";
 
@@ -88,8 +93,10 @@ async function main(): Promise<void> {
 
   let pendentes = 0, gerados = 0, jaFrescos = 0, falhas = 0, foraJanela = 0, foraMargem = 0, semParecer = 0;
   for (const [, universo] of grupos) {
+    if (ALVO_ID && !universo.some((a) => a.id === ALVO_ID)) continue; // --id: só a coorte do alvo
     const precoLog = await carregarPrecoLog(universo.map((a) => a.link_origem));
     for (const anuncio of universo) {
+      if (ALVO_ID && anuncio.id !== ALVO_ID) continue;
       // Fora da janela → não gera (mas segue na coorte 'universo' acima).
       if (DESDE && (!anuncio.data_captura || anuncio.data_captura < DESDE)) { foraJanela++; continue; }
       if (MARGEM_MAX != null && (anuncio.margem_percentual == null || anuncio.margem_percentual > MARGEM_MAX)) { foraMargem++; continue; }

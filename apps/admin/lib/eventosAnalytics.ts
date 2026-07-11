@@ -55,7 +55,7 @@ async function ehBot(): Promise<boolean> {
  * veiculo/estado (sobrevive à exclusão do anúncio, pra tendência de procura).
  */
 export async function registrarEvento(
-  tipo: "busca" | "visualizacao_oportunidade" | "clique_whatsapp" | "clique_overlay_premium" | "clique_assinar",
+  tipo: "busca" | "visualizacao_oportunidade" | "clique_whatsapp" | "clique_overlay_premium" | "clique_assinar" | "clique_experimentar_demo",
   payload: Record<string, unknown> = {},
   opportunityId?: string
 ): Promise<void> {

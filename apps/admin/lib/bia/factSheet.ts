@@ -11,6 +11,27 @@ function porFaixa(valor: number, faixas: [limiar: number, estrelas: number][]): 
   return e;
 }
 
+/**
+ * Estrelas de "Preço vs. mercado" a partir de `percentual_mercado` (vm = % do
+ * preço vs a MÉDIA do MESMO ANO; negativo = abaixo da média = bom). Curva
+ * CENTRADA: na média ≈ 3★, abaixo sobe até 5★, acima desce até 1★. É o sinal
+ * correto de "vs mercado" (limpo por ano) — não confundir com o percentil de
+ * DESCONTO (que cruza anos e, quando a coorte é dominada por outro ano, derruba
+ * a estrela injustamente e induz o parecer a um "acima da média" falso).
+ */
+function estrelasVsMercado(vm: number): number {
+  return porFaixa(-vm, [
+    [-14, 1.5],
+    [-8, 2],
+    [-4, 2.5],
+    [-1.5, 3],
+    [1.5, 3.5],
+    [4, 4],
+    [8, 4.5],
+    [14, 5],
+  ]);
+}
+
 // Piso de amostra pra oferecer um escopo na aba Estado/Brasil (percentil de
 // preço-vs-mercado). Menor que o piso do percentil "oficial" (25) — a aba é um
 // drill-down transparente, e o total é exibido junto (o comprador vê a amostra).
@@ -218,14 +239,16 @@ function montarFichas(anuncio: AnuncioBia, nums: Numeros): FichaCategoria[] {
   // e "distância da média" são o mesmo fundamento (não contar em dobro): prefere o
   // ranking (percentil de desconto, mais amostra); cai pra distância da média quando
   // o ranking não tem coorte. A posição exata ("12ª de 43") fica no parecer.
+  // PRIMÁRIO = preço vs média do MESMO ANO (percentual_mercado); é literalmente
+  // "vs mercado" e limpo por ano. O percentil de DESCONTO (cruza anos) só entra de
+  // FALLBACK, quando não há coorte de preço do ano, pra não deixar a categoria vazia.
   const pd = nums.percentil_desconto;
   const vm = nums.percentual_mercado;
-  // Faixas com MEIA-ESTRELA (cada intervalo dividido no meio) — decisão do usuário.
   const estrelasMercado =
-    pd != null
-      ? pd <= 5 ? 5 : pd <= 10 ? 4.5 : pd <= 15 ? 4 : pd <= 24 ? 3.5 : pd <= 33 ? 3 : pd <= 46 ? 2.5 : pd <= 60 ? 2 : pd <= 80 ? 1.5 : 1
-      : vm != null
-        ? porFaixa(-vm, [[0, 1.5], [3, 2.5], [6, 3.5], [10, 4.5], [14, 5]])
+    vm != null
+      ? estrelasVsMercado(vm)
+      : pd != null
+        ? pd <= 5 ? 5 : pd <= 10 ? 4.5 : pd <= 15 ? 4 : pd <= 24 ? 3.5 : pd <= 33 ? 3 : pd <= 46 ? 2.5 : pd <= 60 ? 2 : pd <= 80 ? 1.5 : 1
         : null;
   add("Preço vs. mercado", estrelasMercado, "Benchmark interno");
 
@@ -272,7 +295,20 @@ function montarParecer(classificacao: string, nums: Numeros, fichas: FichaCatego
     txt += ` Destaca-se principalmente ${FRASE_PILAR[top.categoria]}.`;
   }
   if (nums.posicao && nums.coorteTamanho) {
-    txt += ` Está na ${nums.posicao}ª posição de melhor preço entre ${nums.coorteTamanho} veículos monitorados.`;
+    txt += ` Está na ${nums.posicao}ª posição em desconto sobre a FIPE entre ${nums.coorteTamanho} veículos monitorados.`;
+  }
+  // Preço vs. média do MESMO ANO (percentual_mercado) — FATO com direção CERTA,
+  // pra a prosa não deduzir "acima/abaixo da média" a partir de estrela/posição.
+  // Só entra quando o indicador de preço nasceu (coorte de ano suficiente).
+  const vm = nums.percentual_mercado;
+  if (vm != null) {
+    if (vm <= -3) {
+      txt += ` O preço está ${Math.abs(Math.round(vm))}% abaixo da média dos semelhantes do mesmo ano.`;
+    } else if (vm >= 3) {
+      txt += ` O preço está ${Math.round(vm)}% acima da média dos semelhantes do mesmo ano — há margem pra negociar.`;
+    } else {
+      txt += ` O preço está em linha com a média dos semelhantes do mesmo ano.`;
+    }
   }
   return txt;
 }

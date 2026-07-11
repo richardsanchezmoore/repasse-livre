@@ -9,9 +9,11 @@ export interface PrecoExibicao {
   valor: string;
   /** Ex.: "/mês" | "/ano". */
   intervalo: string;
+  /** Valor cru em centavos (pra calcular equivalentes de planos mais longos). */
+  centavos: number;
 }
 
-const PRECO_FALLBACK: PrecoExibicao = { valor: "R$ 99", intervalo: "/mês" };
+const PRECO_FALLBACK: PrecoExibicao = { valor: "R$ 97", intervalo: "/mês", centavos: 9700 };
 let cachePreco: { em: number; valor: PrecoExibicao } | null = null;
 const PRECO_TTL_MS = 5 * 60 * 1000;
 
@@ -35,6 +37,7 @@ export async function buscarPrecoExibicao(): Promise<PrecoExibicao> {
     const valor: PrecoExibicao = {
       valor: formatado.replace(/,00$/, ""), // "R$ 99,00" → "R$ 99"
       intervalo: preco.recurring?.interval === "year" ? "/ano" : "/mês",
+      centavos: preco.unit_amount,
     };
     cachePreco = { em: Date.now(), valor };
     return valor;

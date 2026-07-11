@@ -126,6 +126,32 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
       </CampoConfig>
 
       <CampoConfig
+        chave="PRECO_ANCORA"
+        valorInicial={configs["PRECO_ANCORA"] ?? ""}
+        titulo="Preço-âncora da oferta (riscado)"
+        tipo="texto"
+        placeholder="249"
+      >
+        Valor <strong>riscado</strong> que aparece como “De R$ ___” na página de planos, ao lado do preço real
+        de lançamento. É <strong>só visual</strong> (não cobra nada — quem cobra é o Price ID do Stripe acima);
+        serve de âncora pra valorizar a oferta. Informe só o número em reais (ex.: <code>249</code>). Deixe em
+        branco pra esconder o riscado. Vale na hora, sem deploy.
+      </CampoConfig>
+
+      <CampoConfig
+        chave="DEMO_OPPORTUNITY_ID"
+        valorInicial={configs["DEMO_OPPORTUNITY_ID"] ?? ""}
+        titulo="Anúncio-vitrine da página de vendas"
+        tipo="texto"
+        placeholder="cole a URL do anúncio (ou o ID)"
+      >
+        A oferta que o visitante de campanha <strong>experimenta</strong> na /planos (seção “Experimente agora”):
+        abre num modal com o <strong>Copiloto e o acesso liberados</strong> — a experiência completa, só pra
+        <strong> este</strong> anúncio. Cole a <strong>URL</strong> do anúncio (ou o ID cru); extraímos o ID
+        sozinhos. Escolha uma oferta boa e com foto. Em branco → cai no card de exemplo estático.
+      </CampoConfig>
+
+      <CampoConfig
         chave="WHATSAPP_SUPORTE"
         valorInicial={configs["WHATSAPP_SUPORTE"] ?? ""}
         titulo="WhatsApp de vendas/suporte"

@@ -50,6 +50,45 @@ export async function buscarStripePriceId(): Promise<string | null> {
 }
 
 /**
+ * ID do anúncio-vitrine da /planos — a oferta REAL que o visitante de campanha
+ * "experimenta" (com Copiloto e acesso liberados, exceção de marketing pra UM
+ * anúncio só). Vem do painel (`worker_config.DEMO_OPPORTUNITY_ID`); o admin pode
+ * colar a URL inteira do anúncio OU o ID cru — extraímos o UUID de qualquer um.
+ * null = sem demo (a /planos cai no card de exemplo estático). Server-only.
+ */
+export async function buscarDemoOportunidadeId(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "DEMO_OPPORTUNITY_ID")
+    .maybeSingle();
+  const bruto = (data?.valor ?? "").trim();
+  const m = bruto.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return m ? m[0] : null;
+}
+
+/**
+ * Preço-âncora (SÓ VISUAL) mostrado riscado na /planos — o "De R$ X" que a
+ * oferta de lançamento risca ao lado do valor real cobrado pelo Stripe. Vem do
+ * painel (`worker_config.PRECO_ANCORA`, em reais, ex.: "249") pra ajustar a
+ * promoção sem deploy; formatado em BRL na exibição. null = sem âncora (a
+ * página some com o riscado). NÃO cobra nada — o valor real é o do Stripe.
+ * Server-only.
+ */
+export async function buscarPrecoAncora(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "PRECO_ANCORA")
+    .maybeSingle();
+  const n = Number((data?.valor ?? "").replace(/[^\d.,]/g, "").replace(",", "."));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
+    .format(n)
+    .replace(/,00$/, "");
+}
+
+/**
  * Número de WhatsApp de suporte/vendas (só dígitos, com DDI 55) exibido na
  * página de planos pra destravar dúvida antes de assinar. Vem do painel
  * (`worker_config.WHATSAPP_SUPORTE`) pra trocar sem deploy. null = não
