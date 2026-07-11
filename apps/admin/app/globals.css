@@ -3414,7 +3414,7 @@ body {
   text-align: center;
 }
 
-/* Contador — barra sticky */
+/* Contador — barra sticky (fixa no topo; a faixa verde de posição rola embaixo) */
 .oferta-barra {
   position: sticky;
   top: 0;
@@ -3422,23 +3422,87 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 9px 16px;
-  background: linear-gradient(90deg, #0a5d2c, #16a34a);
-  color: #fff;
-  font-size: 13.5px;
-  text-align: center;
-}
-.oferta-barra svg {
-  flex-shrink: 0;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--v-borda);
+  box-shadow: 0 3px 10px -5px rgba(15, 23, 42, 0.2);
 }
 .oferta-barra--vazia {
-  min-height: 37px;
-  background: #0a5d2c;
+  min-height: 62px;
 }
-.oferta-barra-tempo {
+.oferta-barra-selo {
+  text-align: right;
+  line-height: 1.12;
+}
+.oferta-barra-selo strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 850;
+  color: var(--v-tinta);
+  letter-spacing: -0.3px;
+}
+.oferta-barra-selo strong em {
+  font-style: normal;
+  color: var(--v-verde);
+}
+.oferta-barra-selo span {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--v-verde);
+}
+.oferta-relogio {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+.oferta-relogio i {
+  font-style: normal;
+  font-weight: 850;
+  font-size: 22px;
+  line-height: 40px;
+  color: var(--v-verde);
+}
+.oferta-bloco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.oferta-bloco b {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 46px;
+  padding: 0 8px;
+  background: var(--v-verde);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 21px;
+  font-weight: 850;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+.oferta-bloco span {
+  font-size: 9px;
+  font-weight: 800;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+/* Faixa verde de posicionamento (rola no scroll — NÃO é sticky) */
+.vendas-faixa-posicao {
+  background: linear-gradient(90deg, #0a5d2c, #16a34a);
+  color: #fff;
+  text-align: center;
+  font-size: clamp(13.5px, 2vw, 17px);
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  padding: 12px 16px;
 }
 
 /* Contador — inline (perto do preço) */
@@ -4484,6 +4548,26 @@ body {
   /* Touch: some com as setas (o swipe + bolinhas + degradê já guiam). */
   .vendas-galeria-seta {
     display: none;
+  }
+  /* Contador em caixas — compacta no mobile pra caber na sticky. */
+  .oferta-barra {
+    gap: 14px;
+  }
+  .oferta-barra-selo strong {
+    font-size: 14px;
+  }
+  .oferta-barra-selo span {
+    font-size: 11.5px;
+  }
+  .oferta-bloco b {
+    height: 34px;
+    min-width: 38px;
+    font-size: 17px;
+    border-radius: 10px;
+  }
+  .oferta-relogio i {
+    line-height: 34px;
+    font-size: 18px;
   }
 }
 

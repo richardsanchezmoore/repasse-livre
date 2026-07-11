@@ -73,9 +73,9 @@ export async function buscarDemoOportunidadeId(): Promise<string | null> {
  * painel (`worker_config.PRECO_ANCORA`, em reais, ex.: "249") pra ajustar a
  * promoção sem deploy; formatado em BRL na exibição. null = sem âncora (a
  * página some com o riscado). NÃO cobra nada — o valor real é o do Stripe.
- * Server-only.
+ * Devolve o texto formatado + os centavos (pra calcular o % OFF do contador). Server-only.
  */
-export async function buscarPrecoAncora(): Promise<string | null> {
+export async function buscarPrecoAncora(): Promise<{ texto: string; centavos: number } | null> {
   const { data } = await supabaseAdmin
     .from("worker_config")
     .select("valor")
@@ -83,9 +83,10 @@ export async function buscarPrecoAncora(): Promise<string | null> {
     .maybeSingle();
   const n = Number((data?.valor ?? "").replace(/[^\d.,]/g, "").replace(",", "."));
   if (!Number.isFinite(n) || n <= 0) return null;
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
+  const texto = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
     .format(n)
     .replace(/,00$/, "");
+  return { texto, centavos: Math.round(n * 100) };
 }
 
 /**

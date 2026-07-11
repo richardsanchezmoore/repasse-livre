@@ -135,6 +135,12 @@ export default async function PlanosPage({
       : "assinar";
   const jaPremium = Boolean(usuario?.premium);
 
+  // % OFF do contador — calculado do anchor vs preço real (honesto: 249→99 = 60%).
+  const descontoPct =
+    precoAncora && precoAncora.centavos > preco.centavos
+      ? Math.round((1 - preco.centavos / precoAncora.centavos) * 100)
+      : null;
+
   // Equivalente mensal dos planos mais longos (desconto só de EXIBIÇÃO; a
   // cobrança automática desses ciclos entra quando os preços forem criados no
   // Stripe — hoje o checkout ativo é o mensal).
@@ -147,7 +153,10 @@ export default async function PlanosPage({
 
   return (
     <main className="vendas">
-      <ContadorOferta variante="barra" />
+      <ContadorOferta variante="barra" descontoPct={descontoPct} />
+      <div className="vendas-faixa-posicao">
+        A primeira plataforma de Inteligência Automotiva do Brasil
+      </div>
 
       <div className="vendas-container">
         <Link href="/" className="planos-voltar">
@@ -181,7 +190,7 @@ export default async function PlanosPage({
 
         <div className="vendas-oferta-box">
           <div className="vendas-precos">
-            {precoAncora && <span className="vendas-preco-de">De {precoAncora}/mês</span>}
+            {precoAncora && <span className="vendas-preco-de">De {precoAncora.texto}/mês</span>}
             <div className="vendas-preco-por">
               <strong>{preco.valor}</strong>
               <span>{preco.intervalo}</span>
@@ -403,7 +412,7 @@ export default async function PlanosPage({
           </div>
 
           <div className="vendas-precos vendas-precos--grande">
-            {precoAncora && <span className="vendas-preco-de">De {precoAncora}/mês</span>}
+            {precoAncora && <span className="vendas-preco-de">De {precoAncora.texto}/mês</span>}
             <div className="vendas-preco-por">
               <strong>{preco.valor}</strong>
               <span>{preco.intervalo}</span>

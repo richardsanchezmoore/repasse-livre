@@ -21,7 +21,14 @@ function doisDigitos(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export function ContadorOferta({ variante = "inline" }: { variante?: "barra" | "inline" }) {
+export function ContadorOferta({
+  variante = "inline",
+  descontoPct = null,
+}: {
+  variante?: "barra" | "inline";
+  /** % OFF exibido na barra (ex.: 60). null = mostra só "Oferta de Lançamento". */
+  descontoPct?: number | null;
+}) {
   const [restanteMs, setRestanteMs] = useState<number | null>(null);
   const [pronto, setPronto] = useState(false);
 
@@ -54,18 +61,35 @@ export function ContadorOferta({ variante = "inline" }: { variante?: "barra" | "
   if (variante === "barra") {
     return (
       <div className="oferta-barra">
-        <Clock size={15} strokeWidth={2.4} />
-        {expirou ? (
-          <span>
-            <strong>Oferta de lançamento</strong> — assine o PRO por R$ 97/mês
-          </span>
-        ) : (
-          <span>
-            <strong>Oferta de lançamento</strong> termina em{" "}
-            <b className="oferta-barra-tempo">
-              {doisDigitos(h)}:{doisDigitos(m)}:{doisDigitos(s)}
-            </b>
-          </span>
+        <div className="oferta-barra-selo">
+          {descontoPct ? (
+            <>
+              <strong>
+                HOJE: <em>{descontoPct}% OFF</em>
+              </strong>
+              <span>Oferta de Lançamento</span>
+            </>
+          ) : (
+            <strong>Oferta de Lançamento</strong>
+          )}
+        </div>
+        {!expirou && (
+          <div className="oferta-relogio">
+            <div className="oferta-bloco">
+              <b>{doisDigitos(h)}</b>
+              <span>HORAS</span>
+            </div>
+            <i>:</i>
+            <div className="oferta-bloco">
+              <b>{doisDigitos(m)}</b>
+              <span>MINUTOS</span>
+            </div>
+            <i>:</i>
+            <div className="oferta-bloco">
+              <b>{doisDigitos(s)}</b>
+              <span>SEGUNDOS</span>
+            </div>
+          </div>
         )}
       </div>
     );
