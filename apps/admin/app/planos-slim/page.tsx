@@ -9,12 +9,13 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
 import { buscarPrecoAncora, buscarWhatsappSuporte } from "@/lib/configWorker";
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
+import { buscarKpisTopo } from "@/lib/kpisTopo";
 
 // Variante 2 da landing ("A vantagem competitiva" — FOMO). Reaproveita TODOS os
 // componentes da /planos (contador, mockups, demo, galeria, logos); muda só o
 // copy. noindex pra não competir com a /planos no Google (é um A/B).
 export const metadata: Metadata = {
-  title: "Repasse Livre PRO — chegue primeiro nas oportunidades abaixo da FIPE",
+  title: "Clube BIA — chegue primeiro nas oportunidades abaixo da FIPE | Repasse Livre",
   description:
     "Enquanto outros procuram carros, os assinantes do Repasse Livre encontram oportunidades. O BIA monitora milhares de anúncios e entrega inteligência pra quem compra primeiro.",
   robots: { index: false, follow: true },
@@ -92,13 +93,15 @@ export default async function PlanosSlimPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo] = await Promise.all([
+  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis] = await Promise.all([
     obterUsuarioAtual(),
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
     buscarWhatsappSuporte(),
     buscarOfertaDemo(),
+    buscarKpisTopo(),
   ]);
+  const abaixoFipeVivo = kpis.abaixoFipe >= 1000 ? Math.floor(kpis.abaixoFipe / 500) * 500 : null;
 
   const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
   const estado: "entrar" | "assinar" | "gerenciar" = !usuario
@@ -122,7 +125,7 @@ export default async function PlanosSlimPage({
       <div className="vendas-container">
         {assinatura === "sucesso" && (
           <div className="planos-aviso planos-aviso-ok">
-            <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso PRO é liberado em instantes.
+            <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso ao Clube BIA é liberado em instantes.
           </div>
         )}
         {assinatura === "cancelado" && (
@@ -133,10 +136,10 @@ export default async function PlanosSlimPage({
       {/* ───────── HERO ───────── */}
       <section className="vendas-hero vendas-container">
         <span className="vendas-selo">
-          <Gem size={14} strokeWidth={2} /> Repasse Livre PRO
+          <Gem size={14} strokeWidth={2} /> Clube BIA
         </span>
         <h1 className="vendas-h1">
-          Enquanto outros procuram carros, os assinantes do Repasse Livre encontram{" "}
+          Enquanto outros procuram carros, os membros do Clube BIA encontram{" "}
           <span>oportunidades</span>.
         </h1>
         <p className="vendas-hero-sub">
@@ -144,6 +147,16 @@ export default async function PlanosSlimPage({
           identificar veículos abaixo da FIPE, comparar preços, analisar o mercado e entregar inteligência
           pra quem compra primeiro.
         </p>
+
+        {abaixoFipeVivo && (
+          <div className="vendas-hero-stat">
+            <span className="vendas-hero-stat-dot" />
+            <span>
+              <strong>Mais de {abaixoFipeVivo.toLocaleString("pt-BR")}</strong> oportunidades abaixo da FIPE
+              monitoradas pelo BIA <b>agora</b>.
+            </span>
+          </div>
+        )}
 
         <div className="vendas-oferta-box">
           <div className="vendas-precos">
@@ -158,7 +171,7 @@ export default async function PlanosSlimPage({
 
         <AcaoAssinatura estado={estado} rotulo="QUERO TER VANTAGEM NO MERCADO" />
         <p className="planos-cta-nota">
-          {jaPremium ? "Você já é PRO." : "Sem fidelidade — cancele quando quiser."}
+          {jaPremium ? "Você já é membro do Clube BIA." : "Sem fidelidade — cancele quando quiser."}
         </p>
       </section>
 
@@ -327,10 +340,16 @@ export default async function PlanosSlimPage({
         <div className="vendas-plano">
           <div className="vendas-plano-topo">
             <span className="vendas-selo vendas-selo--claro">
-              <Gem size={14} strokeWidth={2} /> Plano PRO
+              <Gem size={14} strokeWidth={2} /> Clube BIA
             </span>
-            <span className="vendas-plano-badge">Oferta de lançamento</span>
+            <span className="vendas-plano-badge">Plano Fundadores</span>
           </div>
+
+          <h2 className="vendas-plano-titulo">Torne-se um Fundador do BIA.</h2>
+          <p className="vendas-plano-narrativa">
+            Você está entrando na fase inicial da primeira plataforma brasileira de Inteligência Automotiva.
+            Durante o lançamento, os primeiros membros entram por um valor especial — que fica travado pra você.
+          </p>
 
           <div className="vendas-precos vendas-precos--grande">
             {precoAncora && <span className="vendas-preco-de">De {precoAncora.texto}/mês</span>}
@@ -350,10 +369,16 @@ export default async function PlanosSlimPage({
             ))}
           </ul>
 
-          <AcaoAssinatura estado={estado} rotulo="QUERO COMPRAR ANTES DOS OUTROS" />
+          <AcaoAssinatura estado={estado} rotulo="QUERO MINHA VAGA DE FUNDADOR" />
           <p className="vendas-garantia">
             <ShieldCheck size={15} strokeWidth={2.2} /> Sem fidelidade. Cancele quando quiser, direto no painel.
           </p>
+          {precoAncora && (
+            <p className="vendas-plano-oficial">
+              Depois do lançamento, novos membros entram pelo valor oficial de{" "}
+              <strong>{precoAncora.texto}/mês</strong>.
+            </p>
+          )}
 
           {whatsappSuporte && <BotaoWhatsappSuporte numero={whatsappSuporte} />}
         </div>
@@ -380,7 +405,7 @@ export default async function PlanosSlimPage({
             Quem compra melhor, <span className="vendas-verde">lucra mais.</span>
           </h2>
           <p>Comece hoje com as condições especiais de lançamento.</p>
-          <AcaoAssinatura estado={estado} rotulo="ACESSAR O REPASSE LIVRE PRO" />
+          <AcaoAssinatura estado={estado} rotulo="ENTRAR PARA O CLUBE BIA" />
           <span className="vendas-cta-final-nota">
             <ArrowRight size={13} strokeWidth={2.4} /> Enquanto você lia isto, mais carros entraram abaixo da FIPE.
           </span>

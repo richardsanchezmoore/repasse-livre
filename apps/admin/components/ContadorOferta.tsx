@@ -67,10 +67,10 @@ export function ContadorOferta({
               <strong>
                 HOJE: <em>{descontoPct}% OFF</em>
               </strong>
-              <span>Oferta de Lançamento</span>
+              <span>Preço de Fundador</span>
             </>
           ) : (
-            <strong>Oferta de Lançamento</strong>
+            <strong>Preço de Fundador</strong>
           )}
         </div>
         {!expirou && (
