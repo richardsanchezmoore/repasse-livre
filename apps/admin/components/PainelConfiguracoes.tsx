@@ -114,18 +114,6 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
       </CampoConfig>
 
       <CampoConfig
-        chave="STRIPE_PRICE_ID"
-        valorInicial={configs["STRIPE_PRICE_ID"] ?? ""}
-        titulo="Plano premium — Price ID do Stripe"
-        tipo="texto"
-        placeholder="price_..."
-      >
-        O <strong>ID do preço</strong> (não do produto) que o checkout cobra. Pra trocar de plano/valor: cria um novo
-        preço no Stripe e cola o <code>price_…</code> aqui — o valor exibido na página de planos acompanha sozinho, sem
-        deploy. As chaves secretas (secret key, webhook) seguem no ambiente, não aqui.
-      </CampoConfig>
-
-      <CampoConfig
         chave="PRECO_ANCORA"
         valorInicial={configs["PRECO_ANCORA"] ?? ""}
         titulo="Preço-âncora da oferta (riscado)"

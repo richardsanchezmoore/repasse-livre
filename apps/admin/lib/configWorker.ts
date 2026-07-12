@@ -68,6 +68,20 @@ export async function buscarDemoOportunidadeId(): Promise<string | null> {
 }
 
 /**
+ * Gateway de pagamento ATIVO (`worker_config.GATEWAY_ATIVO`): "cakto" | "stripe" |
+ * "asaas" | "" (nenhum). É o que o CTA de assinatura usa. Trocar = um clique no
+ * painel Sistemas de Pagamento; os outros ficam codados e prontos. Server-only.
+ */
+export async function buscarGatewayAtivo(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "GATEWAY_ATIVO")
+    .maybeSingle();
+  return (data?.valor ?? "").trim().toLowerCase();
+}
+
+/**
  * URL de checkout do Clube BIA na Cakto (`worker_config.CAKTO_CHECKOUT_URL`, ex.:
  * https://pay.cakto.com.br/{oferta}). O CTA manda o usuário logado pra cá com
  * `?sck={user_id}` — é o que faz o pagamento voltar amarrado à conta no webhook.
