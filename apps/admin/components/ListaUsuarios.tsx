@@ -8,7 +8,12 @@ export interface UsuarioComRole {
   userId: string;
   email: string | null;
   role: "admin" | "publico";
-  premium: boolean;
+  /** Flag manual de cortesia (perfis.premium) — o que o botão gema liga/desliga. */
+  premiumManual: boolean;
+  /** Tem assinatura ATIVA dentro da validade (premium pago, não cortesia). */
+  assinante: boolean;
+  /** Validade da assinatura já formatada (Brasília), p/ o tooltip do assinante. */
+  premiumExpiraEm: string | null;
   /** Foto de perfil do login (Google), ou null → cai na inicial. */
   avatarUrl: string | null;
   /** Provedor do login: "Google" | "E-mail" | "Facebook" | … */
@@ -156,18 +161,29 @@ export function ListaUsuarios({
                   </span>
                 </td>
                 <td>
-                  <span className={`usuarios-selo ${usuario.premium ? "usuarios-selo-premium" : "usuarios-selo-publico"}`}>
-                    {usuario.premium ? "Premium" : "—"}
-                  </span>
+                  {usuario.assinante ? (
+                    <span
+                      className="usuarios-selo usuarios-selo-premium"
+                      title={usuario.premiumExpiraEm ? `Assinante ativo até ${usuario.premiumExpiraEm}` : "Assinante ativo"}
+                    >
+                      PRO · assinante
+                    </span>
+                  ) : usuario.premiumManual ? (
+                    <span className="usuarios-selo usuarios-selo-premium" title="Premium manual (cortesia)">
+                      PRO · cortesia
+                    </span>
+                  ) : (
+                    <span className="usuarios-selo usuarios-selo-publico">—</span>
+                  )}
                 </td>
                 <td className="usuarios-acoes">
                   <button
                     type="button"
-                    className={`usuarios-icone-btn usuarios-icone-premium${usuario.premium ? " ativo" : ""}`}
+                    className={`usuarios-icone-btn usuarios-icone-premium${usuario.premiumManual ? " ativo" : ""}`}
                     disabled={carregando}
-                    title={usuario.premium ? "Remover premium" : "Tornar premium"}
-                    aria-label={usuario.premium ? "Remover premium" : "Tornar premium"}
-                    onClick={() => alterarPremium(usuario.userId, !usuario.premium)}
+                    title={usuario.premiumManual ? "Remover premium de cortesia" : "Dar premium de cortesia"}
+                    aria-label={usuario.premiumManual ? "Remover premium de cortesia" : "Dar premium de cortesia"}
+                    onClick={() => alterarPremium(usuario.userId, !usuario.premiumManual)}
                   >
                     {carregando ? <Loader2 size={16} className="animate-spin" /> : <Gem size={16} strokeWidth={1.9} />}
                   </button>

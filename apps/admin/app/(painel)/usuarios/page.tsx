@@ -44,7 +44,7 @@ export default async function UsuariosPage() {
   if (!usuarioAtual) return null; // guarda real já em app/(painel)/layout.tsx — isto só estreita o tipo p/ TS
 
   const [{ data: perfis, error: erroPerfis }, { data: listaAuth, error: erroAuth }] = await Promise.all([
-    supabaseAdmin.from("perfis").select("user_id, role, premium"),
+    supabaseAdmin.from("perfis").select("user_id, role, premium, assinatura_status, premium_expira_em"),
     supabaseAdmin.auth.admin.listUsers(),
   ]);
 
@@ -56,15 +56,26 @@ export default async function UsuariosPage() {
   }
 
   const authPorId = new Map(listaAuth.users.map((u) => [u.id, u]));
+  const agora = Date.now();
 
   const usuarios: UsuarioComRole[] = (perfis ?? [])
     .map((perfil) => {
       const auth = authPorId.get(perfil.user_id as string);
+      const expiraIso = (perfil.premium_expira_em as string | null) ?? null;
+      const status = perfil.assinatura_status as string | null;
+      // Premium EFETIVO = flag manual (cortesia) OU assinatura ativa dentro da validade
+      // (mesma régua do obterUsuarioAtual). O painel mostra isso, não só o manual.
+      const assinante =
+        (status === "active" || status === "trialing") &&
+        Boolean(expiraIso) &&
+        new Date(expiraIso as string).getTime() > agora;
       return {
         userId: perfil.user_id as string,
         email: auth?.email ?? null,
         role: (perfil.role as "admin" | "publico") ?? "publico",
-        premium: (perfil.premium as boolean) ?? false,
+        premiumManual: (perfil.premium as boolean) ?? false,
+        assinante,
+        premiumExpiraEm: formatarDataHora(expiraIso),
         avatarUrl: avatarDe(auth),
         origem: origemLabel(auth),
         // Ordena por cadastro desc, mas guarda o cru pra ordenar antes de formatar.
