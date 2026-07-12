@@ -17,7 +17,7 @@ import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { GaleriaPrints } from "@/components/GaleriaPrints";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
-import { buscarPrecoAncora, buscarWhatsappSuporte } from "@/lib/configWorker";
+import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl } from "@/lib/configWorker";
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
@@ -118,14 +118,22 @@ export default async function PlanosPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis] = await Promise.all([
+  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl] = await Promise.all([
     obterUsuarioAtual(),
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
     buscarWhatsappSuporte(),
     buscarOfertaDemo(),
     buscarKpisTopo(),
+    buscarCaktoCheckoutUrl(),
   ]);
+
+  // Checkout da Cakto com o user_id no sck (amarra o pagamento à conta no webhook).
+  const checkoutUrl =
+    usuario && caktoUrl ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}` : null;
+  const gerenciarUrl = whatsappSuporte
+    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Clube BIA.")}`
+    : null;
 
   // Número AO VIVO de oportunidades abaixo da FIPE — arredondado PRA BAIXO (nunca
   // superestima) num múltiplo de 500 pra virar prova social honesta e limpa.
@@ -209,7 +217,12 @@ export default async function PlanosPage({
           <ContadorOferta variante="inline" />
         </div>
 
-        <AcaoAssinatura estado={estado} rotulo="QUERO SER FUNDADOR DO CLUBE BIA" />
+        <AcaoAssinatura
+          estado={estado}
+          rotulo="QUERO SER FUNDADOR DO CLUBE BIA"
+          checkoutUrl={checkoutUrl}
+          gerenciarUrl={gerenciarUrl}
+        />
         <p className="planos-cta-nota">
           {jaPremium
             ? "Você já é membro do Clube BIA. Gerencie ou cancele quando quiser."
@@ -451,7 +464,12 @@ export default async function PlanosPage({
             ))}
           </ul>
 
-          <AcaoAssinatura estado={estado} rotulo="QUERO MINHA VAGA DE FUNDADOR" />
+          <AcaoAssinatura
+            estado={estado}
+            rotulo="QUERO MINHA VAGA DE FUNDADOR"
+            checkoutUrl={checkoutUrl}
+            gerenciarUrl={gerenciarUrl}
+          />
           <p className="vendas-garantia">
             <ShieldCheck size={15} strokeWidth={2.2} /> Sem fidelidade. Cancele quando quiser, direto no painel.
           </p>
@@ -511,7 +529,12 @@ export default async function PlanosPage({
             Quem compra melhor, <span className="vendas-verde">lucra mais.</span>
           </h2>
           <p>Comece hoje com as condições especiais de lançamento.</p>
-          <AcaoAssinatura estado={estado} rotulo="ENTRAR PARA O CLUBE BIA" />
+          <AcaoAssinatura
+            estado={estado}
+            rotulo="ENTRAR PARA O CLUBE BIA"
+            checkoutUrl={checkoutUrl}
+            gerenciarUrl={gerenciarUrl}
+          />
           <span className="vendas-cta-final-nota">
             <ArrowRight size={13} strokeWidth={2.4} /> Enquanto você lia isto, mais carros entraram abaixo da FIPE.
           </span>

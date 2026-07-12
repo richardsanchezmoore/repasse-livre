@@ -7,7 +7,7 @@ import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { GaleriaPrints } from "@/components/GaleriaPrints";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
-import { buscarPrecoAncora, buscarWhatsappSuporte } from "@/lib/configWorker";
+import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl } from "@/lib/configWorker";
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
@@ -93,15 +93,21 @@ export default async function PlanosSlimPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis] = await Promise.all([
+  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl] = await Promise.all([
     obterUsuarioAtual(),
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
     buscarWhatsappSuporte(),
     buscarOfertaDemo(),
     buscarKpisTopo(),
+    buscarCaktoCheckoutUrl(),
   ]);
   const abaixoFipeVivo = kpis.abaixoFipe >= 1000 ? Math.floor(kpis.abaixoFipe / 500) * 500 : null;
+  const checkoutUrl =
+    usuario && caktoUrl ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}` : null;
+  const gerenciarUrl = whatsappSuporte
+    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Clube BIA.")}`
+    : null;
 
   const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
   const estado: "entrar" | "assinar" | "gerenciar" = !usuario
@@ -169,7 +175,12 @@ export default async function PlanosSlimPage({
           <ContadorOferta variante="inline" />
         </div>
 
-        <AcaoAssinatura estado={estado} rotulo="QUERO TER VANTAGEM NO MERCADO" />
+        <AcaoAssinatura
+          estado={estado}
+          rotulo="QUERO TER VANTAGEM NO MERCADO"
+          checkoutUrl={checkoutUrl}
+          gerenciarUrl={gerenciarUrl}
+        />
         <p className="planos-cta-nota">
           {jaPremium ? "Você já é membro do Clube BIA." : "Sem fidelidade — cancele quando quiser."}
         </p>
@@ -369,7 +380,12 @@ export default async function PlanosSlimPage({
             ))}
           </ul>
 
-          <AcaoAssinatura estado={estado} rotulo="QUERO MINHA VAGA DE FUNDADOR" />
+          <AcaoAssinatura
+            estado={estado}
+            rotulo="QUERO MINHA VAGA DE FUNDADOR"
+            checkoutUrl={checkoutUrl}
+            gerenciarUrl={gerenciarUrl}
+          />
           <p className="vendas-garantia">
             <ShieldCheck size={15} strokeWidth={2.2} /> Sem fidelidade. Cancele quando quiser, direto no painel.
           </p>
@@ -405,7 +421,12 @@ export default async function PlanosSlimPage({
             Quem compra melhor, <span className="vendas-verde">lucra mais.</span>
           </h2>
           <p>Comece hoje com as condições especiais de lançamento.</p>
-          <AcaoAssinatura estado={estado} rotulo="ENTRAR PARA O CLUBE BIA" />
+          <AcaoAssinatura
+            estado={estado}
+            rotulo="ENTRAR PARA O CLUBE BIA"
+            checkoutUrl={checkoutUrl}
+            gerenciarUrl={gerenciarUrl}
+          />
           <span className="vendas-cta-final-nota">
             <ArrowRight size={13} strokeWidth={2.4} /> Enquanto você lia isto, mais carros entraram abaixo da FIPE.
           </span>

@@ -68,6 +68,23 @@ export async function buscarDemoOportunidadeId(): Promise<string | null> {
 }
 
 /**
+ * URL de checkout do Clube BIA na Cakto (`worker_config.CAKTO_CHECKOUT_URL`, ex.:
+ * https://pay.cakto.com.br/{oferta}). O CTA manda o usuário logado pra cá com
+ * `?sck={user_id}` — é o que faz o pagamento voltar amarrado à conta no webhook.
+ * null = não configurado → o CTA cai no fluxo antigo. Server-only.
+ * Ver project_repasse_livre_gateway_pagamento_woovi (Cakto).
+ */
+export async function buscarCaktoCheckoutUrl(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "CAKTO_CHECKOUT_URL")
+    .maybeSingle();
+  const url = (data?.valor ?? "").trim();
+  return url.startsWith("http") ? url : null;
+}
+
+/**
  * Preço-âncora (SÓ VISUAL) mostrado riscado na /planos — o "De R$ X" que a
  * oferta de lançamento risca ao lado do valor real cobrado pelo Stripe. Vem do
  * painel (`worker_config.PRECO_ANCORA`, em reais, ex.: "249") pra ajustar a

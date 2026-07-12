@@ -6,17 +6,25 @@ import { Gem, Settings } from "lucide-react";
 import { registrarEvento } from "@/lib/eventosAnalytics";
 
 /**
- * CTA da página de planos. Três estados, decididos no server (obterUsuarioAtual):
- *  - "entrar": deslogado → manda pro login (com redirect de volta pra /planos).
- *  - "assinar": logado sem assinatura → POST /api/assinatura/checkout → Stripe.
- *  - "gerenciar": já assinante → POST /api/assinatura/portal → Customer Portal.
+ * CTA da página de planos. Estados decididos no server (obterUsuarioAtual):
+ *  - "entrar": deslogado → login (com redirect de volta pra /planos).
+ *  - "assinar": logado sem assinatura → vai pro checkout da Cakto (`checkoutUrl`,
+ *    já com ?sck={user_id}) se configurado; senão cai no checkout Stripe (legado).
+ *  - "gerenciar": já assinante → WhatsApp de suporte (`gerenciarUrl`) se houver;
+ *    senão Customer Portal do Stripe (legado).
  */
 export function AcaoAssinatura({
   estado,
   rotulo,
+  checkoutUrl = null,
+  gerenciarUrl = null,
 }: {
   estado: "entrar" | "assinar" | "gerenciar";
   rotulo?: string;
+  /** URL de checkout da Cakto (com ?sck=), quando configurada. */
+  checkoutUrl?: string | null;
+  /** URL de gestão da assinatura (WhatsApp de suporte), quando disponível. */
+  gerenciarUrl?: string | null;
 }) {
   const router = useRouter();
   const [carregando, setCarregando] = useState(false);
@@ -28,6 +36,20 @@ export function AcaoAssinatura({
       return;
     }
 
+    // Cakto: assinar → checkout hospedado (com sck).
+    if (estado === "assinar" && checkoutUrl) {
+      registrarEvento("clique_assinar", { origem: "planos", estado, gateway: "cakto" });
+      window.location.href = checkoutUrl;
+      return;
+    }
+
+    // Cakto: gerenciar → suporte (Cakto não tem portal como o Stripe).
+    if (estado === "gerenciar" && gerenciarUrl) {
+      window.location.href = gerenciarUrl;
+      return;
+    }
+
+    // Fallback legado (Stripe): checkout/portal via API.
     setCarregando(true);
     try {
       const rota = estado === "gerenciar" ? "/api/assinatura/portal" : "/api/assinatura/checkout";
