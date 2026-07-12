@@ -68,6 +68,34 @@ export async function buscarDemoOportunidadeId(): Promise<string | null> {
 }
 
 /**
+ * Janela (dias) dos KPIs "Ofertas mapeadas" E "Economia de mercado"
+ * (`worker_config.KPI_MAPEADAS_DIAS`, 7|15|30; default 7). Controlado no painel.
+ */
+export async function buscarKpiMapeadasDias(): Promise<number> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "KPI_MAPEADAS_DIAS")
+    .maybeSingle();
+  const n = Number(data?.valor);
+  return [7, 15, 30].includes(n) ? n : 7;
+}
+
+/**
+ * Janela (horas) do KPI "Novos" (`worker_config.KPI_NOVOS_HORAS`, 24|48|72|168;
+ * default 24). Independente da janela de mapeadas. Controlado no painel.
+ */
+export async function buscarKpiNovosHoras(): Promise<number> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "KPI_NOVOS_HORAS")
+    .maybeSingle();
+  const n = Number(data?.valor);
+  return [24, 48, 72, 168].includes(n) ? n : 24;
+}
+
+/**
  * Gateway de pagamento ATIVO (`worker_config.GATEWAY_ATIVO`): "cakto" | "stripe" |
  * "asaas" | "" (nenhum). É o que o CTA de assinatura usa. Trocar = um clique no
  * painel Sistemas de Pagamento; os outros ficam codados e prontos. Server-only.

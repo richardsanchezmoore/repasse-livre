@@ -15,14 +15,17 @@ function CampoConfig({
   titulo,
   tipo = "numero",
   placeholder,
+  opcoes,
   children,
 }: {
   chave: string;
   valorInicial: string;
   titulo: string;
-  /** "numero" = input % (coage p/ Number ao salvar); "texto" = string crua. */
-  tipo?: "numero" | "texto";
+  /** "numero" = input % (coage p/ Number); "texto" = string crua; "select" = dropdown. */
+  tipo?: "numero" | "texto" | "select";
   placeholder?: string;
+  /** Opções do dropdown quando tipo="select". */
+  opcoes?: { valor: string; rotulo: string }[];
   children: ReactNode;
 }) {
   const [valor, setValor] = useState(valorInicial);
@@ -51,18 +54,35 @@ function CampoConfig({
       <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 13.5, lineHeight: 1.5 }}>{children}</p>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: tipo === "texto" ? 320 : 140 }}>
-          <input
-            type={tipo === "texto" ? "text" : "number"}
-            value={valor}
-            placeholder={placeholder}
-            {...(tipo === "numero" ? { min: 0, max: 100, step: 0.5 } : {})}
-            onChange={(e) => {
-              setValor(e.target.value);
-              setSalvo(false);
-            }}
-            style={{ width: "100%", padding: tipo === "texto" ? "10px 12px" : "10px 30px 10px 12px", fontSize: tipo === "texto" ? 14 : 16, border: "1px solid #d1d5db", borderRadius: 10, outline: "none", fontFamily: tipo === "texto" ? "ui-monospace, monospace" : "inherit" }}
-          />
+        <div style={{ position: "relative", width: tipo === "texto" ? 320 : tipo === "select" ? 200 : 140 }}>
+          {tipo === "select" ? (
+            <select
+              value={valor}
+              onChange={(e) => {
+                setValor(e.target.value);
+                setSalvo(false);
+              }}
+              style={{ width: "100%", padding: "10px 12px", fontSize: 15, border: "1px solid #d1d5db", borderRadius: 10, outline: "none", background: "#fff", cursor: "pointer" }}
+            >
+              {(opcoes ?? []).map((o) => (
+                <option key={o.valor} value={o.valor}>
+                  {o.rotulo}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={tipo === "texto" ? "text" : "number"}
+              value={valor}
+              placeholder={placeholder}
+              {...(tipo === "numero" ? { min: 0, max: 100, step: 0.5 } : {})}
+              onChange={(e) => {
+                setValor(e.target.value);
+                setSalvo(false);
+              }}
+              style={{ width: "100%", padding: tipo === "texto" ? "10px 12px" : "10px 30px 10px 12px", fontSize: tipo === "texto" ? 14 : 16, border: "1px solid #d1d5db", borderRadius: 10, outline: "none", fontFamily: tipo === "texto" ? "ui-monospace, monospace" : "inherit" }}
+            />
+          )}
           {tipo === "numero" && <span style={{ position: "absolute", right: 12, top: 11, color: "#9ca3af", fontSize: 15 }}>%</span>}
         </div>
 
@@ -111,6 +131,37 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
       <CampoConfig chave="MARGEM_PREMIUM_PERCENTUAL" valorInicial={configs["MARGEM_PREMIUM_PERCENTUAL"] ?? "10"} titulo="Limite premium (overlay)">
         Ofertas com margem <strong>acima</strong> deste valor ficam atrás do overlay premium pra quem não é assinante —
         as melhores (ex.: 10%+) viram isca pro upgrade; Bronze abaixo disso fica livre. Vale quase na hora (cache da página).
+      </CampoConfig>
+
+      <CampoConfig
+        chave="KPI_MAPEADAS_DIAS"
+        valorInicial={configs["KPI_MAPEADAS_DIAS"] ?? "7"}
+        titulo="KPIs — janela de “Ofertas mapeadas” e “Economia de mercado”"
+        tipo="select"
+        opcoes={[
+          { valor: "7", rotulo: "7 dias" },
+          { valor: "15", rotulo: "15 dias" },
+          { valor: "30", rotulo: "30 dias" },
+        ]}
+      >
+        Período das <strong>duas</strong> métricas do topo do board (andam juntas). A legenda acompanha:
+        “Ofertas mapeadas · X dias” e “Economia de mercado · X dias”. Reflete em até 30 min (cache).
+      </CampoConfig>
+
+      <CampoConfig
+        chave="KPI_NOVOS_HORAS"
+        valorInicial={configs["KPI_NOVOS_HORAS"] ?? "24"}
+        titulo="KPIs — janela de “Novos”"
+        tipo="select"
+        opcoes={[
+          { valor: "24", rotulo: "Últimas 24h" },
+          { valor: "48", rotulo: "Últimas 48h" },
+          { valor: "72", rotulo: "Últimas 72h" },
+          { valor: "168", rotulo: "Últimos 7 dias" },
+        ]}
+      >
+        Janela do KPI “Novos” (<strong>independente</strong> das outras). A legenda vira “Novos · últimas
+        24h/48h/72h” ou “Novos · últimas 7 dias”. Reflete em até 30 min (cache).
       </CampoConfig>
 
       <CampoConfig

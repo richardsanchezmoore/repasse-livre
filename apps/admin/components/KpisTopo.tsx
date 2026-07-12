@@ -19,11 +19,13 @@ function economiaCompacta(v: number): string {
  */
 export async function KpisTopo() {
   const k = await buscarKpisTopo();
+  // Legenda de "Novos": 168h vira "7 dias"; senão "Xh".
+  const legNovos = k.novosHoras >= 168 ? `${Math.round(k.novosHoras / 24)} dias` : `${k.novosHoras}h`;
   const cards = [
-    { rotulo: "Ofertas mapeadas · 7 dias", valor: milhar(k.mapeados7d), Icone: Radar, title: `${milhar(k.mapeados7d)} anúncios varridos em 7 dias (inclui os descartados)` },
+    { rotulo: `Ofertas mapeadas · ${k.mapeadasDias} dias`, valor: milhar(k.mapeados), Icone: Radar, title: `${milhar(k.mapeados)} anúncios varridos em ${k.mapeadasDias} dias (inclui os descartados)` },
     { rotulo: "Abaixo da FIPE", valor: milhar(k.abaixoFipe), Icone: Gem, title: `${milhar(k.abaixoFipe)} oportunidades ativas abaixo da tabela FIPE` },
-    { rotulo: "Novos · últimas 24h", valor: milhar(k.novos24h), Icone: Zap, title: `${milhar(k.novos24h)} novas oportunidades abaixo da FIPE nas últimas 24h` },
-    { rotulo: "Economia de mercado · 7 dias", valor: economiaCompacta(k.economia7d), Icone: Banknote, title: `R$ ${milhar(Math.round(k.economia7d))} de ganho somado vs. FIPE nos anúncios dos últimos 7 dias` },
+    { rotulo: `Novos · últimas ${legNovos}`, valor: milhar(k.novos), Icone: Zap, title: `${milhar(k.novos)} novas oportunidades abaixo da FIPE nas últimas ${legNovos}` },
+    { rotulo: `Economia de mercado · ${k.mapeadasDias} dias`, valor: economiaCompacta(k.economia), Icone: Banknote, title: `R$ ${milhar(Math.round(k.economia))} de ganho somado vs. FIPE nos anúncios dos últimos ${k.mapeadasDias} dias` },
   ];
 
   return (
