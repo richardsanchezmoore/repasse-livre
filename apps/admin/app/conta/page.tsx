@@ -9,6 +9,7 @@ import { TopBar } from "@/components/TopBar";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { BotaoSair } from "@/components/BotaoSair";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
+import { buscarWhatsappSuporte } from "@/lib/configWorker";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -49,14 +50,22 @@ export default async function ContaPage() {
     redirect("/login?redirect=%2Fconta");
   }
 
-  const [contagens, estadosDisponiveis] = await Promise.all([
+  const [contagens, estadosDisponiveis, whatsappSuporte] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(),
+    buscarWhatsappSuporte(),
   ]);
 
   const ehPro = usuario.premium; // manual (cortesia) OU assinatura ativa
   const ehAdmin = usuario.role === "admin";
-  const temAssinaturaStripe = Boolean(usuario.assinaturaStatus);
+  // Assinatura ATIVA (dentro da validade). Cancelada/expirada → cai no "Gratuito"
+  // com "Conhecer o PRO" (pode reassinar), em vez de travar num "gerenciar".
+  const expiraMs = usuario.premiumExpiraEm ? new Date(usuario.premiumExpiraEm).getTime() : 0;
+  const assinaturaAtiva =
+    (usuario.assinaturaStatus === "active" || usuario.assinaturaStatus === "trialing") && expiraMs > Date.now();
+  const gerenciarUrl = whatsappSuporte
+    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
+    : null;
   const dadosIncompletos = !usuario.nome || !usuario.whatsapp;
   const validade = formatarData(usuario.premiumExpiraEm);
   const inicial = (usuario.nome ?? usuario.email ?? "?").charAt(0).toUpperCase();
@@ -90,17 +99,13 @@ export default async function ContaPage() {
 
               <section className="conta-card">
                 <h2 className="conta-card-titulo">Seu plano</h2>
-                {temAssinaturaStripe ? (
+                {assinaturaAtiva ? (
                   <>
                     <p className="conta-plano-nome">
                       Plano <strong>PRO</strong> · {rotuloStatus(usuario.assinaturaStatus)}
                     </p>
-                    {validade && (
-                      <p className="conta-muted">
-                        {usuario.assinaturaStatus === "canceled" ? "Acesso até" : "Renova em"} {validade}
-                      </p>
-                    )}
-                    <AcaoAssinatura estado="gerenciar" />
+                    {validade && <p className="conta-muted">Renova em {validade}</p>}
+                    <AcaoAssinatura estado="gerenciar" gerenciarUrl={gerenciarUrl} />
                   </>
                 ) : ehPro ? (
                   <>

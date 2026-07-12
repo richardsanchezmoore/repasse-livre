@@ -144,10 +144,15 @@ export default async function PlanosPage({
   // superestima) num múltiplo de 500 pra virar prova social honesta e limpa.
   const abaixoFipeVivo = kpis.abaixoFipe >= 1000 ? Math.floor(kpis.abaixoFipe / 500) * 500 : null;
 
-  const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
+  // "gerenciar" só pra quem tem assinatura ATIVA (dentro da validade). Cancelado/
+  // expirado → "assinar" (pode reassinar); senão o CTA cairia no WhatsApp e o cara
+  // ficaria preso sem conseguir voltar a assinar.
+  const expiraMs = usuario?.premiumExpiraEm ? new Date(usuario.premiumExpiraEm).getTime() : 0;
+  const assinaturaAtiva =
+    (usuario?.assinaturaStatus === "active" || usuario?.assinaturaStatus === "trialing") && expiraMs > Date.now();
   const estado: "entrar" | "assinar" | "gerenciar" = !usuario
     ? "entrar"
-    : temAssinaturaStripe
+    : assinaturaAtiva
       ? "gerenciar"
       : "assinar";
   const jaPremium = Boolean(usuario?.premium);

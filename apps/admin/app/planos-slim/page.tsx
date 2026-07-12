@@ -113,10 +113,14 @@ export default async function PlanosSlimPage({
     ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
     : null;
 
-  const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
+  // "gerenciar" só pra assinatura ATIVA (dentro da validade). Cancelado/expirado
+  // → "assinar" (pode reassinar), senão o CTA cai no WhatsApp e prende o usuário.
+  const expiraMs = usuario?.premiumExpiraEm ? new Date(usuario.premiumExpiraEm).getTime() : 0;
+  const assinaturaAtiva =
+    (usuario?.assinaturaStatus === "active" || usuario?.assinaturaStatus === "trialing") && expiraMs > Date.now();
   const estado: "entrar" | "assinar" | "gerenciar" = !usuario
     ? "entrar"
-    : temAssinaturaStripe
+    : assinaturaAtiva
       ? "gerenciar"
       : "assinar";
   const jaPremium = Boolean(usuario?.premium);
