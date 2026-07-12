@@ -105,9 +105,12 @@ export default async function PlanosSlimPage({
     buscarGatewayAtivo(),
   ]);
   const abaixoFipeVivo = kpis.abaixoFipe >= 1000 ? Math.floor(kpis.abaixoFipe / 500) * 500 : null;
+  // Logado → sck (match exato); não-logado → checkout direto (webhook casa por email).
   const checkoutUrl =
-    usuario && gatewayAtivo === "cakto" && caktoUrl
-      ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
+    gatewayAtivo === "cakto" && caktoUrl
+      ? usuario
+        ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
+        : caktoUrl
       : null;
   const gerenciarUrl = whatsappSuporte
     ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
@@ -118,11 +121,8 @@ export default async function PlanosSlimPage({
   const expiraMs = usuario?.premiumExpiraEm ? new Date(usuario.premiumExpiraEm).getTime() : 0;
   const assinaturaAtiva =
     (usuario?.assinaturaStatus === "active" || usuario?.assinaturaStatus === "trialing") && expiraMs > Date.now();
-  const estado: "entrar" | "assinar" | "gerenciar" = !usuario
-    ? "entrar"
-    : assinaturaAtiva
-      ? "gerenciar"
-      : "assinar";
+  // Não-logado vai direto pro checkout ("assinar"); só assinatura ativa → "gerenciar".
+  const estado: "entrar" | "assinar" | "gerenciar" = assinaturaAtiva ? "gerenciar" : "assinar";
   const jaPremium = Boolean(usuario?.premium);
   const descontoPct =
     precoAncora && precoAncora.centavos > preco.centavos

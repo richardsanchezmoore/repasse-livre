@@ -130,11 +130,14 @@ export default async function PlanosPage({
     buscarGatewayAtivo(),
   ]);
 
-  // Checkout da Cakto (só quando é o gateway ativo) com o user_id no sck — amarra
-  // o pagamento à conta no webhook. Outro gateway ativo → cai no fallback do CTA.
+  // Checkout da Cakto (quando é o gateway ativo). Logado → leva o user_id no sck
+  // (match exato); NÃO logado → checkout direto SEM login (o webhook cria/acha a
+  // conta pelo email do comprador). Menos fricção — todos começam agora.
   const checkoutUrl =
-    usuario && gatewayAtivo === "cakto" && caktoUrl
-      ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
+    gatewayAtivo === "cakto" && caktoUrl
+      ? usuario
+        ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
+        : caktoUrl
       : null;
   const gerenciarUrl = whatsappSuporte
     ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
@@ -150,11 +153,9 @@ export default async function PlanosPage({
   const expiraMs = usuario?.premiumExpiraEm ? new Date(usuario.premiumExpiraEm).getTime() : 0;
   const assinaturaAtiva =
     (usuario?.assinaturaStatus === "active" || usuario?.assinaturaStatus === "trialing") && expiraMs > Date.now();
-  const estado: "entrar" | "assinar" | "gerenciar" = !usuario
-    ? "entrar"
-    : assinaturaAtiva
-      ? "gerenciar"
-      : "assinar";
+  // Não-logado NÃO cai mais em "entrar" (criar conta antes): vai direto pro
+  // checkout ("assinar"). Só assinatura ativa vira "gerenciar".
+  const estado: "entrar" | "assinar" | "gerenciar" = assinaturaAtiva ? "gerenciar" : "assinar";
   const jaPremium = Boolean(usuario?.premium);
 
   // % OFF do contador — calculado do anchor vs preço real (honesto: 249→99 = 60%).

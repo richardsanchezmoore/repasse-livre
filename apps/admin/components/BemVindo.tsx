@@ -9,11 +9,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Boas-vindas pós-compra (destino do "acessar produto" da Cakto). Destino
- * inteligente conforme a chegada: se o usuário tinha batido num anúncio fechado
- * (id guardado em localStorage por CapturaDestino), volta pra ESSE anúncio; senão
- * (veio de campanha) vai pra home. Lê e limpa o localStorage.
+ * inteligente conforme a chegada (anúncio fechado → volta pro carro; campanha →
+ * home). Se o comprador NÃO estava logado (checkout sem conta), pede 1 login com
+ * o email da compra — a conta já foi criada + premium liberado pelo webhook.
  */
-export function BemVindo() {
+export function BemVindo({ logado }: { logado: boolean }) {
   const [destinoId, setDestinoId] = useState<string | null>(null);
   const [pronto, setPronto] = useState(false);
 
@@ -23,6 +23,8 @@ export function BemVindo() {
     if (d) localStorage.removeItem(CHAVE);
     setPronto(true);
   }, []);
+
+  const destino = destinoId ? `/oportunidade/${destinoId}` : "/";
 
   return (
     <div className="bemvindo">
@@ -37,19 +39,30 @@ export function BemVindo() {
         </p>
 
         {pronto &&
-          (destinoId ? (
-            <>
-              <Link href={`/oportunidade/${destinoId}`} className="bemvindo-cta">
-                <ArrowRight size={18} strokeWidth={2.2} /> Voltar pro carro que você queria
+          (logado ? (
+            destinoId ? (
+              <>
+                <Link href={destino} className="bemvindo-cta">
+                  <ArrowRight size={18} strokeWidth={2.2} /> Voltar pro carro que você queria
+                </Link>
+                <Link href="/" className="bemvindo-secundario">
+                  Explorar todas as oportunidades
+                </Link>
+              </>
+            ) : (
+              <Link href="/" className="bemvindo-cta">
+                <Compass size={18} strokeWidth={2.2} /> Explorar as oportunidades
               </Link>
-              <Link href="/" className="bemvindo-secundario">
-                Explorar todas as oportunidades
+            )
+          ) : (
+            <>
+              <p className="bemvindo-nota">
+                Falta 1 passo: <strong>entre com o mesmo email que você usou na compra</strong> pra acessar.
+              </p>
+              <Link href={`/login?redirect=${encodeURIComponent(destino)}`} className="bemvindo-cta">
+                <ArrowRight size={18} strokeWidth={2.2} /> Entrar e acessar
               </Link>
             </>
-          ) : (
-            <Link href="/" className="bemvindo-cta">
-              <Compass size={18} strokeWidth={2.2} /> Explorar as oportunidades
-            </Link>
           ))}
       </div>
     </div>

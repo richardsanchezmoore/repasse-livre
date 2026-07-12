@@ -39,7 +39,7 @@ interface ItemCakto {
   subscription?: SubCakto | string | null;
   subscription_period?: number | null;
   paidAt?: string | null;
-  customer?: { email?: string | null } | null;
+  customer?: { email?: string | null; name?: string | null; phone?: string | null } | null;
 }
 interface EventoCakto {
   secret?: string;
@@ -67,6 +67,42 @@ function calcularExpira(main: ItemCakto): string {
   const base = main.paidAt && !Number.isNaN(Date.parse(main.paidAt)) ? new Date(main.paidAt) : new Date();
   base.setMonth(base.getMonth() + (main.subscription_period && main.subscription_period > 0 ? main.subscription_period : 1));
   return iso(base.getTime() + FOLGA_MS);
+}
+
+/** Acha um usuário pelo email (auth). Plataforma nova → 1 página cobre; paginar quando crescer. */
+async function acharUsuarioPorEmail(email: string): Promise<string | null> {
+  const { data } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const alvo = email.toLowerCase();
+  return data.users.find((u) => (u.email ?? "").toLowerCase() === alvo)?.id ?? null;
+}
+
+/**
+ * Resolve o usuário do pagamento: `sck` (comprador logado, match exato) OU o EMAIL
+ * do comprador (checkout sem login → acha a conta; se não existe e `criar`, cria —
+ * o trigger on_auth_user_created faz o perfil). Menos fricção: paga sem criar conta
+ * antes; acessa depois logando com o email da compra (magic link/Google).
+ */
+async function resolverUsuario(
+  sck: string,
+  customer: ItemCakto["customer"],
+  criar: boolean
+): Promise<{ userId: string; novo: boolean } | null> {
+  if (UUID.test(sck)) return { userId: sck, novo: false };
+  const email = (customer?.email ?? "").trim();
+  if (!email.includes("@")) return null;
+  const existente = await acharUsuarioPorEmail(email);
+  if (existente) return { userId: existente, novo: false };
+  if (!criar) return null;
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    email_confirm: true, // email verificado → loga por magic link/Google, sem senha
+    user_metadata: { name: customer?.name ?? undefined, phone: customer?.phone ?? undefined },
+  });
+  if (error || !data.user) {
+    console.error(`[cakto webhook] falha ao criar conta ${email}: ${error?.message ?? "?"}`);
+    return null;
+  }
+  return { userId: data.user.id, novo: true };
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -117,26 +153,29 @@ export async function POST(req: Request): Promise<Response> {
   const main = itens.find((i) => i.offer_type === "main") ?? itens[0];
   if (!main) return NextResponse.json({ ok: true, semItem: true });
 
+  // Identidade: sck (logado) OU email do comprador (checkout sem login → acha/cria).
+  // Só CRIA conta em evento de grant (não faz sentido criar conta só pra reembolsar).
   const sck = (main.sck ?? "").trim();
-  if (!UUID.test(sck)) {
-    console.warn(`[cakto webhook] ${tipo} sem sck válido (comprador=${main.customer?.email ?? "?"}).`);
-    return NextResponse.json({ ok: true, semSck: true });
+  const resolvido = await resolverUsuario(sck, main.customer, ehGrant);
+  if (!resolvido) {
+    console.warn(`[cakto webhook] ${tipo}: sem sck e sem email/conta (comprador=${main.customer?.email ?? "?"}).`);
+    return NextResponse.json({ ok: true, semUsuario: true });
   }
+  const { userId, novo } = resolvido;
 
-  const patch = ehGrant
+  const patch: Record<string, unknown> = ehGrant
     ? { assinatura_status: "active", premium_expira_em: calcularExpira(main) }
     : { assinatura_status: "canceled", premium_expira_em: new Date().toISOString() };
+  // Conta NOVA (checkout sem login) → já preenche nome/telefone da Cakto no perfil.
+  if (novo && main.customer?.name) patch.nome = main.customer.name;
+  if (novo && main.customer?.phone) patch.whatsapp = main.customer.phone;
 
-  const { data, error } = await supabaseAdmin.from("perfis").update(patch).eq("user_id", sck).select("user_id");
+  const { error } = await supabaseAdmin.from("perfis").update(patch).eq("user_id", userId);
   if (error) {
-    console.error(`[cakto webhook] falha ao atualizar perfil ${sck}: ${error.message}`);
+    console.error(`[cakto webhook] falha ao atualizar perfil ${userId}: ${error.message}`);
     return NextResponse.json({ erro: "falha_update" }, { status: 500 });
   }
-  if (!data || data.length === 0) {
-    console.warn(`[cakto webhook] ${tipo}: nenhum perfil com user_id=${sck}.`);
-  } else {
-    console.log(`[cakto webhook] ${tipo} → premium ${ehGrant ? "ON" : "OFF"} p/ ${sck}.`);
-  }
+  console.log(`[cakto webhook] ${tipo} → premium ${ehGrant ? "ON" : "OFF"} p/ ${userId}${novo ? " (conta NOVA)" : ""}.`);
   return NextResponse.json({ ok: true });
 }
 
