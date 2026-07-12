@@ -160,7 +160,7 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
             placeholder="5548999998888"
           >
             Número que aparece no botão <strong>“Ficou com dúvida? Chame no WhatsApp”</strong> da página de planos
-            (e no “gerenciar assinatura” do Clube BIA). Formato internacional <strong>DDI 55 + DDD + número</strong>,
+            (e no “gerenciar assinatura” do Repasse Livre PRO). Formato internacional <strong>DDI 55 + DDD + número</strong>,
             só dígitos (ex.: <code>5548999998888</code>). Deixe em branco pra esconder. Vale na hora.
           </CampoConfig>
         </>

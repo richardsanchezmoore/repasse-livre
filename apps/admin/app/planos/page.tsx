@@ -22,7 +22,7 @@ import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
 export const metadata: Metadata = {
-  title: "Clube BIA — inteligência automotiva pra comprar abaixo da FIPE | Repasse Livre",
+  title: "Repasse Livre PRO — inteligência de mercado pra comprar abaixo da FIPE",
   description:
     "Enquanto o mercado procura carros, os assinantes do Repasse Livre encontram oportunidades. O BIA monitora milhares de anúncios de OLX, Webmotors e Mercado Livre, identifica o que está abaixo da FIPE e entrega análise pra você comprar melhor e lucrar mais.",
 };
@@ -136,7 +136,7 @@ export default async function PlanosPage({
       ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
       : null;
   const gerenciarUrl = whatsappSuporte
-    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Clube BIA.")}`
+    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
     : null;
 
   // Número AO VIVO de oportunidades abaixo da FIPE — arredondado PRA BAIXO (nunca
@@ -177,7 +177,7 @@ export default async function PlanosPage({
       <div className="vendas-container">
         {assinatura === "sucesso" && (
           <div className="planos-aviso planos-aviso-ok">
-            <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso ao Clube BIA é liberado em instantes —
+            <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso PRO é liberado em instantes —
             se ainda não apareceu, recarregue a página em alguns segundos.
           </div>
         )}
@@ -189,7 +189,7 @@ export default async function PlanosPage({
       {/* ───────── HERO ───────── */}
       <section className="vendas-hero vendas-container">
         <span className="vendas-selo">
-          <Gem size={14} strokeWidth={2} /> Clube BIA
+          <Gem size={14} strokeWidth={2} /> Repasse Livre PRO
         </span>
         <h1 className="vendas-h1">
           Enquanto o mercado procura carros, você encontra <span>oportunidades</span>.
@@ -223,13 +223,13 @@ export default async function PlanosPage({
 
         <AcaoAssinatura
           estado={estado}
-          rotulo="QUERO SER FUNDADOR DO CLUBE BIA"
+          rotulo="QUERO SER FUNDADOR"
           checkoutUrl={checkoutUrl}
           gerenciarUrl={gerenciarUrl}
         />
         <p className="planos-cta-nota">
           {jaPremium
-            ? "Você já é membro do Clube BIA. Gerencie ou cancele quando quiser."
+            ? "Você já é PRO. Gerencie ou cancele quando quiser."
             : "Sem fidelidade — cancele quando quiser, direto no seu painel."}
         </p>
       </section>
@@ -417,11 +417,11 @@ export default async function PlanosPage({
 
       {/* ───────── BLOCO 9 — COMPARATIVO ───────── */}
       <section className="vendas-secao vendas-container">
-        <h2 className="vendas-h2 vendas-centro">Do jeito antigo × com o Clube BIA</h2>
+        <h2 className="vendas-h2 vendas-centro">Do jeito antigo × com o Repasse Livre PRO</h2>
         <div className="vendas-comparativo">
           <div className="vendas-comp-cab">
             <span>Pesquisa tradicional</span>
-            <span className="vendas-comp-cab-pro">Clube BIA</span>
+            <span className="vendas-comp-cab-pro">Repasse Livre PRO</span>
           </div>
           {COMPARATIVO.map(([a, b]) => (
             <div key={a} className="vendas-comp-linha">
@@ -439,15 +439,15 @@ export default async function PlanosPage({
         <div className="vendas-plano">
           <div className="vendas-plano-topo">
             <span className="vendas-selo vendas-selo--claro">
-              <Gem size={14} strokeWidth={2} /> Clube BIA
+              <Gem size={14} strokeWidth={2} /> Repasse Livre PRO
             </span>
             <span className="vendas-plano-badge">Plano Fundadores</span>
           </div>
 
-          <h2 className="vendas-plano-titulo">Torne-se um Fundador do BIA.</h2>
+          <h2 className="vendas-plano-titulo">Torne-se um Fundador do Repasse Livre PRO.</h2>
           <p className="vendas-plano-narrativa">
             Você está entrando na fase inicial da primeira plataforma brasileira de Inteligência Automotiva.
-            Durante o lançamento, os primeiros membros entram por um valor especial — que fica travado pra você.
+            Durante o lançamento, os primeiros assinantes entram por um valor especial — que fica travado pra você.
           </p>
 
           <div className="vendas-precos vendas-precos--grande">
@@ -479,7 +479,7 @@ export default async function PlanosPage({
           </p>
           {precoAncora && (
             <p className="vendas-plano-oficial">
-              Depois do lançamento, novos membros entram pelo valor oficial de{" "}
+              Depois do lançamento, novos assinantes entram pelo valor oficial de{" "}
               <strong>{precoAncora.texto}/mês</strong>.
             </p>
           )}
@@ -535,7 +535,7 @@ export default async function PlanosPage({
           <p>Comece hoje com as condições especiais de lançamento.</p>
           <AcaoAssinatura
             estado={estado}
-            rotulo="ENTRAR PARA O CLUBE BIA"
+            rotulo="ACESSAR O REPASSE LIVRE PRO"
             checkoutUrl={checkoutUrl}
             gerenciarUrl={gerenciarUrl}
           />

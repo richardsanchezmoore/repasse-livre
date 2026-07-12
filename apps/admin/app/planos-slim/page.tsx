@@ -15,7 +15,7 @@ import { buscarKpisTopo } from "@/lib/kpisTopo";
 // componentes da /planos (contador, mockups, demo, galeria, logos); muda só o
 // copy. noindex pra não competir com a /planos no Google (é um A/B).
 export const metadata: Metadata = {
-  title: "Clube BIA — chegue primeiro nas oportunidades abaixo da FIPE | Repasse Livre",
+  title: "Repasse Livre PRO — chegue primeiro nas oportunidades abaixo da FIPE",
   description:
     "Enquanto outros procuram carros, os assinantes do Repasse Livre encontram oportunidades. O BIA monitora milhares de anúncios e entrega inteligência pra quem compra primeiro.",
   robots: { index: false, follow: true },
@@ -109,7 +109,7 @@ export default async function PlanosSlimPage({
       ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
       : null;
   const gerenciarUrl = whatsappSuporte
-    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Clube BIA.")}`
+    ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
     : null;
 
   const temAssinaturaStripe = Boolean(usuario?.assinaturaStatus);
@@ -134,7 +134,7 @@ export default async function PlanosSlimPage({
       <div className="vendas-container">
         {assinatura === "sucesso" && (
           <div className="planos-aviso planos-aviso-ok">
-            <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso ao Clube BIA é liberado em instantes.
+            <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso PRO é liberado em instantes.
           </div>
         )}
         {assinatura === "cancelado" && (
@@ -145,10 +145,10 @@ export default async function PlanosSlimPage({
       {/* ───────── HERO ───────── */}
       <section className="vendas-hero vendas-container">
         <span className="vendas-selo">
-          <Gem size={14} strokeWidth={2} /> Clube BIA
+          <Gem size={14} strokeWidth={2} /> Repasse Livre PRO
         </span>
         <h1 className="vendas-h1">
-          Enquanto outros procuram carros, os membros do Clube BIA encontram{" "}
+          Enquanto outros procuram carros, os assinantes do Repasse Livre PRO encontram{" "}
           <span>oportunidades</span>.
         </h1>
         <p className="vendas-hero-sub">
@@ -185,7 +185,7 @@ export default async function PlanosSlimPage({
           gerenciarUrl={gerenciarUrl}
         />
         <p className="planos-cta-nota">
-          {jaPremium ? "Você já é membro do Clube BIA." : "Sem fidelidade — cancele quando quiser."}
+          {jaPremium ? "Você já é PRO." : "Sem fidelidade — cancele quando quiser."}
         </p>
       </section>
 
@@ -354,15 +354,15 @@ export default async function PlanosSlimPage({
         <div className="vendas-plano">
           <div className="vendas-plano-topo">
             <span className="vendas-selo vendas-selo--claro">
-              <Gem size={14} strokeWidth={2} /> Clube BIA
+              <Gem size={14} strokeWidth={2} /> Repasse Livre PRO
             </span>
             <span className="vendas-plano-badge">Plano Fundadores</span>
           </div>
 
-          <h2 className="vendas-plano-titulo">Torne-se um Fundador do BIA.</h2>
+          <h2 className="vendas-plano-titulo">Torne-se um Fundador do Repasse Livre PRO.</h2>
           <p className="vendas-plano-narrativa">
             Você está entrando na fase inicial da primeira plataforma brasileira de Inteligência Automotiva.
-            Durante o lançamento, os primeiros membros entram por um valor especial — que fica travado pra você.
+            Durante o lançamento, os primeiros assinantes entram por um valor especial — que fica travado pra você.
           </p>
 
           <div className="vendas-precos vendas-precos--grande">
@@ -394,7 +394,7 @@ export default async function PlanosSlimPage({
           </p>
           {precoAncora && (
             <p className="vendas-plano-oficial">
-              Depois do lançamento, novos membros entram pelo valor oficial de{" "}
+              Depois do lançamento, novos assinantes entram pelo valor oficial de{" "}
               <strong>{precoAncora.texto}/mês</strong>.
             </p>
           )}
@@ -426,7 +426,7 @@ export default async function PlanosSlimPage({
           <p>Comece hoje com as condições especiais de lançamento.</p>
           <AcaoAssinatura
             estado={estado}
-            rotulo="ENTRAR PARA O CLUBE BIA"
+            rotulo="ACESSAR O REPASSE LIVRE PRO"
             checkoutUrl={checkoutUrl}
             gerenciarUrl={gerenciarUrl}
           />

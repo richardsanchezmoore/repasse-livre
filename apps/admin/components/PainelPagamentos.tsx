@@ -29,7 +29,7 @@ const GATEWAYS: Gateway[] = [
     nome: "Cakto",
     desc: "Pix recorrente (Pix Automático), aceita CPF. Taxa Pix 0% + R$ 2,49. Webhook em /api/webhooks/cakto.",
     configKey: "CAKTO_CHECKOUT_URL",
-    configLabel: "URL de checkout do Clube BIA",
+    configLabel: "URL de checkout do Repasse Livre PRO",
     configPlaceholder: "https://pay.cakto.com.br/…",
     envs: "CAKTO_CLIENT_ID · CAKTO_CLIENT_SECRET · CAKTO_WEBHOOK_SECRET",
   },

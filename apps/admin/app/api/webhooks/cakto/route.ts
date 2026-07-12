@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
 /**
- * Webhook da Cakto — libera/corta o acesso ao Clube BIA (fonte da verdade).
+ * Webhook da Cakto — libera/corta o acesso ao Repasse Livre PRO (fonte da verdade).
  *
  * Formato (Agrupado, confirmado por evento real): { secret, event, data: [ {
  * offer_type, customer{email,...}, sck, subscription{id,next_payment_date},
