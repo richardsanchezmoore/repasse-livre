@@ -2,7 +2,6 @@ import { contarOportunidades } from "@/components/DiscoveriesBoard";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { PainelConfiguracoes } from "@/components/PainelConfiguracoes";
-import { PainelPagamentos } from "@/components/PainelPagamentos";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -24,7 +23,6 @@ export default async function ConfiguracoesPage() {
       <div className="layout">
         <Sidebar abaAtiva="descobertas" contagens={contagens} role={usuario.role} />
         <main className="conteudo">
-          <PainelPagamentos configs={configs} />
           <PainelConfiguracoes configs={configs} />
         </main>
       </div>

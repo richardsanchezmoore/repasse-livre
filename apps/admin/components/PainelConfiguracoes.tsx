@@ -1,206 +1,157 @@
 "use client";
 
-import { useState, useTransition, type ReactNode } from "react";
-import { Check, Loader2, Settings } from "lucide-react";
-import { salvarConfigWorker } from "@/app/actions";
+import { useState, type ReactNode } from "react";
+import { Settings, CreditCard, type LucideIcon } from "lucide-react";
+import { CampoConfig } from "./CampoConfig";
+import { PainelPagamentos } from "./PainelPagamentos";
 
 /**
- * Configurações da plataforma — hub central (engrenagem). Grava no worker_config
- * (key/value): margem mínima de CAPTAÇÃO e limite PREMIUM do overlay. Feito pra ir
- * agregando itens com o tempo, sem migration por config.
+ * Painel de Configurações em ABAS (antes era uma tripa só):
+ *  - Geral: ajustes básicos da plataforma (margens + janelas dos KPIs).
+ *  - Pagamentos: gateways (Sistemas de Pagamento) + extras da página de vendas
+ *    (âncora, anúncio-vitrine, WhatsApp).
  */
-function CampoConfig({
-  chave,
-  valorInicial,
-  titulo,
-  tipo = "numero",
-  placeholder,
-  opcoes,
+function BotaoAba({
+  ativo,
+  onClick,
+  Icone,
   children,
 }: {
-  chave: string;
-  valorInicial: string;
-  titulo: string;
-  /** "numero" = input % (coage p/ Number); "texto" = string crua; "select" = dropdown. */
-  tipo?: "numero" | "texto" | "select";
-  placeholder?: string;
-  /** Opções do dropdown quando tipo="select". */
-  opcoes?: { valor: string; rotulo: string }[];
+  ativo: boolean;
+  onClick: () => void;
+  Icone: LucideIcon;
   children: ReactNode;
 }) {
-  const [valor, setValor] = useState(valorInicial);
-  const [salvando, iniciar] = useTransition();
-  const [salvo, setSalvo] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-
-  function salvar() {
-    setErro(null);
-    setSalvo(false);
-    // Número → normaliza (String(Number)); texto → salva cru (trim).
-    const aSalvar = tipo === "numero" ? String(Number(valor)) : valor.trim();
-    iniciar(async () => {
-      try {
-        await salvarConfigWorker(chave, aSalvar);
-        setSalvo(true);
-      } catch (e) {
-        setErro(e instanceof Error ? e.message : "Falha ao salvar.");
-      }
-    });
-  }
-
   return (
-    <section style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: "20px 22px", background: "#fff", marginBottom: 16 }}>
-      <h2 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 700 }}>{titulo}</h2>
-      <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 13.5, lineHeight: 1.5 }}>{children}</p>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: tipo === "texto" ? 320 : tipo === "select" ? 200 : 140 }}>
-          {tipo === "select" ? (
-            <select
-              value={valor}
-              onChange={(e) => {
-                setValor(e.target.value);
-                setSalvo(false);
-              }}
-              style={{ width: "100%", padding: "10px 12px", fontSize: 15, border: "1px solid #d1d5db", borderRadius: 10, outline: "none", background: "#fff", cursor: "pointer" }}
-            >
-              {(opcoes ?? []).map((o) => (
-                <option key={o.valor} value={o.valor}>
-                  {o.rotulo}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={tipo === "texto" ? "text" : "number"}
-              value={valor}
-              placeholder={placeholder}
-              {...(tipo === "numero" ? { min: 0, max: 100, step: 0.5 } : {})}
-              onChange={(e) => {
-                setValor(e.target.value);
-                setSalvo(false);
-              }}
-              style={{ width: "100%", padding: tipo === "texto" ? "10px 12px" : "10px 30px 10px 12px", fontSize: tipo === "texto" ? 14 : 16, border: "1px solid #d1d5db", borderRadius: 10, outline: "none", fontFamily: tipo === "texto" ? "ui-monospace, monospace" : "inherit" }}
-            />
-          )}
-          {tipo === "numero" && <span style={{ position: "absolute", right: 12, top: 11, color: "#9ca3af", fontSize: 15 }}>%</span>}
-        </div>
-
-        <button
-          type="button"
-          onClick={salvar}
-          disabled={salvando}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "10px 18px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#fff",
-            background: salvando ? "#6b7280" : "#059669",
-            border: "none",
-            borderRadius: 10,
-            cursor: salvando ? "default" : "pointer",
-          }}
-        >
-          {salvando ? <Loader2 size={16} className="animate-spin" /> : salvo ? <Check size={16} /> : null}
-          {salvando ? "Salvando…" : salvo ? "Salvo" : "Salvar"}
-        </button>
-      </div>
-
-      {erro && <p style={{ margin: "12px 0 0", color: "#dc2626", fontSize: 13.5 }}>{erro}</p>}
-    </section>
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "10px 16px",
+        fontSize: 14.5,
+        fontWeight: 700,
+        color: ativo ? "#059669" : "#6b7280",
+        background: "transparent",
+        border: "none",
+        borderBottom: `2px solid ${ativo ? "#059669" : "transparent"}`,
+        marginBottom: -1,
+        cursor: "pointer",
+      }}
+    >
+      <Icone size={17} strokeWidth={2} />
+      {children}
+    </button>
   );
 }
 
 export function PainelConfiguracoes({ configs }: { configs: Record<string, string> }) {
+  const [aba, setAba] = useState<"geral" | "pagamentos">("geral");
+
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "28px 20px" }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-        <Settings size={22} strokeWidth={1.9} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Configurações</h1>
-      </header>
-      <p style={{ margin: "0 0 24px", color: "#6b7280", fontSize: 14 }}>Ajustes básicos da plataforma.</p>
+      <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid #e5e7eb" }}>
+        <BotaoAba ativo={aba === "geral"} onClick={() => setAba("geral")} Icone={Settings}>
+          Geral
+        </BotaoAba>
+        <BotaoAba ativo={aba === "pagamentos"} onClick={() => setAba("pagamentos")} Icone={CreditCard}>
+          Pagamentos
+        </BotaoAba>
+      </div>
 
-      <CampoConfig chave="MARGEM_MINIMA_PERCENTUAL" valorInicial={configs["MARGEM_MINIMA_PERCENTUAL"] ?? "5"} titulo="Margem mínima de captação">
-        Só captamos anúncios com pelo menos essa % <strong>abaixo da FIPE</strong>. Baixar (ex.: 3%) aumenta a base —
-        a negociação costuma puxar o preço mais pra baixo, e um KM baixo já compensa a margem menor. Vale na próxima varredura.
-      </CampoConfig>
+      {aba === "geral" ? (
+        <>
+          <p style={{ margin: "0 0 20px", color: "#6b7280", fontSize: 14 }}>Ajustes básicos da plataforma.</p>
 
-      <CampoConfig chave="MARGEM_PREMIUM_PERCENTUAL" valorInicial={configs["MARGEM_PREMIUM_PERCENTUAL"] ?? "10"} titulo="Limite premium (overlay)">
-        Ofertas com margem <strong>acima</strong> deste valor ficam atrás do overlay premium pra quem não é assinante —
-        as melhores (ex.: 10%+) viram isca pro upgrade; Bronze abaixo disso fica livre. Vale quase na hora (cache da página).
-      </CampoConfig>
+          <CampoConfig chave="MARGEM_MINIMA_PERCENTUAL" valorInicial={configs["MARGEM_MINIMA_PERCENTUAL"] ?? "5"} titulo="Margem mínima de captação">
+            Só captamos anúncios com pelo menos essa % <strong>abaixo da FIPE</strong>. Baixar (ex.: 3%) aumenta a base —
+            a negociação costuma puxar o preço mais pra baixo, e um KM baixo já compensa a margem menor. Vale na próxima varredura.
+          </CampoConfig>
 
-      <CampoConfig
-        chave="KPI_MAPEADAS_DIAS"
-        valorInicial={configs["KPI_MAPEADAS_DIAS"] ?? "7"}
-        titulo="KPIs — janela de “Ofertas mapeadas” e “Economia de mercado”"
-        tipo="select"
-        opcoes={[
-          { valor: "7", rotulo: "7 dias" },
-          { valor: "15", rotulo: "15 dias" },
-          { valor: "30", rotulo: "30 dias" },
-        ]}
-      >
-        Período das <strong>duas</strong> métricas do topo do board (andam juntas). A legenda acompanha:
-        “Ofertas mapeadas · X dias” e “Economia de mercado · X dias”. Reflete em até 30 min (cache).
-      </CampoConfig>
+          <CampoConfig chave="MARGEM_PREMIUM_PERCENTUAL" valorInicial={configs["MARGEM_PREMIUM_PERCENTUAL"] ?? "10"} titulo="Limite premium (overlay)">
+            Ofertas com margem <strong>acima</strong> deste valor ficam atrás do overlay premium pra quem não é assinante —
+            as melhores (ex.: 10%+) viram isca pro upgrade; Bronze abaixo disso fica livre. Vale quase na hora (cache da página).
+          </CampoConfig>
 
-      <CampoConfig
-        chave="KPI_NOVOS_HORAS"
-        valorInicial={configs["KPI_NOVOS_HORAS"] ?? "24"}
-        titulo="KPIs — janela de “Novos”"
-        tipo="select"
-        opcoes={[
-          { valor: "24", rotulo: "Últimas 24h" },
-          { valor: "48", rotulo: "Últimas 48h" },
-          { valor: "72", rotulo: "Últimas 72h" },
-          { valor: "168", rotulo: "Últimos 7 dias" },
-        ]}
-      >
-        Janela do KPI “Novos” (<strong>independente</strong> das outras). A legenda vira “Novos · últimas
-        24h/48h/72h” ou “Novos · últimas 7 dias”. Reflete em até 30 min (cache).
-      </CampoConfig>
+          <CampoConfig
+            chave="KPI_MAPEADAS_DIAS"
+            valorInicial={configs["KPI_MAPEADAS_DIAS"] ?? "7"}
+            titulo="KPIs — janela de “Ofertas mapeadas” e “Economia de mercado”"
+            tipo="select"
+            opcoes={[
+              { valor: "7", rotulo: "7 dias" },
+              { valor: "15", rotulo: "15 dias" },
+              { valor: "30", rotulo: "30 dias" },
+            ]}
+          >
+            Período das <strong>duas</strong> métricas do topo do board (andam juntas). A legenda acompanha:
+            “Ofertas mapeadas · X dias” e “Economia de mercado · X dias”. Reflete no próximo carregamento do board.
+          </CampoConfig>
 
-      <CampoConfig
-        chave="PRECO_ANCORA"
-        valorInicial={configs["PRECO_ANCORA"] ?? ""}
-        titulo="Preço-âncora da oferta (riscado)"
-        tipo="texto"
-        placeholder="249"
-      >
-        Valor <strong>riscado</strong> que aparece como “De R$ ___” na página de planos, ao lado do preço real
-        de lançamento. É <strong>só visual</strong> (não cobra nada — quem cobra é o Price ID do Stripe acima);
-        serve de âncora pra valorizar a oferta. Informe só o número em reais (ex.: <code>249</code>). Deixe em
-        branco pra esconder o riscado. Vale na hora, sem deploy.
-      </CampoConfig>
+          <CampoConfig
+            chave="KPI_NOVOS_HORAS"
+            valorInicial={configs["KPI_NOVOS_HORAS"] ?? "24"}
+            titulo="KPIs — janela de “Novos”"
+            tipo="select"
+            opcoes={[
+              { valor: "24", rotulo: "Últimas 24h" },
+              { valor: "48", rotulo: "Últimas 48h" },
+              { valor: "72", rotulo: "Últimas 72h" },
+              { valor: "168", rotulo: "Últimos 7 dias" },
+            ]}
+          >
+            Janela do KPI “Novos” (<strong>independente</strong> das outras). A legenda vira “Novos · últimas
+            24h/48h/72h” ou “Novos · últimas 7 dias”. Reflete no próximo carregamento do board.
+          </CampoConfig>
+        </>
+      ) : (
+        <>
+          <PainelPagamentos configs={configs} />
 
-      <CampoConfig
-        chave="DEMO_OPPORTUNITY_ID"
-        valorInicial={configs["DEMO_OPPORTUNITY_ID"] ?? ""}
-        titulo="Anúncio-vitrine da página de vendas"
-        tipo="texto"
-        placeholder="cole a URL do anúncio (ou o ID)"
-      >
-        A oferta que o visitante de campanha <strong>experimenta</strong> na /planos (seção “Experimente agora”):
-        abre num modal com o <strong>Copiloto e o acesso liberados</strong> — a experiência completa, só pra
-        <strong> este</strong> anúncio. Cole a <strong>URL</strong> do anúncio (ou o ID cru); extraímos o ID
-        sozinhos. Escolha uma oferta boa e com foto. Em branco → cai no card de exemplo estático.
-      </CampoConfig>
+          <h2 style={{ margin: "8px 0 6px", fontSize: 18, fontWeight: 700 }}>Extras da página de vendas</h2>
+          <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 14 }}>Âncora, anúncio-vitrine e contato.</p>
 
-      <CampoConfig
-        chave="WHATSAPP_SUPORTE"
-        valorInicial={configs["WHATSAPP_SUPORTE"] ?? ""}
-        titulo="WhatsApp de vendas/suporte"
-        tipo="texto"
-        placeholder="5548999998888"
-      >
-        Número que aparece no botão <strong>“Ficou com dúvida? Chame no WhatsApp”</strong> da página de planos.
-        Use o formato internacional com <strong>DDI 55 + DDD + número</strong>, só dígitos (ex.: <code>5548999998888</code>).
-        Deixe em branco pra esconder o botão. Vale na hora, sem deploy.
-      </CampoConfig>
+          <CampoConfig
+            chave="PRECO_ANCORA"
+            valorInicial={configs["PRECO_ANCORA"] ?? ""}
+            titulo="Preço-âncora da oferta (riscado)"
+            tipo="texto"
+            placeholder="249"
+          >
+            Valor <strong>riscado</strong> que aparece como “De R$ ___” na página de planos, ao lado do preço real
+            de lançamento. É <strong>só visual</strong> (não cobra nada — quem cobra é o gateway ativo acima);
+            serve de âncora pra valorizar a oferta e calcula o “% OFF” do contador. Informe só o número em reais
+            (ex.: <code>249</code>). Deixe em branco pra esconder o riscado.
+          </CampoConfig>
+
+          <CampoConfig
+            chave="DEMO_OPPORTUNITY_ID"
+            valorInicial={configs["DEMO_OPPORTUNITY_ID"] ?? ""}
+            titulo="Anúncio-vitrine da página de vendas"
+            tipo="texto"
+            placeholder="cole a URL do anúncio (ou o ID)"
+          >
+            A oferta que o visitante de campanha <strong>experimenta</strong> na /planos (seção “Experimente agora”):
+            abre num modal com o <strong>Copiloto e o acesso liberados</strong> — a experiência completa, só pra
+            <strong> este</strong> anúncio. Cole a <strong>URL</strong> do anúncio (ou o ID cru); extraímos o ID
+            sozinhos. Escolha uma oferta boa e com foto. Em branco → cai no card de exemplo estático.
+          </CampoConfig>
+
+          <CampoConfig
+            chave="WHATSAPP_SUPORTE"
+            valorInicial={configs["WHATSAPP_SUPORTE"] ?? ""}
+            titulo="WhatsApp de vendas/suporte"
+            tipo="texto"
+            placeholder="5548999998888"
+          >
+            Número que aparece no botão <strong>“Ficou com dúvida? Chame no WhatsApp”</strong> da página de planos
+            (e no “gerenciar assinatura” do Clube BIA). Formato internacional <strong>DDI 55 + DDD + número</strong>,
+            só dígitos (ex.: <code>5548999998888</code>). Deixe em branco pra esconder. Vale na hora.
+          </CampoConfig>
+        </>
+      )}
     </div>
   );
 }

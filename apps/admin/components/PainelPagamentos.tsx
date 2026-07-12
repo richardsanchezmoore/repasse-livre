@@ -143,10 +143,10 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 20px 28px" }}>
+    <div style={{ padding: "0 0 8px" }}>
       <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-        <CreditCard size={22} strokeWidth={1.9} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Sistemas de Pagamento</h1>
+        <CreditCard size={20} strokeWidth={1.9} />
+        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Sistemas de Pagamento</h2>
       </header>
       <p style={{ margin: "0 0 20px", color: "#6b7280", fontSize: 14, lineHeight: 1.5 }}>
         Ligue <strong>um</strong> gateway por vez — é o que o botão de assinatura usa. Os demais ficam codados e prontos
