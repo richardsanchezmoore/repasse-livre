@@ -110,6 +110,19 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         <>
           <PainelPagamentos configs={configs} />
 
+          <CampoConfig
+            chave="PRECO_MENSAL"
+            valorInicial={configs["PRECO_MENSAL"] ?? "97"}
+            titulo="Preço do plano (R$/mês)"
+            tipo="texto"
+            placeholder="97"
+          >
+            Valor <strong>exibido</strong> na página de planos (e base do “% OFF” do contador). Informe só o
+            número em reais (ex.: <code>97</code>). Deve <strong>bater com o que o gateway ativo cobra</strong>
+            (ex.: o preço do produto na Cakto). Se o Stripe for o ativo, o preço vem do próprio Stripe. Reflete
+            em até 5 min.
+          </CampoConfig>
+
           <h2 style={{ margin: "8px 0 6px", fontSize: 18, fontWeight: 700 }}>Extras da página de vendas</h2>
           <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 14 }}>Âncora, anúncio-vitrine e contato.</p>
 
