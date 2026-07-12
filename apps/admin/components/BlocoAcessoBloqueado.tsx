@@ -15,7 +15,7 @@ import { registrarEvento } from "@/lib/eventosAnalytics";
 export function BlocoAcessoBloqueado({ oportunidadeId }: { oportunidadeId: string }) {
   return (
     <Link
-      href="/planos"
+      href={`/planos?de=${oportunidadeId}`}
       className="acesso-bloqueado"
       onClick={() => registrarEvento("clique_overlay_premium", { origem: "pagina" }, oportunidadeId)}
     >

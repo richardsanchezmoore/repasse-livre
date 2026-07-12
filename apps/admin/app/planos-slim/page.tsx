@@ -3,6 +3,7 @@ import { Gem, Check, X, ArrowRight, ShieldCheck, Clock } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { BotaoWhatsappSuporte } from "@/components/BotaoWhatsappSuporte";
 import { ContadorOferta } from "@/components/ContadorOferta";
+import { CapturaDestino } from "@/components/CapturaDestino";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { GaleriaPrints } from "@/components/GaleriaPrints";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -126,6 +127,7 @@ export default async function PlanosSlimPage({
 
   return (
     <main className="vendas">
+      <CapturaDestino />
       <ContadorOferta variante="barra" descontoPct={descontoPct} />
       <div className="vendas-faixa-posicao">
         A primeira plataforma de Inteligência Automotiva do Brasil

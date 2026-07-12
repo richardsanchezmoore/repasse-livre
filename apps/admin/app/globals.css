@@ -4640,6 +4640,74 @@ body {
   color: var(--v-tinta);
 }
 
+/* ══════════════ /bem-vindo (pós-compra) ══════════════ */
+.bemvindo {
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.bemvindo-card {
+  max-width: 520px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--v-borda);
+  border-radius: 22px;
+  padding: 40px 32px;
+  box-shadow: 0 30px 60px -30px rgba(15, 23, 42, 0.3);
+}
+.bemvindo-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #eafaf0;
+  color: var(--v-verde);
+  margin-bottom: 18px;
+}
+.bemvindo-titulo {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 850;
+  letter-spacing: -0.6px;
+  margin: 0 0 12px;
+  color: var(--v-tinta);
+}
+.bemvindo-sub {
+  font-size: 15.5px;
+  color: var(--v-cinza);
+  line-height: 1.6;
+  margin: 0 0 26px;
+}
+.bemvindo-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  background: var(--v-verde);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.bemvindo-cta:hover {
+  background: var(--v-verde-esc);
+}
+.bemvindo-secundario {
+  display: block;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--v-cinza);
+  text-decoration: none;
+}
+.bemvindo-secundario:hover {
+  color: var(--v-tinta);
+}
+
 /* ══════════════ /planos-slim (variante FOMO) ══════════════ */
 .vendas-contraste {
   display: grid;

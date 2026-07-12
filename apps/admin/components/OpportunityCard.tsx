@@ -298,7 +298,7 @@ export function OpportunityCard({
 
       {bloqueado && (
         <Link
-          href="/planos"
+          href={`/planos?de=${oportunidade.id}`}
           className="card-overlay"
           onClick={() => registrarEvento("clique_overlay_premium", { origem: "card" }, oportunidade.id)}
         >

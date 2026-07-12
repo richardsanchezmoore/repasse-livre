@@ -31,7 +31,7 @@ export function CopilotoTeaser({
       </div>
 
       <Link
-        href="/planos"
+        href={`/planos?de=${oportunidadeId}`}
         className="acesso-bloqueado acesso-bloqueado-gradiente"
         onClick={() => registrarEvento("clique_overlay_premium", { origem: "copiloto" }, oportunidadeId)}
       >
