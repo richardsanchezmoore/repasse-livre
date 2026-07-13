@@ -450,11 +450,18 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <CarrosselVendas
             largura={190}
             imagens={[
-              { src: "/vendas/anuncio-referencia-preco.png", alt: "Preços de referência" },
-              { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico FIPE" },
+              { src: "/vendas/home.png", alt: "Painel Repasse Livre" },
+              { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço do anúncio" },
+              { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE" },
+              { src: "/vendas/anuncio-copiloto.png", alt: "Análise do Copiloto" },
+              { src: "/vendas/bia-parte1-estados.png", alt: "Oportunidades por estado" },
+              { src: "/vendas/bia-parte2-margem-media-top12.png", alt: "Margem média — top 12 modelos" },
+              { src: "/vendas/bia-parte3-cidades-mais-ativas.png", alt: "Cidades mais ativas" },
               { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
-              { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão" },
-              { src: "/vendas/bia-parte1-estados.png", alt: "Estados mais ativos" },
+              { src: "/vendas/bia-parte4-modelos-mais-disputados-por-volume.png", alt: "Mais disputados por volume" },
+              { src: "/vendas/bia-parte4-modelos-mais-disputados-por-marca-volks.png", alt: "Mais disputados por marca" },
+              { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão — marcas de luxo" },
+              { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências do mês" },
             ]}
           />
         </div>
