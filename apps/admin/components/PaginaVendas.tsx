@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import {
   Gem,
   Clock,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
+import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import type { OfertaDemo } from "@/lib/ofertaDemo";
 
 export interface DadosVendas {
@@ -96,32 +97,12 @@ const eyebrow: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".18e
 
 export function PaginaVendas({ dados }: { dados: DadosVendas }) {
   const c = COPY[dados.variante];
-  const [rel, setRel] = useState({ hh: "--", mm: "--", ss: "--" });
-  const countdown = `${rel.hh}:${rel.mm}:${rel.ss}`;
   const rotuloAssinar = `QUERO TRAVAR ${dados.precoValor}/MÊS`;
 
+  // Este componente NÃO tem estado por-segundo (o relógio vive nos ContadorRelogio/
+  // ContadorTexto isolados) → renderiza uma vez só, então o count-up e o reveal
+  // via DOM direto sobrevivem (o React não re-renderiza pra resetá-los).
   useEffect(() => {
-    // ── Contador HONESTO (por visitante, persiste, não reseta a cada F5) ──
-    const CHAVE = "rl_oferta_expira_em";
-    const agora = Date.now();
-    let fim = Number(localStorage.getItem(CHAVE));
-    if (!Number.isFinite(fim) || fim <= agora || fim - agora > 24 * 3600 * 1000) {
-      fim = agora + 57 * 60 * 1000;
-      try {
-        localStorage.setItem(CHAVE, String(fim));
-      } catch {
-        /* aba anônima estrita */
-      }
-    }
-    const p = (n: number) => String(n).padStart(2, "0");
-    const tick = () => {
-      const d = Math.max(0, fim - Date.now());
-      const t = Math.floor(d / 1000);
-      setRel({ hh: p(Math.floor(t / 3600)), mm: p(Math.floor((t % 3600) / 60)), ss: p(t % 60) });
-    };
-    tick();
-    const iv = setInterval(tick, 1000);
-
     // ── Count-up + reveal on scroll ──
     const countUp = (el: HTMLElement) => {
       if (el.dataset.done) return;
@@ -160,7 +141,6 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
     }, 2800);
 
     return () => {
-      clearInterval(iv);
       clearTimeout(t1);
       clearTimeout(t2);
       io.disconnect();
@@ -186,21 +166,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             {dados.descontoPct != null && <div style={{ font: `800 13px ${CORPO}`, color: "#35D07F" }}>HOJE: {dados.descontoPct}% OFF</div>}
             <div style={{ font: `600 10px ${CORPO}`, letterSpacing: ".04em", color: "#7f93a3" }}>Oferta por tempo limitado</div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            {[
-              { v: rel.hh, r: "HORAS" },
-              { v: rel.mm, r: "MIN" },
-              { v: rel.ss, r: "SEG" },
-            ].map((b, i) => (
-              <div key={b.r} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                {i > 0 && <span style={{ font: `800 14px ${TIT}`, color: "#35D07F" }}>:</span>}
-                <div style={{ background: "rgba(255,255,255,.08)", color: "#fff", borderRadius: 8, padding: "6px 9px", textAlign: "center", minWidth: 38 }}>
-                  <div style={{ font: `800 15px ${TIT}` }}>{b.v}</div>
-                  <div style={{ font: `600 7px ${CORPO}`, letterSpacing: ".14em", color: "#7f93a3" }}>{b.r}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ContadorRelogio />
         </div>
 
         {/* 2 ── hero cinematográfico */}
@@ -237,7 +203,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               <span style={{ font: `700 19px ${TIT}`, color: "#566577" }}>{dados.precoIntervalo}</span>
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FDEBE1", color: "#DD6B36", padding: "9px 16px", borderRadius: 999, font: `700 13px ${CORPO}`, marginBottom: 20 }}>
-              <Clock size={14} strokeWidth={2.2} /> Expira em <b style={{ fontVariantNumeric: "tabular-nums" }}>{countdown}</b>
+              <Clock size={14} strokeWidth={2.2} /> Expira em <ContadorTexto />
             </div>
             <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} className="rlv-cta" />
             <div style={{ marginTop: 12, font: `600 12px ${CORPO}`, color: "#8A96A5" }}>Sem fidelidade — cancele quando quiser.</div>
@@ -518,7 +484,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               <span style={{ font: `700 17px ${TIT}`, color: "#A9BBCB" }}>{dados.precoIntervalo}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(221,107,54,.16)", color: "#F0A868", padding: "9px 14px", borderRadius: 12, font: `700 13px ${CORPO}`, marginBottom: 20 }}>
-              <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <b style={{ fontVariantNumeric: "tabular-nums" }}>{countdown}</b>
+              <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <ContadorTexto />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 16px", padding: "18px 0", borderTop: "1px solid rgba(255,255,255,.1)", borderBottom: "1px solid rgba(255,255,255,.1)", marginBottom: 20, font: `700 13px ${CORPO}`, color: "#D6E2EC" }}>
               {["BIA", "Copiloto", "Score", "Alertas", "Dashboard", "Comparativos"].map((x) => (
