@@ -154,8 +154,12 @@ export async function POST(req: Request): Promise<Response> {
   if (!main) return NextResponse.json({ ok: true, semItem: true });
 
   // Identidade: sck (logado) OU email do comprador (checkout sem login → acha/cria).
+  // `sck=claim_{token}` = guest zero-clique: resolve pelo email e amarra o token à
+  // conta (o /bem-vindo troca por sessão). `sck={uuid}` = comprador logado.
+  const sckRaw = (main.sck ?? "").trim();
+  const claimToken = sckRaw.startsWith("claim_") ? sckRaw.slice(6) : null;
+  const sck = claimToken ? "" : sckRaw; // claim → força resolução por email
   // Só CRIA conta em evento de grant (não faz sentido criar conta só pra reembolsar).
-  const sck = (main.sck ?? "").trim();
   const resolvido = await resolverUsuario(sck, main.customer, ehGrant);
   if (!resolvido) {
     console.warn(`[cakto webhook] ${tipo}: sem sck e sem email/conta (comprador=${main.customer?.email ?? "?"}).`);
@@ -175,7 +179,18 @@ export async function POST(req: Request): Promise<Response> {
     console.error(`[cakto webhook] falha ao atualizar perfil ${userId}: ${error.message}`);
     return NextResponse.json({ erro: "falha_update" }, { status: 500 });
   }
-  console.log(`[cakto webhook] ${tipo} → premium ${ehGrant ? "ON" : "OFF"} p/ ${userId}${novo ? " (conta NOVA)" : ""}.`);
+
+  // Guest zero-clique: registra o token → conta pra o /bem-vindo trocar por sessão
+  // (auto-login sem email). Só em grant; o comprador acabou de pagar e vai cair no /bem-vindo.
+  if (ehGrant && claimToken) {
+    const { error: eClaim } = await supabaseAdmin.from("claims").upsert(
+      { token: claimToken, user_id: userId, email: main.customer?.email ?? null, status: "ready", criado_em: new Date().toISOString() },
+      { onConflict: "token" }
+    );
+    if (eClaim) console.error(`[cakto webhook] falha ao gravar claim ${claimToken}: ${eClaim.message}`);
+  }
+
+  console.log(`[cakto webhook] ${tipo} → premium ${ehGrant ? "ON" : "OFF"} p/ ${userId}${novo ? " (conta NOVA)" : ""}${claimToken ? " [claim]" : ""}.`);
   return NextResponse.json({ ok: true });
 }
 

@@ -36,10 +36,23 @@ export function AcaoAssinatura({
       return;
     }
 
-    // Cakto: assinar → checkout hospedado (com sck).
+    // Cakto: assinar → checkout hospedado.
     if (estado === "assinar" && checkoutUrl) {
       registrarEvento("clique_assinar", { origem: "planos", estado, gateway: "cakto" });
-      window.location.href = checkoutUrl;
+      let url = checkoutUrl;
+      // Deslogado: checkoutUrl vem SEM sck. Gera um token de claim (localStorage +
+      // ?sck=claim_{token}) → o webhook amarra o pagamento à conta e o /bem-vindo
+      // troca por sessão (auto-login sem email). Ver componentes/BemVindo + /api/claim.
+      if (!url.includes("sck=")) {
+        const token = crypto.randomUUID();
+        try {
+          localStorage.setItem("rl_claim", token);
+        } catch {
+          /* localStorage bloqueado (aba anônima estrita) → cai no fallback de login por email */
+        }
+        url += (url.includes("?") ? "&" : "?") + "sck=claim_" + token;
+      }
+      window.location.href = url;
       return;
     }
 
