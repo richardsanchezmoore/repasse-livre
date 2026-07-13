@@ -7,6 +7,10 @@ import { alterarPremiumPerfil, alterarRolePerfil, apagarUsuario } from "@/app/ac
 export interface UsuarioComRole {
   userId: string;
   email: string | null;
+  /** Nome do cadastro (Google ou preenchido pela Cakto no checkout), ou null. */
+  nome: string | null;
+  /** WhatsApp cru (ex.: "5551996901333"), ou null. */
+  whatsapp: string | null;
   role: "admin" | "publico";
   /** Flag manual de cortesia (perfis.premium) — o que o botão gema liga/desliga. */
   premiumManual: boolean;
@@ -24,6 +28,23 @@ export interface UsuarioComRole {
   cadastro: string | null;
   /** Último acesso já formatado, ou null. */
   ultimoAcesso: string | null;
+}
+
+function soDigitos(s: string): string {
+  return s.replace(/\D/g, "");
+}
+/** Link wa.me (só dígitos) pra abrir a conversa direto. */
+function linkWhatsapp(w: string): string {
+  return `https://wa.me/${soDigitos(w)}`;
+}
+/** Exibe (DDD) 9xxxx-xxxx, com ou sem o 55 na frente; senão mostra cru. */
+function formatarWhatsapp(w: string): string {
+  const d = soDigitos(w);
+  const comPais = d.match(/^55(\d{2})(\d{4,5})(\d{4})$/);
+  if (comPais) return `(${comPais[1]}) ${comPais[2]}-${comPais[3]}`;
+  const semPais = d.match(/^(\d{2})(\d{4,5})(\d{4})$/);
+  if (semPais) return `(${semPais[1]}) ${semPais[2]}-${semPais[3]}`;
+  return w;
 }
 
 /** Avatar do usuário: foto do login (Google) em círculo, ou a inicial num
@@ -118,6 +139,7 @@ export function ListaUsuarios({
         <thead>
           <tr>
             <th>E-mail</th>
+            <th>WhatsApp</th>
             <th>Origem</th>
             <th>Cadastro</th>
             <th>Permissão</th>
@@ -135,10 +157,28 @@ export function ListaUsuarios({
                   <div className="usuarios-email-cel">
                     <AvatarUsuario
                       url={usuario.avatarUrl}
-                      inicial={(usuario.email ?? "?").charAt(0).toUpperCase()}
+                      inicial={(usuario.nome ?? usuario.email ?? "?").charAt(0).toUpperCase()}
                     />
-                    <span>{usuario.email ?? "(sem e-mail)"}</span>
+                    <div className="usuarios-email-nome">
+                      <span>{usuario.email ?? "(sem e-mail)"}</span>
+                      {usuario.nome && <span className="usuarios-nome-sub">{usuario.nome}</span>}
+                    </div>
                   </div>
+                </td>
+                <td>
+                  {usuario.whatsapp ? (
+                    <a
+                      href={linkWhatsapp(usuario.whatsapp)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="usuarios-whats"
+                      title="Abrir conversa no WhatsApp"
+                    >
+                      {formatarWhatsapp(usuario.whatsapp)}
+                    </a>
+                  ) : (
+                    <span className="usuarios-selo usuarios-selo-publico">—</span>
+                  )}
                 </td>
                 <td>
                   <span

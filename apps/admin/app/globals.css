@@ -693,6 +693,26 @@ body {
   align-items: center;
   gap: 10px;
 }
+.usuarios-email-nome {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.usuarios-nome-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+.usuarios-whats {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2bac60;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.usuarios-whats:hover {
+  text-decoration: underline;
+}
 .usuarios-avatar {
   width: 32px;
   height: 32px;

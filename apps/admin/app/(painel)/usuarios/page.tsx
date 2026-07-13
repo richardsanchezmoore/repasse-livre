@@ -44,7 +44,7 @@ export default async function UsuariosPage() {
   if (!usuarioAtual) return null; // guarda real já em app/(painel)/layout.tsx — isto só estreita o tipo p/ TS
 
   const [{ data: perfis, error: erroPerfis }, { data: listaAuth, error: erroAuth }] = await Promise.all([
-    supabaseAdmin.from("perfis").select("user_id, role, premium, assinatura_status, premium_expira_em"),
+    supabaseAdmin.from("perfis").select("user_id, role, premium, assinatura_status, premium_expira_em, nome, whatsapp"),
     supabaseAdmin.auth.admin.listUsers(),
   ]);
 
@@ -72,6 +72,8 @@ export default async function UsuariosPage() {
       return {
         userId: perfil.user_id as string,
         email: auth?.email ?? null,
+        nome: (perfil.nome as string | null) ?? null,
+        whatsapp: (perfil.whatsapp as string | null) ?? null,
         role: (perfil.role as "admin" | "publico") ?? "publico",
         premiumManual: (perfil.premium as boolean) ?? false,
         assinante,
