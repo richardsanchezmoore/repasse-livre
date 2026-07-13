@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { acharOuCriarCliente, criarAssinatura, primeiraCobranca, criarAutorizacaoPixAutomatico } from "@/lib/asaas";
+import { acharOuCriarCliente, criarAssinatura, primeiraCobranca, criarAutorizacaoPixAutomatico, criarCheckout } from "@/lib/asaas";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
+import { URL_BASE_SITE } from "@/lib/site";
 
 /**
  * Inicia a assinatura via Asaas (API-driven — não é link fixo). Exige usuário
@@ -34,7 +35,31 @@ export async function POST(req: Request): Promise<Response> {
   const preco = await buscarPrecoExibicao();
   const valorReais = Math.round(preco.centavos) / 100;
 
+  // Modo de cobrança (env). Default = "checkout" (página hospedada do Asaas, coleta
+  // CPF + recorrente, tipo Cakto). Alternativas: "assinatura" | "pix_automatico".
+  const modo = process.env.ASAAS_MODO || "checkout";
+
   try {
+    // Modo CHECKOUT (padrão) — não precisa criar cliente antes (o Asaas coleta na
+    // página). externalReference=user_id casa no webhook; customerData pré-preenche.
+    if (modo === "checkout") {
+      const url = await criarCheckout({
+        userId: usuario.id,
+        valorReais,
+        descricao: "Repasse Livre PRO",
+        successUrl: `${URL_BASE_SITE}/bem-vindo`,
+        cancelUrl: `${URL_BASE_SITE}/planos?assinatura=cancelado`,
+        cliente: {
+          nome: (perfil?.nome as string) || undefined,
+          email: usuario.email ?? undefined,
+          cpfCnpj,
+          telefone: (perfil?.whatsapp as string) || undefined,
+        },
+      });
+      return NextResponse.json({ url });
+    }
+
+    // Modos API-driven (assinatura / pix_automatico) precisam do cliente criado antes.
     const clienteId = await acharOuCriarCliente({
       userId: usuario.id,
       nome: (perfil?.nome as string) || usuario.email || "Assinante",
@@ -46,7 +71,7 @@ export async function POST(req: Request): Promise<Response> {
     // Modo PIX AUTOMÁTICO (débito recorrente real) — quando ASAAS_MODO=pix_automatico
     // e a conta é elegível. Cria a autorização; o QR do 1º pagamento ativa o débito
     // recorrente. Ver lib/asaas (confirmar immediateQrCode/resposta no sandbox).
-    if (process.env.ASAAS_MODO === "pix_automatico") {
+    if (modo === "pix_automatico") {
       const auth = await criarAutorizacaoPixAutomatico({
         clienteId,
         userId: usuario.id,

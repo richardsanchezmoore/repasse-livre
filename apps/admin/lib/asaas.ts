@@ -120,6 +120,47 @@ export async function primeiraCobranca(subId: string): Promise<string | null> {
 }
 
 /**
+ * Cria um CHECKOUT hospedado do Asaas (página deles, tipo Cakto) — o cliente é
+ * redirecionado, o Asaas COLETA O CPF e processa, e volta pro nosso callback.
+ * `chargeTypes: RECURRENT` + `subscription.cycle` = assinatura recorrente.
+ * Resolve o gap de CPF e mira o Pix recorrente via checkout.
+ *
+ * Fluxo: POST /checkouts → recebe `id` → monto a URL `…/checkoutSession/show?id={id}`.
+ * ⚠️ CONFIRMAR no sandbox: o caminho exato (/checkouts), se `billingTypes:["PIX"]`
+ * + RECURRENT é aceito (a doc exemplifica recorrente com CARTÃO; Pix recorrente pode
+ * ter fluxo próprio), e o domínio da URL (sandbox vs asaas.com).
+ */
+export async function criarCheckout(dados: {
+  userId: string;
+  valorReais: number;
+  descricao: string;
+  successUrl: string;
+  cancelUrl: string;
+  cliente?: { nome?: string; email?: string; cpfCnpj?: string; telefone?: string };
+}): Promise<string> {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const r = await asaasFetch("/checkouts", {
+    method: "POST",
+    body: JSON.stringify({
+      billingTypes: ["PIX", "CREDIT_CARD"],
+      chargeTypes: ["RECURRENT"],
+      minutesToExpire: 60,
+      callback: { successUrl: dados.successUrl, cancelUrl: dados.cancelUrl, expiredUrl: dados.cancelUrl },
+      items: [{ name: dados.descricao, quantity: 1, value: dados.valorReais }],
+      subscription: { cycle: "MONTHLY", nextDueDate: hoje },
+      externalReference: dados.userId,
+      customerData: dados.cliente
+        ? { name: dados.cliente.nome, email: dados.cliente.email, cpfCnpj: dados.cliente.cpfCnpj, phone: dados.cliente.telefone }
+        : undefined,
+    }),
+  });
+  const j = (await r.json()) as { id?: string };
+  if (!r.ok || !j.id) throw new Error(`Asaas: falha ao criar checkout — ${await erroDe(r)}`);
+  const dominio = AMBIENTE === "producao" ? "https://asaas.com" : "https://sandbox.asaas.com";
+  return `${dominio}/checkoutSession/show?id=${j.id}`;
+}
+
+/**
  * Cria uma autorização de PIX AUTOMÁTICO (débito recorrente de verdade — o cliente
  * autoriza 1× no QR do 1º pagamento e o banco debita sozinho nas próximas).
  * `paymentCreationMode: SUBSCRIPTION` → o Asaas cria as cobranças recorrentes
