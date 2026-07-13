@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { acharOuCriarCliente, criarAssinatura, primeiraCobranca } from "@/lib/asaas";
+import { acharOuCriarCliente, criarAssinatura, primeiraCobranca, criarAutorizacaoPixAutomatico } from "@/lib/asaas";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
 
 /**
@@ -43,7 +43,25 @@ export async function POST(req: Request): Promise<Response> {
       telefone: (perfil?.whatsapp as string) || undefined,
     });
 
-    // Cobra a partir de hoje (Brasília); ciclo mensal cuida das próximas.
+    // Modo PIX AUTOMÁTICO (débito recorrente real) — quando ASAAS_MODO=pix_automatico
+    // e a conta é elegível. Cria a autorização; o QR do 1º pagamento ativa o débito
+    // recorrente. Ver lib/asaas (confirmar immediateQrCode/resposta no sandbox).
+    if (process.env.ASAAS_MODO === "pix_automatico") {
+      const auth = await criarAutorizacaoPixAutomatico({
+        clienteId,
+        userId: usuario.id,
+        valorReais,
+        descricao: "Repasse Livre PRO",
+      });
+      const url = auth.invoiceUrl;
+      if (url) return NextResponse.json({ url });
+      // Sem página hospedada → devolve o QR copia-e-cola (front renderiza se preciso).
+      if (auth.payload) return NextResponse.json({ qrPayload: auth.payload });
+      return NextResponse.json({ erro: "sem_fatura_pixauto" }, { status: 502 });
+    }
+
+    // Modo ASSINATURA (Pix QR manual/mês — Asaas cria as cobranças). Valida o
+    // pipeline agora; vira Pix Automático trocando ASAAS_MODO.
     const hojeISO = new Date().toISOString().slice(0, 10);
     const subId = await criarAssinatura({
       clienteId,

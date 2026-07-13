@@ -119,6 +119,53 @@ export async function primeiraCobranca(subId: string): Promise<string | null> {
   return j.data?.[0]?.invoiceUrl ?? null;
 }
 
+/**
+ * Cria uma autorização de PIX AUTOMÁTICO (débito recorrente de verdade — o cliente
+ * autoriza 1× no QR do 1º pagamento e o banco debita sozinho nas próximas).
+ * `paymentCreationMode: SUBSCRIPTION` → o Asaas cria as cobranças recorrentes
+ * sozinho (SEM cron do nosso lado). contractId = user_id sem hífen (máx 35 chars).
+ *
+ * ⚠️ A ESTRUTURA de `immediateQrCode` e do JSON de RESPOSTA (id/qrCode/payload/
+ * invoiceUrl) NÃO está detalhada na doc → CONFIRMAR na 1ª chamada real do sandbox
+ * e ajustar os campos abaixo. Endpoint: POST /v3/pix/automatic/authorizations.
+ */
+export async function criarAutorizacaoPixAutomatico(dados: {
+  clienteId: string;
+  userId: string;
+  valorReais: number;
+  descricao: string;
+}): Promise<{ id: string; invoiceUrl: string | null; payload: string | null }> {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const contractId = dados.userId.replace(/-/g, "").slice(0, 35);
+  const desc = dados.descricao.slice(0, 35);
+  const r = await asaasFetch("/pix/automatic/authorizations", {
+    method: "POST",
+    body: JSON.stringify({
+      frequency: "MONTHLY",
+      contractId,
+      customerId: dados.clienteId,
+      startDate: hoje,
+      value: dados.valorReais,
+      description: desc,
+      paymentCreationMode: "SUBSCRIPTION", // Asaas cria as recorrentes → sem cron
+      retryPolicy: "ALLOW_THREE_IN_SEVEN_DAYS", // 3 tentativas em 7 dias se falhar
+      immediateQrCode: { value: dados.valorReais, description: desc }, // ⚠️ confirmar campos
+    }),
+  });
+  const j = (await r.json()) as {
+    id?: string;
+    invoiceUrl?: string;
+    immediateQrCode?: { invoiceUrl?: string; payload?: string; encodedImage?: string };
+    qrCode?: { payload?: string };
+  };
+  if (!r.ok || !j.id) throw new Error(`Asaas: falha ao criar autorização Pix Automático — ${await erroDe(r)}`);
+  return {
+    id: j.id,
+    invoiceUrl: j.invoiceUrl ?? j.immediateQrCode?.invoiceUrl ?? null,
+    payload: j.immediateQrCode?.payload ?? j.qrCode?.payload ?? null,
+  };
+}
+
 /** Email do cliente Asaas (fallback de casamento quando não há externalReference). */
 export async function emailDoCliente(clienteId: string): Promise<string | null> {
   const r = await asaasFetch(`/customers/${clienteId}`);
