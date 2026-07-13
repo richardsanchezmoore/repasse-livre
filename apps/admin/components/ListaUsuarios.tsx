@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Gem, Loader2, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Gem, Loader2, Search, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { alterarPremiumPerfil, alterarRolePerfil, apagarUsuario } from "@/app/actions";
 
 export interface UsuarioComRole {
@@ -79,6 +79,19 @@ export function ListaUsuarios({
   const [pendente, iniciarTransicao] = useTransition();
   const [idEmAlteracao, setIdEmAlteracao] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [busca, setBusca] = useState("");
+
+  const filtrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return usuarios;
+    const digitos = termo.replace(/\D/g, "");
+    return usuarios.filter((u) => {
+      const alvo = `${u.email ?? ""} ${u.nome ?? ""}`.toLowerCase();
+      if (alvo.includes(termo)) return true;
+      // WhatsApp: compara só dígitos (ignora máscara/DDD/55)
+      return Boolean(digitos) && soDigitos(u.whatsapp ?? "").includes(digitos);
+    });
+  }, [usuarios, busca]);
 
   function alterarRole(userId: string, novaRole: "admin" | "publico") {
     if (novaRole === "publico" && !confirm("Remover acesso de administrador deste usuário?")) {
@@ -135,6 +148,21 @@ export function ListaUsuarios({
   return (
     <div className="usuarios-tabela-container">
       {erro && <p className="campo-erro">{erro}</p>}
+      <div className="usuarios-busca">
+        <Search size={16} strokeWidth={1.9} />
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por nome, e-mail ou WhatsApp…"
+          aria-label="Buscar usuários"
+        />
+        {busca && (
+          <span className="usuarios-busca-contagem">
+            {filtrados.length} de {usuarios.length}
+          </span>
+        )}
+      </div>
       <table className="usuarios-tabela">
         <thead>
           <tr>
@@ -148,7 +176,14 @@ export function ListaUsuarios({
           </tr>
         </thead>
         <tbody>
-          {usuarios.map((usuario) => {
+          {filtrados.length === 0 && (
+            <tr>
+              <td colSpan={7} className="usuarios-vazio">
+                Nenhum usuário encontrado para “{busca}”.
+              </td>
+            </tr>
+          )}
+          {filtrados.map((usuario) => {
             const ehVoceMesmo = usuario.userId === usuarioAtualId;
             const carregando = pendente && idEmAlteracao === usuario.userId;
             return (
