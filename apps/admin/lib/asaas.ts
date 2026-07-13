@@ -202,13 +202,19 @@ export async function criarAutorizacaoPixAutomatico(dados: {
       immediateQrCode: { value: dados.valorReais, description: desc }, // ⚠️ confirmar campos
     }),
   });
-  const j = (await r.json()) as {
+  const raw = await r.text();
+  let j: {
     id?: string;
     invoiceUrl?: string;
     immediateQrCode?: { invoiceUrl?: string; payload?: string; encodedImage?: string };
     qrCode?: { payload?: string };
-  };
-  if (!r.ok || !j.id) throw new Error(`Asaas: falha ao criar autorização Pix Automático — ${await erroDe(r)}`);
+  } = {};
+  try {
+    j = JSON.parse(raw);
+  } catch {
+    /* resposta não-JSON */
+  }
+  if (!r.ok || !j.id) throw new Error(`pixauto ${r.status}: ${raw.slice(0, 700)}`);
   return {
     id: j.id,
     invoiceUrl: j.invoiceUrl ?? j.immediateQrCode?.invoiceUrl ?? null,
