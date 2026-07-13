@@ -4732,6 +4732,23 @@ body {
 }
 .rlv-scroll::-webkit-scrollbar { height: 6px; }
 .rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
+/* Comparativo VS / equação: no mobile empilham em COLUNA com o selo (VS / =)
+   centralizado ENTRE os boxes (não jogado pro lado). */
+.pv-vert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 680px) {
+  .pv-vert {
+    flex-direction: column;
+  }
+  .pv-vert > .pv-vert-box {
+    width: 100% !important;
+    flex-basis: auto !important;
+  }
+}
 
 /* ══════════════ Oferta por tempo limitado / Repasse Livre PRO ══════════════ */
 .vendas-hero-stat {

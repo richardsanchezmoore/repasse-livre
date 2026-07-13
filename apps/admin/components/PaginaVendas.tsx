@@ -262,8 +262,8 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <div style={eyebrow}>Duas formas de comprar</div>
             <h3 style={{ font: `800 clamp(24px,3.4vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>De um lado, o cansaço. Do outro, a vantagem.</h3>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", justifyContent: "center" }}>
-            <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", background: "linear-gradient(180deg,#FEF5F4,#FDECEA)", border: "1px solid #F3D3CF", borderRadius: 20, padding: "26px 24px" }}>
+          <div className="pv-vert" style={{ gap: 16 }}>
+            <div className="pv-vert-box" style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", background: "linear-gradient(180deg,#FEF5F4,#FDECEA)", border: "1px solid #F3D3CF", borderRadius: 20, padding: "26px 24px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 18 }}>
                 <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#F7D7D3", display: "flex", alignItems: "center", justifyContent: "center", color: "#D9463E" }}><Clock size={22} strokeWidth={2} /></span>
                 <div>
@@ -284,7 +284,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
 
             <span style={{ flex: "0 0 auto", width: 52, height: 52, borderRadius: "50%", background: "#0F1B2D", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 16px ${TIT}`, boxShadow: "0 12px 26px -8px rgba(15,27,45,.6)", border: "4px solid #EEF1F4" }}>VS</span>
 
-            <div style={{ flex: "1 1 300px", position: "relative", display: "flex", flexDirection: "column", background: "linear-gradient(180deg,#F1FBF5,#E6F7EC)", border: "2px solid #16A34A", borderRadius: 20, padding: "26px 24px", boxShadow: "0 22px 46px -18px rgba(22,163,74,.5)" }}>
+            <div className="pv-vert-box" style={{ flex: "1 1 300px", position: "relative", display: "flex", flexDirection: "column", background: "linear-gradient(180deg,#F1FBF5,#E6F7EC)", border: "2px solid #16A34A", borderRadius: 20, padding: "26px 24px", boxShadow: "0 22px 46px -18px rgba(22,163,74,.5)" }}>
               <span style={{ position: "absolute", top: -11, right: 18, background: "#16A34A", color: "#fff", font: `800 9px ${CORPO}`, letterSpacing: ".12em", padding: "5px 11px", borderRadius: 999, boxShadow: "0 6px 14px -4px rgba(22,163,74,.6)" }}>RECOMENDADO</span>
               <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 18 }}>
                 <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 8px 18px -6px rgba(22,163,74,.7)" }}><Zap size={21} fill="#fff" strokeWidth={0} /></span>
@@ -351,7 +351,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       {/* 8 ── 08:12 */}
       <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "linear-gradient(160deg,#F4FBF6,#E7F5EC)" }}>
         <div style={{ position: "absolute", top: -80, left: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(34,197,94,.2),transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", maxWidth: 1000, margin: "0 auto", padding: "clamp(44px,5.5vw,76px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center" }}>
+        <div style={{ position: "relative", maxWidth: 1000, margin: "0 auto", padding: "clamp(44px,5.5vw,76px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
           <div style={{ flex: "0 1 240px", minWidth: 210, display: "flex", justifyContent: "center", position: "relative" }}>
             <div style={{ position: "relative" }}>
               <Fone src="/vendas/home.png" alt="Oportunidade abaixo da FIPE" largura="min(210px,60vw)" aspecto="350 / 712" flutua />
@@ -401,7 +401,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
 
       {/* 10 ── tendências */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
           <div style={{ flex: "1 1 360px", minWidth: 280 }}>
             <div style={eyebrow}>Dashboard BIA</div>
             <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Você enxerga o mercado como ninguém.</h3>
@@ -490,14 +490,14 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <div style={eyebrow}>A conta é simples</div>
           <h3 style={{ font: `800 clamp(24px,3.4vw,34px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Quanto vale isso?</h3>
           <p style={{ font: `500 clamp(15px,1.6vw,17px) ${CORPO}`, color: "#6A7686", maxWidth: 560, margin: "0 auto 32px" }}>Encontrar <b style={{ color: "#0F1B2D" }}>um único</b> veículo com R$ 5.000 de margem extra já se paga muitas vezes.</p>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "clamp(14px,2vw,22px)" }}>
-            <div style={{ flex: "1 1 280px", maxWidth: 360, background: "#fff", border: "1px solid #E4EAF0", borderRadius: 20, padding: "26px 24px", boxShadow: "0 20px 44px -22px rgba(15,27,45,.3)" }}>
+          <div className="pv-vert" style={{ gap: "clamp(14px,2vw,22px)" }}>
+            <div className="pv-vert-box" style={{ flex: "1 1 280px", maxWidth: 360, background: "#fff", border: "1px solid #E4EAF0", borderRadius: 20, padding: "26px 24px", boxShadow: "0 20px 44px -22px rgba(15,27,45,.3)" }}>
               <div style={{ font: `700 10px ${CORPO}`, letterSpacing: ".14em", color: "#9AA6B4", textTransform: "uppercase", marginBottom: 8 }}>1 oportunidade abaixo da FIPE</div>
               <div style={{ font: `800 clamp(30px,4.5vw,40px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>+ R$ 5.000</div>
               <div style={{ font: `600 13px ${CORPO}`, color: "#6A7686", marginTop: 4 }}>de margem no seu bolso</div>
             </div>
             <div style={{ flex: "none", width: 48, height: 48, borderRadius: "50%", background: "#0F1B2D", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 22px ${TIT}` }}>=</div>
-            <div style={{ flex: "1 1 280px", maxWidth: 360, background: "#0F1B2D", borderRadius: 20, padding: "26px 24px", boxShadow: "0 20px 44px -20px rgba(15,27,45,.5)" }}>
+            <div className="pv-vert-box" style={{ flex: "1 1 280px", maxWidth: 360, background: "#0F1B2D", borderRadius: 20, padding: "26px 24px", boxShadow: "0 20px 44px -20px rgba(15,27,45,.5)" }}>
               <div style={{ font: `700 10px ${CORPO}`, letterSpacing: ".14em", color: "#5f8a72", textTransform: "uppercase", marginBottom: 8 }}>Repasse Livre PRO</div>
               <div style={{ font: `800 clamp(30px,4.5vw,40px) ${TIT}`, color: "#fff", letterSpacing: "-.02em" }}>
                 {dados.precoValor}
