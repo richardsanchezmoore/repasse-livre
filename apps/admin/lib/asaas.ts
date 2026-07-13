@@ -139,9 +139,12 @@ export async function criarCheckout(dados: {
   descricao: string;
   successUrl: string;
   cancelUrl: string;
-  cliente?: { nome?: string; email?: string; cpfCnpj?: string; telefone?: string };
 }): Promise<string> {
   const hoje = new Date().toISOString().slice(0, 10);
+  // NÃO envia customerData: o Asaas exige o conjunto COMPLETO (nome+CPF+telefone+
+  // endereço inteiro) se o objeto vier — e a gente não tem endereço. Omitindo, o
+  // checkout HOSPEDADO coleta tudo do comprador na página deles. externalReference
+  // (top-level) segue casando o user_id no webhook.
   const r = await asaasFetch("/checkouts", {
     method: "POST",
     body: JSON.stringify({
@@ -152,9 +155,6 @@ export async function criarCheckout(dados: {
       items: [{ name: dados.descricao, quantity: 1, value: dados.valorReais }],
       subscription: { cycle: "MONTHLY", nextDueDate: hoje },
       externalReference: dados.userId,
-      customerData: dados.cliente
-        ? { name: dados.cliente.nome, email: dados.cliente.email, cpfCnpj: dados.cliente.cpfCnpj, phone: dados.cliente.telefone }
-        : undefined,
     }),
   });
   const raw = await r.text();

@@ -49,12 +49,6 @@ export async function POST(req: Request): Promise<Response> {
         descricao: "Repasse Livre PRO",
         successUrl: `${URL_BASE_SITE}/bem-vindo`,
         cancelUrl: `${URL_BASE_SITE}/planos?assinatura=cancelado`,
-        cliente: {
-          nome: (perfil?.nome as string) || undefined,
-          email: usuario.email ?? undefined,
-          cpfCnpj,
-          telefone: (perfil?.whatsapp as string) || undefined,
-        },
       });
       return NextResponse.json({ url });
     }
