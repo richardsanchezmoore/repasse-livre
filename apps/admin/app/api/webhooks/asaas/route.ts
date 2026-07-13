@@ -14,8 +14,8 @@ import { emailDoCliente } from "@/lib/asaas";
  *
  * Eventos → acesso (ver docs.asaas.com/docs/webhook-para-cobrancas):
  *  - PAYMENT_CONFIRMED / PAYMENT_RECEIVED → premium ON (paidAt + 1 mês + folga).
- *  - PAYMENT_REFUNDED / PAYMENT_PARTIALLY_REFUNDED / PAYMENT_CHARGEBACK_REQUESTED /
- *    PAYMENT_DELETED → premium OFF na hora.
+ *  - PAYMENT_REFUNDED / PAYMENT_CHARGEBACK_REQUESTED / PAYMENT_DELETED → premium OFF
+ *    na hora. (Estorno PARCIAL não corta — não faz sentido num plano flat.)
  *  - PAYMENT_OVERDUE etc. → NÃO corta: o acesso pago corre até premium_expira_em e
  *    lapsa sozinho (sem renovação), igual à Cakto.
  */
@@ -23,7 +23,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const GRANT = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"]);
-const REVOGAR = new Set(["PAYMENT_REFUNDED", "PAYMENT_PARTIALLY_REFUNDED", "PAYMENT_CHARGEBACK_REQUESTED", "PAYMENT_DELETED"]);
+const REVOGAR = new Set(["PAYMENT_REFUNDED", "PAYMENT_CHARGEBACK_REQUESTED", "PAYMENT_DELETED"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FOLGA_MS = 3 * 86_400_000;
 
