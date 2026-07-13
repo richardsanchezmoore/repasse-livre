@@ -4674,6 +4674,26 @@ body {
   0% { transform: translateX(-120%) skewX(-18deg); }
   60%, 100% { transform: translateX(320%) skewX(-18deg); }
 }
+@keyframes rl-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes rl-orbit-rev {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+@keyframes rl-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes rl-ping {
+  0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+@keyframes rl-corepulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45), 0 20px 50px -12px rgba(0, 0, 0, 0.6); }
+  50% { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0), 0 20px 50px -12px rgba(0, 0, 0, 0.6); }
+}
 .rlv-cta {
   position: relative;
   display: inline-flex;
@@ -4712,18 +4732,6 @@ body {
 }
 .rlv-scroll::-webkit-scrollbar { height: 6px; }
 .rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
-/* Mobile: encolhe as laterais de todas as seções (o design vinha com 40px fixos)
-   e a margem do card de preço flutuante — pra não estourar em tela estreita. */
-@media (max-width: 640px) {
-  .rlv-col > div {
-    padding-left: 18px !important;
-    padding-right: 18px !important;
-  }
-  .rlv-col [data-cardflutuante] {
-    margin-left: 14px !important;
-    margin-right: 14px !important;
-  }
-}
 
 /* ══════════════ Oferta por tempo limitado / Repasse Livre PRO ══════════════ */
 .vendas-hero-stat {
