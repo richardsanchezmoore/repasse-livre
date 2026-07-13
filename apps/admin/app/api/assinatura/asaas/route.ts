@@ -101,7 +101,17 @@ export async function POST(req: Request): Promise<Response> {
     if (!url) return NextResponse.json({ erro: "sem_fatura" }, { status: 502 });
     return NextResponse.json({ url });
   } catch (erro) {
+    const detalhe = erro instanceof Error ? erro.message : String(erro);
     console.error("[assinatura/asaas] falha:", erro);
-    return NextResponse.json({ erro: "falha_checkout", detalhe: erro instanceof Error ? erro.message : String(erro) }, { status: 500 });
+    // Debug: grava o erro real (resposta crua do Asaas) pra diagnóstico sem log da Vercel.
+    try {
+      await supabaseAdmin.from("worker_config").upsert(
+        { chave: "ASAAS_DEBUG_CHECKOUT", valor: JSON.stringify({ em: new Date().toISOString(), modo, valorReais, detalhe }).slice(0, 60000) },
+        { onConflict: "chave" }
+      );
+    } catch {
+      /* debug não pode derrubar */
+    }
+    return NextResponse.json({ erro: "falha_checkout", detalhe }, { status: 500 });
   }
 }

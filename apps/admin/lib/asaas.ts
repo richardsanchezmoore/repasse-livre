@@ -154,8 +154,14 @@ export async function criarCheckout(dados: {
         : undefined,
     }),
   });
-  const j = (await r.json()) as { id?: string };
-  if (!r.ok || !j.id) throw new Error(`Asaas: falha ao criar checkout — ${await erroDe(r)}`);
+  const raw = await r.text();
+  let j: { id?: string } = {};
+  try {
+    j = JSON.parse(raw) as { id?: string };
+  } catch {
+    /* resposta não-JSON */
+  }
+  if (!r.ok || !j.id) throw new Error(`checkout ${r.status}: ${raw.slice(0, 700)}`);
   const dominio = AMBIENTE === "producao" ? "https://asaas.com" : "https://sandbox.asaas.com";
   return `${dominio}/checkoutSession/show?id=${j.id}`;
 }
