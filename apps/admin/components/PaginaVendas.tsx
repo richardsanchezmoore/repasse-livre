@@ -116,6 +116,12 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         if (prog < 1) requestAnimationFrame(passo);
       };
       requestAnimationFrame(passo);
+      // Rede de segurança: se a aba carregar em background, o rAF fica PAUSADO e a
+      // animação travaria em "0". setTimeout dispara mesmo em aba oculta → garante
+      // o valor final (a animação suave segue valendo pra aba em foco).
+      setTimeout(() => {
+        el.textContent = to.toLocaleString("pt-BR");
+      }, 1700);
     };
     const io = new IntersectionObserver(
       (ents) => {
