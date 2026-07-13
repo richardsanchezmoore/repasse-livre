@@ -4652,6 +4652,67 @@ body {
   }
 }
 
+/* ══════════════ Landing "Premium Escuro" (design Claude Design) ══════════════ */
+/* Página de vendas nova (PaginaVendas): fontes Poppins/Manrope escopadas via
+   .fv-titulo/.fv-corpo (next/font), animações e CTA com brilho. */
+.fv-raiz {
+  font-family: var(--fv-corpo), "Manrope", system-ui, sans-serif;
+}
+@keyframes rl-glow {
+  0%, 100% { box-shadow: 0 14px 30px -8px rgba(22, 163, 74, 0.55); }
+  50% { box-shadow: 0 14px 44px -6px rgba(22, 163, 74, 0.85); }
+}
+@keyframes rl-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes rl-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
+@keyframes rl-shine {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(320%) skewX(-18deg); }
+}
+.rlv-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #1bb055, #12813c);
+  color: #fff;
+  padding: 18px;
+  border-radius: 14px;
+  font: 800 15px var(--fv-titulo), "Poppins", sans-serif;
+  animation: rl-glow 2.6s infinite;
+}
+.rlv-cta::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: rl-shine 3.4s infinite;
+  pointer-events: none;
+}
+.rlv-cta:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.rlv-cta--inline {
+  width: auto;
+  padding: 16px 30px;
+}
+.rlv-scroll::-webkit-scrollbar { height: 6px; }
+.rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
+
 /* ══════════════ Oferta por tempo limitado / Repasse Livre PRO ══════════════ */
 .vendas-hero-stat {
   display: inline-flex;

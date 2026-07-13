@@ -18,6 +18,7 @@ export function AcaoAssinatura({
   rotulo,
   checkoutUrl = null,
   gerenciarUrl = null,
+  className,
 }: {
   estado: "entrar" | "assinar" | "gerenciar";
   rotulo?: string;
@@ -25,6 +26,8 @@ export function AcaoAssinatura({
   checkoutUrl?: string | null;
   /** URL de gestão da assinatura (WhatsApp de suporte), quando disponível. */
   gerenciarUrl?: string | null;
+  /** Classe do botão. Default `planos-cta`; a landing passa `rlv-cta` (design novo). */
+  className?: string;
 }) {
   const router = useRouter();
   const [carregando, setCarregando] = useState(false);
@@ -88,7 +91,7 @@ export function AcaoAssinatura({
   const texto = rotulo ?? (estado === "gerenciar" ? "Gerenciar assinatura" : "Quero ser premium");
 
   return (
-    <button type="button" className="planos-cta" onClick={aoClicar} disabled={carregando}>
+    <button type="button" className={className ?? "planos-cta"} onClick={aoClicar} disabled={carregando}>
       <Icone size={17} strokeWidth={2} />
       {carregando ? "Abrindo…" : texto}
     </button>
