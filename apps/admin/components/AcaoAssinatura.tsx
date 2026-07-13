@@ -18,6 +18,7 @@ export function AcaoAssinatura({
   rotulo,
   checkoutUrl = null,
   gerenciarUrl = null,
+  gateway = null,
   className,
 }: {
   estado: "entrar" | "assinar" | "gerenciar";
@@ -26,6 +27,8 @@ export function AcaoAssinatura({
   checkoutUrl?: string | null;
   /** URL de gestão da assinatura (WhatsApp de suporte), quando disponível. */
   gerenciarUrl?: string | null;
+  /** Gateway ativo — "asaas" usa o fluxo API-driven (/api/assinatura/asaas). */
+  gateway?: string | null;
   /** Classe do botão. Default `planos-cta`; a landing passa `rlv-cta` (design novo). */
   className?: string;
 }) {
@@ -36,6 +39,34 @@ export function AcaoAssinatura({
     if (estado === "entrar") {
       registrarEvento("clique_assinar", { origem: "planos", estado: "deslogado" });
       router.push(`/login?redirect=${encodeURIComponent("/planos")}`);
+      return;
+    }
+
+    // Asaas: assinar → cria a assinatura via API e redireciona pra fatura. Exige
+    // login (a assinatura fica atrelada à conta via externalReference). 401 → login.
+    if (estado === "assinar" && gateway === "asaas") {
+      registrarEvento("clique_assinar", { origem: "planos", estado, gateway: "asaas" });
+      setCarregando(true);
+      try {
+        const resposta = await fetch("/api/assinatura/asaas", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (resposta.status === 401) {
+          router.push(`/login?redirect=${encodeURIComponent("/planos")}`);
+          return;
+        }
+        const dados = (await resposta.json()) as { url?: string; erro?: string };
+        if (dados.url) {
+          window.location.href = dados.url;
+          return;
+        }
+        throw new Error(dados.erro ?? "sem_url");
+      } catch {
+        setCarregando(false);
+        alert("Não foi possível abrir o pagamento agora. Tente novamente em instantes.");
+      }
       return;
     }
 

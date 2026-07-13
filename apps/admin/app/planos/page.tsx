@@ -73,6 +73,7 @@ export default async function PlanosPage({
           estado,
           jaPremium: Boolean(usuario?.premium),
           whatsappSuporte,
+          gateway: gatewayAtivo,
           aviso: assinatura === "sucesso" ? "sucesso" : assinatura === "cancelado" ? "cancelado" : null,
         }}
       />

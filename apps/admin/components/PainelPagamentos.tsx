@@ -45,8 +45,8 @@ const GATEWAYS: Gateway[] = [
   {
     chave: "asaas",
     nome: "Asaas",
-    desc: "Gateway/PSP: Pix + assinaturas nativas, aceita CPF, externalReference. A integrar.",
-    emBreve: true,
+    desc: "Gateway/PSP: Pix + assinaturas nativas, aceita CPF, externalReference (casa o user_id no webhook). API-driven (/api/assinatura/asaas). ⚠️ Pix Automático (débito recorrente) exige CNPJ 6+ meses; com CPF é Pix manual/mês ou cartão.",
+    envs: "ASAAS_API_KEY · ASAAS_AMBIENTE (sandbox/producao) · ASAAS_WEBHOOK_TOKEN",
   },
 ];
 

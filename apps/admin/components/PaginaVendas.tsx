@@ -21,6 +21,7 @@ export interface DadosVendas {
   estado: "assinar" | "gerenciar";
   jaPremium: boolean;
   whatsappSuporte: string | null;
+  gateway: string | null;
   aviso: "sucesso" | "cancelado" | null;
 }
 
@@ -560,7 +561,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(221,107,54,.16)", color: "#F0A868", padding: "10px 14px", borderRadius: 12, font: `700 13px ${CORPO}`, marginBottom: 22 }}>
                 <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <ContadorTexto />
               </div>
-              <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} className="rlv-cta" />
+              <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta" />
               <div style={{ textAlign: "center", marginTop: 14, font: `600 12px ${CORPO}`, color: "#8fa2b3", display: "flex", gap: 7, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}><ShieldCheck size={14} strokeWidth={2} color="#35D07F" /> Sem fidelidade. Cancele quando quiser.</div>
               {dados.precoAncoraTexto && <div style={{ textAlign: "center", marginTop: 8, font: `500 12px ${CORPO}`, color: "#7f93a3" }}>Quando a oferta acabar, novos assinantes entram por <b style={{ color: "#A9BBCB" }}>{dados.precoAncoraTexto}/mês</b> — o seu fica travado.</div>}
               {dados.whatsappSuporte && (
@@ -597,7 +598,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", color: "#35D07F" }}><Clock size={22} strokeWidth={2} /></div>
           <h3 style={{ font: `800 clamp(24px,3.6vw,32px) ${TIT}`, color: "#fff", margin: "0 0 10px", letterSpacing: "-.02em" }}>Quem compra melhor, <span style={{ color: "#35D07F" }}>lucra mais.</span></h3>
           <p style={{ font: `500 15px ${CORPO}`, color: "#9FB0C4", margin: "0 0 26px" }}>{c.finalSub}</p>
-          <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : "ACESSAR O REPASSE LIVRE PRO"} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} className="rlv-cta rlv-cta--inline" />
+          <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : "ACESSAR O REPASSE LIVRE PRO"} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
           <div style={{ marginTop: 18, font: `500 12px ${CORPO}`, color: "#6f8598" }}>→ Enquanto você lia isto, mais carros entraram abaixo da FIPE.</div>
         </div>
       </section>

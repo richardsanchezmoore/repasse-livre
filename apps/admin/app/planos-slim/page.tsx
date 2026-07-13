@@ -74,6 +74,7 @@ export default async function PlanosSlimPage({
           estado,
           jaPremium: Boolean(usuario?.premium),
           whatsappSuporte,
+          gateway: gatewayAtivo,
           aviso: assinatura === "sucesso" ? "sucesso" : assinatura === "cancelado" ? "cancelado" : null,
         }}
       />
