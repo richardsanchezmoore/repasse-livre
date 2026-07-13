@@ -3638,6 +3638,26 @@ body {
   gap: 14px;
   margin: 28px 0 4px;
 }
+.vendas-oferta-trava {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 14px auto 2px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: #eafaf0;
+  border: 1px solid #b7e6c9;
+  color: #14663a;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+}
+.vendas-oferta-trava svg {
+  flex-shrink: 0;
+}
+.vendas-oferta-trava strong {
+  font-weight: 800;
+}
 .vendas-precos {
   display: flex;
   flex-direction: column;
@@ -4632,7 +4652,7 @@ body {
   }
 }
 
-/* ══════════════ Facelift Fundador / Repasse Livre PRO ══════════════ */
+/* ══════════════ Oferta por tempo limitado / Repasse Livre PRO ══════════════ */
 .vendas-hero-stat {
   display: inline-flex;
   align-items: center;

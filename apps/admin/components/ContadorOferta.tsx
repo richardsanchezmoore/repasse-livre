@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 
 /**
- * Contador da oferta de lançamento — urgência HONESTA. A janela começa a contar
- * QUANDO o visitante chega (guardada no localStorage) e NÃO reseta a cada F5 —
- * evita o "timer falso" que resetaria pra sempre e arranharia a credibilidade da
- * marca. Passadas as horas, o timer some (não finge outra contagem); a oferta
- * de lançamento segue exibida como texto fixo, sem número decrescente fake.
+ * Contador da oferta por tempo limitado — urgência HONESTA. A janela começa a
+ * contar QUANDO o visitante chega (guardada no localStorage) e NÃO reseta a cada
+ * F5 — evita o "timer falso" que resetaria pra sempre e arranharia a credibilidade
+ * da marca. Passadas as horas, o timer some (não finge outra contagem); a oferta
+ * segue exibida como texto fixo, sem número decrescente fake.
  *
  * variante:
  *  - "barra": faixa fina sticky no topo da página.
@@ -26,7 +26,7 @@ export function ContadorOferta({
   descontoPct = null,
 }: {
   variante?: "barra" | "inline";
-  /** % OFF exibido na barra (ex.: 60). null = mostra só "Oferta de Lançamento". */
+  /** % OFF exibido na barra (ex.: 60). null = mostra só "Oferta por tempo limitado". */
   descontoPct?: number | null;
 }) {
   const [restanteMs, setRestanteMs] = useState<number | null>(null);
@@ -67,10 +67,10 @@ export function ContadorOferta({
               <strong>
                 HOJE: <em>{descontoPct}% OFF</em>
               </strong>
-              <span>Preço de Fundador</span>
+              <span>Oferta por tempo limitado</span>
             </>
           ) : (
-            <strong>Preço de Fundador</strong>
+            <strong>Oferta por tempo limitado</strong>
           )}
         </div>
         {!expirou && (
@@ -99,7 +99,7 @@ export function ContadorOferta({
   if (expirou) {
     return (
       <p className="oferta-inline oferta-inline--fim">
-        <Clock size={14} strokeWidth={2.4} /> Oferta de lançamento por tempo limitado
+        <Clock size={14} strokeWidth={2.4} /> Oferta por tempo limitado
       </p>
     );
   }

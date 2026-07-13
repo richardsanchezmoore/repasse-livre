@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Search,
   Zap,
+  Lock,
 } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { BotaoWhatsappSuporte } from "@/components/BotaoWhatsappSuporte";
@@ -229,9 +230,20 @@ export default async function PlanosPage({
           <ContadorOferta variante="inline" />
         </div>
 
+        {!jaPremium && (
+          <p className="vendas-oferta-trava">
+            <Lock size={14} strokeWidth={2.4} /> Assine agora e{" "}
+            <strong>
+              trave {preco.valor}
+              {preco.intervalo} pra sempre
+            </strong>
+            {precoAncora ? ` — depois sobe pra ${precoAncora.texto}.` : "."}
+          </p>
+        )}
+
         <AcaoAssinatura
           estado={estado}
-          rotulo="QUERO SER FUNDADOR"
+          rotulo={`QUERO TRAVAR ${preco.valor}/MÊS`}
           checkoutUrl={checkoutUrl}
           gerenciarUrl={gerenciarUrl}
         />
@@ -449,13 +461,18 @@ export default async function PlanosPage({
             <span className="vendas-selo vendas-selo--claro">
               <Gem size={14} strokeWidth={2} /> Repasse Livre PRO
             </span>
-            <span className="vendas-plano-badge">Plano Fundadores</span>
+            <span className="vendas-plano-badge">Oferta por tempo limitado</span>
           </div>
 
-          <h2 className="vendas-plano-titulo">Torne-se um Fundador do Repasse Livre PRO.</h2>
+          <h2 className="vendas-plano-titulo">
+            Trave {preco.valor}
+            {preco.intervalo} — pra sempre.
+          </h2>
           <p className="vendas-plano-narrativa">
-            Você está entrando na fase inicial da primeira plataforma brasileira de Inteligência Automotiva.
-            Durante o lançamento, os primeiros assinantes entram por um valor especial — que fica travado pra você.
+            O BIA já monitora milhares de anúncios todos os dias — a inteligência está pronta pra trabalhar por você
+            agora. Por tempo limitado, você garante o valor promocional
+            {precoAncora ? ` (depois sobe pra ${precoAncora.texto}/mês)` : ""} e ele fica{" "}
+            <strong>travado enquanto você for assinante</strong>.
           </p>
 
           <div className="vendas-precos vendas-precos--grande">
@@ -478,7 +495,7 @@ export default async function PlanosPage({
 
           <AcaoAssinatura
             estado={estado}
-            rotulo="QUERO MINHA VAGA DE FUNDADOR"
+            rotulo={`QUERO TRAVAR ${preco.valor}/MÊS`}
             checkoutUrl={checkoutUrl}
             gerenciarUrl={gerenciarUrl}
           />
@@ -487,8 +504,8 @@ export default async function PlanosPage({
           </p>
           {precoAncora && (
             <p className="vendas-plano-oficial">
-              Depois do lançamento, novos assinantes entram pelo valor oficial de{" "}
-              <strong>{precoAncora.texto}/mês</strong>.
+              Quando a oferta acabar, novos assinantes entram pelo valor cheio de{" "}
+              <strong>{precoAncora.texto}/mês</strong> — o seu fica travado.
             </p>
           )}
 
@@ -540,7 +557,7 @@ export default async function PlanosPage({
           <h2>
             Quem compra melhor, <span className="vendas-verde">lucra mais.</span>
           </h2>
-          <p>Comece hoje com as condições especiais de lançamento.</p>
+          <p>Garanta hoje o valor promocional e trave ele pra sempre.</p>
           <AcaoAssinatura
             estado={estado}
             rotulo="ACESSAR O REPASSE LIVRE PRO"
