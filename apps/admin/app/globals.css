@@ -4712,6 +4712,18 @@ body {
 }
 .rlv-scroll::-webkit-scrollbar { height: 6px; }
 .rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
+/* Mobile: encolhe as laterais de todas as seções (o design vinha com 40px fixos)
+   e a margem do card de preço flutuante — pra não estourar em tela estreita. */
+@media (max-width: 640px) {
+  .rlv-col > div {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  .rlv-col [data-cardflutuante] {
+    margin-left: 14px !important;
+    margin-right: 14px !important;
+  }
+}
 
 /* ══════════════ Oferta por tempo limitado / Repasse Livre PRO ══════════════ */
 .vendas-hero-stat {

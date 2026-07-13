@@ -19,6 +19,7 @@ import {
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
+import { CarrosselVendas } from "@/components/CarrosselVendas";
 import type { OfertaDemo } from "@/lib/ofertaDemo";
 
 export interface DadosVendas {
@@ -154,8 +155,8 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "radial-gradient(1200px 700px at 50% -10%, #e7ebf0, #d3dae2)", padding: "40px 16px", display: "flex", justifyContent: "center" }}>
-      <div style={{ width: "100%", maxWidth: 660, borderRadius: 24, overflow: "hidden", background: "#EEF1F4", boxShadow: "0 40px 90px -28px rgba(15,27,45,.45)", border: "1px solid rgba(255,255,255,.6)" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(1200px 700px at 50% -10%, #e7ebf0, #d3dae2)", padding: "clamp(0px,3vw,40px) clamp(0px,2vw,16px)", display: "flex", justifyContent: "center" }}>
+      <div className="rlv-col" style={{ width: "100%", maxWidth: 840, borderRadius: "clamp(0px,3vw,24px)", overflow: "hidden", background: "#EEF1F4", boxShadow: "0 40px 90px -28px rgba(15,27,45,.45)", border: "1px solid rgba(255,255,255,.6)" }}>
 
         {dados.aviso === "sucesso" && (
           <div style={{ background: "#0F7A3D", color: "#fff", padding: "12px 22px", font: `600 13px ${CORPO}`, display: "flex", gap: 8, alignItems: "center" }}>
@@ -201,7 +202,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         </div>
 
         {/* 3 ── card de preço flutuante */}
-        <div style={{ margin: "-120px 40px 0", position: "relative", zIndex: 5 }} id="assinar-topo">
+        <div data-cardflutuante style={{ margin: "-120px 40px 0", position: "relative", zIndex: 5 }} id="assinar-topo">
           <div style={{ background: "#fff", borderRadius: 22, padding: "28px 26px", boxShadow: "0 30px 60px -20px rgba(8,20,16,.5)", textAlign: "center" }}>
             {dados.precoAncoraTexto && <div style={{ font: `600 13px ${CORPO}`, color: "#9AA6B4", textDecoration: "line-through" }}>De {dados.precoAncoraTexto}/mês</div>}
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6, margin: "4px 0 14px" }}>
@@ -314,8 +315,8 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
 
         {/* 8 ── features + celular */}
         <div data-reveal style={{ ...REVEAL, padding: "36px 40px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 26, alignItems: "start" }}>
-            <div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 26, alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "1 1 320px", minWidth: 0 }}>
               <div style={eyebrow}>O que você desbloqueia</div>
               <h3 style={{ font: `800 26px/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 18px" }}>Tudo pra chegar primeiro.</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -337,17 +338,24 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
                 ))}
               </div>
             </div>
-            <div style={{ position: "sticky", top: 20 }}>
-              <Fone src="/vendas/anuncio-copiloto.png" alt="Análise do Copiloto" largura={200} />
+            <div style={{ flex: "0 1 260px", minWidth: 200, maxWidth: 300 }}>
+              <CarrosselVendas
+                largura={200}
+                imagens={[
+                  { src: "/vendas/anuncio-copiloto.png", alt: "Análise do Copiloto" },
+                  { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço do anúncio" },
+                  { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE do anúncio" },
+                ]}
+              />
             </div>
           </div>
         </div>
 
         {/* 9 ── 08:12 alerta */}
         <div data-reveal style={{ ...REVEAL, padding: "8px 40px 40px" }}>
-          <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg,#F4FBF6,#EAF6EF)", border: "1px solid #DCEEE2", borderRadius: 22, padding: "26px 24px", display: "grid", gridTemplateColumns: "180px 1fr", gap: 24, alignItems: "center" }}>
+          <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg,#F4FBF6,#EAF6EF)", border: "1px solid #DCEEE2", borderRadius: 22, padding: "26px 24px", display: "flex", flexWrap: "wrap", gap: 24, alignItems: "center", justifyContent: "center" }}>
             <div style={{ position: "absolute", top: -70, left: -50, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle,rgba(34,197,94,.22),transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", flex: "0 0 auto" }}>
               <Fone src="/vendas/home.png" alt="Oportunidade abaixo da FIPE" largura={180} aspecto="350 / 712" flutua />
               <div style={{ position: "absolute", top: 24, right: -20, zIndex: 5, display: "flex", alignItems: "center", gap: 9, background: "#fff", border: "1px solid #E4EAF0", borderRadius: 14, padding: "9px 12px", boxShadow: "0 16px 34px -12px rgba(15,27,45,.4)", animation: "rl-float 4.4s ease-in-out infinite" }}>
                 <span style={{ flex: "none", width: 30, height: 30, borderRadius: 9, background: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", color: "#fff" }}>
@@ -360,7 +368,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
                 </div>
               </div>
             </div>
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", flex: "1 1 280px", minWidth: 0 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(22,163,74,.1)", border: "1px solid rgba(22,163,74,.22)", padding: "5px 12px", borderRadius: 999, marginBottom: 14 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#16A34A", animation: "rl-blink 1.4s infinite" }} />
                 <span style={{ font: `800 10px ${CORPO}`, letterSpacing: ".14em", color: "#0F7A3D" }}>ALERTA EM TEMPO REAL</span>
@@ -392,8 +400,8 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
 
         {/* 11 ── tendências / dashboard BIA */}
         <div data-reveal style={{ ...REVEAL, padding: "8px 40px 38px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 190px", gap: 26, alignItems: "center" }}>
-            <div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 26, alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "1 1 320px", minWidth: 0 }}>
               <div style={eyebrow}>Dashboard BIA</div>
               <h3 style={{ font: `800 26px/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Você enxerga o mercado como ninguém.</h3>
               <p style={{ font: `500 14px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 18px" }}>Margem média por modelo, os carros mais disputados, o mapa do alto padrão e pra onde o preço de cada região está indo — antes da concorrência. O mercado inteiro num painel só.</p>
@@ -425,7 +433,18 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               </div>
               <p style={{ font: `600 12.5px/1.5 ${CORPO}`, color: "#7A8698", margin: "14px 0 0" }}>↳ Escassez valoriza a barganha: quando aparece, o desconto está mais gordo — <b style={{ color: "#16A34A" }}>vale agir rápido.</b></p>
             </div>
-            <Fone src="/vendas/bia-parte6-tendencias.png" alt="Tendências do mês" largura={190} flutua />
+            <div style={{ flex: "0 1 240px", minWidth: 190, maxWidth: 280 }}>
+              <CarrosselVendas
+                largura={190}
+                imagens={[
+                  { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências do mês" },
+                  { src: "/vendas/bia-parte2-margem-media-top12.png", alt: "Margem média por modelo" },
+                  { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
+                  { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão por estado" },
+                  { src: "/vendas/bia-parte1-estados.png", alt: "Oportunidades por estado" },
+                ]}
+              />
+            </div>
           </div>
         </div>
 
@@ -435,19 +454,22 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <div style={eyebrow}>Na palma da mão</div>
             <h3 style={{ font: `800 25px ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>Veja por dentro.</h3>
           </div>
-          <div className="rlv-scroll" style={{ display: "flex", gap: 16, overflowX: "auto", padding: "6px 40px 16px", scrollSnapType: "x mandatory" }}>
-            {["anuncio-referencia-preco", "anuncio-historico-fipe", "bia-parte4-modelos-mais-disputados", "bia-parte5-alto-padrao-marcas-de-luxo", "bia-parte6-tendencias"].map((n) => (
-              <div key={n} style={{ scrollSnapAlign: "center", flex: "none" }}>
-                <Fone src={`/vendas/${n}.png`} alt="" largura={158} />
-              </div>
-            ))}
-          </div>
+          <CarrosselVendas
+            largura={170}
+            imagens={[
+              { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço" },
+              { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE" },
+              { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
+              { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão por marcas de luxo" },
+              { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências do mês" },
+            ]}
+          />
         </div>
 
         {/* 13 ── EXPERIMENTE AGORA (demo real) */}
         <div data-reveal style={{ ...REVEAL, padding: "8px 40px 40px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: dados.ofertaDemo ? "1fr 292px" : "1fr", gap: 26, alignItems: "center" }}>
-            <div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 26, alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "1 1 300px", minWidth: 0 }}>
               <div style={eyebrow}>Experimente agora — sem compromisso</div>
               <h3 style={{ font: `800 26px/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Abra uma oferta real e veja o Copiloto trabalhar.</h3>
               <p style={{ font: `500 14px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Esta é uma oportunidade de verdade, abaixo da FIPE, com o Copiloto e a análise <b style={{ color: "#0F1B2D" }}>liberados</b> pra você sentir o produto — sem cadastro e sem sair daqui.</p>
@@ -461,7 +483,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               </div>
             </div>
             {dados.ofertaDemo && (
-              <div style={{ width: 292, flex: "none" }}>
+              <div style={{ flex: "1 1 280px", width: "100%", maxWidth: 320 }}>
                 <ExperimenteDemo oferta={dados.ofertaDemo} />
               </div>
             )}
