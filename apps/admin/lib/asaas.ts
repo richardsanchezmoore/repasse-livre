@@ -126,9 +126,12 @@ export async function primeiraCobranca(subId: string): Promise<string | null> {
  * Resolve o gap de CPF e mira o Pix recorrente via checkout.
  *
  * Fluxo: POST /checkouts → recebe `id` → monto a URL `…/checkoutSession/show?id={id}`.
- * ⚠️ CONFIRMAR no sandbox: o caminho exato (/checkouts), se `billingTypes:["PIX"]`
- * + RECURRENT é aceito (a doc exemplifica recorrente com CARTÃO; Pix recorrente pode
- * ter fluxo próprio), e o domínio da URL (sandbox vs asaas.com).
+ *
+ * ★ CONFIRMADO no sandbox (13/07): recorrente (RECURRENT) no checkout do Asaas =
+ * SÓ CARTÃO (o Asaas recusa PIX em RECURRENT; Pix só como DETACHED/avulso). Débito
+ * recorrente automático via Pix = só pelo fluxo de Pix Automático (criarAutorizacao,
+ * exige CNPJ 6+ meses). Então o checkout recorrente aqui é CARTÃO — auto-débito que
+ * roda com CPF hoje. Ver project_repasse_livre_gateway_pagamento_woovi.
  */
 export async function criarCheckout(dados: {
   userId: string;
@@ -142,7 +145,7 @@ export async function criarCheckout(dados: {
   const r = await asaasFetch("/checkouts", {
     method: "POST",
     body: JSON.stringify({
-      billingTypes: ["PIX", "CREDIT_CARD"],
+      billingTypes: ["CREDIT_CARD"], // RECURRENT no Asaas só aceita cartão (confirmado no sandbox)
       chargeTypes: ["RECURRENT"],
       minutesToExpire: 60,
       callback: { successUrl: dados.successUrl, cancelUrl: dados.cancelUrl, expiredUrl: dados.cancelUrl },
