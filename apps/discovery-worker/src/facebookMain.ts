@@ -67,9 +67,16 @@ const execFileAsync = promisify(execFile);
 
 async function pega(url: string): Promise<string> {
   if (PROXY_URL) {
-    const args = ["-s", "--connect-timeout", "30", "--max-time", "150", "-x", PROXY_URL, "-H", "accept-language: pt-BR,pt;q=0.9", url];
-    const { stdout } = await execFileAsync("curl_chrome116", args, { maxBuffer: 1024 * 1024 * 20, timeout: 165_000 });
-    return stdout;
+    const args = ["-sS", "--connect-timeout", "30", "--max-time", "150", "-x", PROXY_URL, "-H", "accept-language: pt-BR,pt;q=0.9", url];
+    try {
+      const { stdout } = await execFileAsync("curl_chrome116", args, { maxBuffer: 1024 * 1024 * 20, timeout: 165_000 });
+      return stdout;
+    } catch (e) {
+      // NÃO vazar a senha do proxy (que vem no comando) — só exit code + stderr do curl.
+      const err = e as { code?: number | string; killed?: boolean; stderr?: string | Buffer };
+      const stderr = (err.stderr ? String(err.stderr) : "").trim().slice(0, 300);
+      throw new Error(`curl_chrome116 saiu ${err.code ?? "?"}${err.killed ? " (timeout/killed)" : ""}${stderr ? `: ${stderr}` : ""}`);
+    }
   }
   const r = await undiciFetch(url, { headers: HEADERS });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
