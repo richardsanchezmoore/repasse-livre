@@ -127,6 +127,21 @@ export async function buscarCaktoCheckoutUrl(): Promise<string | null> {
 }
 
 /**
+ * URL de checkout do Repasse Livre PRO na Ticto (`worker_config.TICTO_CHECKOUT_URL`).
+ * Mesmo padrão da Cakto: o CTA manda o usuário logado pra cá com `?sck={user_id}`
+ * (a Ticto propaga em `tracking.sck` no webhook). null = não configurado. Server-only.
+ */
+export async function buscarTictoCheckoutUrl(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "TICTO_CHECKOUT_URL")
+    .maybeSingle();
+  const url = (data?.valor ?? "").trim();
+  return url.startsWith("http") ? url : null;
+}
+
+/**
  * Preço-âncora (SÓ VISUAL) mostrado riscado na /planos — o "De R$ X" que a
  * oferta de lançamento risca ao lado do valor real cobrado pelo Stripe. Vem do
  * painel (`worker_config.PRECO_ANCORA`, em reais, ex.: "249") pra ajustar a

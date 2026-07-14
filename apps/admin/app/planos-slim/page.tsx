@@ -4,7 +4,7 @@ import { PaginaVendas } from "@/components/PaginaVendas";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
-import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
+import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarTictoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
@@ -24,7 +24,7 @@ export default async function PlanosSlimPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, gatewayAtivo] = await Promise.all([
+  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, tictoUrl, gatewayAtivo] = await Promise.all([
     obterUsuarioAtual(),
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
@@ -32,15 +32,16 @@ export default async function PlanosSlimPage({
     buscarOfertaDemo(),
     buscarKpisTopo(),
     buscarCaktoCheckoutUrl(),
+    buscarTictoCheckoutUrl(),
     buscarGatewayAtivo(),
   ]);
 
-  const checkoutUrl =
-    gatewayAtivo === "cakto" && caktoUrl
-      ? usuario
-        ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
-        : caktoUrl
-      : null;
+  const urlHospedada = gatewayAtivo === "cakto" ? caktoUrl : gatewayAtivo === "ticto" ? tictoUrl : null;
+  const checkoutUrl = urlHospedada
+    ? usuario
+      ? `${urlHospedada}${urlHospedada.includes("?") ? "&" : "?"}sck=${usuario.id}`
+      : urlHospedada
+    : null;
   const gerenciarUrl = whatsappSuporte
     ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
     : null;

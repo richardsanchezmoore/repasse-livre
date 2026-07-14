@@ -34,6 +34,15 @@ const GATEWAYS: Gateway[] = [
     envs: "CAKTO_CLIENT_ID · CAKTO_CLIENT_SECRET · CAKTO_WEBHOOK_SECRET",
   },
   {
+    chave: "ticto",
+    nome: "Ticto",
+    desc: "Merchant-of-record (checkout hospedado, aceita CPF). Assinatura recorrente + sck no tracking (casa o user_id/claim no webhook). Webhook em /api/webhooks/ticto. Suporte bom.",
+    configKey: "TICTO_CHECKOUT_URL",
+    configLabel: "URL de checkout do Repasse Livre PRO",
+    configPlaceholder: "https://pay.ticto.com.br/…",
+    envs: "TICTO_WEBHOOK_TOKEN",
+  },
+  {
     chave: "stripe",
     nome: "Stripe",
     desc: "Cartão internacional recorrente. Codado (checkout + portal + webhook); requer chaves ativas.",

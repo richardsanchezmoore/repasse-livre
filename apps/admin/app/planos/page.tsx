@@ -4,7 +4,7 @@ import { PaginaVendas } from "@/components/PaginaVendas";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
-import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
+import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarTictoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
@@ -20,7 +20,7 @@ export default async function PlanosPage({
   searchParams: Promise<{ assinatura?: string }>;
 }) {
   const { assinatura } = await searchParams;
-  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, gatewayAtivo] = await Promise.all([
+  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, tictoUrl, gatewayAtivo] = await Promise.all([
     obterUsuarioAtual(),
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
@@ -28,18 +28,19 @@ export default async function PlanosPage({
     buscarOfertaDemo(),
     buscarKpisTopo(),
     buscarCaktoCheckoutUrl(),
+    buscarTictoCheckoutUrl(),
     buscarGatewayAtivo(),
   ]);
 
-  // Checkout da Cakto (quando é o gateway ativo). Logado → leva o user_id no sck
-  // (match exato); NÃO logado → checkout direto SEM login (o webhook cria/acha a
-  // conta pelo email, ou o token de claim faz o auto-login em /bem-vindo).
-  const checkoutUrl =
-    gatewayAtivo === "cakto" && caktoUrl
-      ? usuario
-        ? `${caktoUrl}${caktoUrl.includes("?") ? "&" : "?"}sck=${usuario.id}`
-        : caktoUrl
-      : null;
+  // Checkout hospedado (Cakto OU Ticto — mesmo padrão de link + sck). Logado → leva
+  // o user_id no sck (match exato); NÃO logado → checkout direto SEM login (o webhook
+  // cria/acha a conta pelo email, ou o token de claim faz o auto-login em /bem-vindo).
+  const urlHospedada = gatewayAtivo === "cakto" ? caktoUrl : gatewayAtivo === "ticto" ? tictoUrl : null;
+  const checkoutUrl = urlHospedada
+    ? usuario
+      ? `${urlHospedada}${urlHospedada.includes("?") ? "&" : "?"}sck=${usuario.id}`
+      : urlHospedada
+    : null;
   const gerenciarUrl = whatsappSuporte
     ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
     : null;
