@@ -42,6 +42,28 @@ export interface AnuncioFacebook {
   suspeitaIsca: boolean; // descrição tem cara de financiamento/entrada de loja
 }
 
+function titlecase(s: string): string {
+  return s.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
+/**
+ * Padroniza o título no NOSSO formato "Marca Modelo Ano Versão" (o FB vem cru como
+ * "Ano Marca Modelo" e o modelo é texto livre do vendedor → sem padrão). Também conserta
+ * a extração de marca/modelo p/ BI/SEO/slug (que lê as 2 primeiras palavras do `veiculo`;
+ * o título cru começava pelo ANO). Sem marca → devolve "" (o chamador mantém o cru).
+ */
+export function montarVeiculoPadrao(a: AnuncioFacebook): string {
+  if (!a.marca) return "";
+  const marca = titlecase(a.marca);
+  let modelo = (a.modelo ?? "").replace(/\b(19|20)\d{2}\b/g, " ").replace(/\s+/g, " ").trim();
+  if (modelo.toLowerCase().startsWith(a.marca.toLowerCase())) modelo = modelo.slice(a.marca.length).trim();
+  const palavras = modelo.split(" ").filter(Boolean);
+  const modeloBase = palavras[0] ? titlecase(palavras[0]) : "";
+  let versao = palavras.slice(1).join(" ");
+  if (a.motor && !new RegExp(`\\b${a.motor.replace(".", "\\.")}\\b`).test(versao)) versao = `${versao} ${a.motor}`.trim();
+  return [marca, modeloBase, a.ano, titlecase(versao)].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+}
+
 /** Filtros globais de captação do FB (vêm do painel "Motor de Busca" via worker_config). */
 export interface FiltrosFacebook {
   minPreco: string;

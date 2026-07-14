@@ -122,7 +122,7 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
           768px. A foto única em pé (4:3) esticada virava uma faixa alta e
           estreita no desktop; o mosaico usa a largura inteira do container
           numa faixa baixa e larga, como no modelo de referência da OLX. */}
-      <div className="galeria-mosaico">
+      <div className="galeria-mosaico" data-mini={miniaturas.length}>
         <button
           type="button"
           className={`galeria-mosaico-principal ${miniaturas.length === 0 ? "galeria-mosaico-principal-unica" : ""}`}

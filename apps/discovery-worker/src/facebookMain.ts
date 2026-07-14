@@ -15,6 +15,7 @@ import {
   extrairAnuncioFacebook,
   extrairIdsDaBusca,
   montarUrlBuscaFacebook,
+  montarVeiculoPadrao,
   type AnuncioFacebook,
   type FiltrosFacebook,
 } from "./facebookMarketplaceService.js";
@@ -136,7 +137,7 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
   return {
     fonte: "FACEBOOK",
     link_origem: linkPublico(a.id),
-    veiculo: a.titulo,
+    veiculo: montarVeiculoPadrao(a) || a.titulo,
     versao: a.versaoTexto ?? a.motor,
     ano: a.ano,
     cambio: a.cambio,

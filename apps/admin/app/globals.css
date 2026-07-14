@@ -6954,6 +6954,25 @@ button.bemvindo-secundario {
   gap: 6px;
 }
 
+/* Com menos de 4 miniaturas o 2x2 deixava buraco. Adapta o mosaico p/ preencher
+   sempre (padroniza a vitrine, mesmo com o FB bagunçado): 1 miniatura = 50/50;
+   2 ou 3 = empilhadas na coluna da direita; 4 = grade 2x2 (padrão). */
+.galeria-mosaico[data-mini="1"] {
+  grid-template-columns: 1fr 1fr;
+}
+.galeria-mosaico[data-mini="1"] .galeria-mosaico-grade {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+.galeria-mosaico[data-mini="2"] .galeria-mosaico-grade {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.galeria-mosaico[data-mini="3"] .galeria-mosaico-grade {
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(3, 1fr);
+}
+
 .galeria-mosaico-thumb {
   position: relative;
   border: none;
