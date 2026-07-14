@@ -58,6 +58,23 @@ export function BemVindo({ logado }: { logado: boolean }) {
     if (rodou.current) return;
     rodou.current = true;
 
+    // A Ticto EMBUTE a nossa /bem-vindo num iframe no domínio dela (checkout.ticto.app).
+    // Nesse contexto de terceiro o cookie de sessão é bloqueado e a localStorage fica
+    // particionada → o auto-login não persiste no nosso domínio. Solução: QUEBRAR pra fora —
+    // leva a janela INTEIRA pra nossa própria /bem-vindo (mesma origin do iframe), onde o
+    // login roda nativo (igual à Cakto, que já caía direto no nosso domínio). Carrega o sck
+    // da URL (a Ticto propaga) pra amarrar o claim do outro lado.
+    if (typeof window !== "undefined" && window.top && window.self !== window.top) {
+      const sck = new URLSearchParams(window.location.search).get("sck") ?? "";
+      const alvo = `${window.location.origin}/bem-vindo${sck ? `?sck=${encodeURIComponent(sck)}` : ""}`;
+      try {
+        window.top.location.replace(alvo); // replace: não deixa o checkout da Ticto no histórico
+        return;
+      } catch {
+        // iframe com sandbox bloqueando top-navigation → segue no fluxo normal (best-effort).
+      }
+    }
+
     // Destino guardado ao clicar num anúncio fechado (CapturaDestino em /planos).
     const d = localStorage.getItem(CHAVE_DESTINO);
     if (d && UUID.test(d)) setDestinoId(d);
