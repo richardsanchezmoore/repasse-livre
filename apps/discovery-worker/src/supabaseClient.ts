@@ -309,6 +309,44 @@ export async function registrarSnapshotIdVarredura(id: string, snapshotId: strin
 }
 
 /**
+ * Faxina de runs zumbis: marca como "erro" (timeout) os que ficaram presos em
+ * "em_andamento" além do limite — processos mortos no meio (proxy travado,
+ * container reiniciado) que nunca finalizaram. Roda no início de cada varredura.
+ * Preserva snapshot_id → um Webmotors preso segue recuperável (recuperar:snapshots).
+ * Limite folgado (2h): nenhuma varredura legítima passa disso (a maior ~54min).
+ */
+export async function finalizarRunsPresosComoErro(horasLimite = 2): Promise<number> {
+  const limite = new Date(Date.now() - horasLimite * 3_600_000).toISOString();
+  const { data, error } = await supabase
+    .from("discovery_runs")
+    .update({ status: "erro", finalizado_em: new Date().toISOString(), erro_mensagem: "timeout — run preso em em_andamento (finalizado pela faxina)" })
+    .eq("status", "em_andamento")
+    .lt("iniciado_em", limite)
+    .select("id");
+  if (error) {
+    console.warn(`[varredura] faxina de runs presos falhou: ${error.message}`);
+    return 0;
+  }
+  const n = data?.length ?? 0;
+  if (n > 0) console.log(`[varredura] faxina: ${n} run(s) preso(s) marcado(s) como erro.`);
+  return n;
+}
+
+/**
+ * Salva um trecho de diagnóstico em worker_config (chave/valor), como os debugs
+ * de webhook. Usado pra capturar o HTML quando o parser da OLX não acha os
+ * anúncios — assim dá pra ver DAQUI se a OLX mudou o formato ou devolveu
+ * página de bloqueio, sem depender do log da Railway. Nunca derruba o processo.
+ */
+export async function registrarDebugVarredura(chave: string, valor: string): Promise<void> {
+  try {
+    await supabase.from("worker_config").upsert({ chave, valor: valor.slice(0, 60_000) }, { onConflict: "chave" });
+  } catch (e) {
+    console.warn(`[varredura] não consegui gravar debug ${chave}: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
+/**
  * Runs da Webmotors que falharam (erro) ou travaram (em_andamento) mas têm o
  * snapshot_id salvo → recuperáveis sem re-pagar. Base do `recuperar:snapshots-
  * webmotors` sem argumentos (1 clique). Ver recuperarSnapshotsWebmotors.ts.

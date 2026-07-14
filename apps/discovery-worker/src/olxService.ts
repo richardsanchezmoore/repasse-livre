@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { AnuncioOlx } from "./types.js";
+import { registrarDebugVarredura } from "./supabaseClient.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -116,7 +117,12 @@ export async function resolverChaveFiltroFipe(categoriaUrlBase: string): Promise
  * o Referer, que o script não fixa por ser específico da OLX.
  */
 async function buscarHtml(url: string): Promise<string> {
-  const args = ["-s", "-H", "Referer: https://www.olx.com.br/"];
+  // --connect-timeout / --max-time: sem eles, um proxy ou a OLX travando a
+  // conexão deixa o curl PENDURADO pra sempre → a varredura nunca finaliza e o
+  // run fica "em_andamento" eterno (já entupiu o painel com dezenas de presos).
+  // Com o teto, um fetch travado vira erro → o run finaliza como "erro" (visível),
+  // não como zumbi. Backstop no exec (mata o processo) caso o curl ignore o -m.
+  const args = ["-s", "--connect-timeout", "30", "--max-time", "150", "-H", "Referer: https://www.olx.com.br/"];
 
   if (process.env.PROXY_URL) {
     args.push("-x", process.env.PROXY_URL);
@@ -124,7 +130,7 @@ async function buscarHtml(url: string): Promise<string> {
 
   args.push(url);
 
-  const { stdout } = await execFileAsync("curl_chrome116", args, { maxBuffer: 1024 * 1024 * 20 });
+  const { stdout } = await execFileAsync("curl_chrome116", args, { maxBuffer: 1024 * 1024 * 20, timeout: 165_000 });
   return stdout;
 }
 
@@ -225,7 +231,17 @@ export function extrairAnunciosDoHtml(html: string): AnuncioOlx[] {
 export async function capturarAnunciosOlx(paginaUrl: string): Promise<AnuncioOlx[]> {
   const html = await buscarHtml(paginaUrl);
   console.log(`[olx] HTML size: ${html.length} | url: ${paginaUrl.slice(0, 120)}`);
-  return extrairAnunciosDoHtml(html);
+  try {
+    return extrairAnunciosDoHtml(html);
+  } catch (erro) {
+    // Guarda o que a OLX devolveu pra diagnosticar DAQUI (mudou o formato? bloqueou?)
+    // sem depender do log da Railway. Início + fim do HTML (o flight vem no fim).
+    await registrarDebugVarredura(
+      "OLX_DEBUG_HTML_FALHA",
+      JSON.stringify({ em: new Date().toISOString(), url: paginaUrl, tamanho: html.length, inicio: html.slice(0, 1500), fim: html.slice(-4000) })
+    );
+    throw erro;
+  }
 }
 
 export interface FipeDaPagina {

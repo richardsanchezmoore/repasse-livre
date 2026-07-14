@@ -16,6 +16,7 @@ import {
   buscarDuplicataPorTituloEKm,
   finalizarRegistroVarreduraComErro,
   finalizarRegistroVarreduraComSucesso,
+  finalizarRunsPresosComoErro,
   garantirCoordenadasCidade,
   iniciarRegistroVarredura,
   lerConfig,
@@ -400,6 +401,7 @@ async function executarVarreduraComRegistro(categoriaUrlBase: string, modo: stri
 }
 
 async function executarTodasCategorias(): Promise<void> {
+  await finalizarRunsPresosComoErro(); // limpa zumbis de execuções mortas antes de abrir novos
   config = await carregarConfig();
   for (const categoriaUrlBase of config.categoriasUrlBase) {
     await executarVarreduraComRegistro(categoriaUrlBase, config.modo);
