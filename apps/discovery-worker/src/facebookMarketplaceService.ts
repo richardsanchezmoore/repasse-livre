@@ -41,6 +41,23 @@ export interface AnuncioFacebook {
   suspeitaIsca: boolean; // descrição tem cara de financiamento/entrada de loja
 }
 
+/**
+ * Extrai os IDs de anúncio de uma página de BUSCA do FB Marketplace (fetch puro,
+ * headers de Chrome → HTTP 200 com o JSON). Cada card é
+ * `"listing":{"__typename":"GroupCommerceProductItem","id":"<id>"...}`. Validado:
+ * o id casa com a URL /marketplace/item/<id>. Paginação (scroll) = cursor do GraphQL
+ * (v2); por ora, a página inicial + espalhar por região/rodar frequente já cobre bem.
+ */
+export function extrairIdsDaBusca(html: string): string[] {
+  const re = /"listing":\{"__typename":"GroupCommerceProductItem","id":"(\d{6,})"/g;
+  return [...new Set([...html.matchAll(re)].map((m) => m[1]))];
+}
+
+/** Cursor de próxima página da busca (GraphQL), quando houver — p/ paginação futura. */
+export function cursorDaBusca(html: string): string | null {
+  return (html.match(/"end_cursor":"([^"]+)"/) || [])[1] ?? null;
+}
+
 export interface ResultadoParseFacebook {
   anuncio: AnuncioFacebook | null;
   descartar: boolean;
