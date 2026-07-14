@@ -24,7 +24,9 @@ import { supabaseAdmin } from "@/lib/supabase";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const GRANT = new Set(["authorized"]);
+// authorized = venda paga (1ª + cada cobrança). extended/uncanceled = renovação/
+// retomada da assinatura (garante estender mesmo se a renovação não vier como authorized).
+const GRANT = new Set(["authorized", "extended", "uncanceled"]);
 const REVOGAR = new Set(["refunded", "chargeback"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FOLGA_MS = 3 * 86_400_000;
