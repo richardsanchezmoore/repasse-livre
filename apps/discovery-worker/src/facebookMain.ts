@@ -6,6 +6,7 @@ import {
   finalizarRunsPresosComoErro,
   garantirCoordenadasCidade,
   iniciarRegistroVarredura,
+  registrarDebugVarredura,
   lerConfig,
   linkOrigemJaExiste,
   registrarVistoFacebook,
@@ -166,7 +167,26 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
   const urlBusca = montarUrlBuscaFacebook(regiao.url, cfg.filtros, regiao.raio ?? "250"); // contém "facebook" → board mostra fonte FACEBOOK
   const registroId = await iniciarRegistroVarredura(urlBusca, "facebook");
   try {
-    const idsBusca = extrairIdsDaBusca(await pega(urlBusca));
+    const htmlBusca = await pega(urlBusca);
+    const idsBusca = extrairIdsDaBusca(htmlBusca);
+    // Busca vazia (0 IDs) apesar do 200 = provável bloqueio "mole" do datacenter (login-wall/
+    // consent/página degradada). Captura o HTML pra diagnosticar DAQUI o que a Railway recebeu.
+    if (idsBusca.length === 0) {
+      await registrarDebugVarredura(
+        "FB_DEBUG_BUSCA_VAZIA",
+        JSON.stringify({
+          em: new Date().toISOString(),
+          regiao: regiao.nome,
+          url: urlBusca,
+          tamanho: htmlBusca.length,
+          loginWall: /você precisa fazer login|entrar no facebook|log in to continue|iniciar sessão|entre para ver/i.test(htmlBusca),
+          temListing: htmlBusca.includes("GroupCommerceProductItem"),
+          temMarketplace: htmlBusca.includes("marketplace"),
+          inicio: htmlBusca.slice(0, 1600),
+          fim: htmlBusca.slice(-1600),
+        })
+      );
+    }
     const vistos = await buscarIdsVistosFacebook(idsBusca);
     const novosIds = idsBusca.filter((id) => !vistos.has(id));
     const alcancouConhecido = novosIds.length < idsBusca.length; // já havia id conhecido na página
