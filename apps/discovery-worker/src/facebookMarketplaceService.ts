@@ -161,8 +161,10 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     .map((m) => Number(m[1].replace(/\./g, "")))
     .filter((n) => n >= 1000 && n <= 2_000_000);
 
-  const loc = html.match(/"reverse_geocode":\{"city":"([^"]+)","state":"([^"]+)"/);
-  const ll = html.match(/"latitude":([\-\d.]+),"longitude":([\-\d.]+)/);
+  // Localização também ancorada no bloco do principal (senão first-match pega de relacionado).
+  const janLoc = janelaPrincipal(html);
+  const loc = janLoc.match(/"reverse_geocode":\{"city":"([^"]+)","state":"([^"]+)"/);
+  const ll = janLoc.match(/"latitude":([\-\d.]+),"longitude":([\-\d.]+)/);
 
   // Loja/isca: 2+ sinais de discurso de loja no título+descrição (o preço-campo vira entrada).
   const suspeitaIsca = contarSinaisLoja(`${titulo} ${descricao ?? ""}`) >= 2;
@@ -221,19 +223,22 @@ function normalizarEngineSize(v: string | null): string | null {
   return null;
 }
 
+/** Janela do anúncio PRINCIPAL: o nó do `redacted_description` é único do principal, então
+ *  campos que colidem (preço/título/localização) são lidos AQUI, não por first-match global. */
+function janelaPrincipal(html: string): string {
+  const di = html.indexOf('"redacted_description"');
+  return di === -1 ? html : html.slice(Math.max(0, di - 9000), di + 9000);
+}
+
 /** Preço do anúncio principal: ancorado na janela do `redacted_description`. */
 function precoAncorado(html: string): number | null {
-  const di = html.indexOf('"redacted_description"');
-  const jan = di === -1 ? html : html.slice(Math.max(0, di - 9000), di + 9000);
-  const m = jan.match(/"listing_price":\{"amount":"([\d.]+)"/);
+  const m = janelaPrincipal(html).match(/"listing_price":\{"amount":"([\d.]+)"/);
   return m ? Math.round(Number(m[1])) : null;
 }
 
 /** Título ancorado no bloco do principal (fallback quando não há og:title). */
 function campoUnicoAncorado(html: string, chave: string): string | null {
-  const di = html.indexOf('"redacted_description"');
-  const jan = di === -1 ? html : html.slice(Math.max(0, di - 9000), di + 9000);
-  const m = jan.match(new RegExp(`"${chave}":"([^"]+)"`));
+  const m = janelaPrincipal(html).match(new RegExp(`"${chave}":"([^"]+)"`));
   return m ? decodar(m[1]) : null;
 }
 
