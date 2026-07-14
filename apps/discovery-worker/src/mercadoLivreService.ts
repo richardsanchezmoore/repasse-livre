@@ -11,7 +11,7 @@ import { buscarReferenciaFipe, resolverReferenciaFipeProximaDoValor } from "./fi
 import { garantirHistoricoFipe, registrarPontoHistoricoFipe } from "./historicoFipe.js";
 import { gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel } from "./margin.js";
-import { garantirCoordenadasCidade, linkOrigemJaExiste, salvarOportunidade } from "./supabaseClient.js";
+import { buscarVistosML, garantirCoordenadasCidade, linkOrigemJaExiste, registrarVistoML, salvarOportunidade } from "./supabaseClient.js";
 import type { AtributosOlx } from "./olxService.js";
 import type { Classificacao, Oportunidade } from "./types.js";
 
@@ -194,17 +194,21 @@ async function extrairCardsDaPagina(page: Page): Promise<CardBruto[]> {
   });
 }
 
-function montarUrlPagina(categoriaUrlBase: string, pagina: number): string {
+function montarUrlPagina(categoriaUrlBase: string, pagina: number, somenteHoje = false): string {
   const base = categoriaUrlBase.endsWith("/") ? categoriaUrlBase : `${categoriaUrlBase}/`;
   // O ML marca listagens filtradas com o sufixo `_NoIndex_True`, e o offset
   // `_Desde_N` vem ANTES dele. Sem o sufixo, a URL de paginação (`_Desde_49`)
   // não é servida como listagem e volta sem cards — era a causa real do
   // "Página 2 vazia" (e não o rate-limit/wall, como se supôs antes).
-  // URLs reais: .../particular/_NoIndex_True (pág 1),
-  //             .../particular/_Desde_49_NoIndex_True (pág 2), +48 por página.
-  if (pagina === 1) return `${base}_NoIndex_True`;
+  // `_PublishedToday_YES` = filtro nativo "Anunciados hoje" (entra ANTES do
+  // _NoIndex_True, DEPOIS do _Desde_N) — limita o universo ao que é novo do dia,
+  // matando o re-aramento da ordem embaralhada. Ver mercadoLivreMain (SOMENTE_HOJE).
+  // URLs reais: .../particular/_PublishedToday_YES_NoIndex_True (pág 1),
+  //             .../particular/_Desde_49_PublishedToday_YES_NoIndex_True (pág 2), +48/pág.
+  const hoje = somenteHoje ? "_PublishedToday_YES" : "";
+  if (pagina === 1) return `${base}${hoje}_NoIndex_True`;
   const offset = (pagina - 1) * TAMANHO_PAGINA + 1;
-  return `${base}_Desde_${offset}_NoIndex_True`;
+  return `${base}_Desde_${offset}${hoje}_NoIndex_True`;
 }
 
 function converterCard(card: CardBruto): AnuncioMercadoLivreBruto | null {
@@ -511,17 +515,41 @@ async function coletarElegiveis(
 ): Promise<Elegivel[]> {
   const elegiveis: Elegivel[] = [];
   const anuncios = cards.map(converterCard).filter((a): a is AnuncioMercadoLivreBruto => a !== null);
+
+  // Livro-razão em LOTE (1 query/página): mlb_ids já processados-e-não-salvos.
+  const mlbDaPagina = anuncios.map((a) => extrairMlbId(a.linkOrigem)).filter((m): m is string => Boolean(m));
+  const vistos = await buscarVistosML(mlbDaPagina);
+
   for (const anuncio of anuncios) {
-    if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue;
+    if (await linkOrigemJaExiste(anuncio.linkOrigem)) continue; // já salvo (opportunities)
     const mlbId = extrairMlbId(anuncio.linkOrigem);
     if (!mlbId) continue;
+
+    // Livro-razão: pula SEM gastar FIPE o que já vimos e nada mudou. Descarte
+    // estrutural nunca muda → pula sempre; descarte por margem → só enquanto o
+    // preço não baixar. Nada disso conta como "novo" (é re-visto, não descoberta).
+    const visto = vistos.get(mlbId);
+    if (visto && (visto.motivo === "estrutural" || (visto.ultimo_preco != null && visto.ultimo_preco === anuncio.preco))) {
+      if (contabilizar) resultado.pulados++;
+      continue;
+    }
+
     if (contabilizar) resultado.novos++;
 
-    if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) { if (contabilizar) resultado.descartados++; continue; }
+    if (!anuncio.preco || !anuncio.ano || !anuncio.titulo) {
+      if (contabilizar) resultado.descartados++;
+      await registrarVistoML(mlbId, "estrutural", anuncio.preco ?? null);
+      continue;
+    }
     const { marca, modelo, variante } = extrairMarcaModelo(anuncio.titulo);
-    if (!marca || !modelo) { if (contabilizar) resultado.descartados++; continue; }
+    if (!marca || !modelo) {
+      if (contabilizar) resultado.descartados++;
+      await registrarVistoML(mlbId, "estrutural", anuncio.preco);
+      continue;
+    }
     // FIPE resiliente: 429/502/timeout da API não pode derrubar o run — trata
-    // como "sem FIPE" e segue (transitório; o próximo run reprocessa).
+    // como "sem FIPE" e segue (transitório; o próximo run reprocessa). NÃO vai
+    // pro livro-razão de propósito (pode ser falha passageira, merece re-tentar).
     let referenciaFipe: ReferenciaFipe | null = null;
     try {
       referenciaFipe = await buscarReferenciaFipe(marca, modelo, anuncio.ano, variante);
@@ -530,9 +558,17 @@ async function coletarElegiveis(
     }
     if (!referenciaFipe) { if (contabilizar) resultado.semFipe++; continue; }
     const margemPercentual = calcularMargemPercentual(anuncio.preco, referenciaFipe.valor);
-    if (!ehElegivel(margemPercentual, margemMinima)) { if (contabilizar) resultado.descartados++; continue; }
+    if (!ehElegivel(margemPercentual, margemMinima)) {
+      if (contabilizar) resultado.descartados++;
+      await registrarVistoML(mlbId, "margem", anuncio.preco);
+      continue;
+    }
     const classificacao: Classificacao | null = classificar(margemPercentual, margemMinima);
-    if (!classificacao) { if (contabilizar) resultado.descartados++; continue; }
+    if (!classificacao) {
+      if (contabilizar) resultado.descartados++;
+      await registrarVistoML(mlbId, "margem", anuncio.preco);
+      continue;
+    }
 
     elegiveis.push({ anuncio, mlbId, preco: anuncio.preco, ano: anuncio.ano, marca, modelo, variante, referenciaFipe, margemPercentual, classificacao });
   }
@@ -616,7 +652,8 @@ function ehErroTransienteProxy(msg: string): boolean {
 async function abrirSessaoListagem(
   categoriaUrlBase: string,
   pagina: number,
-  sessaoId: number
+  sessaoId: number,
+  somenteHoje = false
 ): Promise<{ browser: Browser; context: BrowserContext; page: Page } | null> {
   const MAX_TENTATIVAS_REDE = 3;
   for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_REDE; tentativa++) {
@@ -632,7 +669,7 @@ async function abrirSessaoListagem(
       page = await context.newPage();
       page.setDefaultNavigationTimeout(120000); // Railway via proxy é lento; anti-bot se vence devagar
       await aquecerSessao(page);
-      await page.goto(montarUrlPagina(categoriaUrlBase, pagina), { waitUntil: "domcontentloaded", timeout: 60000 });
+      await page.goto(montarUrlPagina(categoriaUrlBase, pagina, somenteHoje), { waitUntil: "domcontentloaded", timeout: 60000 });
       await page.waitForSelector("li.ui-search-layout__item", { timeout: 45000 });
       return { browser, context, page };
     } catch (erro) {
@@ -674,13 +711,19 @@ export async function varrerEProcessarMercadoLivre(
   categoriaUrlBase: string,
   maxPaginas: number,
   margemMinima: number,
-  paginaInicial = 1
+  paginaInicial = 1,
+  somenteHoje = false
 ): Promise<ResultadoLoteMercadoLivre> {
-  const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, paginasCarregadas: 0, paginasBloqueadas: 0 };
+  const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, pulados: 0, paginasCarregadas: 0, paginasBloqueadas: 0 };
   // sessid base aleatório por run — evita reusar um IP já fichado.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
+  // Parada por página seca: só no modo "hoje" (universo limitado ao dia). Na ordem
+  // embaralhada NÃO vale — "0 novos numa página" não quer dizer que acabou o novo.
+  const MAX_PAGINAS_SECAS_ML = 2;
+  let secasSeguidas = 0;
 
   for (let pagina = paginaInicial; pagina < paginaInicial + maxPaginas; pagina++) {
+    const novosAntes = resultado.novos;
     let sessId = baseSess + pagina * 100;
     let elegiveis: Elegivel[] | null = null; // coletado uma vez (1ª leitura da página)
     const feitos = new Set<string>();
@@ -689,7 +732,7 @@ export async function varrerEProcessarMercadoLivre(
 
     while (sessoes < MAX_SESSOES_POR_PAGINA) {
       sessoes++;
-      const sess = await abrirSessaoListagem(categoriaUrlBase, pagina, sessId++);
+      const sess = await abrirSessaoListagem(categoriaUrlBase, pagina, sessId++, somenteHoje);
       if (!sess) {
         console.log(`[motor-descoberta-mercadolivre] Página ${pagina}: listagem bloqueada (sessão ${sessoes}/${MAX_SESSOES_POR_PAGINA}) — IP novo…`);
         continue;
@@ -720,6 +763,7 @@ export async function varrerEProcessarMercadoLivre(
             feitos.add(el.anuncio.linkOrigem);
             if (correcao.descartar) {
               resultado.descartados++;
+              await registrarVistoML(el.mlbId, "margem", el.preco); // não re-buscar o detalhe do falso-positivo
               await page.waitForTimeout(3000 + Math.floor(Math.random() * 3000));
               continue;
             }
@@ -765,6 +809,21 @@ export async function varrerEProcessarMercadoLivre(
       break;
     }
     resultado.paginasCarregadas++;
+
+    // Parada seca (só no modo "hoje"): página carregou mas não trouxe NENHUM novo
+    // (tudo já no livro-razão/salvo) → alcançamos o delta do dia. 2 secas seguidas para.
+    if (somenteHoje) {
+      if (resultado.novos === novosAntes) {
+        secasSeguidas++;
+        console.log(`[motor-descoberta-mercadolivre] Página ${pagina} sem novos (${secasSeguidas}/${MAX_PAGINAS_SECAS_ML} secas) — já visto.`);
+        if (secasSeguidas >= MAX_PAGINAS_SECAS_ML) {
+          console.log(`[motor-descoberta-mercadolivre] ${MAX_PAGINAS_SECAS_ML} páginas secas seguidas — parando (delta do dia coberto).`);
+          break;
+        }
+      } else {
+        secasSeguidas = 0;
+      }
+    }
   }
 
   return resultado;
@@ -787,6 +846,8 @@ export interface ResultadoLoteMercadoLivre {
   elegiveis: number;
   descartados: number;
   semFipe: number;
+  /** Anúncios pulados sem gastar FIPE por já estarem no livro-razão (vistos). */
+  pulados: number;
   /** Páginas cuja listagem carregou (leu cards). 0 = run totalmente bloqueado. */
   paginasCarregadas: number;
   /** Páginas que bateram na parede (account-verification) em TODAS as sessões. */

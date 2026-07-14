@@ -18,21 +18,27 @@ async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<
   const margemMinima = Number(
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
   );
-  const maxPaginas = Number((await lerConfig("MERCADOLIVRE_MAX_PAGINAS")) ?? process.env.MERCADOLIVRE_MAX_PAGINAS ?? 10);
+  // Teto de páginas (default 15: cobre um dia inteiro do filtro "hoje", ~601/48≈13,
+  // com folga). A parada seca corta antes quando o delta do dia já foi coberto.
+  const maxPaginas = Number((await lerConfig("MERCADOLIVRE_MAX_PAGINAS")) ?? process.env.MERCADOLIVRE_MAX_PAGINAS ?? 15);
   // Página inicial da varredura (default 1). Útil pra testar em anúncios NOVOS:
   // como deduplicamos por link, re-varrer a pág 1 logo após uma varredura pula
   // tudo; começar na 2 pega anúncios ainda não captados.
   const paginaInicial = Number((await lerConfig("MERCADOLIVRE_PAGINA_INICIAL")) ?? process.env.MERCADOLIVRE_PAGINA_INICIAL ?? 1);
+  // "Anunciados hoje" (_PublishedToday_YES) + livro-razão de vistos: universo do
+  // dia, sem re-arar a ordem embaralhada. Ligado por padrão; desliga com
+  // MERCADOLIVRE_SOMENTE_HOJE=false pra voltar à varredura de estoque completo.
+  const somenteHoje = ((await lerConfig("MERCADOLIVRE_SOMENTE_HOJE")) ?? process.env.MERCADOLIVRE_SOMENTE_HOJE ?? "true") !== "false";
 
   const urlComFiltro = gerarUrlCategoriaParticular(categoriaUrlBase);
   console.log(
-    `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | páginas: ${paginaInicial}..${paginaInicial + maxPaginas - 1} | margem mínima: ${margemMinima}%`
+    `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | ${somenteHoje ? "ANUNCIADOS HOJE" : "estoque completo"} | páginas: ${paginaInicial}..${paginaInicial + maxPaginas - 1} | margem mínima: ${margemMinima}%`
   );
 
-  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima, paginaInicial);
+  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima, paginaInicial, somenteHoje);
 
   console.log(
-    `[motor-descoberta-mercadolivre] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados | ${resultado.semFipe} sem FIPE.`
+    `[motor-descoberta-mercadolivre] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados | ${resultado.semFipe} sem FIPE | ${resultado.pulados} pulados (já vistos).`
   );
 
   return resultado;
@@ -42,8 +48,8 @@ async function executarComRegistro(categoriaUrlBase: string): Promise<void> {
   const registroId = await iniciarRegistroVarredura(categoriaUrlBase, MODO);
   try {
     const resultado = await executarVarreduraMercadoLivre(categoriaUrlBase);
-    const { paginasCarregadas, paginasBloqueadas } = resultado;
-    const observacao = `${paginasCarregadas} pág. carregadas${paginasBloqueadas ? `, ${paginasBloqueadas} bloqueadas (account-verification)` : ""}`;
+    const { paginasCarregadas, paginasBloqueadas, pulados } = resultado;
+    const observacao = `${paginasCarregadas} pág. carregadas${pulados ? `, ${pulados} já vistos (pulados)` : ""}${paginasBloqueadas ? `, ${paginasBloqueadas} bloqueadas (account-verification)` : ""}`;
 
     // Run TOTALMENTE bloqueado (nenhuma página carregou, mas bateu na parede):
     // não é "nada novo" — é o IP fichado. Registra como ERRO pra aparecer

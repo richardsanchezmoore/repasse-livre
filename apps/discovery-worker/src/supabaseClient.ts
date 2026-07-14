@@ -164,6 +164,37 @@ export async function garantirCoordenadasCidade(cidade: string, estado: string):
   }
 }
 
+export interface VistoML {
+  mlb_id: string;
+  motivo: string;
+  ultimo_preco: number | null;
+}
+
+/**
+ * Livro-razão de vistos do ML: busca em LOTE (1 query por página) os anúncios
+ * já processados-e-não-salvos, por mlb_id. Retorna um mapa pra decisão O(1) por
+ * card. Falha vira mapa vazio (nunca derruba a varredura — no pior caso reprocessa).
+ */
+export async function buscarVistosML(mlbIds: string[]): Promise<Map<string, VistoML>> {
+  const mapa = new Map<string, VistoML>();
+  if (mlbIds.length === 0) return mapa;
+  const { data, error } = await supabase.from("ml_vistos").select("mlb_id, motivo, ultimo_preco").in("mlb_id", mlbIds);
+  if (error) {
+    console.warn(`[ml_vistos] consulta em lote falhou: ${error.message}`);
+    return mapa;
+  }
+  for (const v of data ?? []) mapa.set(v.mlb_id, v as VistoML);
+  return mapa;
+}
+
+/** Registra/atualiza um anúncio NÃO salvo no livro-razão (descarte estrutural/margem). */
+export async function registrarVistoML(mlbId: string, motivo: string, ultimoPreco: number | null): Promise<void> {
+  const { error } = await supabase
+    .from("ml_vistos")
+    .upsert({ mlb_id: mlbId, motivo, ultimo_preco: ultimoPreco, atualizado_em: new Date().toISOString() }, { onConflict: "mlb_id" });
+  if (error) console.warn(`[ml_vistos] upsert ${mlbId} falhou: ${error.message}`);
+}
+
 export async function linkOrigemJaExiste(linkOrigem: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("opportunities")
