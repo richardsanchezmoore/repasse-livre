@@ -1,0 +1,188 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import { Check, Loader2, Plus, Trash2, MapPin, Car } from "lucide-react";
+import { salvarConfigWorker } from "@/app/actions";
+
+/**
+ * Aba "Motor de Busca" — configuração das FONTES de captação que dependem de URL
+ * (hoje: Facebook Marketplace). Tudo aqui, ZERO hardcode: se o FB mudar os filtros,
+ * troca no painel. Modelo: cada REGIÃO é uma URL-base "crua" (região+raio+locale) e
+ * os LIMITES (preço/ano/ordem) são campos globais que compõem a URL final. Ver
+ * project_repasse_livre_facebook_marketplace_motor_descoberta.
+ */
+
+interface Regiao {
+  nome: string;
+  url: string;
+}
+
+function lerRegioes(bruto: string | undefined): Regiao[] {
+  try {
+    const v = JSON.parse(bruto ?? "[]");
+    return Array.isArray(v) ? v.filter((r) => typeof r?.url === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function Interruptor({ ligado, onToggle }: { ligado: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={ligado}
+      onClick={onToggle}
+      style={{ width: 46, height: 26, borderRadius: 999, border: "none", padding: 0, cursor: "pointer", background: ligado ? "#16a34a" : "#cbd5e1", position: "relative", flexShrink: 0 }}
+    >
+      <span style={{ position: "absolute", top: 3, left: ligado ? 23 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.15s ease", boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }} />
+    </button>
+  );
+}
+
+const rotuloCampo = { display: "block", fontSize: 12.5, fontWeight: 600, color: "#6b7280", marginBottom: 5 } as const;
+const inputEstilo = { width: "100%", padding: "9px 12px", fontSize: 13.5, border: "1px solid #d1d5db", borderRadius: 9, outline: "none" } as const;
+
+export function PainelMotorBusca({ configs }: { configs: Record<string, string> }) {
+  const [ativo, setAtivo] = useState(configs["FACEBOOK_ATIVO"] === "true");
+  const [minPreco, setMinPreco] = useState(configs["FACEBOOK_FILTRO_MIN_PRECO"] ?? "15000");
+  const [maxPreco, setMaxPreco] = useState(configs["FACEBOOK_FILTRO_MAX_PRECO"] ?? "400000");
+  const [minAno, setMinAno] = useState(configs["FACEBOOK_FILTRO_MIN_ANO"] ?? "1995");
+  const [sort, setSort] = useState(configs["FACEBOOK_FILTRO_SORT"] ?? "creation_time_descend");
+  const [regioes, setRegioes] = useState<Regiao[]>(() => lerRegioes(configs["FACEBOOK_REGIOES"]));
+  const [salvando, iniciar] = useTransition();
+  const [salvo, setSalvo] = useState(false);
+
+  const marcarSujo = () => setSalvo(false);
+
+  function salvarTudo() {
+    const limpas = regioes.filter((r) => r.nome.trim() && r.url.trim());
+    iniciar(async () => {
+      await Promise.all([
+        salvarConfigWorker("FACEBOOK_ATIVO", ativo ? "true" : "false"),
+        salvarConfigWorker("FACEBOOK_FILTRO_MIN_PRECO", minPreco.trim()),
+        salvarConfigWorker("FACEBOOK_FILTRO_MAX_PRECO", maxPreco.trim()),
+        salvarConfigWorker("FACEBOOK_FILTRO_MIN_ANO", minAno.trim()),
+        salvarConfigWorker("FACEBOOK_FILTRO_SORT", sort),
+        salvarConfigWorker("FACEBOOK_REGIOES", JSON.stringify(limpas)),
+      ]);
+      setRegioes(limpas);
+      setSalvo(true);
+    });
+  }
+
+  // Prévia da URL final composta (base + filtros globais), pra o admin ver o que será varrido.
+  function urlComposta(base: string): string {
+    const b = base.trim();
+    if (!b) return "";
+    const sep = b.includes("?") ? "&" : "?";
+    const p = new URLSearchParams({ minPrice: minPreco, maxPrice: maxPreco, minYear: minAno, sortBy: sort, topLevelVehicleType: "car_truck" });
+    return `${b}${sep}${p.toString()}`;
+  }
+  const previa = useMemo(() => (regioes[0]?.url ? urlComposta(regioes[0].url) : ""), [regioes, minPreco, maxPreco, minAno, sort]);
+
+  return (
+    <div style={{ padding: "0 0 8px" }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Car size={20} strokeWidth={1.9} />
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Facebook Marketplace</h2>
+        </div>
+        <Interruptor ligado={ativo} onToggle={() => { setAtivo((v) => !v); marcarSujo(); }} />
+      </header>
+      <p style={{ margin: "0 0 20px", color: "#6b7280", fontSize: 14, lineHeight: 1.5 }}>
+        Captação por <strong>região</strong>. Cole a URL-base “crua” de cada região (com raio e locale) e defina os
+        <strong> limites</strong> abaixo — eles compõem a URL final. Se o FB mudar os filtros, é só ajustar aqui.
+      </p>
+
+      {/* Limites globais (compõem a URL de todas as regiões) */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, marginBottom: 8 }}>
+        <div>
+          <label style={rotuloCampo}>Preço mínimo (R$)</label>
+          <input style={inputEstilo} inputMode="numeric" value={minPreco} onChange={(e) => { setMinPreco(e.target.value); marcarSujo(); }} placeholder="15000" />
+        </div>
+        <div>
+          <label style={rotuloCampo}>Preço máximo (R$)</label>
+          <input style={inputEstilo} inputMode="numeric" value={maxPreco} onChange={(e) => { setMaxPreco(e.target.value); marcarSujo(); }} placeholder="400000" />
+        </div>
+        <div>
+          <label style={rotuloCampo}>Ano mínimo</label>
+          <input style={inputEstilo} inputMode="numeric" value={minAno} onChange={(e) => { setMinAno(e.target.value); marcarSujo(); }} placeholder="1995" />
+        </div>
+        <div>
+          <label style={rotuloCampo}>Ordenação</label>
+          <select style={inputEstilo} value={sort} onChange={(e) => { setSort(e.target.value); marcarSujo(); }}>
+            <option value="creation_time_descend">Mais recentes</option>
+            <option value="best_match">Melhor correspondência</option>
+            <option value="price_ascend">Menor preço</option>
+            <option value="distance_ascend">Mais próximos</option>
+          </select>
+        </div>
+      </div>
+      <p style={{ margin: "2px 0 18px", fontSize: 12, color: "#9ca3af", lineHeight: 1.5 }}>
+        Preço mín. tira motinhos/carrinhos velhos <em>e</em> as iscas de loja (o “preço” delas é a entrada baixa).
+        Ano mín. 1995 corta ônibus/motorhome antigos. “Mais recentes” prioriza anúncios frescos.
+      </p>
+
+      {/* Regiões */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: "flex", alignItems: "center", gap: 7 }}>
+          <MapPin size={16} strokeWidth={2} /> Regiões ({regioes.length})
+        </h3>
+        <button
+          type="button"
+          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "" }]); marcarSujo(); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#059669", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 8, cursor: "pointer" }}
+        >
+          <Plus size={14} /> Adicionar região
+        </button>
+      </div>
+
+      {regioes.length === 0 && (
+        <p style={{ margin: "4px 0 12px", fontSize: 13, color: "#9ca3af" }}>Nenhuma região ainda. Adicione uma e cole a URL-base do Marketplace.</p>
+      )}
+
+      {regioes.map((r, i) => (
+        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-start" }}>
+          <input
+            style={{ ...inputEstilo, flex: "0 0 150px" }}
+            value={r.nome}
+            placeholder="Porto Alegre"
+            onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
+          />
+          <input
+            style={{ ...inputEstilo, flex: 1, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
+            value={r.url}
+            placeholder="https://web.facebook.com/marketplace/portoalegre/vehicles/?exact=false&radius=500&locale=pt_BR"
+            onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
+          />
+          <button
+            type="button"
+            aria-label="Remover"
+            onClick={() => { setRegioes((rs) => rs.filter((_, j) => j !== i)); marcarSujo(); }}
+            style={{ padding: 9, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 9, cursor: "pointer", color: "#dc2626", flexShrink: 0 }}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ))}
+
+      {previa && (
+        <div style={{ marginTop: 12, padding: "10px 12px", background: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 9 }}>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.3 }}>Prévia da 1ª região (URL final varrida)</span>
+          <p style={{ margin: "5px 0 0", fontSize: 11.5, color: "#475569", fontFamily: "ui-monospace, monospace", wordBreak: "break-all", lineHeight: 1.5 }}>{previa}</p>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={salvarTudo}
+        disabled={salvando}
+        style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", fontSize: 14, fontWeight: 700, color: "#fff", background: salvando ? "#6b7280" : "#059669", border: "none", borderRadius: 10, cursor: salvando ? "default" : "pointer" }}
+      >
+        {salvando ? <Loader2 size={16} className="animate-spin" /> : salvo ? <Check size={16} /> : null}
+        {salvando ? "Salvando…" : salvo ? "Salvo" : "Salvar configurações"}
+      </button>
+    </div>
+  );
+}

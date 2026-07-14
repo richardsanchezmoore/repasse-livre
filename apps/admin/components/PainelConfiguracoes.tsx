@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Settings, CreditCard, type LucideIcon } from "lucide-react";
+import { Settings, CreditCard, Radar, type LucideIcon } from "lucide-react";
 import { CampoConfig } from "./CampoConfig";
 import { PainelPagamentos } from "./PainelPagamentos";
+import { PainelMotorBusca } from "./PainelMotorBusca";
 
 /**
  * Painel de Configurações em ABAS (antes era uma tripa só):
@@ -48,7 +49,7 @@ function BotaoAba({
 }
 
 export function PainelConfiguracoes({ configs }: { configs: Record<string, string> }) {
-  const [aba, setAba] = useState<"geral" | "pagamentos">("geral");
+  const [aba, setAba] = useState<"geral" | "motorbusca" | "pagamentos">("geral");
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "28px 20px" }}>
@@ -56,12 +57,17 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         <BotaoAba ativo={aba === "geral"} onClick={() => setAba("geral")} Icone={Settings}>
           Geral
         </BotaoAba>
+        <BotaoAba ativo={aba === "motorbusca"} onClick={() => setAba("motorbusca")} Icone={Radar}>
+          Motor de Busca
+        </BotaoAba>
         <BotaoAba ativo={aba === "pagamentos"} onClick={() => setAba("pagamentos")} Icone={CreditCard}>
           Pagamentos
         </BotaoAba>
       </div>
 
-      {aba === "geral" ? (
+      {aba === "motorbusca" && <PainelMotorBusca configs={configs} />}
+
+      {aba === "geral" && (
         <>
           <p style={{ margin: "0 0 20px", color: "#6b7280", fontSize: 14 }}>Ajustes básicos da plataforma.</p>
 
@@ -106,7 +112,9 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
             24h/48h/72h” ou “Novos · últimas 7 dias”. Reflete no próximo carregamento do board.
           </CampoConfig>
         </>
-      ) : (
+      )}
+
+      {aba === "pagamentos" && (
         <>
           <PainelPagamentos configs={configs} />
 

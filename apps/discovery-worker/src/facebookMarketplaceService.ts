@@ -41,6 +41,32 @@ export interface AnuncioFacebook {
   suspeitaIsca: boolean; // descrição tem cara de financiamento/entrada de loja
 }
 
+/** Filtros globais de captação do FB (vêm do painel "Motor de Busca" via worker_config). */
+export interface FiltrosFacebook {
+  minPreco: string;
+  maxPreco: string;
+  minAno: string;
+  sort: string; // creation_time_descend | best_match | price_ascend | distance_ascend
+}
+
+/**
+ * Compõe a URL final de busca = URL-base "crua" da região (do painel) + os filtros
+ * globais (preço/ano/ordem). MESMA composição da prévia do painel (PainelMotorBusca).
+ * minPrice tira velharia+isca de loja; minYear corta ônibus/motorhome; sortBy prioriza fresco.
+ */
+export function montarUrlBuscaFacebook(urlBase: string, f: FiltrosFacebook): string {
+  const base = urlBase.trim();
+  const sep = base.includes("?") ? "&" : "?";
+  const p = new URLSearchParams({
+    minPrice: f.minPreco,
+    maxPrice: f.maxPreco,
+    minYear: f.minAno,
+    sortBy: f.sort,
+    topLevelVehicleType: "car_truck",
+  });
+  return `${base}${sep}${p.toString()}`;
+}
+
 /**
  * Extrai os IDs de anúncio de uma página de BUSCA do FB Marketplace (fetch puro,
  * headers de Chrome → HTTP 200 com o JSON). Cada card é
