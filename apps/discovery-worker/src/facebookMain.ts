@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { fetch as undiciFetch, ProxyAgent } from "undici";
 import {
   buscarIdsVistosFacebook,
   finalizarRegistroVarreduraComErro,
@@ -54,8 +55,14 @@ const HEADERS: Record<string, string> = {
   "upgrade-insecure-requests": "1",
 };
 
+// Proxy opcional: o IP DATACENTER da Railway leva login-wall do FB (confirmado 14/07). Roteando
+// por um proxy de IP residencial/ISP (o mesmo PROXY_URL estático da OLX, custo fixo) o FB serve o
+// Marketplace real. Sem PROXY_URL → fetch direto (funciona só de IP residencial, ex.: rodar local).
+const PROXY_URL = process.env.FACEBOOK_PROXY_URL ?? process.env.PROXY_URL ?? "";
+const dispatcher = PROXY_URL ? new ProxyAgent(PROXY_URL) : undefined;
+
 async function pega(url: string): Promise<string> {
-  const r = await fetch(url, { headers: HEADERS });
+  const r = await undiciFetch(url, { headers: HEADERS, dispatcher });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.text();
 }
@@ -284,7 +291,7 @@ async function main(): Promise<void> {
     return;
   }
   console.log(
-    `[fb] rodando ${regioes.length} região(ões): ${regioes.map((r) => r.nome).join(", ")} | filtros ${cfg.filtros.minAno}+ / R$${cfg.filtros.minPreco}-${cfg.filtros.maxPreco} | freio ${cfg.maxItens} itens/run, pacing ${cfg.pacingMs}ms`
+    `[fb] rodando ${regioes.length} região(ões): ${regioes.map((r) => r.nome).join(", ")} | filtros ${cfg.filtros.minAno}+ / R$${cfg.filtros.minPreco}-${cfg.filtros.maxPreco} | freio ${cfg.maxItens} itens/run, pacing ${cfg.pacingMs}ms | proxy: ${PROXY_URL ? "SIM (" + PROXY_URL.replace(/:[^:@/]+@/, ":***@") + ")" : "não (fetch direto)"}`
   );
   for (const r of regioes) {
     try {
