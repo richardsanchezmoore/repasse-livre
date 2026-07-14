@@ -77,7 +77,7 @@ export function BemVindo({ logado }: { logado: boolean }) {
       // background. Pix Automático é ASSÍNCRONO (débito confirma minutos depois), então
       // esperamos ~3,3 min e, no instante que cai, transiciona sozinho pro definir-senha.
       // Se estourar o tempo, cai no login por email (conta+premium já são criados pelo webhook).
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 75; i++) {
         let resposta: {
           pronto?: boolean;
           aguardando?: boolean;
@@ -168,9 +168,14 @@ export function BemVindo({ logado }: { logado: boolean }) {
         </p>
 
         {fase === "carregando" && (
-          <p className="bemvindo-nota bemvindo-carregando">
-            <Loader2 size={18} className="bemvindo-spin" strokeWidth={2.2} /> Confirmando seu pagamento… <span style={{ opacity: 0.8 }}>(o Pix Automático leva alguns instantes)</span>
-          </p>
+          <>
+            <p className="bemvindo-nota bemvindo-carregando">
+              <Loader2 size={18} className="bemvindo-spin" strokeWidth={2.2} /> Confirmando seu pagamento… <span style={{ opacity: 0.8 }}>(o Pix Automático leva alguns instantes)</span>
+            </p>
+            <Link href={`/login?redirect=${encodeURIComponent(destino)}`} className="bemvindo-secundario">
+              Já paguei — prefiro entrar com meu email
+            </Link>
+          </>
         )}
 
         {fase === "destino" && botoesDestino}
