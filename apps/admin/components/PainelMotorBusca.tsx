@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Check, Loader2, Plus, Trash2, MapPin, Car } from "lucide-react";
+import { Check, Loader2, Plus, Trash2, MapPin, Car, Copy } from "lucide-react";
 import { salvarConfigWorker } from "@/app/actions";
 
 /**
@@ -19,6 +19,11 @@ interface Regiao {
 }
 
 const RAIOS = ["80", "100", "250", "500"];
+
+/** MESMA lógica do worker (facebookMain.slug) — o valor de FACEBOOK_REGIAO no cron da Railway. */
+function slugify(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
 
 function lerRegioes(bruto: string | undefined): Regiao[] {
   try {
@@ -158,37 +163,54 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
       )}
 
       {regioes.map((r, i) => (
-        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-start" }}>
-          <input
-            style={{ ...inputEstilo, flex: "0 0 140px" }}
-            value={r.nome}
-            placeholder="Florianópolis"
-            onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
-          />
-          <input
-            style={{ ...inputEstilo, flex: 1, minWidth: 180, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
-            value={r.url}
-            placeholder="https://web.facebook.com/marketplace/florianopolis/vehicles/?exact=false&locale=pt_BR"
-            onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
-          />
-          <select
-            style={{ ...inputEstilo, flex: "0 0 92px" }}
-            value={r.raio}
-            aria-label="Raio (km)"
-            onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], raio: e.target.value }; setRegioes(n); marcarSujo(); }}
-          >
-            {RAIOS.map((km) => (
-              <option key={km} value={km}>{km} km</option>
-            ))}
-          </select>
-          <button
-            type="button"
-            aria-label="Remover"
-            onClick={() => { setRegioes((rs) => rs.filter((_, j) => j !== i)); marcarSujo(); }}
-            style={{ padding: 9, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 9, cursor: "pointer", color: "#dc2626", flexShrink: 0 }}
-          >
-            <Trash2 size={16} />
-          </button>
+        <div key={i} style={{ marginBottom: 10 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              style={{ ...inputEstilo, flex: "0 0 140px" }}
+              value={r.nome}
+              placeholder="Florianópolis"
+              onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
+            />
+            <input
+              style={{ ...inputEstilo, flex: 1, minWidth: 180, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
+              value={r.url}
+              placeholder="https://web.facebook.com/marketplace/florianopolis/vehicles/?exact=false&locale=pt_BR"
+              onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
+            />
+            <select
+              style={{ ...inputEstilo, flex: "0 0 92px" }}
+              value={r.raio}
+              aria-label="Raio (km)"
+              onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], raio: e.target.value }; setRegioes(n); marcarSujo(); }}
+            >
+              {RAIOS.map((km) => (
+                <option key={km} value={km}>{km} km</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              aria-label="Remover"
+              onClick={() => { setRegioes((rs) => rs.filter((_, j) => j !== i)); marcarSujo(); }}
+              style={{ padding: 9, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 9, cursor: "pointer", color: "#dc2626", flexShrink: 0 }}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+          {r.nome.trim() && (
+            <div style={{ marginTop: 4, marginLeft: 2, display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#9ca3af" }}>
+              <span>
+                Cron da Railway → <code style={{ color: "#6b7280", background: "#f1f5f9", padding: "1px 6px", borderRadius: 5, fontFamily: "ui-monospace, monospace" }}>FACEBOOK_REGIAO={slugify(r.nome)}</code>
+              </span>
+              <button
+                type="button"
+                aria-label="Copiar valor da variável"
+                onClick={() => navigator.clipboard?.writeText(slugify(r.nome))}
+                style={{ display: "inline-flex", alignItems: "center", padding: 3, background: "transparent", border: "none", cursor: "pointer", color: "#9ca3af" }}
+              >
+                <Copy size={13} />
+              </button>
+            </div>
+          )}
         </div>
       ))}
 
