@@ -39,7 +39,35 @@ export interface AnuncioFacebook {
   descricao: string | null;
   fotoPrincipal: string | null;
   fotos: string[]; // TODAS as fotos do anúncio (até 10), como ML/OLX
+  leilao: "Sim" | "Não" | null; // procedência de leilão extraída da DESCRIÇÃO (FB não tem atributo)
   suspeitaIsca: boolean; // descrição tem cara de financiamento/entrada de loja
+}
+
+/**
+ * Procedência de LEILÃO na descrição do FB (que NÃO tem o atributo estruturado dos outros
+ * marketplaces). Análise do ENTORNO da palavra (pedido do user): recorta a cláusula que contém
+ * "leilão" e checa NEGAÇÃO nela. "teve passagem pelo leilão"/"tem leilão"/"possui leilão" → "Sim";
+ * "NÃO tem passagem por leilão"/"sem leilão"/"isento de leilão" → "Não"; não mencionou → null.
+ * Qualquer menção AFIRMATIVA vence (sinaliza leilão). Vira atributos_olx.has_auction (Copiloto/BIA leem).
+ */
+export function detectarLeilao(texto: string | null): "Sim" | "Não" | null {
+  if (!texto) return null;
+  const t = texto.toLowerCase();
+  const re = /\bleil[ãa]o\w*/g;
+  let m: RegExpExecArray | null;
+  let positivo = false;
+  let negativo = false;
+  while ((m = re.exec(t)) !== null) {
+    // Cláusula da palavra: janela anterior recortada no separador mais próximo (o FB usa "|" nas quebras).
+    let janela = t.slice(Math.max(0, m.index - 45), m.index);
+    const sep = Math.max(janela.lastIndexOf("."), janela.lastIndexOf("|"), janela.lastIndexOf("!"), janela.lastIndexOf("?"), janela.lastIndexOf(";"), janela.lastIndexOf("•"), janela.lastIndexOf("✅"), janela.lastIndexOf("➡"));
+    if (sep >= 0) janela = janela.slice(sep + 1);
+    if (/\b(n[ãa]o|sem|nunca|jamais|isento|livre de)\b/.test(janela) || /\bs\/\s*$/.test(janela)) negativo = true;
+    else positivo = true;
+  }
+  if (positivo) return "Sim";
+  if (negativo) return "Não";
+  return null;
 }
 
 function titlecase(s: string): string {
@@ -283,6 +311,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     descricao,
     fotoPrincipal: fotos[0] ?? ogMeta(html, "image"),
     fotos: fotos.length > 0 ? fotos : ogMeta(html, "image") ? [ogMeta(html, "image")!] : [],
+    leilao: detectarLeilao(descricao),
     suspeitaIsca,
   };
 

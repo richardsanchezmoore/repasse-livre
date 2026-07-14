@@ -159,6 +159,10 @@ async function resolverFipe(a: AnuncioFacebook): Promise<ReferenciaFipe | null> 
 
 function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: number, classificacao: Classificacao): Oportunidade {
   const fotos = a.fotos.slice(0, 10);
+  // FB não tem atributo estruturado: o leilão detectado na descrição vira has_auction (o mesmo
+  // sinal que o Copiloto/BIA leem via atributos_olx). "Sim" dispara o aviso de procedência.
+  const atributos: Record<string, { label: string; value: string }> = {};
+  if (a.leilao) atributos.has_auction = { label: "Passagem por leilão", value: a.leilao };
   return {
     fonte: "FACEBOOK",
     link_origem: linkPublico(a.id),
@@ -181,7 +185,7 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
     origem_tipo: "descoberta",
     status: "descoberta",
     data_publicacao_origem: null,
-    atributos_olx: {},
+    atributos_olx: atributos,
     anunciante_profissional: a.sellerType === "DEALER" ? true : a.sellerType === "PRIVATE_SELLER" ? false : null,
   };
 }
