@@ -1,5 +1,7 @@
 import "dotenv/config";
-import { fetch as undiciFetch, ProxyAgent } from "undici";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fetch as undiciFetch } from "undici";
 import {
   buscarIdsVistosFacebook,
   finalizarRegistroVarreduraComErro,
@@ -55,24 +57,23 @@ const HEADERS: Record<string, string> = {
   "upgrade-insecure-requests": "1",
 };
 
-// Proxy opcional: o IP DATACENTER da Railway leva login-wall do FB (confirmado 14/07). Roteando
-// por um proxy de IP residencial/ISP (o mesmo PROXY_URL estático da OLX, custo fixo) o FB serve o
-// Marketplace real. Sem PROXY_URL → fetch direto (funciona só de IP residencial, ex.: rodar local).
+// O IP DATACENTER da Railway leva login-wall do FB (confirmado 14/07). Com PROXY_URL setado
+// (o MESMO proxy ISP estático da OLX, custo fixo) usamos `curl_chrome116 -x` — caminho PROVADO
+// da OLX com esse proxy, + impersonação de TLS de Chrome real (o undici ProxyAgent dá "Request
+// was cancelled" com esse proxy). Sem PROXY_URL → fetch direto (funciona só de IP residencial,
+// ex.: rodar LOCAL no PC como o ML).
 const PROXY_URL = process.env.FACEBOOK_PROXY_URL ?? process.env.PROXY_URL ?? "";
-const dispatcher = PROXY_URL ? new ProxyAgent(PROXY_URL) : undefined;
+const execFileAsync = promisify(execFile);
 
 async function pega(url: string): Promise<string> {
-  try {
-    const r = await undiciFetch(url, { headers: HEADERS, dispatcher });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.text();
-  } catch (e) {
-    // undici embrulha o motivo real em `.cause` (ECONNREFUSED, cert, tunnel, timeout…) —
-    // "fetch failed" sozinho não diz nada. Expõe a causa pra diagnosticar o proxy.
-    const causa = (e as { cause?: { code?: string; message?: string } })?.cause;
-    const detalhe = causa ? `${causa.code ?? ""} ${causa.message ?? ""}`.trim() : "";
-    throw new Error(`fetch falhou${detalhe ? ` [${detalhe}]` : ""}: ${e instanceof Error ? e.message : String(e)}`);
+  if (PROXY_URL) {
+    const args = ["-s", "--connect-timeout", "30", "--max-time", "150", "-x", PROXY_URL, "-H", "accept-language: pt-BR,pt;q=0.9", url];
+    const { stdout } = await execFileAsync("curl_chrome116", args, { maxBuffer: 1024 * 1024 * 20, timeout: 165_000 });
+    return stdout;
   }
+  const r = await undiciFetch(url, { headers: HEADERS });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.text();
 }
 const dormir = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
