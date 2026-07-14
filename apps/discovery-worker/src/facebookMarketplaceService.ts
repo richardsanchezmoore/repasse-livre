@@ -84,10 +84,18 @@ function contarSinaisLoja(texto: string | null): number {
   return SINAIS_LOJA.reduce((n, re) => n + (re.test(texto) ? 1 : 0), 0);
 }
 
-/** Decodifica escapes de string JSON embutida no HTML (\uXXXX, \n, \/, \"). */
+/** Decodifica escapes JSON (\uXXXX, \n, \/, \") E entidades HTML (&#xNN; &#NN; &amp;…) —
+ *  o JSON embutido usa \u, mas as meta og: usam entidades HTML (ex.: "b&#xe1;sico"). */
 function decodar(s: string): string {
   return s
     .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/\\n/g, " ")
     .replace(/\\\//g, "/")
     .replace(/\\"/g, '"')
@@ -101,16 +109,26 @@ function campoUnico(html: string, chave: string): string | null {
   return m ? decodar(m[1]) : null;
 }
 
-/** meta og: do <head> (sempre do anúncio principal). */
+/** meta og: do <head> (sempre do anúncio principal) — já decodificado. */
 function ogMeta(html: string, prop: string): string | null {
   const m = html.match(new RegExp(`<meta property="og:${prop}"[^>]*content="([^"]*)"`));
-  return m ? m[1] : null;
+  return m ? decodar(m[1]) : null;
+}
+
+/** Ano do texto: 4 dígitos (1990-2049); senão 2 dígitos ("ano 98", "98/99") com inferência
+ *  de século (>=30 → 19xx, senão 20xx). Retorna "YYYY" ou null. */
+function extrairAno(texto: string): string | null {
+  const quatro = texto.match(ANO_RE)?.[1];
+  if (quatro) return quatro;
+  const dois = texto.match(/\bano\s*(\d{2})\b/i)?.[1] ?? texto.match(/\b(\d{2})[\/.](\d{2})\b/)?.[1];
+  if (dois) return (Number(dois) >= 30 ? "19" : "20") + dois;
+  return null;
 }
 
 /** Extrai marca+modelo+ano do título quando o estruturado não veio.
  *  Título FB típico: "{ANO} {MARCA} {MODELO...}" (ex "2014 Renault Clio"). */
 function parsearTitulo(titulo: string): { marca: string | null; modelo: string | null; ano: string | null } {
-  const ano = titulo.match(ANO_RE)?.[1] ?? null;
+  const ano = extrairAno(titulo);
   // tira o ano e limpa; 1ª palavra = marca, resto = modelo (mesma heurística do ML/OLX)
   const semAno = titulo.replace(ANO_RE, " ").replace(/\s+/g, " ").trim();
   const partes = semAno.split(" ").filter(Boolean);
@@ -148,7 +166,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   const pTit = parsearTitulo(titulo);
   const marca = marcaEstr ?? pTit.marca;
   const modelo = modeloEstr ?? pTit.modelo;
-  const ano = pTit.ano ?? (descricao ? descricao.match(ANO_RE)?.[1] ?? null : null);
+  const ano = pTit.ano ?? (descricao ? extrairAno(descricao) : null);
 
   // ★ NÃO HÁ PADRÃO: cada vendedor põe a versão num lugar (título, descrição, campo modelo,
   // trim estruturado, specs). Caçamos o MOTOR/versão em TODAS as frentes e combinamos.
