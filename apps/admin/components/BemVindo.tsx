@@ -9,7 +9,7 @@ const CHAVE_DESTINO = "rl_destino_pos_compra";
 const CHAVE_CLAIM = "rl_claim";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type Fase = "carregando" | "definirSenha" | "destino" | "loginFallback";
+type Fase = "carregando" | "definirSenha" | "destino" | "loginFallback" | "abrirNoDominio";
 
 /** Troca as credenciais do claim por uma sessão. Tenta variações de verifyOtp
  * (o formato varia entre versões do supabase-js) — a 1ª que colar cria a sessão. */
@@ -52,6 +52,7 @@ export function BemVindo({ logado }: { logado: boolean }) {
   const [senha, setSenha] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [escaparUrl, setEscaparUrl] = useState<string | null>(null);
   const rodou = useRef(false);
 
   useEffect(() => {
@@ -59,20 +60,16 @@ export function BemVindo({ logado }: { logado: boolean }) {
     rodou.current = true;
 
     // A Ticto EMBUTE a nossa /bem-vindo num iframe no domínio dela (checkout.ticto.app).
-    // Nesse contexto de terceiro o cookie de sessão é bloqueado e a localStorage fica
-    // particionada → o auto-login não persiste no nosso domínio. Solução: QUEBRAR pra fora —
-    // leva a janela INTEIRA pra nossa própria /bem-vindo (mesma origin do iframe), onde o
-    // login roda nativo (igual à Cakto, que já caía direto no nosso domínio). Carrega o sck
-    // da URL (a Ticto propaga) pra amarrar o claim do outro lado.
-    if (typeof window !== "undefined" && window.top && window.self !== window.top) {
+    // Nesse contexto de terceiro NÃO dá pra: (a) logar preso — o cookie de sessão de 3ª
+    // parte é bloqueado e ainda queimaria o claim (uso único); nem (b) escapar sozinho —
+    // um iframe cross-origin não pode navegar o topo SEM gesto do usuário (anti-framebusting).
+    // Solução: mostrar um botão cujo CLIQUE (=gesto) leva pro nosso domínio top-level, com o
+    // sck INTACTO na URL. Lá o login roda nativo (igual à Cakto). Ver gateway_pagamento_woovi.
+    if (typeof window !== "undefined" && window.self !== window.top) {
       const sck = new URLSearchParams(window.location.search).get("sck") ?? "";
-      const alvo = `${window.location.origin}/bem-vindo${sck ? `?sck=${encodeURIComponent(sck)}` : ""}`;
-      try {
-        window.top.location.replace(alvo); // replace: não deixa o checkout da Ticto no histórico
-        return;
-      } catch {
-        // iframe com sandbox bloqueando top-navigation → segue no fluxo normal (best-effort).
-      }
+      setEscaparUrl(`${window.location.origin}/bem-vindo${sck ? `?sck=${encodeURIComponent(sck)}` : ""}`);
+      setFase("abrirNoDominio");
+      return; // não segue o fluxo de claim aqui dentro — preserva o token pro nosso domínio
     }
 
     // Destino guardado ao clicar num anúncio fechado (CapturaDestino em /planos).
@@ -199,6 +196,18 @@ export function BemVindo({ logado }: { logado: boolean }) {
             <Link href={`/login?redirect=${encodeURIComponent(destino)}`} className="bemvindo-secundario">
               Já paguei — prefiro entrar com meu email
             </Link>
+          </>
+        )}
+
+        {fase === "abrirNoDominio" && escaparUrl && (
+          <>
+            <p className="bemvindo-nota">
+              <strong>Falta 1 passo:</strong> abra sua conta pra criar a senha e já começar a usar.
+            </p>
+            {/* target="_top": o clique é o gesto que libera sair do iframe da Ticto pro nosso domínio. */}
+            <a href={escaparUrl} target="_top" className="bemvindo-cta">
+              <ArrowRight size={18} strokeWidth={2.2} /> Acessar minha conta
+            </a>
           </>
         )}
 
