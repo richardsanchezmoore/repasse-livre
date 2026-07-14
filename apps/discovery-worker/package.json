@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "discover": "tsx src/main.ts",
+    "discover:facebook": "npx tsx src/facebookMain.ts",
     "discover:webmotors": "tsx src/webmotorsMain.ts",
     "discover:mercadolivre": "npx tsx src/mercadoLivreMain.ts",
     "backfill:ml-detalhes": "npx tsx src/backfillMercadoLivreDetalhes.ts",

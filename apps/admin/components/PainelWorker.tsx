@@ -42,12 +42,13 @@ const CAMPOS_CONFIG: Array<{ chave: string; rotulo: string; ajuda: string }> = [
   },
 ];
 
-type Fonte = "OLX" | "WEBMOTORS" | "MERCADO_LIVRE";
+type Fonte = "OLX" | "WEBMOTORS" | "MERCADO_LIVRE" | "FACEBOOK";
 
 /** discovery_runs não tem coluna `fonte` — derivamos da categoria_url. */
 function fonteDaUrl(categoriaUrl: string): Fonte {
   if (/webmotors/i.test(categoriaUrl)) return "WEBMOTORS";
   if (/mercadoli/i.test(categoriaUrl)) return "MERCADO_LIVRE"; // mercadolivre / mercadolibre
+  if (/facebook/i.test(categoriaUrl)) return "FACEBOOK";
   return "OLX";
 }
 
@@ -55,12 +56,17 @@ const ROTULO_FONTE: Record<Fonte, string> = {
   OLX: "OLX",
   WEBMOTORS: "Webmotors",
   MERCADO_LIVRE: "Mercado Livre",
+  FACEBOOK: "Facebook",
 };
 
-const ORDEM_FONTES: Fonte[] = ["OLX", "WEBMOTORS", "MERCADO_LIVRE"];
+const ORDEM_FONTES: Fonte[] = ["OLX", "WEBMOTORS", "MERCADO_LIVRE", "FACEBOOK"];
 
 function extrairEstado(categoriaUrl: string): string {
-  // Só a OLX varre por estado; Webmotors/ML são varreduras nacionais.
+  // OLX varre por estado; FB por região (rótulo na URL /marketplace/<regiao>/); ML/Webmotors nacionais.
+  if (fonteDaUrl(categoriaUrl) === "FACEBOOK") {
+    const reg = categoriaUrl.match(/marketplace\/([a-z0-9-]+)\//i);
+    return reg ? reg[1].replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Regional";
+  }
   if (fonteDaUrl(categoriaUrl) !== "OLX") return "Nacional";
   const match = categoriaUrl.match(/estado-([a-z]{2})/i);
   return match ? match[1].toUpperCase() : "—";

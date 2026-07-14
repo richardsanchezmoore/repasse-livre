@@ -38,6 +38,7 @@ export interface AnuncioFacebook {
   longitude: number | null;
   descricao: string | null;
   fotoPrincipal: string | null;
+  fotos: string[]; // TODAS as fotos do anúncio (até 10), como ML/OLX
   suspeitaIsca: boolean; // descrição tem cara de financiamento/entrada de loja
 }
 
@@ -229,6 +230,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
 
   // Loja/isca: 2+ sinais de discurso de loja no título+descrição (o preço-campo vira entrada).
   const suspeitaIsca = contarSinaisLoja(`${titulo} ${descricao ?? ""}`) >= 2;
+  const fotos = extrairFotos(html);
 
   const anuncio: AnuncioFacebook = {
     id: itemId,
@@ -250,7 +252,8 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     latitude: ll ? Number(ll[1]) : null,
     longitude: ll ? Number(ll[2]) : null,
     descricao,
-    fotoPrincipal: ogMeta(html, "image"),
+    fotoPrincipal: fotos[0] ?? ogMeta(html, "image"),
+    fotos: fotos.length > 0 ? fotos : ogMeta(html, "image") ? [ogMeta(html, "image")!] : [],
     suspeitaIsca,
   };
 
@@ -301,6 +304,41 @@ function precoAncorado(html: string): number | null {
 function campoUnicoAncorado(html: string, chave: string): string | null {
   const m = janelaPrincipal(html).match(new RegExp(`"${chave}":"([^"]+)"`));
   return m ? decodar(m[1]) : null;
+}
+
+/** TODAS as fotos do anúncio (até 10). O array `listing_photos` é único do principal;
+ *  cada entrada tem um `image.uri`. Bracket-match respeitando strings (o array é grande). */
+function extrairFotos(html: string): string[] {
+  const marca = '"listing_photos":[';
+  const inicio = html.indexOf(marca);
+  if (inicio === -1) return [];
+  const s = html.slice(inicio + marca.length - 1); // começa no "["
+  let prof = 0;
+  let fim = -1;
+  let emStr = false;
+  let esc = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (esc) { esc = false; continue; }
+    if (c === "\\") { esc = true; continue; }
+    if (c === '"') { emStr = !emStr; continue; }
+    if (emStr) continue;
+    if (c === "[") prof++;
+    else if (c === "]") { prof--; if (prof === 0) { fim = i; break; } }
+  }
+  if (fim === -1) return [];
+  const arr = s.slice(0, fim + 1);
+  // SÓ fotos grandes (descarta miniatura): cada foto tem image {height,width,uri};
+  // fica com as de lado >= 500px. FB serve o carrossel em ~720-960px.
+  const fotos: string[] = [];
+  for (const m of arr.matchAll(/"image":\{([^{}]*)\}/g)) {
+    const bloco = m[1];
+    const uri = bloco.match(/"uri":"([^"]+)"/)?.[1];
+    const largura = Number(bloco.match(/"width":(\d+)/)?.[1] ?? 0);
+    const altura = Number(bloco.match(/"height":(\d+)/)?.[1] ?? 0);
+    if (uri && Math.max(largura, altura) >= 500) fotos.push(uri.replace(/\\\//g, "/"));
+  }
+  return [...new Set(fotos)].slice(0, 10);
 }
 
 /** Texto da descrição do anúncio principal. */

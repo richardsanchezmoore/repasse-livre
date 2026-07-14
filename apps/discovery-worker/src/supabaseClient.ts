@@ -195,6 +195,27 @@ export async function registrarVistoML(mlbId: string, motivo: string, ultimoPrec
   if (error) console.warn(`[ml_vistos] upsert ${mlbId} falhou: ${error.message}`);
 }
 
+/** Facebook: dos IDs dados, quais já processamos (fb_vistos). Batch (1 query). */
+export async function buscarIdsVistosFacebook(ids: string[]): Promise<Set<string>> {
+  const vistos = new Set<string>();
+  if (ids.length === 0) return vistos;
+  const { data, error } = await supabase.from("fb_vistos").select("item_id").in("item_id", ids);
+  if (error) {
+    console.warn(`[fb_vistos] consulta em lote falhou: ${error.message}`);
+    return vistos;
+  }
+  for (const r of data ?? []) vistos.add(r.item_id);
+  return vistos;
+}
+
+/** Facebook: marca um anúncio como processado (salvo/isca/sem_motor/sem_fipe/acima_fipe). */
+export async function registrarVistoFacebook(itemId: string, status: string): Promise<void> {
+  const { error } = await supabase
+    .from("fb_vistos")
+    .upsert({ item_id: itemId, status, visto_em: new Date().toISOString() }, { onConflict: "item_id" });
+  if (error) console.warn(`[fb_vistos] upsert ${itemId} falhou: ${error.message}`);
+}
+
 export async function linkOrigemJaExiste(linkOrigem: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("opportunities")
