@@ -73,11 +73,11 @@ export function BemVindo({ logado }: { logado: boolean }) {
 
     (async () => {
       const supabase = criarSupabaseBrowser();
-      // O comprador cai aqui antes do webhook gravar o claim → re-tenta. Pix Automático
-      // é ASSÍNCRONO (o débito confirma minutos depois), então esperamos ~37s; se não
-      // fechar nesse tempo, cai no login por email (a conta+premium já são criados pelo
-      // webhook quando o pagamento confirmar).
-      for (let i = 0; i < 15; i++) {
+      // O comprador cai aqui antes do webhook gravar o claim → fica verificando em
+      // background. Pix Automático é ASSÍNCRONO (débito confirma minutos depois), então
+      // esperamos ~3,3 min e, no instante que cai, transiciona sozinho pro definir-senha.
+      // Se estourar o tempo, cai no login por email (conta+premium já são criados pelo webhook).
+      for (let i = 0; i < 50; i++) {
         let resposta: {
           pronto?: boolean;
           aguardando?: boolean;
@@ -106,7 +106,7 @@ export function BemVindo({ logado }: { logado: boolean }) {
           return;
         }
         if (!resposta.aguardando) break; // expirado/consumido → fallback
-        await new Promise((res) => setTimeout(res, 2500)); // espera o webhook
+        await new Promise((res) => setTimeout(res, 4000)); // espera o webhook
       }
       setFase("loginFallback");
     })();
@@ -153,15 +153,23 @@ export function BemVindo({ logado }: { logado: boolean }) {
         <span className="bemvindo-check">
           <BadgeCheck size={40} strokeWidth={2} />
         </span>
-        <h1 className="bemvindo-titulo">Bem-vindo ao Repasse Livre PRO! 🎉</h1>
+        <h1 className="bemvindo-titulo">
+          {fase === "carregando" ? "Quase lá! 🎉" : "Bem-vindo ao Repasse Livre PRO! 🎉"}
+        </h1>
         <p className="bemvindo-sub">
-          Pagamento aprovado — seu acesso já está <strong>liberado</strong>. Agora você enxerga o mercado como
-          ninguém: todas as ofertas abaixo da FIPE, o Copiloto e a inteligência da BIA na sua mão.
+          {fase === "carregando" ? (
+            "Estamos confirmando seu pagamento. Pode deixar esta aba aberta — assim que cair, seu acesso libera aqui automaticamente."
+          ) : (
+            <>
+              Pagamento aprovado — seu acesso já está <strong>liberado</strong>. Agora você enxerga o mercado como
+              ninguém: todas as ofertas abaixo da FIPE, o Copiloto e a inteligência da BIA na sua mão.
+            </>
+          )}
         </p>
 
         {fase === "carregando" && (
           <p className="bemvindo-nota bemvindo-carregando">
-            <Loader2 size={18} className="bemvindo-spin" strokeWidth={2.2} /> Ativando seu acesso…
+            <Loader2 size={18} className="bemvindo-spin" strokeWidth={2.2} /> Confirmando seu pagamento… <span style={{ opacity: 0.8 }}>(o Pix Automático leva alguns instantes)</span>
           </p>
         )}
 
