@@ -65,7 +65,14 @@ export function BemVindo({ logado }: { logado: boolean }) {
 
     if (logado) return; // já tem sessão (comprador logado) → mostra destino direto
 
-    const token = localStorage.getItem(CHAVE_CLAIM);
+    // Token do claim por 2 caminhos:
+    //  1) localStorage (Cakto: nossa /planos salva o rl_claim antes de sair).
+    //  2) ?sck=claim_{token} na URL (Ticto propaga o sck pra página de obrigado).
+    //     Isso salva o caso em que a localStorage não está acessível — ex.: a Ticto
+    //     embute a nossa página num iframe no domínio dela, particionando o storage.
+    const sckUrl = new URLSearchParams(window.location.search).get("sck") ?? "";
+    const tokenUrl = sckUrl.startsWith("claim_") ? sckUrl.slice(6) : null;
+    const token = tokenUrl ?? localStorage.getItem(CHAVE_CLAIM);
     if (!token) {
       setFase("loginFallback");
       return;
