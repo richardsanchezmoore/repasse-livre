@@ -15,12 +15,18 @@ import { salvarConfigWorker } from "@/app/actions";
 interface Regiao {
   nome: string;
   url: string;
+  raio: string; // km — o FB prioriza o centro; raio menor + vários centros cobre melhor
 }
+
+const RAIOS = ["80", "100", "250", "500"];
 
 function lerRegioes(bruto: string | undefined): Regiao[] {
   try {
     const v = JSON.parse(bruto ?? "[]");
-    return Array.isArray(v) ? v.filter((r) => typeof r?.url === "string") : [];
+    if (!Array.isArray(v)) return [];
+    return v
+      .filter((r) => typeof r?.url === "string")
+      .map((r) => ({ nome: r.nome ?? "", url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250") }));
   } catch {
     return [];
   }
@@ -71,15 +77,19 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
     });
   }
 
-  // Prévia da URL final composta (base + filtros globais), pra o admin ver o que será varrido.
-  function urlComposta(base: string): string {
-    const b = base.trim();
+  // Prévia da URL final composta (base + raio da região + filtros globais). MESMA lógica do
+  // worker (montarUrlBuscaFacebook): sobrescreve qualquer radius= colado na URL.
+  function urlComposta(base: string, raio: string): string {
+    const b = base.trim().replace(/([?&])radius=\d+/i, "$1").replace(/&{2,}/g, "&").replace(/[?&]$/, "");
     if (!b) return "";
     const sep = b.includes("?") ? "&" : "?";
-    const p = new URLSearchParams({ minPrice: minPreco, maxPrice: maxPreco, minYear: minAno, sortBy: sort, topLevelVehicleType: "car_truck" });
+    const p = new URLSearchParams({ radius: raio, minPrice: minPreco, maxPrice: maxPreco, minYear: minAno, sortBy: sort, topLevelVehicleType: "car_truck" });
     return `${b}${sep}${p.toString()}`;
   }
-  const previa = useMemo(() => (regioes[0]?.url ? urlComposta(regioes[0].url) : ""), [regioes, minPreco, maxPreco, minAno, sort]);
+  const previa = useMemo(
+    () => (regioes[0]?.url ? urlComposta(regioes[0].url, regioes[0].raio) : ""),
+    [regioes, minPreco, maxPreco, minAno, sort]
+  );
 
   return (
     <div style={{ padding: "0 0 8px" }}>
@@ -131,12 +141,17 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         </h3>
         <button
           type="button"
-          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "" }]); marcarSujo(); }}
+          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250" }]); marcarSujo(); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#059669", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 8, cursor: "pointer" }}
         >
           <Plus size={14} /> Adicionar região
         </button>
       </div>
+
+      <p style={{ margin: "0 0 12px", fontSize: 12, color: "#9ca3af", lineHeight: 1.5 }}>
+        O FB prioriza o <strong>centro</strong> do raio e abre por escassez. Prefira <strong>raio menor + vários
+        centros</strong> (ex.: Florianópolis 250km + Chapecó 250km) a um centro gigante com 500km (metade cai no mar).
+      </p>
 
       {regioes.length === 0 && (
         <p style={{ margin: "4px 0 12px", fontSize: 13, color: "#9ca3af" }}>Nenhuma região ainda. Adicione uma e cole a URL-base do Marketplace.</p>
@@ -145,17 +160,27 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
       {regioes.map((r, i) => (
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-start" }}>
           <input
-            style={{ ...inputEstilo, flex: "0 0 150px" }}
+            style={{ ...inputEstilo, flex: "0 0 140px" }}
             value={r.nome}
-            placeholder="Porto Alegre"
+            placeholder="Florianópolis"
             onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
           />
           <input
-            style={{ ...inputEstilo, flex: 1, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
+            style={{ ...inputEstilo, flex: 1, minWidth: 180, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
             value={r.url}
-            placeholder="https://web.facebook.com/marketplace/portoalegre/vehicles/?exact=false&radius=500&locale=pt_BR"
+            placeholder="https://web.facebook.com/marketplace/florianopolis/vehicles/?exact=false&locale=pt_BR"
             onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
           />
+          <select
+            style={{ ...inputEstilo, flex: "0 0 92px" }}
+            value={r.raio}
+            aria-label="Raio (km)"
+            onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], raio: e.target.value }; setRegioes(n); marcarSujo(); }}
+          >
+            {RAIOS.map((km) => (
+              <option key={km} value={km}>{km} km</option>
+            ))}
+          </select>
           <button
             type="button"
             aria-label="Remover"

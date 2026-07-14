@@ -73,14 +73,21 @@ export interface FiltrosFacebook {
 }
 
 /**
- * Compõe a URL final de busca = URL-base "crua" da região (do painel) + os filtros
- * globais (preço/ano/ordem). MESMA composição da prévia do painel (PainelMotorBusca).
- * minPrice tira velharia+isca de loja; minYear corta ônibus/motorhome; sortBy prioriza fresco.
+ * Compõe a URL final = URL-base da região + RAIO (por região) + filtros globais (preço/ano/ordem).
+ * MESMA composição da prévia do painel (PainelMotorBusca). O `raio` é campo do painel (o FB prioriza
+ * o CENTRO e abre por escassez → raio menor + vários centros cobre melhor que um centro gigante).
+ * Sobrescreve qualquer `radius=` que venha colado na URL. minPrice tira velharia+isca; minYear corta
+ * ônibus/motorhome; sortBy prioriza fresco.
  */
-export function montarUrlBuscaFacebook(urlBase: string, f: FiltrosFacebook): string {
-  const base = urlBase.trim();
+export function montarUrlBuscaFacebook(urlBase: string, f: FiltrosFacebook, raio = "250"): string {
+  const base = urlBase
+    .trim()
+    .replace(/([?&])radius=\d+/i, "$1")
+    .replace(/&{2,}/g, "&")
+    .replace(/[?&]$/, "");
   const sep = base.includes("?") ? "&" : "?";
   const p = new URLSearchParams({
+    radius: raio,
     minPrice: f.minPreco,
     maxPrice: f.maxPreco,
     minYear: f.minAno,

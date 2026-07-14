@@ -66,6 +66,7 @@ const linkPublico = (id: string) => `https://www.facebook.com/marketplace/item/$
 interface Regiao {
   nome: string;
   url: string;
+  raio?: string; // km (80/100/250/500); campo do painel. Default 250.
 }
 interface ConfigFb {
   ativo: boolean;
@@ -162,7 +163,7 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
 }
 
 async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
-  const urlBusca = montarUrlBuscaFacebook(regiao.url, cfg.filtros); // contém "facebook" → o board mostra fonte FACEBOOK
+  const urlBusca = montarUrlBuscaFacebook(regiao.url, cfg.filtros, regiao.raio ?? "250"); // contém "facebook" → board mostra fonte FACEBOOK
   const registroId = await iniciarRegistroVarredura(urlBusca, "facebook");
   try {
     const idsBusca = extrairIdsDaBusca(await pega(urlBusca));
