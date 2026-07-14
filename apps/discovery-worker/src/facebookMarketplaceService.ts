@@ -74,6 +74,24 @@ function titlecase(s: string): string {
   return s.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
+/** Câmbio cru do FB (MANUAL/AUTOMATIC/CVT…, uppercase inglês) → padrão canônico da plataforma
+ *  ("Manual"/"Automático", como OLX/ML), pra bater com a ficha e os filtros das outras fontes. */
+const CAMBIO_FB: Record<string, string> = {
+  MANUAL: "Manual",
+  AUTOMATIC: "Automático",
+  AUTOMATED_MANUAL: "Automatizado",
+  CVT: "Automático",
+  SEMI_AUTOMATIC: "Semi-Automático",
+  SEMIAUTOMATIC: "Semi-Automático",
+  DUAL_CLUTCH: "Automático",
+  TIPTRONIC: "Automático",
+};
+function normalizarCambio(raw: string | null): string | null {
+  if (!raw) return null;
+  const k = raw.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  return CAMBIO_FB[k] ?? titlecase(raw);
+}
+
 /**
  * Padroniza o título no NOSSO formato "Marca Modelo Ano Versão" (o FB vem cru como
  * "Ano Marca Modelo" e o modelo é texto livre do vendedor → sem padrão). Também conserta
@@ -238,7 +256,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   const marcaEstr = campoUnico(html, "vehicle_make_display_name");
   const modeloEstr = campoUnico(html, "vehicle_model_display_name");
   const combustivel = campoUnico(html, "vehicle_fuel_type");
-  const cambio = campoUnico(html, "vehicle_transmission_type");
+  const cambio = normalizarCambio(campoUnico(html, "vehicle_transmission_type"));
   const sellerType = campoUnico(html, "vehicle_seller_type");
   const odo = html.match(/"vehicle_odometer_data":\{"unit":"\w+","value":(\d+)/);
   const km = odo ? Number(odo[1]) : null;
