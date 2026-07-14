@@ -62,9 +62,17 @@ const PROXY_URL = process.env.FACEBOOK_PROXY_URL ?? process.env.PROXY_URL ?? "";
 const dispatcher = PROXY_URL ? new ProxyAgent(PROXY_URL) : undefined;
 
 async function pega(url: string): Promise<string> {
-  const r = await undiciFetch(url, { headers: HEADERS, dispatcher });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.text();
+  try {
+    const r = await undiciFetch(url, { headers: HEADERS, dispatcher });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.text();
+  } catch (e) {
+    // undici embrulha o motivo real em `.cause` (ECONNREFUSED, cert, tunnel, timeout…) —
+    // "fetch failed" sozinho não diz nada. Expõe a causa pra diagnosticar o proxy.
+    const causa = (e as { cause?: { code?: string; message?: string } })?.cause;
+    const detalhe = causa ? `${causa.code ?? ""} ${causa.message ?? ""}`.trim() : "";
+    throw new Error(`fetch falhou${detalhe ? ` [${detalhe}]` : ""}: ${e instanceof Error ? e.message : String(e)}`);
+  }
 }
 const dormir = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
