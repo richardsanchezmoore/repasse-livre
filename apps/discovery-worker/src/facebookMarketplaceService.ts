@@ -23,7 +23,9 @@ export interface AnuncioFacebook {
   marca: string | null;
   modelo: string | null;
   ano: string | null;
-  motor: string | null; // "1.0" | "1.6" ...  (discriminador da FIPE)
+  motor: string | null; // "1.0" | "1.6" ...  (discriminador da FIPE) — melhor candidato
+  motorCandidatos: Array<{ motor: string; fonte: string }>; // todos os achados + de onde (transparência)
+  versaoTexto: string | null; // texto mais rico de versão/trim p/ o fuzzy da FIPE
   combustivel: string | null; // FLEX | GASOLINE | DIESEL ...
   cambio: string | null; // MANUAL | AUTOMATIC ...
   km: number | null;
@@ -42,13 +44,28 @@ export interface AnuncioFacebook {
 export interface ResultadoParseFacebook {
   anuncio: AnuncioFacebook | null;
   descartar: boolean;
-  motivoDescarte?: "sem_motor" | "sem_titulo" | "nao_eh_veiculo";
+  motivoDescarte?: "sem_motor" | "sem_titulo" | "nao_eh_veiculo" | "isca_loja";
 }
 
 const MOTOR_RE = /\b([0-9]\.[0-9])\b/;
 const ANO_RE = /\b(19[89]\d|20[0-4]\d)\b/;
-// Cara de anúncio de loja/isca (preço-campo = entrada, não o carro):
-const ISCA_RE = /financiamento|entrada|parcel|\b\d{1,3}x\b|aprova|banco|renda|consórcio|pequenas entradas/i;
+// Sinais de anúncio de LOJA/ISCA (preço-campo = entrada, não o carro). Cada regex = 1 sinal;
+// exigimos 2+ pra marcar como loja — assim um particular que só cita "aceito financiamento"
+// não é derrubado, mas o discurso clássico de loja (entrada + Nx + banco + aprovação) cai.
+const SINAIS_LOJA: RegExp[] = [
+  /financiament|financ\b/i,
+  /pequenas? entradas?|entrada (m[íi]nima|sugerida|facilitada|parcelada)/i,
+  /\b\d{1,3}\s?x\b|parcela|presta[çc]/i,
+  /aprova[çc]|cr[ée]dito aprovado|score/i,
+  /banco|caixa|itau|bradesco|santander|financeira/i,
+  /comprova[çc]|renda|cnh|aposentad/i,
+  /cons[óo]rcio/i,
+  /nossa loja|showroom|estoque|confira nossos|whatsapp da loja/i,
+];
+function contarSinaisLoja(texto: string | null): number {
+  if (!texto) return 0;
+  return SINAIS_LOJA.reduce((n, re) => n + (re.test(texto) ? 1 : 0), 0);
+}
 
 /** Decodifica escapes de string JSON embutida no HTML (\uXXXX, \n, \/, \"). */
 function decodar(s: string): string {
@@ -116,9 +133,28 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   const modelo = modeloEstr ?? pTit.modelo;
   const ano = pTit.ano ?? (descricao ? descricao.match(ANO_RE)?.[1] ?? null : null);
 
-  // MOTOR/VERSÃO: título primeiro, descrição depois. Sem motor → descarta.
-  const motor = titulo.match(MOTOR_RE)?.[1] ?? (descricao ? descricao.match(MOTOR_RE)?.[1] ?? null : null);
+  // ★ NÃO HÁ PADRÃO: cada vendedor põe a versão num lugar (título, descrição, campo modelo,
+  // trim estruturado, specs). Caçamos o MOTOR/versão em TODAS as frentes e combinamos.
+  const trimEstr = campoUnico(html, "vehicle_trim_display_name");
+  const engineSize = normalizarEngineSize(html.match(/"engine_size":"?([\d.]+)"?/)?.[1] ?? null);
+  const fontesMotor: Array<[string, string | null]> = [
+    ["engine_size", engineSize], // specs estruturadas (quando houver) — mais confiável
+    ["titulo", titulo],
+    ["trim", trimEstr],
+    ["modelo", modeloEstr], // às vezes carrega o motor: "meriva premium 1.8 flex"
+    ["descricao", descricao],
+  ];
+  const motorCandidatos: Array<{ motor: string; fonte: string }> = [];
+  for (const [fonte, txt] of fontesMotor) {
+    if (!txt) continue;
+    for (const m of txt.matchAll(/\b([0-9]\.[0-9])\b/g)) motorCandidatos.push({ motor: m[1], fonte });
+  }
+  const motor = escolherMotor(motorCandidatos);
+  // Sem motor em NENHUMA frente → descarta (regra do usuário: melhor pular que chutar a FIPE).
   if (!motor) return { anuncio: null, descartar: true, motivoDescarte: "sem_motor" };
+
+  // Texto de versão mais rico p/ o fuzzy da FIPE (trim estruturado > modelo digitado > título).
+  const versaoTexto = trimEstr ?? modeloEstr ?? parsearTitulo(titulo).modelo;
 
   // Preços na descrição (candidatos ao preço REAL; o campo pode ser isca).
   const precosDescricao = [...(descricao ?? "").matchAll(/R\$\s?([\d.]{3,})/g)]
@@ -128,7 +164,8 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   const loc = html.match(/"reverse_geocode":\{"city":"([^"]+)","state":"([^"]+)"/);
   const ll = html.match(/"latitude":([\-\d.]+),"longitude":([\-\d.]+)/);
 
-  const suspeitaIsca = Boolean(descricao && ISCA_RE.test(descricao));
+  // Loja/isca: 2+ sinais de discurso de loja no título+descrição (o preço-campo vira entrada).
+  const suspeitaIsca = contarSinaisLoja(`${titulo} ${descricao ?? ""}`) >= 2;
 
   const anuncio: AnuncioFacebook = {
     id: itemId,
@@ -137,6 +174,8 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     modelo,
     ano,
     motor,
+    motorCandidatos,
+    versaoTexto,
     combustivel,
     cambio,
     km,
@@ -151,7 +190,35 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     fotoPrincipal: ogMeta(html, "image"),
     suspeitaIsca,
   };
+
+  // POLÍTICA DE PREÇO = (b): descartar LOJA/ISCA e focar em PARTICULAR genuíno. O preço-campo
+  // do FB só é confiável no particular; na loja é entrada/isca. Retorna o anúncio junto (descartar
+  // = true) pra o pipeline poder logar/auditar quantas iscas caíram. Ver gateway/facebook memória.
+  if (suspeitaIsca) return { anuncio, descartar: true, motivoDescarte: "isca_loja" };
+
   return { anuncio, descartar: false };
+}
+
+/** Escolhe o motor por CONSENSO entre as frentes (o mais citado); empate → a 1ª frente
+ *  (fontesMotor já vem em ordem de confiança: engine_size > título > trim > modelo > descrição). */
+function escolherMotor(candidatos: Array<{ motor: string; fonte: string }>): string | null {
+  if (candidatos.length === 0) return null;
+  const freq = new Map<string, number>();
+  for (const c of candidatos) freq.set(c.motor, (freq.get(c.motor) ?? 0) + 1);
+  const max = Math.max(...freq.values());
+  const maisCitados = [...freq.entries()].filter(([, n]) => n === max).map(([m]) => m);
+  if (maisCitados.length === 1) return maisCitados[0];
+  // empate → segue a ordem de confiança das frentes
+  return candidatos.find((c) => maisCitados.includes(c.motor))!.motor;
+}
+
+/** engine_size das specs pode vir "1.6" (litros) ou "1600"/"999" (cc) → normaliza p/ "X.X". */
+function normalizarEngineSize(v: string | null): string | null {
+  if (!v) return null;
+  if (/^[0-9]\.[0-9]$/.test(v)) return v;
+  const cc = Number(v);
+  if (cc >= 700 && cc <= 8000) return (Math.round(cc / 100) / 10).toFixed(1);
+  return null;
 }
 
 /** Preço do anúncio principal: ancorado na janela do `redacted_description`. */
