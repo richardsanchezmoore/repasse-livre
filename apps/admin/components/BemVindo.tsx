@@ -73,8 +73,11 @@ export function BemVindo({ logado }: { logado: boolean }) {
 
     (async () => {
       const supabase = criarSupabaseBrowser();
-      // O comprador pode cair aqui antes do webhook gravar o claim → re-tenta um pouco.
-      for (let i = 0; i < 6; i++) {
+      // O comprador cai aqui antes do webhook gravar o claim → re-tenta. Pix Automático
+      // é ASSÍNCRONO (o débito confirma minutos depois), então esperamos ~37s; se não
+      // fechar nesse tempo, cai no login por email (a conta+premium já são criados pelo
+      // webhook quando o pagamento confirmar).
+      for (let i = 0; i < 15; i++) {
         let resposta: {
           pronto?: boolean;
           aguardando?: boolean;
@@ -103,7 +106,7 @@ export function BemVindo({ logado }: { logado: boolean }) {
           return;
         }
         if (!resposta.aguardando) break; // expirado/consumido → fallback
-        await new Promise((res) => setTimeout(res, 2000)); // espera o webhook
+        await new Promise((res) => setTimeout(res, 2500)); // espera o webhook
       }
       setFase("loginFallback");
     })();
@@ -196,6 +199,10 @@ export function BemVindo({ logado }: { logado: boolean }) {
           <>
             <p className="bemvindo-nota">
               Falta 1 passo: <strong>entre com o mesmo email que você usou na compra</strong> pra acessar.
+              <br />
+              <span style={{ fontSize: 12.5, opacity: 0.85 }}>
+                Pagou via Pix Automático? A confirmação leva alguns minutos — se ainda não liberou, é só entrar de novo em instantes.
+              </span>
             </p>
             <Link href={`/login?redirect=${encodeURIComponent(destino)}`} className="bemvindo-cta">
               <ArrowRight size={18} strokeWidth={2.2} /> Entrar e acessar

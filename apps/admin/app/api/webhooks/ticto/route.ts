@@ -37,7 +37,7 @@ interface SubTicto {
 interface EventoTicto {
   token?: string;
   status?: string;
-  customer?: { email?: string | null; name?: string | null; phone?: { number?: string | null } | string | null } | null;
+  customer?: { email?: string | null; name?: string | null; phone?: { ddi?: string | null; ddd?: string | null; number?: string | null } | string | null } | null;
   subscriptions?: SubTicto[] | null;
   tracking?: { sck?: string | null } | null;
 }
@@ -71,7 +71,10 @@ async function acharUsuarioPorEmail(email: string): Promise<string | null> {
 function telefoneDe(customer: EventoTicto["customer"]): string | undefined {
   const t = customer?.phone;
   if (!t) return undefined;
-  return typeof t === "string" ? t : t.number ?? undefined;
+  if (typeof t === "string") return t.replace(/\D/g, "") || undefined;
+  // Ticto manda { ddi:"+55", ddd:"51", number:"996901333" } → monta o completo.
+  const cheio = `${(t.ddi ?? "+55").replace(/\D/g, "")}${(t.ddd ?? "").replace(/\D/g, "")}${(t.number ?? "").replace(/\D/g, "")}`;
+  return cheio.length >= 10 ? cheio : undefined;
 }
 
 /**
