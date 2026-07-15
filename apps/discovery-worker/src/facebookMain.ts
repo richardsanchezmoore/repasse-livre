@@ -21,6 +21,7 @@ import {
   financiamentoAssumido,
   montarUrlBuscaFacebook,
   montarVeiculoPadrao,
+  precoAvista,
   precoEhEntrada,
   riscoDocumentacao,
   type AnuncioFacebook,
@@ -278,9 +279,7 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         await dormir(cfg.pacingMs);
         continue;
       }
-      // Descartes por TEXTO da descrição (não precisam de FIPE): documentação de risco
-      // (procedência insegura) e preço = "de entrada" (o valor anunciado é a entrada
-      // de um financiamento → margem ilusória). Regras FB, decisão do usuário.
+      // Documentação de risco (procedência insegura) → descarta sempre.
       if (riscoDocumentacao(a.descricao)) {
         descartados++;
         await registrarVistoFacebook(id, "documentacao_risco");
@@ -288,19 +287,28 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         await dormir(cfg.pacingMs);
         continue;
       }
-      if (precoEhEntrada(a.descricao, a.precoCampo ?? null)) {
-        descartados++;
-        await registrarVistoFacebook(id, "preco_entrada");
-        console.log(`[fb:${regiao.nome}] ⚠ descartado preço=entrada (R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      if (financiamentoAssumido(a.descricao)) {
-        descartados++;
-        await registrarVistoFacebook(id, "financiamento_assumido");
-        console.log(`[fb:${regiao.nome}] ⚠ descartado assumir financiamento (preço só a dívida): ${a.marca} ${a.modelo} ${a.ano}`);
-        await dormir(cfg.pacingMs);
-        continue;
+      // VÁLVULA DE ESCAPE: se a descrição disclosa um valor "à vista" > preço anunciado,
+      // o preço-campo era a ENTRADA → corrige pro valor total e NÃO descarta como isca.
+      const avista = precoAvista(a.descricao, a.precoCampo ?? null);
+      if (avista) {
+        console.log(`[fb:${regiao.nome}] ✎ preço corrigido p/ à vista R$${avista} (campo era entrada R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
+        a.precoCampo = avista;
+      } else {
+        // Sem à vista salvando → descarta preço-isca ("de entrada" / "assumir financiamento").
+        if (precoEhEntrada(a.descricao, a.precoCampo ?? null)) {
+          descartados++;
+          await registrarVistoFacebook(id, "preco_entrada");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado preço=entrada (R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        if (financiamentoAssumido(a.descricao)) {
+          descartados++;
+          await registrarVistoFacebook(id, "financiamento_assumido");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado assumir financiamento (preço só a dívida): ${a.marca} ${a.modelo} ${a.ano}`);
+          await dormir(cfg.pacingMs);
+          continue;
+        }
       }
       const ref = await resolverFipe(a);
       if (!ref) {

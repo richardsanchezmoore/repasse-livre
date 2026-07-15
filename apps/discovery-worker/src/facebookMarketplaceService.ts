@@ -118,6 +118,27 @@ export function financiamentoAssumido(texto: string | null): boolean {
   return texto ? FINANC_ASSUMIDO_RE.test(semAcento(texto)) : false;
 }
 
+/**
+ * VÁLVULA DE ESCAPE "à vista": o lojista põe a ENTRADA no preço (que dispararia o
+ * descarte de preco_entrada/financiamento), MAS disclosa o valor total na descrição
+ * ("APENAS 20.000 DE ENTRADA + 18 PARCELAS... AVISTA R$ 27.000"). Se acha um valor
+ * MAIOR que o preço anunciado perto de "à vista/avista", assume ESSE como o preço
+ * FINAL e total → salva o anúncio (recalcula a margem com ele). Regra do usuário.
+ * Retorna o valor à vista (o maior achado > preço) ou null.
+ */
+export function precoAvista(descricao: string | null, preco: number | null): number | null {
+  if (!descricao || !preco || preco <= 0) return null;
+  const t = semAcento(descricao);
+  const re = /(?:a\s*vista|avista)\D{0,15}(\d[\d.\s]{2,}\d)|(\d[\d.\s]{2,}\d)\s*\D{0,8}(?:a\s*vista|avista)/g;
+  let m: RegExpExecArray | null;
+  let melhor = 0;
+  while ((m = re.exec(t)) !== null) {
+    const val = Number((m[1] ?? m[2]).replace(/[.\s]/g, ""));
+    if (Number.isFinite(val) && val > preco && val > melhor) melhor = val;
+  }
+  return melhor > 0 ? melhor : null;
+}
+
 function titlecase(s: string): string {
   return s.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }

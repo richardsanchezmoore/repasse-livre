@@ -50,7 +50,9 @@ export function GaleriaFotos({ fotos, alt }: { fotos: string[]; alt: string }) {
     setVisualizadorAberto(true);
   }
 
-  const MINIATURAS_NO_MOSAICO = 4;
+  // 2 miniaturas empilhadas à direita (não a grade 2x2, que ficava pequena/poluída);
+  // a última recebe o overlay "+N" quando há mais fotos. Padrão pedido pelo usuário.
+  const MINIATURAS_NO_MOSAICO = 2;
   const miniaturas = fotos.slice(1, 1 + MINIATURAS_NO_MOSAICO);
   const restantes = fotos.length - 1 - MINIATURAS_NO_MOSAICO;
 
