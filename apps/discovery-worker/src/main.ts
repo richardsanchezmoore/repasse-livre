@@ -313,6 +313,7 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
   // no teto de páginas com novos ainda por cobrir (GAP)? Vira a observacao do run.
   let alcancouCheckpoint = false;
   let motivoCobertura: string | null = null;
+  let paginasOk = 0; // páginas que carregaram — distingue "nada carregou" de "parcial"
 
   if (MODO === "intervalo" && (!JANELA_INICIO || !JANELA_FIM)) {
     throw new Error(
@@ -332,7 +333,27 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
 
   paginas: for (let pagina = 1; pagina <= MAX_PAGINAS; pagina++) {
     const url = montarUrlPagina(urlComFiltro.toString(), pagina);
-    const anuncios = await capturarAnunciosOlx(url);
+    // Uma página com 504/parse-fail NÃO pode derrubar o run inteiro (perdíamos
+    // ~1h de trabalho). Retry 1× — a rotação de proxy manda no OUTRO IP, que
+    // costuma responder. Se falhar 2× E nada carregou ainda → erro real (OLX/proxy
+    // fora); se já processamos páginas → encerra PARCIAL (salva o que tem; o
+    // checkpoint avança e o próximo run continua de onde parou).
+    let anuncios: AnuncioOlx[];
+    try {
+      anuncios = await capturarAnunciosOlx(url);
+    } catch (erro) {
+      console.warn(`[motor-descoberta] Página ${pagina} falhou (${erro instanceof Error ? erro.message : erro}) — tentando outro IP…`);
+      await new Promise((r) => setTimeout(r, 3000));
+      try {
+        anuncios = await capturarAnunciosOlx(url);
+      } catch {
+        if (paginasOk === 0) throw erro; // nada carregou → falha real
+        console.warn(`[motor-descoberta] Página ${pagina} falhou 2× — encerrando PARCIAL (${resultado.novos} novos já processados).`);
+        if (MODO === "incremental") motivoCobertura = `parcial — página ${pagina} falhou (504); ${resultado.novos} novos salvos antes`;
+        break;
+      }
+    }
+    paginasOk++;
 
     if (anuncios.length === 0) {
       console.log(`[motor-descoberta] Página ${pagina} vazia, fim da listagem.`);
