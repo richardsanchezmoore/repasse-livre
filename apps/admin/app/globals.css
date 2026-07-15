@@ -607,6 +607,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Tabela larga (ex.: aba Facebook agrupada por estado, com observação de
+     cobertura longa na última coluna) ROLA dentro do card em vez de vazar o
+     layout pra fora da seção. max-width prende ao pai; min-width:0 deixa o
+     flex item encolher (senão estoura o container). */
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .usuarios-tabela {
