@@ -102,63 +102,86 @@ async function _extrairDetalhes(page: Page, url: string) {
 }
 
 async function main() {
-  const { data: oportunidades, error } = await supabase
+  // Janela (default 15h) + limite opcional pra testar. Só reprocessa o que FALTA
+  // (sem descrição OU sem fotos secundárias) → re-runs após reiniciar o roteador
+  // pulam os já preenchidos.
+  const HORAS = Number(process.argv.find((a) => a.startsWith("--horas="))?.split("=")[1] ?? 15);
+  const LIMITE = Number(process.argv.find((a) => a.startsWith("--limite="))?.split("=")[1] ?? Infinity);
+  const desde = new Date(Date.now() - HORAS * 3600 * 1000).toISOString();
+
+  const { data: recentes, error } = await supabase
     .from("opportunities")
-    .select("id, link_origem, foto_principal")
-    .eq("fonte", "MERCADO_LIVRE");
+    .select("id, link_origem, foto_principal, descricao, fotos_secundarias")
+    .eq("fonte", "MERCADO_LIVRE")
+    .gte("data_captura", desde)
+    .order("data_captura", { ascending: false });
 
   if (error) throw new Error(`Erro ao buscar oportunidades: ${error.message}`);
-  if (!oportunidades?.length) {
-    console.log("Nenhuma oportunidade MERCADO_LIVRE encontrada.");
+  const oportunidades = (recentes ?? [])
+    .filter((o) => !o.descricao || !(o.fotos_secundarias as unknown[] | null)?.length)
+    .slice(0, LIMITE);
+
+  if (!oportunidades.length) {
+    console.log(`[backfill-ml] Nada faltando nas últimas ${HORAS}h.`);
     return;
   }
+  console.log(`[backfill-ml] ${oportunidades.length} anúncios com dados faltando (últimas ${HORAS}h).`);
 
-  console.log(`[backfill-ml] ${oportunidades.length} oportunidades para atualizar.`);
-
-  let ok = 0;
-  let falhou = 0;
+  // ML bloqueia o IP após N páginas individuais (account-verification). Se vier uma
+  // sequência de vazios/falhas, é bloqueio → para (não adianta insistir); o usuário
+  // reinicia o roteador e roda de novo (o filtro só pega o que ainda falta).
+  const LIMITE_BLOQUEIO = 8;
+  let ok = 0, falhou = 0, semDados = 0, seguidas = 0;
 
   for (let i = 0; i < oportunidades.length; i++) {
     const op = oportunidades[i];
     console.log(`[backfill-ml] (${i + 1}/${oportunidades.length}) ${op.link_origem}`);
     try {
-      // Cada anúncio usa sessid único (sessid.10, sessid.11, …) para ter IP
-      // diferente — ML bloqueia para /captcha/wall a partir do 2º anúncio
-      // individual na mesma sessão de proxy (confirmado em debug 29/06).
       const detalhes = await buscarDetalhes(op.link_origem, 10 + i);
+
+      // Página vazia/challenge → NÃO sobrescreve (não apaga o que já tem) e conta bloqueio.
+      if (detalhes.fotos.length === 0 && !detalhes.descricao) {
+        console.warn(`[backfill-ml] ✗ sem dados (provável bloqueio/challenge)`);
+        semDados++;
+        if (++seguidas >= LIMITE_BLOQUEIO) {
+          console.error(`[backfill-ml] ${seguidas} vazios seguidos — IP provavelmente bloqueado. Reinicie o roteador e rode de novo (só os faltantes são reprocessados).`);
+          break;
+        }
+        continue;
+      }
+      seguidas = 0;
 
       const todasFotos = [
         ...(op.foto_principal ? [op.foto_principal] : []),
         ...detalhes.fotos.filter((f: string) => f !== op.foto_principal),
       ].slice(0, MAX_FOTOS);
 
-      const { error: erroUpdate } = await supabase
-        .from("opportunities")
-        .update({
-          foto_principal: todasFotos[0] ?? op.foto_principal,
-          fotos_secundarias: todasFotos.slice(1),
-          descricao: detalhes.descricao,
-          cambio: detalhes.cambio,
-          atributos_olx: detalhes.atributos,
-        })
-        .eq("id", op.id);
+      const patch: Record<string, unknown> = { cambio: detalhes.cambio, atributos_olx: detalhes.atributos };
+      if (detalhes.descricao) patch.descricao = detalhes.descricao;
+      if (detalhes.fotos.length) {
+        patch.foto_principal = todasFotos[0] ?? op.foto_principal;
+        patch.fotos_secundarias = todasFotos.slice(1);
+      }
 
+      const { error: erroUpdate } = await supabase.from("opportunities").update(patch).eq("id", op.id);
       if (erroUpdate) {
         console.error(`[backfill-ml] Erro ao salvar ${op.id}: ${erroUpdate.message}`);
         falhou++;
       } else {
-        console.log(
-          `[backfill-ml] ✓ ${detalhes.fotos.length} fotos | desc: ${detalhes.descricao ? "sim" : "não"} | câmbio: ${detalhes.cambio ?? "—"}`
-        );
+        console.log(`[backfill-ml] ✓ ${detalhes.fotos.length} fotos | desc: ${detalhes.descricao ? "sim" : "não"} | câmbio: ${detalhes.cambio ?? "—"}`);
         ok++;
       }
     } catch (e) {
       console.error(`[backfill-ml] Falha em ${op.link_origem}:`, e instanceof Error ? e.message : e);
       falhou++;
+      if (++seguidas >= LIMITE_BLOQUEIO) {
+        console.error(`[backfill-ml] ${seguidas} falhas seguidas — IP provavelmente bloqueado. Reinicie o roteador e rode de novo.`);
+        break;
+      }
     }
   }
 
-  console.log(`[backfill-ml] Concluído: ${ok} atualizados, ${falhou} falhou.`);
+  console.log(`[backfill-ml] Concluído: ${ok} atualizados, ${semDados} sem dados, ${falhou} falhou.`);
 }
 
 main().catch((e) => {
