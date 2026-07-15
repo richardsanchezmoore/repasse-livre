@@ -151,10 +151,13 @@ async function main() {
       }
       seguidas = 0;
 
-      const todasFotos = [
-        ...(op.foto_principal ? [op.foto_principal] : []),
-        ...detalhes.fotos.filter((f: string) => f !== op.foto_principal),
-      ].slice(0, MAX_FOTOS);
+      // MESMA lógica da live capture (salvarElegivel): havendo fotos de detalhe
+      // (full-res, D_NQ_NP), usa SÓ elas — o foto_principal do card é um thumbnail
+      // baixa-res (D_Q_NP) da 1ª foto, que entraria DUPLICADO e em destaque baixa
+      // qualidade. A do card só sobrevive como fallback card-only (sem detalhe).
+      const todasFotos = (
+        detalhes.fotos.length > 0 ? detalhes.fotos : op.foto_principal ? [op.foto_principal] : []
+      ).slice(0, MAX_FOTOS);
 
       const patch: Record<string, unknown> = { cambio: detalhes.cambio, atributos_olx: detalhes.atributos };
       if (detalhes.descricao) patch.descricao = detalhes.descricao;
