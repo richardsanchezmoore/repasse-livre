@@ -187,10 +187,24 @@ export function exclusividade({ anuncio, universo }: CtxIndicador): ResultadoInd
   };
 }
 
+/**
+ * KM CONFIÁVEL pra análise (Copiloto + estrelas). Descarta dado sujo: <1000 sempre (erro
+ * absoluto); e pra carro com +5 ANOS de uso, <5000 é quase certo erro/omissão de dígito
+ * (ex.: 1.111 = 111 mil km num 2009). Melhor NÃO considerar do que elogiar KM baixa improvável
+ * — o pior é afirmar algo bom pra algo pouco provável. Decisão do usuário. Retorna o km ou null.
+ */
+export function kmConfiavel(km: number | null, ano: string | null): number | null {
+  if (km == null || km < 1000) return null;
+  const anoNum = Number.parseInt(ano ?? "", 10);
+  const idade = Number.isFinite(anoNum) ? new Date().getFullYear() - anoNum : 0;
+  if (idade > 5 && km < 5000) return null;
+  return km;
+}
+
 /** KM baixo — ABSOLUTO (a estrela de KM usa a escala do usuário; aqui só o ✔). */
 export function kmRaridade({ anuncio }: CtxIndicador): ResultadoIndicador {
-  const km = anuncio.km;
-  if (km == null || km < 1000) return nada; // km sujo (<1000) não vira destaque
+  const km = kmConfiavel(anuncio.km, anuncio.ano);
+  if (km == null) return nada; // km sujo/improvável não vira destaque
   // Texto por DURABILIDADE (não "para a idade" — evita conflito com percepção
   // regional; a escala de estrelas segue absoluta, decisão do usuário).
   const ev: Evidencia | null =

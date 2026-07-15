@@ -98,14 +98,31 @@ function normalizarCambio(raw: string | null): string | null {
  * a extração de marca/modelo p/ BI/SEO/slug (que lê as 2 primeiras palavras do `veiculo`;
  * o título cru começava pelo ANO). Sem marca → devolve "" (o chamador mantém o cru).
  */
+// Emoji/pictogramas + separadores decorativos que o vendedor joga no título.
+const EMOJI_RE = /[\p{Extended_Pictographic}\u{FE00}-\u{FE0F}‍]/gu;
+// Ruído de marketing (não é versão de carro) — corta o título aqui pra frente.
+const RUIDO_TITULO = /^(excelente|oportunidade|abaixo|acima|fipe|aceito|aceita|financiamento|financia\w*|parcela\w*|entrada|troca|troco|whatsapp|contato|urgente|repasse|oferta|promo\w*|imperd\w*|seminovo|impec\w*|conservad\w*|leia|obs|barbada|imperdivel|ligue|chama)$/i;
+
+function limparTexto(s: string): string {
+  return s.replace(EMOJI_RE, " ").replace(/[–—•|/\\!?¡¿,;:*#~"']+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Padroniza o título no NOSSO formato "Marca Modelo Ano Versão". FB vem cru ("Ano Marca Modelo"),
+ * o modelo é texto livre e vendedores despejam EMOJI + marketing ("Excelente Oportunidade, Abaixo
+ * Da Fipe!"). Aqui: tira emoji/separadores, corta no 1º token de ruído de marketing e limita a
+ * versão a poucas palavras — a vitrine fica padronizada mesmo com o FB bagunçado. Sem marca → "".
+ */
 export function montarVeiculoPadrao(a: AnuncioFacebook): string {
   if (!a.marca) return "";
-  const marca = titlecase(a.marca);
-  let modelo = (a.modelo ?? "").replace(/\b(19|20)\d{2}\b/g, " ").replace(/\s+/g, " ").trim();
-  if (modelo.toLowerCase().startsWith(a.marca.toLowerCase())) modelo = modelo.slice(a.marca.length).trim();
+  const marca = titlecase(limparTexto(a.marca));
+  let modelo = limparTexto(a.modelo ?? "").replace(/\b(19|20)\d{2}\b/g, " ").replace(/\s+/g, " ").trim();
+  if (marca && modelo.toLowerCase().startsWith(marca.toLowerCase())) modelo = modelo.slice(marca.length).trim();
   const palavras = modelo.split(" ").filter(Boolean);
-  const modeloBase = palavras[0] ? titlecase(palavras[0]) : "";
-  let versao = palavras.slice(1).join(" ");
+  const corte = palavras.findIndex((w) => RUIDO_TITULO.test(w.replace(/[^\p{L}0-9.]/gu, "")));
+  const uteis = (corte >= 0 ? palavras.slice(0, corte) : palavras).slice(0, 5); // versão curta, sem marketing
+  const modeloBase = uteis[0] ? titlecase(uteis[0]) : "";
+  let versao = uteis.slice(1).join(" ");
   if (a.motor && !new RegExp(`\\b${a.motor.replace(".", "\\.")}\\b`).test(versao)) versao = `${versao} ${a.motor}`.trim();
   return [marca, modeloBase, a.ano, titlecase(versao)].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 }

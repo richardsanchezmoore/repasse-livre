@@ -1,5 +1,5 @@
 import type { AnuncioBia, FactSheet, FichaCategoria, PontoPreco } from "./tipos";
-import { INDICADORES, type CtxIndicador, type Numeros } from "./indicadores";
+import { INDICADORES, kmConfiavel, type CtxIndicador, type Numeros } from "./indicadores";
 import { atributoSim } from "../atributos";
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
@@ -191,10 +191,11 @@ const KM_POR_ANO = 20000;
  * gigante = motor gasto, independente da idade). Guard de dado sujo (<1000).
  */
 function estrelasKm(km: number | null, ano: string | null): number | null {
-  if (km == null || km < 1000) return null;
+  const kmOk = kmConfiavel(km, ano); // null = km sujo (<1000) ou improvável (+5 anos e <5000)
+  if (kmOk == null) return null;
   const anoNum = Number.parseInt(ano ?? "", 10);
   const idade = Number.isFinite(anoNum) ? Math.max(1, new Date().getFullYear() - anoNum) : 8;
-  const ratio = km / (idade * KM_POR_ANO);
+  const ratio = kmOk / (idade * KM_POR_ANO);
 
   let e =
     ratio <= 0.5 ? 5
@@ -210,12 +211,12 @@ function estrelasKm(km: number | null, ano: string | null): number | null {
   // PISO pra CARRO NOVO (até 2 anos): km baixo tem percepção boa, não punir só pelo
   // tempo. ≤50 mil → mín ★★★; acima de 50 mil dentro de 2 anos → mín ★★½. Decisão
   // do usuário (a meia-estrela equilibra). Carro mais velho: o ratio já resolve.
-  if (idade <= 2) e = Math.max(e, km <= 50000 ? 3 : 2.5);
+  if (idade <= 2) e = Math.max(e, kmOk <= 50000 ? 3 : 2.5);
 
   // Teto de durabilidade (desgaste absoluto) — honra o padrão de vida útil do motor.
-  if (km >= 300000) e = Math.min(e, 1);
-  else if (km >= 250000) e = Math.min(e, 2);
-  else if (km >= 200000) e = Math.min(e, 3);
+  if (kmOk >= 300000) e = Math.min(e, 1);
+  else if (kmOk >= 250000) e = Math.min(e, 2);
+  else if (kmOk >= 200000) e = Math.min(e, 3);
   return e;
 }
 
