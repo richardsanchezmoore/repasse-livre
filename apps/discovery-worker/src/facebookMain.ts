@@ -18,6 +18,7 @@ import {
 import {
   extrairAnuncioFacebook,
   extrairIdsDaBusca,
+  financiamentoAssumido,
   montarUrlBuscaFacebook,
   montarVeiculoPadrao,
   precoEhEntrada,
@@ -288,6 +289,13 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         descartados++;
         await registrarVistoFacebook(id, "preco_entrada");
         console.log(`[fb:${regiao.nome}] ⚠ descartado preço=entrada (R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
+        await dormir(cfg.pacingMs);
+        continue;
+      }
+      if (financiamentoAssumido(a.descricao)) {
+        descartados++;
+        await registrarVistoFacebook(id, "financiamento_assumido");
+        console.log(`[fb:${regiao.nome}] ⚠ descartado assumir financiamento (preço só a dívida): ${a.marca} ${a.modelo} ${a.ano}`);
         await dormir(cfg.pacingMs);
         continue;
       }

@@ -106,6 +106,18 @@ export function precoEhEntrada(descricao: string | null, preco: number | null): 
   return false;
 }
 
+/**
+ * "ASSUMIR (RE)FINANCIAMENTO" na descrição → o valor anunciado é só o de ASSUMIR a
+ * dívida (o comprador ainda paga N parcelas) → não é o preço do carro → margem
+ * ilusória, descarta. Caso Gol 2010: "Valor: 15.000 Assumir Refinanciamento 57
+ * Parcelas 770,00" (custo real ~R$59 mil, não 15). Frase inequívoca → keyword basta
+ * (diferente de "entrada", que é comum e exige casar o valor).
+ */
+const FINANC_ASSUMIDO_RE = /\bassumir\s+(?:o\s+|a\s+)?(?:re)?financiamento\b/;
+export function financiamentoAssumido(texto: string | null): boolean {
+  return texto ? FINANC_ASSUMIDO_RE.test(semAcento(texto)) : false;
+}
+
 function titlecase(s: string): string {
   return s.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
