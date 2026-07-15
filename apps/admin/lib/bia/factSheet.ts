@@ -93,11 +93,12 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
 
   const positivos = evidencias.filter((e) => e.tipo === "positivo");
   const ehLeilao = evidencias.some((e) => e.tipo === "alerta" && e.chave === "leilao");
+  const motorRuim = evidencias.some((e) => e.tipo === "alerta" && e.chave === "motor");
   const fichas = montarFichas(anuncio, nums);
 
   // ---- score = média PONDERADA das avaliações (os PILARES pesam mais) ----
-  const score = scoreDasFichas(fichas, ehLeilao);
-  const classificacao = classificar(score, ehLeilao);
+  const score = scoreDasFichas(fichas, ehLeilao, motorRuim);
+  const classificacao = classificar(score, ehLeilao, motorRuim);
 
   // Cobertura de dado (interno/Premium; não exibido ao comprador comum).
   const cobertura = Math.min(1, evidencias.length / 6);
@@ -121,7 +122,7 @@ export function computarFactSheet(anuncio: AnuncioBia, universo: AnuncioBia[], p
     historico_reducoes: nums.historico_reducoes ?? 0,
     coorte: nums.coorteEscopo ? { rotulo: nums.coorteEscopo, tamanho: nums.coorteTamanho ?? 0 } : null,
     classificacao,
-    copiloto: montarParecer(classificacao, nums, fichas),
+    copiloto: montarParecer(classificacao, nums, fichas, motorRuim),
     destaques: positivos.map((e) => e.texto),
     fichas,
     ...mercado,
@@ -139,7 +140,7 @@ const PESO_CATEGORIA: Record<string, number> = {
   Procedência: 0.1,
 };
 
-function scoreDasFichas(fichas: FichaCategoria[], ehLeilao: boolean): number | null {
+function scoreDasFichas(fichas: FichaCategoria[], ehLeilao: boolean, motorRuim: boolean): number | null {
   let somaPeso = 0;
   let somaPond = 0;
   for (const f of fichas) {
@@ -152,12 +153,14 @@ function scoreDasFichas(fichas: FichaCategoria[], ehLeilao: boolean): number | n
   if (somaPeso === 0) return null;
   let s = Math.round((somaPond / somaPeso / 5) * 100);
   if (ehLeilao) s = Math.min(s, 45); // leilão nunca é bom negócio
+  if (motorRuim) s = Math.min(s, 40); // motor com ressalva (batendo/fundido) = defeito caro → puxa pro fundo
   return s;
 }
 
-/** Veredito humano. Bandas calibradas pelo usuário: Boa ≥ 70. Leilão nunca é bom. */
-function classificar(score: number | null, ehLeilao: boolean): string {
+/** Veredito humano. Bandas calibradas pelo usuário: Boa ≥ 70. Leilão/motor nunca é bom. */
+function classificar(score: number | null, ehLeilao: boolean, motorRuim: boolean): string {
   if (score == null) return "Sem dados suficientes";
+  if (motorRuim) return score >= 40 ? "Oportunidade com ressalva" : "Requer atenção";
   if (ehLeilao) return score >= 40 ? "Oportunidade com ressalva" : "Requer atenção";
   if (score >= 82) return "Excelente oportunidade";
   if (score >= 70) return "Boa oportunidade";
@@ -287,12 +290,16 @@ const FRASE_PILAR: Record<string, string> = {
 };
 
 /** Parecer INSTRUTIVO (veredito → destaque do pilar mais forte → posição). */
-function montarParecer(classificacao: string, nums: Numeros, fichas: FichaCategoria[]): string {
+function montarParecer(classificacao: string, nums: Numeros, fichas: FichaCategoria[], motorRuim = false): string {
   let txt = `**${classificacao}.**`;
+  // Ressalva do motor vem LOGO no início e SUPRIME o elogio de pilar — não faz sentido
+  // dizer "destaca-se a quilometragem" de um carro com motor batendo. Os fatos de preço
+  // seguem (é barato, mas o comprador precisa saber do motor).
+  if (motorRuim) txt += ` Atenção às observações quanto ao motor deste veículo.`;
   const top = fichas
     .filter((f) => FRASE_PILAR[f.categoria] && f.estrelas != null)
     .sort((a, b) => (b.estrelas ?? 0) - (a.estrelas ?? 0))[0];
-  if (top && (top.estrelas ?? 0) >= 4) {
+  if (!motorRuim && top && (top.estrelas ?? 0) >= 4) {
     txt += ` Destaca-se principalmente ${FRASE_PILAR[top.categoria]}.`;
   }
   if (nums.posicao && nums.coorteTamanho) {

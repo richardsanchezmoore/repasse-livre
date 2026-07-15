@@ -70,6 +70,35 @@ export function alertaLeilao({ anuncio }: CtxIndicador): ResultadoIndicador {
   };
 }
 
+/**
+ * MOTOR COM RESSALVA declarada na descrição — o vendedor avisa que o motor tem
+ * problema ("motor batendo/fundido/ruim", "tem que fazer o motor"). Sinal FORTE:
+ * um defeito de motor muda tudo (custo alto de reparo), então mesmo com margem e KM
+ * bons a nota NÃO pode sair "Excelente". Regra do usuário (caso Polo 2010 "motor
+ * batendo tem que fazer", nota 82 → precisa cair). NÃO casa "fazer o motor" solto
+ * (ambíguo com "motor FEITO/já retificado" = positivo) — exige o contexto negativo.
+ */
+const MOTOR_RUIM_RE =
+  /\bmotor\s+(batendo|batido|fundido|ruim|gripad[oa]|com\s+(problema|defeito|barulho|folga))\b|\b(tem que|tem q|precisa|vai ter que|vai precisar)\s+(fazer|retificar|mexer\s+no|abrir\s+o)\s+(o\s+)?motor\b|\bbronzina\s+batendo\b/;
+export function motorComRessalva(descricao: string | null): boolean {
+  if (!descricao) return false;
+  const t = descricao.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return MOTOR_RUIM_RE.test(t);
+}
+
+export function alertaMotor({ anuncio }: CtxIndicador): ResultadoIndicador {
+  if (!motorComRessalva(anuncio.descricao)) return nada;
+  return {
+    evidencia: {
+      chave: "motor",
+      tipo: "alerta",
+      texto: "Atenção às observações quanto ao motor deste veículo.",
+      origem: "Anúncio",
+      peso: 3,
+    },
+  };
+}
+
 export function unicoDono({ anuncio }: CtxIndicador): ResultadoIndicador {
   if (!atributoSim(anuncio.atributos_olx, "owner")) return nada;
   return {
@@ -256,6 +285,7 @@ export const INDICADORES: ((ctx: CtxIndicador) => ResultadoIndicador)[] = [
   corRaridade,
   historicoReducoes,
   alertaLeilao,
+  alertaMotor,
   unicoDono,
   quitado,
 ];
