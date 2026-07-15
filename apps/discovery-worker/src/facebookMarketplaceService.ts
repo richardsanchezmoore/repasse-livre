@@ -70,6 +70,42 @@ export function detectarLeilao(texto: string | null): "Sim" | "Não" | null {
   return null;
 }
 
+/** minúsculas + sem acento, pra casar frase livre do vendedor. */
+function semAcento(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+/**
+ * DOCUMENTAÇÃO DE RISCO na descrição do FB → descarte (procedência insegura). Termos
+ * validados pelo user (caso Picasso): "sem documento" / "passo sem compromisso" /
+ * "só documento de roda". Carro sem documentação/transferência não é oportunidade
+ * séria nem com margem boa. Os demais termos do anúncio (QUITADA, NÃO CONHEÇO EX DONO)
+ * são imprecisos demais → fora. FUTURO: virar sinal de procedência no Copiloto.
+ */
+const RISCO_DOC_RE = /\b(sem documento|passo sem compromisso|documento de roda|so documento|nao transfere|documento atrasado)\b/;
+export function riscoDocumentacao(texto: string | null): boolean {
+  return texto ? RISCO_DOC_RE.test(semAcento(texto)) : false;
+}
+
+/**
+ * Preço-ISCA "de entrada": o valor ANUNCIADO aparece na descrição seguido de
+ * "(de) entrada" → o preço é a ENTRADA de um financiamento, não o preço do carro
+ * (o clássico "peço 16.900 de entrada resto direto comigo") → margem ilusória,
+ * descarta. Só dispara quando o número ≈ o preço anunciado: uma "entrada de 8.000"
+ * com preço real diferente NÃO conta (aí a entrada é só uma opção de pagamento).
+ */
+export function precoEhEntrada(descricao: string | null, preco: number | null): boolean {
+  if (!descricao || !preco || preco <= 0) return false;
+  const t = semAcento(descricao);
+  const re = /(\d[\d.\s]{2,}\d)\s*(?:reais\s*)?(?:de\s+)?entrada/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(t)) !== null) {
+    const val = Number(m[1].replace(/[.\s]/g, ""));
+    if (Number.isFinite(val) && Math.abs(val - preco) <= Math.max(100, preco * 0.03)) return true;
+  }
+  return false;
+}
+
 function titlecase(s: string): string {
   return s.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }

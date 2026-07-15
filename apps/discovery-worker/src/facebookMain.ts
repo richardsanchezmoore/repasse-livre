@@ -20,6 +20,8 @@ import {
   extrairIdsDaBusca,
   montarUrlBuscaFacebook,
   montarVeiculoPadrao,
+  precoEhEntrada,
+  riscoDocumentacao,
   type AnuncioFacebook,
   type FiltrosFacebook,
 } from "./facebookMarketplaceService.js";
@@ -269,6 +271,23 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
       const a = res.anuncio;
       if (await linkOrigemJaExiste(linkPublico(id))) {
         await registrarVistoFacebook(id, "salvo");
+        await dormir(cfg.pacingMs);
+        continue;
+      }
+      // Descartes por TEXTO da descrição (não precisam de FIPE): documentação de risco
+      // (procedência insegura) e preço = "de entrada" (o valor anunciado é a entrada
+      // de um financiamento → margem ilusória). Regras FB, decisão do usuário.
+      if (riscoDocumentacao(a.descricao)) {
+        descartados++;
+        await registrarVistoFacebook(id, "documentacao_risco");
+        console.log(`[fb:${regiao.nome}] ⚠ descartado documentação de risco: ${a.marca} ${a.modelo} ${a.ano}`);
+        await dormir(cfg.pacingMs);
+        continue;
+      }
+      if (precoEhEntrada(a.descricao, a.precoCampo ?? null)) {
+        descartados++;
+        await registrarVistoFacebook(id, "preco_entrada");
+        console.log(`[fb:${regiao.nome}] ⚠ descartado preço=entrada (R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
         await dormir(cfg.pacingMs);
         continue;
       }
