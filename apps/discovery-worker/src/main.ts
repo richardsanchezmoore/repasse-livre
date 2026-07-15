@@ -86,6 +86,7 @@ interface ResultadoVarredura {
   descartados: number;
   semFipe: number;
   falhasDetalheSeguidas: number; // disjuntor de bloqueio (transiente, não vai pro banco)
+  observacao?: string; // radar de cobertura (em dia / GAP) — vai pra observacao do run
 }
 
 // Quando a OLX bloqueia o worker, ela ainda serve a LISTAGEM mas trava as páginas
@@ -301,11 +302,17 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
   const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
   let maiorDataVistaEpoch: number | null = null;
   // Contador de páginas consecutivas onde todos os anúncios já existem no banco.
-  // OLX pode mudar a ordenação (ex.: filtro FIPE sobrepõe sf=1), então não
-  // podemos parar na primeira data < checkpoint — esperamos 3 páginas "secas"
-  // antes de concluir que não há mais anúncios novos.
+  // A listagem da OLX segue a ordem de PUBLICAÇÃO (o filtro "abaixo da FIPE" só
+  // esconde os acima da tabela, NÃO reordena). Ainda assim, em vez de cortar na 1ª
+  // data <= checkpoint (frágil com anúncio sem data ou pequena reordenação),
+  // esperamos 3 páginas "secas" (sem nenhum novo) — robusto e, com a recência, já
+  // para cedo (os novos ficam nas primeiras páginas).
   let paginasSemsNovos = 0;
   const MAX_PAGINAS_SECAS = 3;
+  // Radar de cobertura (só incremental): alcançamos o já-visto (em dia) ou batemos
+  // no teto de páginas com novos ainda por cobrir (GAP)? Vira a observacao do run.
+  let alcancouCheckpoint = false;
+  let motivoCobertura: string | null = null;
 
   if (MODO === "intervalo" && (!JANELA_INICIO || !JANELA_FIM)) {
     throw new Error(
@@ -329,6 +336,7 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
 
     if (anuncios.length === 0) {
       console.log(`[motor-descoberta] Página ${pagina} vazia, fim da listagem.`);
+      motivoCobertura = "fim da listagem (cobriu tudo)";
       break;
     }
 
@@ -346,6 +354,15 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
     for (const anuncio of anuncios) {
       if (anuncio.dataPublicacao !== null && (maiorDataVistaEpoch === null || anuncio.dataPublicacao > maiorDataVistaEpoch)) {
         maiorDataVistaEpoch = anuncio.dataPublicacao;
+      }
+      // Passamos do checkpoint → chegamos na zona já coberta (radar "em dia").
+      if (
+        MODO === "incremental" &&
+        checkpointAnteriorEpoch !== null &&
+        anuncio.dataPublicacao !== null &&
+        anuncio.dataPublicacao <= checkpointAnteriorEpoch
+      ) {
+        alcancouCheckpoint = true;
       }
 
       if (MODO === "inicial" && anuncio.dataPublicacao !== null && anuncio.dataPublicacao < cutoffEpoch) {
@@ -371,20 +388,32 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
       await processarAnuncio(anuncio, resultado, MARGEM_MINIMA);
     }
 
-    // Parada incremental robusta: em vez de parar no primeiro anúncio com data
-    // <= checkpoint (frágil quando OLX muda a ordenação), esperamos 3 páginas
-    // consecutivas sem nenhum anúncio novo. Isso tolera que o filtro FIPE da
-    // OLX ordene por desconto em vez de data — novos aparecem em qualquer posição.
+    // Parada incremental: 3 páginas consecutivas sem NENHUM novo = já cobrimos
+    // até onde a última varredura chegou (a lista segue publicação, então os
+    // novos ficam no começo; as secas vêm logo em seguida).
     if (MODO === "incremental" && resultado.novos === novosAntesDestaPagina) {
       paginasSemsNovos++;
       console.log(`[motor-descoberta] Página ${pagina} sem novos (${paginasSemsNovos}/${MAX_PAGINAS_SECAS} páginas secas).`);
       if (paginasSemsNovos >= MAX_PAGINAS_SECAS) {
         console.log(`[motor-descoberta] ${MAX_PAGINAS_SECAS} páginas consecutivas sem novos, parando varredura incremental.`);
+        motivoCobertura = "em dia (alcançou o já-visto)";
         break paginas;
       }
     } else {
       paginasSemsNovos = 0;
     }
+  }
+
+  // Radar de cobertura (só incremental): se não paramos por parada-seca nem fim da
+  // listagem, batemos no teto de páginas — se nem chegamos no checkpoint, há novos
+  // não cobertos (GAP), sinal pra rodar mais vezes / o proxy estar lento.
+  if (MODO === "incremental") {
+    if (!motivoCobertura) {
+      motivoCobertura = alcancouCheckpoint
+        ? "em dia (alcançou o já-visto)"
+        : `GAP — limite de ${MAX_PAGINAS} páginas atingido, novos ainda por cobrir`;
+    }
+    resultado.observacao = motivoCobertura;
   }
 
   // Atualiza o checkpoint em "inicial" e "incremental" — qualquer varredura
@@ -407,7 +436,7 @@ async function executarVarreduraComRegistro(categoriaUrlBase: string, modo: stri
   const registroId = await iniciarRegistroVarredura(categoriaUrlBase, modo);
   try {
     const resultado = await executarVarredura(categoriaUrlBase);
-    await finalizarRegistroVarreduraComSucesso(registroId, resultado);
+    await finalizarRegistroVarreduraComSucesso(registroId, resultado, resultado.observacao ?? null);
   } catch (erro) {
     const mensagem = erro instanceof Error ? erro.message : String(erro);
     await finalizarRegistroVarreduraComErro(registroId, mensagem);
