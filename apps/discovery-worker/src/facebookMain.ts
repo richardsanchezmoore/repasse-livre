@@ -107,10 +107,11 @@ interface ConfigFb {
   maxItens: number;
   pacingMs: number;
   margemMinima: number;
+  margemMaxSuspeita: number; // teto de margem: acima disso, DESCARTA (regra só-FB, ver abaixo)
 }
 
 async function carregarConfig(): Promise<ConfigFb> {
-  const [ativo, regioesRaw, minPreco, maxPreco, minAno, sort, maxItens, pacing, margem] = await Promise.all([
+  const [ativo, regioesRaw, minPreco, maxPreco, minAno, sort, maxItens, pacing, margem, margemMax] = await Promise.all([
     lerConfig("FACEBOOK_ATIVO"),
     lerConfig("FACEBOOK_REGIOES"),
     lerConfig("FACEBOOK_FILTRO_MIN_PRECO"),
@@ -120,6 +121,7 @@ async function carregarConfig(): Promise<ConfigFb> {
     lerConfig("FACEBOOK_MAX_ITENS"),
     lerConfig("FACEBOOK_PACING_MS"),
     lerConfig("MARGEM_MINIMA_PERCENTUAL"),
+    lerConfig("FACEBOOK_MARGEM_MAX_SUSPEITA"),
   ]);
   let regioes: Regiao[] = [];
   try {
@@ -140,6 +142,7 @@ async function carregarConfig(): Promise<ConfigFb> {
     maxItens: Number(maxItens ?? 40),
     pacingMs: Number(pacing ?? 1500),
     margemMinima: Number(margem ?? MARGEM_MINIMA_PADRAO),
+    margemMaxSuspeita: Number(margemMax ?? 40),
   };
 }
 
@@ -272,6 +275,19 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         continue;
       }
       const margem = calcularMargemPercentual(a.precoCampo ?? 0, ref.valor);
+      // ★ REGRA SÓ-FB: margem alta demais = quase certo FALSO ALARME. No FB o preço
+      // é texto livre do vendedor (não estruturado como OLX/ML) → margem acima do
+      // teto quer dizer, na prática, ou (a) FIPE que resolvemos na versão errada
+      // (ex.: casou 1.6 num 1.0), ou (b) o anúncio esconde parte do valor (entrada
+      // baixa / "financiamento complementar" no privado). Nos dois casos a margem é
+      // ILUSÓRIA → descarta antes de virar oferta. Teto configurável (default 40%).
+      if (margem > cfg.margemMaxSuspeita) {
+        descartados++;
+        await registrarVistoFacebook(id, "margem_suspeita");
+        console.log(`[fb:${regiao.nome}] ⚠ descartado margem ${margem.toFixed(0)}% > ${cfg.margemMaxSuspeita}% (provável FIPE errada/preço oculto): ${a.marca} ${a.modelo} ${a.ano}`);
+        await dormir(cfg.pacingMs);
+        continue;
+      }
       const classificacao = ehElegivel(margem, cfg.margemMinima) ? classificar(margem, cfg.margemMinima) : null;
       if (!classificacao) {
         descartados++;

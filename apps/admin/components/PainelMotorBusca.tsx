@@ -79,6 +79,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
   const [maxPreco, setMaxPreco] = useState(configs["FACEBOOK_FILTRO_MAX_PRECO"] ?? "400000");
   const [minAno, setMinAno] = useState(configs["FACEBOOK_FILTRO_MIN_ANO"] ?? "1995");
   const [sort, setSort] = useState(configs["FACEBOOK_FILTRO_SORT"] ?? "creation_time_descend");
+  const [margemMax, setMargemMax] = useState(configs["FACEBOOK_MARGEM_MAX_SUSPEITA"] ?? "40");
   const [regioes, setRegioes] = useState<Regiao[]>(() => lerRegioes(configs["FACEBOOK_REGIOES"]));
   const [salvando, iniciar] = useTransition();
   const [salvo, setSalvo] = useState(false);
@@ -101,6 +102,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         salvarConfigWorker("FACEBOOK_FILTRO_MAX_PRECO", maxPreco.trim()),
         salvarConfigWorker("FACEBOOK_FILTRO_MIN_ANO", minAno.trim()),
         salvarConfigWorker("FACEBOOK_FILTRO_SORT", sort),
+        salvarConfigWorker("FACEBOOK_MARGEM_MAX_SUSPEITA", margemMax.trim()),
         salvarConfigWorker("FACEBOOK_REGIOES", JSON.stringify(limpas)),
       ]);
       setRegioes(limpas);
@@ -168,6 +170,20 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         região pode ter um <strong>teto próprio</strong> (campo na linha): vazio usa o Geral; praças de alto valor
         (ex.: Balneário Camboriú) pedem régua maior.
       </p>
+
+      {/* Regra de DESCARTE (não vai na URL — aplicada DEPOIS de resolver a FIPE). */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 14px", marginBottom: 20, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10 }}>
+        <div style={{ flex: "0 0 130px" }}>
+          <label style={rotuloCampo}>Margem máx. (%)</label>
+          <input style={inputEstilo} inputMode="numeric" value={margemMax} onChange={(e) => { setMargemMax(e.target.value); marcarSujo(); }} placeholder="40" />
+        </div>
+        <p style={{ margin: 0, fontSize: 12, color: "#92722a", lineHeight: 1.55, flex: 1 }}>
+          <strong>Descarte automático (só Facebook).</strong> Margem acima disso quase sempre é <em>falso alarme</em>:
+          ou a FIPE casou a versão errada (ex.: um 1.0 pegando o valor de um 1.6), ou o anúncio esconde parte do
+          preço (entrada baixa / financiamento no privado). Melhor descartar que dar oferta ilusória e queimar a
+          confiança. Vale só pro FB (OLX/ML/Webmotors vêm com preço estruturado).
+        </p>
+      </div>
 
       {/* Regiões — em ABAS por estado (UF) pra não virar tripa longa com muitas regiões. */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
