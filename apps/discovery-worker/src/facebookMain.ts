@@ -96,6 +96,7 @@ interface Regiao {
   url: string;
   raio?: string; // km (80/100/250/500); campo do painel. Default 250.
   uf?: string; // estado; entra no slug (cidade-uf) pra ser único entre estados. Ver PainelMotorBusca.
+  precoMax?: string; // teto de preço PRÓPRIO da região; vazio → usa o Geral (FACEBOOK_FILTRO_MAX_PRECO).
 }
 /** FACEBOOK_REGIAO = slug da cidade + UF (Santa Maria RS ≠ Santa Maria SC). Compatível com o painel. */
 const slugRegiao = (r: Regiao): string => [slug(r.nome), r.uf ? r.uf.toLowerCase() : ""].filter(Boolean).join("-");
@@ -198,7 +199,10 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
 }
 
 async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
-  const urlBusca = montarUrlBuscaFacebook(regiao.url, cfg.filtros, regiao.raio ?? "250"); // contém "facebook" → board mostra fonte FACEBOOK
+  // Teto de preço próprio da região sobrescreve o Geral (vazio → Geral). Praças de
+  // alto valor (Balneário Camboriú) pedem régua maior; o resto barra preço-isca.
+  const filtros = { ...cfg.filtros, maxPreco: regiao.precoMax?.trim() || cfg.filtros.maxPreco };
+  const urlBusca = montarUrlBuscaFacebook(regiao.url, filtros, regiao.raio ?? "250"); // contém "facebook" → board mostra fonte FACEBOOK
   const registroId = await iniciarRegistroVarredura(urlBusca, "facebook");
   try {
     const htmlBusca = await pega(urlBusca);

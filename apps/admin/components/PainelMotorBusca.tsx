@@ -17,6 +17,8 @@ interface Regiao {
   url: string;
   raio: string; // km — o FB prioriza o centro; raio menor + vários centros cobre melhor
   uf: string; // estado — organiza o painel em abas e entra no slug (cidade-uf)
+  precoMax: string; // teto de preço PRÓPRIO da região; "" = usa o "Geral". Praças como
+  // Balneário Camboriú têm muito carro na casa dos milhões → régua maior pra não perdê-los.
 }
 
 const RAIOS = ["80", "100", "250", "500"];
@@ -47,7 +49,7 @@ function lerRegioes(bruto: string | undefined): Regiao[] {
           uf = m[1].toUpperCase();
           nome = nome.slice(0, m.index).trim();
         }
-        return { nome, url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250"), uf };
+        return { nome, url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250"), uf, precoMax: String(r.precoMax ?? "") };
       });
   } catch {
     return [];
@@ -108,15 +110,16 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
 
   // Prévia da URL final composta (base + raio da região + filtros globais). MESMA lógica do
   // worker (montarUrlBuscaFacebook): sobrescreve qualquer radius= colado na URL.
-  function urlComposta(base: string, raio: string): string {
+  function urlComposta(base: string, raio: string, precoMaxRegiao: string): string {
     const b = base.trim().replace(/([?&])radius=\d+/i, "$1").replace(/&{2,}/g, "&").replace(/[?&]$/, "");
     if (!b) return "";
     const sep = b.includes("?") ? "&" : "?";
-    const p = new URLSearchParams({ radius: raio, minPrice: minPreco, maxPrice: maxPreco, minYear: minAno, sortBy: sort, topLevelVehicleType: "car_truck" });
+    const maxAplicado = precoMaxRegiao.trim() || maxPreco; // teto da região; vazio → Geral
+    const p = new URLSearchParams({ radius: raio, minPrice: minPreco, maxPrice: maxAplicado, minYear: minAno, sortBy: sort, topLevelVehicleType: "car_truck" });
     return `${b}${sep}${p.toString()}`;
   }
   const previa = useMemo(
-    () => (regioes[0]?.url ? urlComposta(regioes[0].url, regioes[0].raio) : ""),
+    () => (regioes[0]?.url ? urlComposta(regioes[0].url, regioes[0].raio, regioes[0].precoMax) : ""),
     [regioes, minPreco, maxPreco, minAno, sort]
   );
 
@@ -160,7 +163,10 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
       </div>
       <p style={{ margin: "2px 0 18px", fontSize: 12, color: "#9ca3af", lineHeight: 1.5 }}>
         Preço mín. tira motinhos/carrinhos velhos <em>e</em> as iscas de loja (o “preço” delas é a entrada baixa).
-        Ano mín. 1995 corta ônibus/motorhome antigos. “Mais recentes” prioriza anúncios frescos.
+        Ano mín. 1995 corta ônibus/motorhome antigos. “Mais recentes” prioriza anúncios frescos. O <strong>preço
+        máximo</strong> barra valores fora da realidade (ex.: 9.999.999 só pra “esconder” o preço real) — e cada
+        região pode ter um <strong>teto próprio</strong> (campo na linha): vazio usa o Geral; praças de alto valor
+        (ex.: Balneário Camboriú) pedem régua maior.
       </p>
 
       {/* Regiões — em ABAS por estado (UF) pra não virar tripa longa com muitas regiões. */}
@@ -170,7 +176,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         </h3>
         <button
           type="button"
-          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250", uf: ufAtiva }]); marcarSujo(); }}
+          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250", uf: ufAtiva, precoMax: "" }]); marcarSujo(); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#059669", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 8, cursor: "pointer" }}
         >
           <Plus size={14} /> Adicionar {ufAtiva ? `em ${ufAtiva}` : "região"}
@@ -248,6 +254,15 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
               >
                 {RAIOS.map((km) => <option key={km} value={km}>{km} km</option>)}
               </select>
+              <input
+                style={{ ...inputEstilo, flex: "0 0 116px", ...(r.precoMax.trim() ? { borderColor: "#059669", background: "#f0fdf4" } : null) }}
+                inputMode="numeric"
+                value={r.precoMax}
+                aria-label="Preço máximo próprio (R$) — vazio usa o Geral"
+                title={`Teto de preço só desta região. Vazio = usa o Geral (R$ ${maxPreco || "—"}).`}
+                placeholder={`máx: ${maxPreco || "—"}`}
+                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], precoMax: e.target.value }; setRegioes(n); marcarSujo(); }}
+              />
               <button
                 type="button"
                 aria-label="Remover"
