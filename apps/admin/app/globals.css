@@ -6679,9 +6679,10 @@ button.bemvindo-secundario {
 .pagina-oportunidade-publicado {
   display: block;
   margin-top: 3px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #667781;
+  margin-bottom: 8px;
 }
 
 .pagina-oportunidade-ficha-item-linha {
