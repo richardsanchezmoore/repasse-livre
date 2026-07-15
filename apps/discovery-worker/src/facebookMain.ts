@@ -23,7 +23,7 @@ import {
   type AnuncioFacebook,
   type FiltrosFacebook,
 } from "./facebookMarketplaceService.js";
-import { buscarReferenciaFipe } from "./fipeService.js";
+import { resolverReferenciaFipeEntrada } from "./fipeService.js";
 import { garantirHistoricoFipe } from "./historicoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import type { Classificacao, Oportunidade, ReferenciaFipe } from "./types.js";
@@ -156,13 +156,18 @@ function modeloLimpo(a: AnuncioFacebook): string {
     .trim();
 }
 
-/** Caça FIPE tentando CADA motor candidato (título/descrição/estruturado). Sem marca/ano → null. */
+/**
+ * Caça FIPE tentando CADA motor candidato (título/descrição/estruturado). Usa o
+ * resolvedor FB-específico (resolverReferenciaFipeEntrada): guarda de cilindrada
+ * dura + versão de ENTRADA (menor valor) quando o vendedor não especifica a versão
+ * — o padrão do FB. Sem marca/ano → null. Ver project_repasse_livre_facebook_...
+ */
 async function resolverFipe(a: AnuncioFacebook): Promise<ReferenciaFipe | null> {
   if (!a.marca || !a.ano) return null;
   const modelo = modeloLimpo(a) || a.modelo || "";
   const motores = [...new Set(a.motorCandidatos.map((c) => c.motor))];
   for (const motor of motores.length ? motores : [""]) {
-    const ref = await buscarReferenciaFipe(a.marca, modelo, a.ano, `${motor} ${a.combustivel ?? ""}`.trim()).catch(() => null);
+    const ref = await resolverReferenciaFipeEntrada(a.marca, modelo, a.ano, `${motor} ${a.combustivel ?? ""}`.trim()).catch(() => null);
     if (ref) return ref;
   }
   return null;

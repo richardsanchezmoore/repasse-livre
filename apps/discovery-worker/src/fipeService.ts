@@ -901,6 +901,75 @@ export async function resolverReferenciaFipePorTexto(
   return null;
 }
 
+/**
+ * Resolvedor FB-ESPECÍFICO: texto livre do vendedor, SEM âncora de valor (o FB não
+ * dá o FIPE na página como OLX/ML). Aplica as MESMAS guardas duras (combustível +
+ * cilindrada) do resolvedor por valor — conserta o bug do Sandero "1.0" que casava
+ * o "Stepway 1.6" — E resolve a ambiguidade de VERSÃO com a regra do usuário:
+ * quando o anunciante NÃO especifica a versão (só o motor — ~70% do FB, "Sandero
+ * 1.0 básico"), a versão é a de ENTRADA. Operacionalização: entre os candidatos que
+ * EMPATAM no melhor score de texto (sem versão → todos empatam), pega o de MENOR
+ * VALOR (= trim base, ex.: Sandero Authentique 1.0 R$23.211, não o Expression mais
+ * caro). Se a versão VEM no texto, o score a favorece e o "menor valor" desempata só
+ * dentro dela. Escolha conservadora: nunca infla a FIPE → margem honesta. Ano casado
+ * por INTEIRO (não substring — mesmo cuidado do 32000⊃2000).
+ */
+export async function resolverReferenciaFipeEntrada(
+  marca: string,
+  modelo: string,
+  ano: string,
+  variante: string | null
+): Promise<ReferenciaFipe | null> {
+  const marcas = await buscarMarcas();
+  const marcasEnc = marcasCandidatas(marcas, marca);
+  if (marcasEnc.length === 0) return null;
+  const fuelAlvo = classeCombustivel(`${variante ?? ""} ${modelo}`);
+  const cilAlvo = cilindrada(`${variante ?? ""} ${modelo}`);
+  const anoNum = Number.parseInt(ano, 10);
+  const busca = `${modelo} ${variante ?? ""}`.trim();
+  type Cand = { valor: FipeValorResposta; refAno: FipeAno; nome: string; marcaNome: string; v: number; score: number };
+  const passa: Cand[] = [];
+  try {
+    for (const marcaEncontrada of marcasEnc) {
+      const modelos = await buscarModelos(marcaEncontrada.code);
+      const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 30);
+      for (const { item: candidato, pontuacao } of pontuarCandidatos(candidatos, busca)) {
+        const fuelCand = classeCombustivel(candidato.name);
+        if (fuelAlvo && fuelCand && fuelAlvo !== fuelCand) continue;
+        const cilCand = cilindrada(candidato.name);
+        if (cilAlvo && cilCand && cilAlvo !== cilCand) continue; // 1.0 ≠ 1.6: guarda dura
+        const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+        const refAno = Number.isFinite(anoNum)
+          ? anos.find((i) => Number.parseInt(i.name, 10) === anoNum)
+          : anos.find((i) => i.name.startsWith(ano));
+        if (!refAno) continue;
+        const fuelAno = classeCombustivel(refAno.name);
+        if (fuelAlvo && fuelAno && fuelAlvo !== fuelAno) continue;
+        const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
+        passa.push({ valor, refAno, nome: candidato.name, marcaNome: marcaEncontrada.name, v: parsePrecoFipe(valor.Valor), score: pontuacao });
+      }
+    }
+  } catch {
+    return null; // FIPE estrangulou — chamador segue com o que tinha
+  }
+  if (passa.length === 0) return null;
+  const maxScore = Math.max(...passa.map((c) => c.score));
+  const escolhido = passa.filter((c) => c.score === maxScore).reduce((a, b) => (b.v < a.v ? b : a));
+  const { mes, ano: anoRef } = parseMesReferencia(escolhido.valor.MesReferencia);
+  return {
+    marca: escolhido.marcaNome,
+    modelo: escolhido.nome,
+    ano: escolhido.refAno.name,
+    valor: escolhido.v,
+    mesReferencia: escolhido.valor.MesReferencia.trim(),
+    codigoFipe: escolhido.valor.CodigoFipe,
+    anoModelo: Number.parseInt(escolhido.refAno.name, 10),
+    siglaCombustivel: (escolhido.valor.SiglaCombustivel ?? "").toLowerCase(),
+    mesReferenciaNum: mes,
+    anoReferencia: anoRef,
+  };
+}
+
 // ==========================================================================
 // PARALLELUM v2 — fonte PRIMÁRIA de resolução por valor.
 // ==========================================================================
