@@ -40,6 +40,11 @@ const CAMPOS_CONFIG: Array<{ chave: string; rotulo: string; ajuda: string }> = [
   { chave: "OLX_CATEGORY_URL", rotulo: "URL(s) de categoria OLX", ajuda: "Uma ou mais, separadas por vírgula (uma por estado)." },
   { chave: "MODO_VARREDURA", rotulo: "Modo de varredura", ajuda: "inicial | incremental | intervalo" },
   { chave: "MARGEM_MINIMA_PERCENTUAL", rotulo: "Margem mínima (%)", ajuda: "Abaixo da FIPE para ser elegível." },
+  {
+    chave: "MARGEM_MAX_SUSPEITA",
+    rotulo: "Margem máx. — descarte (%)",
+    ajuda: "Acima disso = falso alarme (FIPE errada ou preço-parcela de financiado) → descarta. Vale p/ OLX/ML/Webmotors. Padrão 50. (O Facebook tem teto próprio, mais rígido, no Motor de Busca.)",
+  },
   { chave: "JANELA_INICIAL_DIAS", rotulo: "Janela inicial (dias)", ajuda: "Usado só no modo inicial." },
   { chave: "MAX_PAGINAS", rotulo: "Máx. de páginas por execução", ajuda: "Limite de proteção contra varredura sem fim." },
   {

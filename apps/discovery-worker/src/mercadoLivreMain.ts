@@ -4,7 +4,7 @@ import {
   varrerEProcessarMercadoLivre,
 } from "./mercadoLivreService.js";
 import type { ResultadoLoteMercadoLivre } from "./mercadoLivreService.js";
-import { MARGEM_MINIMA_PADRAO } from "./margin.js";
+import { definirTetoSuspeita, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import {
   finalizarRegistroVarreduraComErro,
   finalizarRegistroVarreduraComSucesso,
@@ -18,6 +18,8 @@ async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<
   const margemMinima = Number(
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
   );
+  // Teto de margem suspeita (regra geral): acima disso = falso alarme → descarta.
+  definirTetoSuspeita(Number((await lerConfig("MARGEM_MAX_SUSPEITA")) ?? process.env.MARGEM_MAX_SUSPEITA ?? 50));
   // Teto de páginas (default 15: cobre um dia inteiro do filtro "hoje", ~601/48≈13,
   // com folga). A parada seca corta antes quando o delta do dia já foi coberto.
   const maxPaginas = Number((await lerConfig("MERCADOLIVRE_MAX_PAGINAS")) ?? process.env.MERCADOLIVRE_MAX_PAGINAS ?? 15);

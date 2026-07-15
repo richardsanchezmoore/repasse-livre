@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { buscarAnunciosWebmotors, processarLoteAnunciosWebmotors } from "./webmotorsService.js";
 import type { ResultadoLoteWebmotors } from "./webmotorsService.js";
-import { MARGEM_MINIMA_PADRAO } from "./margin.js";
+import { definirTetoSuspeita, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import {
   finalizarRegistroVarreduraComErro,
   finalizarRegistroVarreduraComSucesso,
@@ -42,6 +42,8 @@ async function executarVarreduraWebmotors(
   const margemMinima = Number(
     (await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO
   );
+  // Teto de margem suspeita (regra geral): acima disso = falso alarme → descarta.
+  definirTetoSuspeita(Number((await lerConfig("MARGEM_MAX_SUSPEITA")) ?? process.env.MARGEM_MAX_SUSPEITA ?? 50));
   const janelaDias = await obterJanelaDias();
 
   console.log(`[motor-descoberta-webmotors] Categoria: ${categoryUrl} | janela: ${janelaDias} dias | margem mínima: ${margemMinima}%`);

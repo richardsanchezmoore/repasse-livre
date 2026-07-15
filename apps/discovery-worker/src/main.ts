@@ -5,7 +5,7 @@ import {
   montarUrlPagina,
   resolverChaveFiltroFipe,
 } from "./olxService.js";
-import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
+import { calcularMargemPercentual, classificar, definirTetoSuspeita, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import { resolverReferenciaFipePorValorHibrido } from "./fipeService.js";
 import { garantirHistoricoFipe, registrarPontoHistoricoFipe, resolverCodigoPorHistoricoLocal } from "./historicoFipe.js";
 import { buscarCodigoAprendido, gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
@@ -418,6 +418,9 @@ async function executarVarreduraComRegistro(categoriaUrlBase: string, modo: stri
 async function executarTodasCategorias(): Promise<void> {
   await finalizarRunsPresosComoErro(); // limpa zumbis de execuções mortas antes de abrir novos
   config = await carregarConfig();
+  // Teto de margem suspeita (regra geral, todas as fontes): margem acima disso =
+  // falso alarme (FIPE errada / preço-parcela de financiado) → descarta.
+  definirTetoSuspeita(Number((await lerConfig("MARGEM_MAX_SUSPEITA")) ?? process.env.MARGEM_MAX_SUSPEITA ?? 50));
   for (const categoriaUrlBase of config.categoriasUrlBase) {
     await executarVarreduraComRegistro(categoriaUrlBase, config.modo);
   }
