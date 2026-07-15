@@ -99,6 +99,25 @@ export function alertaMotor({ anuncio }: CtxIndicador): ResultadoIndicador {
   };
 }
 
+/**
+ * RESSALVA de 2P/4P (só FB): a FIPE foi assumida como 4 portas porque o anúncio não
+ * informou e o modelo tem as duas versões (código/valor diferentes). NÃO penaliza a
+ * nota (se for 4P mesmo, a oferta é real) — é um aviso de CONFERÊNCIA, como pediu o
+ * usuário. Sinal interno gravado pelo worker FB (atributos_olx.fipe_4p_assumido).
+ */
+export function alertaPortas({ anuncio }: CtxIndicador): ResultadoIndicador {
+  if (anuncio.atributos_olx?.["fipe_4p_assumido"]?.value !== "Sim") return nada;
+  return {
+    evidencia: {
+      chave: "portas_4p",
+      tipo: "alerta",
+      texto: "A FIPE assumida é da versão 4 portas (o anúncio não informou) — confira se o veículo da foto condiz.",
+      origem: "Calculado",
+      peso: 1,
+    },
+  };
+}
+
 export function unicoDono({ anuncio }: CtxIndicador): ResultadoIndicador {
   if (!atributoSim(anuncio.atributos_olx, "owner")) return nada;
   return {
@@ -286,6 +305,7 @@ export const INDICADORES: ((ctx: CtxIndicador) => ResultadoIndicador)[] = [
   historicoReducoes,
   alertaLeilao,
   alertaMotor,
+  alertaPortas,
   unicoDono,
   quitado,
 ];

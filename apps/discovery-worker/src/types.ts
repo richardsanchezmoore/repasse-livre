@@ -34,6 +34,9 @@ export interface ReferenciaFipe {
   /** Mês/ano de referência da FIPE em número (ex.: 7 e 2026), pro fipe_historico. */
   mesReferenciaNum: number;
   anoReferencia: number;
+  /** FB: o anúncio não informou as portas e o modelo tem 2P e 4P → assumimos 4P
+   * (maioria). Dispara uma ressalva no Copiloto ("confira se a foto tem 4 portas"). */
+  ressalvaPortas4?: boolean;
 }
 
 export type Classificacao =

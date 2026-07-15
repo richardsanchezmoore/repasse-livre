@@ -111,6 +111,13 @@ function cilindrada(texto: string): string | null {
   return m ? m[1].replace(",", ".") : null;
 }
 
+/** Nº de portas do texto ("2p"/"4p"/"5p"/"4 portas") — null se não menciona. Usado
+ *  pra desambiguar 2P vs 4P na FIPE (a mesma versão tem código/valor diferente). */
+function numeroPortas(texto: string): number | null {
+  const m = normalizar(texto).match(/\b([2-5])\s*(?:p\b|portas?\b)/);
+  return m ? Number(m[1]) : null;
+}
+
 const HEADERS_FIPE = {
   "Content-Type": "application/json",
   Referer: "https://veiculos.fipe.org.br/",
@@ -954,7 +961,27 @@ export async function resolverReferenciaFipeEntrada(
   }
   if (passa.length === 0) return null;
   const maxScore = Math.max(...passa.map((c) => c.score));
-  const escolhido = passa.filter((c) => c.score === maxScore).reduce((a, b) => (b.v < a.v ? b : a));
+  let topo = passa.filter((c) => c.score === maxScore);
+
+  // PORTAS (2P vs 4P): a MESMA versão tem código/valor diferente por nº de portas e o
+  // vendedor quase nunca informa. Se o anúncio DIZ as portas, respeita. Senão, na
+  // AMBIGUIDADE (o pool tem 2/3p E 4/5p), assume 4P (maioria do mercado; 2p sumiu,
+  // salvo esportivo) e SINALIZA ressalva pro Copiloto. Decisão do usuário. Sem isso,
+  // pegávamos ora o 2p (subvaloriza), ora um trim/porta a esmo (o Palio pegava Attractive 5p).
+  const portasAlvo = numeroPortas(`${variante ?? ""} ${modelo}`);
+  const poucas = topo.filter((c) => { const d = numeroPortas(c.nome); return d != null && d <= 3; });
+  const muitas = topo.filter((c) => { const d = numeroPortas(c.nome); return d != null && d >= 4; });
+  let ressalvaPortas4 = false;
+  if (portasAlvo != null) {
+    const alvo = portasAlvo >= 4 ? muitas : poucas;
+    if (alvo.length) topo = alvo; // anúncio informou → respeita
+  } else if (poucas.length && muitas.length) {
+    topo = muitas; // ambíguo → assume 4P
+    ressalvaPortas4 = true;
+  }
+
+  // Entre os finalistas, a versão de ENTRADA = MENOR valor (trim base).
+  const escolhido = topo.reduce((a, b) => (b.v < a.v ? b : a));
   const { mes, ano: anoRef } = parseMesReferencia(escolhido.valor.MesReferencia);
   return {
     marca: escolhido.marcaNome,
@@ -967,6 +994,7 @@ export async function resolverReferenciaFipeEntrada(
     siglaCombustivel: (escolhido.valor.SiglaCombustivel ?? "").toLowerCase(),
     mesReferenciaNum: mes,
     anoReferencia: anoRef,
+    ressalvaPortas4,
   };
 }
 

@@ -182,6 +182,9 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
   // sinal que o Copiloto/BIA leem via atributos_olx). "Sim" dispara o aviso de procedência.
   const atributos: Record<string, { label: string; value: string }> = {};
   if (a.leilao) atributos.has_auction = { label: "Passagem por leilão", value: a.leilao };
+  // FIPE assumida como 4P (anúncio não informou portas e o modelo tem 2P e 4P) → o
+  // Copiloto avisa pra conferir na foto. Sinal interno (só FB), lido pela BIA.
+  if (ref.ressalvaPortas4) atributos.fipe_4p_assumido = { label: "FIPE assumida 4 portas", value: "Sim" };
   return {
     fonte: "FACEBOOK",
     link_origem: linkPublico(a.id),
