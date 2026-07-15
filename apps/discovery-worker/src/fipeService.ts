@@ -642,8 +642,14 @@ export async function buscarReferenciaFipe(
   let anoEncontrado: FipeAno | null = null;
   for (const candidato of candidatos) {
     const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
-    // O Label do ano é tipo "2013 Diesel" — casa pelo prefixo do ano.
-    const ref = anos.find((item) => item.name.startsWith(ano)) ?? anos.find((item) => item.name.includes(ano));
+    // O Label do ano é tipo "2013 Diesel" ou "32000 Gasolina" (32000 = 0km).
+    // Casa pelo ANO como NÚMERO inteiro do prefixo — NÃO por substring: o antigo
+    // .includes("2000") batia dentro de "3(2000)" (0km) e um Corolla 2000 pegava
+    // o valor de um Altis Híbrido zero-km (R$205 mil, +88% de "margem" falsa).
+    const anoAlvo = Number.parseInt(ano, 10);
+    const ref = Number.isFinite(anoAlvo)
+      ? anos.find((item) => Number.parseInt(item.name, 10) === anoAlvo)
+      : anos.find((item) => item.name.startsWith(ano));
     if (ref) {
       modeloEncontrado = candidato;
       anoEncontrado = ref;
