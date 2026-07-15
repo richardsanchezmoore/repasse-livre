@@ -83,8 +83,13 @@ function semAcento(s: string): string {
  * são imprecisos demais → fora. FUTURO: virar sinal de procedência no Copiloto.
  */
 const RISCO_DOC_RE = /\b(sem documento|passo sem compromisso|documento de roda|so documento|nao transfere|documento atrasado)\b/;
+// "restrição"/"gravame" = pendência no documento (financeira/judicial). MAS "sem
+// restrição"/"sem gravame" é o oposto (POSITIVO) → lookbehind exclui o "sem ".
+const RESTRICAO_RE = /(?<!sem\s)\b(restric\w+|gravame)\b/;
 export function riscoDocumentacao(texto: string | null): boolean {
-  return texto ? RISCO_DOC_RE.test(semAcento(texto)) : false;
+  if (!texto) return false;
+  const t = semAcento(texto);
+  return RISCO_DOC_RE.test(t) || RESTRICAO_RE.test(t);
 }
 
 /**

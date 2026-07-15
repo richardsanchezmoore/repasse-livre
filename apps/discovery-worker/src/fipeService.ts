@@ -935,29 +935,37 @@ export async function resolverReferenciaFipeEntrada(
   const anoNum = Number.parseInt(ano, 10);
   const busca = `${modelo} ${variante ?? ""}`.trim();
   type Cand = { valor: FipeValorResposta; refAno: FipeAno; nome: string; marcaNome: string; v: number; score: number };
-  const passa: Cand[] = [];
-  try {
-    for (const marcaEncontrada of marcasEnc) {
-      const modelos = await buscarModelos(marcaEncontrada.code);
-      const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 30);
-      for (const { item: candidato, pontuacao } of pontuarCandidatos(candidatos, busca)) {
-        const fuelCand = classeCombustivel(candidato.name);
-        if (fuelAlvo && fuelCand && fuelAlvo !== fuelCand) continue;
-        const cilCand = cilindrada(candidato.name);
-        if (cilAlvo && cilCand && cilAlvo !== cilCand) continue; // 1.0 ≠ 1.6: guarda dura
-        const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
-        const refAno = Number.isFinite(anoNum)
-          ? anos.find((i) => Number.parseInt(i.name, 10) === anoNum)
-          : anos.find((i) => i.name.startsWith(ano));
-        if (!refAno) continue;
-        const fuelAno = classeCombustivel(refAno.name);
-        if (fuelAlvo && fuelAno && fuelAlvo !== fuelAno) continue;
-        const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
-        passa.push({ valor, refAno, nome: candidato.name, marcaNome: marcaEncontrada.name, v: parsePrecoFipe(valor.Valor), score: pontuacao });
+  let passa: Cand[] = [];
+  // A oficial 429a por rajada; este resolvedor NÃO usa a base local (precisa enumerar
+  // todos os trims pra desambiguar entrada/2P-4P). Um 429 no meio derrubava a captura
+  // pra sem_fipe. Retry 1× com pausa deixa o throttle aliviar antes de desistir.
+  for (let tentativa = 1; tentativa <= 2; tentativa++) {
+    passa = [];
+    try {
+      for (const marcaEncontrada of marcasEnc) {
+        const modelos = await buscarModelos(marcaEncontrada.code);
+        const candidatos = candidatosOrdenadosModeloVariante(modelos, modelo, variante, 1, 30);
+        for (const { item: candidato, pontuacao } of pontuarCandidatos(candidatos, busca)) {
+          const fuelCand = classeCombustivel(candidato.name);
+          if (fuelAlvo && fuelCand && fuelAlvo !== fuelCand) continue;
+          const cilCand = cilindrada(candidato.name);
+          if (cilAlvo && cilCand && cilAlvo !== cilCand) continue; // 1.0 ≠ 1.6: guarda dura
+          const anos = await buscarAnos(marcaEncontrada.code, candidato.code);
+          const refAno = Number.isFinite(anoNum)
+            ? anos.find((i) => Number.parseInt(i.name, 10) === anoNum)
+            : anos.find((i) => i.name.startsWith(ano));
+          if (!refAno) continue;
+          const fuelAno = classeCombustivel(refAno.name);
+          if (fuelAlvo && fuelAno && fuelAlvo !== fuelAno) continue;
+          const valor = await buscarValor(marcaEncontrada.code, candidato.code, refAno.code);
+          passa.push({ valor, refAno, nome: candidato.name, marcaNome: marcaEncontrada.name, v: parsePrecoFipe(valor.Valor), score: pontuacao });
+        }
       }
+      break; // enumeração completa
+    } catch {
+      if (tentativa >= 2) return null; // throttle persistente — chamador segue com o que tinha
+      await new Promise((r) => setTimeout(r, 1500));
     }
-  } catch {
-    return null; // FIPE estrangulou — chamador segue com o que tinha
   }
   if (passa.length === 0) return null;
   const maxScore = Math.max(...passa.map((c) => c.score));
