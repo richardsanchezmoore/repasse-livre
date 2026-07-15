@@ -34,16 +34,16 @@ const COPY = {
   padrao: {
     h1a: "Enquanto outros procuram carros, você encontra ",
     h1b: "oportunidades.",
-    sub: "O BIA monitora milhares de anúncios dos principais marketplaces do Brasil, identifica o que está abaixo da FIPE e entrega inteligência pronta — pra quem compra primeiro.",
-    timeline: "Quem compra primeiro é quem encontrou primeiro.",
-    finalSub: "Garanta hoje o valor promocional e trave ele pra sempre.",
+    sub: "O Repasse Livre monitora continuamente os maiores marketplaces do Brasil e identifica oportunidades abaixo da FIPE antes que elas desapareçam. O BIA organiza milhares de anúncios, o Copiloto analisa cada oportunidade — e você economiza tempo, compra melhor e aumenta sua margem.",
+    timeline: "Quem compra primeiro normalmente encontrou primeiro.",
+    finalSub: "Todos os dias milhares de anúncios entram no mercado. Poucos realmente representam uma oportunidade — e o Repasse Livre foi criado para encontrar essas oportunidades antes da maioria.",
   },
   fomo: {
     h1a: "Enquanto o mercado inteiro procura, você já ",
     h1b: "encontrou.",
-    sub: "Cada minuto procurando na mão, outro comprador chega antes. O BIA vigia o mercado por você e entrega a oportunidade pronta — com o Copiloto já analisado. Você só chega e fecha.",
+    sub: "Cada minuto procurando na mão, outro comprador chega antes. O Repasse Livre vigia o mercado por você: o BIA organiza os anúncios, o Copiloto interpreta o contexto e você recebe a oportunidade pronta pra decidir.",
     timeline: "No fim, quem chega primeiro é quem lucra.",
-    finalSub: "Quem chega primeiro leva. Trave o valor promocional agora.",
+    finalSub: "Todos os dias milhares de anúncios entram no mercado. Poucos realmente valem — e o Repasse Livre encontra esses antes da maioria.",
   },
 } as const;
 
@@ -72,7 +72,7 @@ function Fone({ src, alt, largura, aspecto = "350 / 708", flutua = false }: { sr
 
 export function PaginaVendas({ dados }: { dados: DadosVendas }) {
   const c = COPY[dados.variante];
-  const rotuloAssinar = `QUERO TRAVAR ${dados.precoValor}/MÊS`;
+  const rotuloAssinar = "QUERO ACESSAR O REPASSE LIVRE PRO";
 
   useEffect(() => {
     const countUp = (el: HTMLElement) => {
@@ -184,6 +184,30 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
+      {/* 2b ── o problema */}
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
+        <div style={{ maxWidth: 820, margin: "0 auto", padding: PAD, textAlign: "center" }}>
+          <div style={eyebrow}>O problema</div>
+          <h3 style={{ font: `800 clamp(24px,3.4vw,32px)/1.16 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px", textWrap: "balance" }}>
+            Todo mundo vê os mesmos anúncios. Poucos identificam <span style={{ color: "#16A34A" }}>quais realmente valem.</span>
+          </h3>
+          <p style={{ font: `500 clamp(15px,1.6vw,17px)/1.6 ${CORPO}`, color: "#6A7686", maxWidth: 620, margin: "0 auto 28px" }}>
+            Todos os dias milhares de veículos entram na OLX, Mercado Livre e Webmotors. A maioria passa horas pesquisando, comparando preços e consultando a FIPE — tentando descobrir se aquele carro é mesmo uma oportunidade.
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginBottom: 28 }}>
+            {["Horas pesquisando em vários sites", "Comparando preço e FIPE na mão", "Sem saber se vale mesmo a pena"].map((x) => (
+              <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "#FEF5F4", border: "1px solid #F3D3CF", borderRadius: 999, padding: "9px 15px", font: `600 13px ${CORPO}`, color: "#8a5d59" }}>
+                <span style={{ flex: "none", width: 20, height: 20, borderRadius: "50%", background: "#F7D7D3", display: "flex", alignItems: "center", justifyContent: "center", color: "#D9463E" }}><X size={10} strokeWidth={3.2} /></span>
+                {x}
+              </span>
+            ))}
+          </div>
+          <p style={{ font: `700 clamp(16px,2vw,20px)/1.4 ${TIT}`, color: "#0F1B2D", margin: 0 }}>
+            As melhores oportunidades não esperam <span style={{ color: "#16A34A" }}>quem demora pra decidir.</span>
+          </p>
+        </div>
+      </section>
+
       {/* 3 ── radar / orbit */}
       <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(700px 500px at 78% 50%,rgba(34,197,94,.14),transparent 62%),linear-gradient(160deg,#0C2417,#07120C)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(32px,4vw,56px)", alignItems: "center" }}>
@@ -236,15 +260,16 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
           <div style={{ textAlign: "center", marginBottom: 34 }}>
-            <div style={{ font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>O mercado não espera</div>
+            <div style={{ font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>Como funciona</div>
             <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h2>
           </div>
           <div style={{ position: "relative", paddingLeft: 38 }}>
             <div style={{ position: "absolute", left: 12, top: 6, bottom: 6, width: 2, background: "linear-gradient(#16A34A,#cbe8d5)" }} />
             {[
-              { n: "1", esc: false, t: "A oportunidade aparece", s: "Um veículo entra no mercado abaixo da FIPE. A janela abre." },
-              { n: "2", esc: false, t: "O BIA te avisa em segundos", s: "Com a análise pronta: preço, margem, procedência e Score." },
-              { n: "3", esc: true, t: "Você chega primeiro", s: "Enquanto os outros ainda procuram na mão. O mercado recompensa velocidade." },
+              { n: "1", esc: false, t: "Uma oportunidade entra no mercado", s: "O anúncio é publicado abaixo da FIPE. A janela abre." },
+              { n: "2", esc: false, t: "O Repasse Livre identifica em segundos", s: "Preço, FIPE, versão, mercado, região e contexto — tudo analisado automaticamente." },
+              { n: "3", esc: false, t: "O Copiloto interpreta", s: "Você sabe na hora se aquela oportunidade merece sua atenção." },
+              { n: "4", esc: true, t: "Você decide antes da maioria", s: "Enquanto outros ainda pesquisam, você já está negociando." },
             ].map((p, i, arr) => (
               <div key={p.n} style={{ position: "relative", marginBottom: i < arr.length - 1 ? 26 : 0 }}>
                 <span style={{ position: "absolute", left: -38, top: 0, width: 26, height: 26, borderRadius: "50%", background: p.esc ? "#0F1B2D" : "#16A34A", color: p.esc ? "#35D07F" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 12px ${TIT}` }}>{p.n}</span>
@@ -311,10 +336,11 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       {/* 6 ── banda escura "o verdadeiro produto" */}
       <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(600px 300px at 50% -20px,rgba(34,197,94,.18),transparent 65%),linear-gradient(165deg,#0E2A1A,#081410)" }}>
         <div style={{ maxWidth: 840, margin: "0 auto", padding: "clamp(44px,5.5vw,76px) clamp(20px,5vw,56px)", textAlign: "center" }}>
-          <div style={eyebrowEsc}>O verdadeiro produto</div>
-          <h3 style={{ font: `800 clamp(22px,3vw,28px)/1.2 ${TIT}`, color: "#fff", margin: "0 0 6px" }}>Você não compra acesso a anúncios.</h3>
-          <p style={{ font: `500 14px ${CORPO}`, color: "#9FB0C4", margin: "0 0 20px" }}>Você compra:</p>
-          <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>Tempo. Velocidade. Informação. Inteligência. <span style={{ color: "#fff" }}>Vantagem competitiva.</span></div>
+          <div style={eyebrowEsc}>O que você está comprando</div>
+          <h3 style={{ font: `800 clamp(22px,3vw,28px)/1.2 ${TIT}`, color: "#fff", margin: "0 0 6px" }}>Você não está comprando acesso a anúncios.</h3>
+          <p style={{ font: `500 14px ${CORPO}`, color: "#9FB0C4", margin: "0 0 20px" }}>Você está investindo em:</p>
+          <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>Tempo. Informação. Contexto. Inteligência. Velocidade. Margem. <span style={{ color: "#fff" }}>Decisões melhores.</span></div>
+          <p style={{ font: `700 clamp(15px,1.8vw,18px) ${TIT}`, color: "#fff", margin: "20px 0 0" }}>Quanto melhor a decisão, <span style={{ color: "#35D07F" }}>maior a margem.</span></p>
         </div>
       </section>
 
@@ -323,15 +349,15 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,52px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 380px", minWidth: 280 }}>
             <div style={eyebrow}>O que você desbloqueia</div>
-            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 22px" }}>Tudo pra chegar primeiro.</h3>
+            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 22px" }}>Tudo para comprar melhor.</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "16px 24px" }}>
               {[
-                { Ic: LayoutGrid, t: "BIA", s: "Banco de Inteligência Automotiva" },
-                { Ic: Compass, t: "Copiloto de Compra", s: "Análise inteligente de cada anúncio" },
-                { Ic: BarChart3, t: "Comparativos de mercado", s: "Cidade, estado e Brasil" },
-                { Ic: TrendingDown, t: "Oportunidades abaixo da FIPE", s: "Só o que está barato de verdade" },
-                { Ic: Bell, t: "Alertas inteligentes", s: "Avisado assim que o carro certo entra" },
-                { Ic: Star, t: "Score Repasse Livre", s: "O quanto o negócio vale, num número" },
+                { Ic: LayoutGrid, t: "BIA", s: "Organiza milhares de anúncios em inteligência de mercado" },
+                { Ic: Compass, t: "Copiloto", s: "Analisa automaticamente cada oportunidade" },
+                { Ic: BarChart3, t: "Comparativos", s: "Cidade, estado e Brasil — onde o veículo se posiciona" },
+                { Ic: Bell, t: "Alertas", s: "Receba oportunidades antes da maioria" },
+                { Ic: Star, t: "Score Repasse Livre", s: "Saiba rapidamente quais anúncios merecem atenção" },
+                { Ic: TrendingDown, t: "Dashboard", s: "Entenda o mercado antes da concorrência" },
               ].map(({ Ic, t, s }) => (
                 <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <span style={{ flex: "none", width: 36, height: 36, borderRadius: 10, background: "rgba(22,163,74,.12)", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic size={18} strokeWidth={2} /></span>
@@ -342,6 +368,9 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
                 </div>
               ))}
             </div>
+            <p style={{ font: `700 clamp(15px,1.7vw,17px)/1.5 ${TIT}`, color: "#0F1B2D", margin: "22px 0 0" }}>
+              Você deixa de analisar anúncios. <span style={{ color: "#16A34A" }}>Passa a analisar o mercado.</span>
+            </p>
           </div>
           <div style={{ flex: "1 1 260px", minWidth: 240, display: "flex", justifyContent: "center" }}>
             <Fone src="/vendas/anuncio-copiloto.png" alt="Análise do Copiloto" largura="min(230px,64vw)" />
@@ -404,7 +433,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
           <div style={{ flex: "1 1 360px", minWidth: 280 }}>
-            <div style={eyebrow}>Dashboard BIA</div>
+            <div style={eyebrow}>Inteligência de mercado</div>
             <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Você enxerga o mercado como ninguém.</h3>
             <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 20px" }}>Margem média por modelo, os carros mais disputados, o mapa do alto padrão e pra onde o preço de cada região está indo — antes da concorrência. O mercado inteiro num painel só.</p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -518,24 +547,44 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
+      {/* 13b ── para quem é */}
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
+        <div style={{ maxWidth: 820, margin: "0 auto", padding: PAD, textAlign: "center" }}>
+          <div style={eyebrow}>Para quem é</div>
+          <h3 style={{ font: `800 clamp(24px,3.4vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px", textWrap: "balance" }}>
+            Feito pra quem compra veículos <span style={{ color: "#16A34A" }}>de forma estratégica.</span>
+          </h3>
+          <p style={{ font: `500 clamp(15px,1.6vw,17px)/1.6 ${CORPO}`, color: "#6A7686", maxWidth: 580, margin: "0 auto 28px" }}>
+            Se a sua margem depende de comprar bem e na hora certa, o Repasse Livre PRO foi desenhado pra você.
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+            {["Lojistas", "Intermediadores", "Investidores", "Repassadores", "Compradores profissionais", "Quem entende que informação gera margem"].map((x) => (
+              <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "9px 16px", font: `700 13px ${CORPO}`, color: "#2f6446" }}>
+                <Check size={13} strokeWidth={3} color="#16A34A" /> {x}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 14 ── card de oferta (escuro) */}
       <section id="oferta" data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", scrollMarginTop: 70, background: "radial-gradient(700px 360px at 78% -20px,rgba(34,197,94,.2),transparent 60%),linear-gradient(165deg,#0E2A1A,#081410)" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(32px,4vw,56px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 380px", minWidth: 290 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(53,208,127,.14)", color: "#35D07F", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}><Gem size={11} fill="#35D07F" strokeWidth={0} /> REPASSE LIVRE PRO</span>
-              <span style={{ background: "rgba(217,119,46,.2)", color: "#F0A868", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}>OFERTA POR TEMPO LIMITADO</span>
+              <span style={{ background: "rgba(217,119,46,.2)", color: "#F0A868", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}>OFERTA DE LANÇAMENTO</span>
             </div>
             <h3 style={{ font: `800 clamp(26px,3.6vw,38px)/1.14 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 14px", textWrap: "balance" }}>
               Trave {dados.precoValor}
               {dados.precoIntervalo} — pra sempre.
             </h3>
-            <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", maxWidth: 460, margin: "0 0 24px" }}>O BIA já monitora milhares de anúncios todos os dias — a inteligência está pronta pra trabalhar por você agora. Garanta o valor promocional e ele fica travado enquanto você for assinante.</p>
+            <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", maxWidth: 460, margin: "0 0 24px" }}>Tudo o que você precisa para encontrar oportunidades antes da concorrência. Comece hoje pelas condições especiais de lançamento — antes de o valor voltar ao normal.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
               {[
-                <>Preço promocional de <b style={{ color: "#fff" }}>{dados.precoValor}{dados.precoIntervalo}</b> — travado pra sempre</>,
-                <>Acesso total: <b style={{ color: "#fff" }}>BIA, Copiloto, Score, Alertas, Dashboard e Comparativos</b></>,
-                <>Prioridade nas próximas novidades da plataforma</>,
+                <>Preço de lançamento de <b style={{ color: "#fff" }}>{dados.precoValor}{dados.precoIntervalo}</b> — travado enquanto você for assinante</>,
+                <>Acesso total: <b style={{ color: "#fff" }}>BIA, Copiloto, Dashboard, Alertas, Comparativos e Score</b></>,
+                <>Todas as melhorias da plataforma incluídas</>,
                 <>Sem fidelidade — cancele quando quiser, direto no painel</>,
               ].map((n, i) => (
                 <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -579,10 +628,11 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
           <h3 style={{ font: `800 clamp(24px,3.2vw,30px) ${TIT}`, color: "#0F1B2D", textAlign: "center", margin: "0 0 26px" }}>Perguntas frequentes</h3>
           {[
-            { q: "Os anúncios são do Repasse Livre?", a: "Não. O Repasse Livre monitora e organiza oportunidades dos principais marketplaces automotivos do Brasil — OLX, Webmotors e Mercado Livre — transformando milhares de anúncios em inteligência de mercado." },
-            { q: "Os veículos ficam abaixo da FIPE?", a: "Sim. Nossa plataforma identifica automaticamente anúncios abaixo da FIPE e mostra esse percentual de forma clara, pra facilitar a comparação e a decisão." },
-            { q: "O que é o Copiloto?", a: "É o sistema de análise do Repasse Livre. Ele compara cada anúncio com veículos semelhantes monitorados pela plataforma e gera um parecer técnico baseado em dados reais do mercado." },
-            { q: "O que é o BIA?", a: "O BIA (Banco de Inteligência Automotiva) é o motor de inteligência do Repasse Livre. Ele monitora continuamente o mercado pra transformar dados dispersos em informação estratégica." },
+            { q: "O Repasse Livre vende veículos?", a: "Não. Monitoramos oportunidades publicadas nos principais marketplaces do Brasil — OLX, Webmotors e Mercado Livre — e transformamos esses anúncios em inteligência de mercado." },
+            { q: "O que é o BIA?", a: "É o Banco de Inteligência Automotiva do Repasse Livre. Ele organiza, compara e interpreta milhares de anúncios para gerar inteligência que apoia a sua decisão." },
+            { q: "O que é o Copiloto?", a: "É a tecnologia que analisa cada oportunidade usando os dados do BIA e apresenta uma recomendação baseada no contexto de mercado." },
+            { q: "Os anúncios são do Repasse Livre?", a: "Não. Os anúncios são monitorados em diferentes marketplaces e enriquecidos com a inteligência exclusiva do Repasse Livre." },
+            { q: "Quem pode utilizar?", a: "Qualquer pessoa que queira comprar melhor, economizar tempo e tomar decisões com mais informação." },
           ].map(({ q, a }) => (
             <details key={q} style={{ background: "#F7FAFC", border: "1px solid #EAEEF3", borderRadius: 16, padding: "18px 22px", marginBottom: 12 }}>
               <summary style={{ cursor: "pointer", listStyle: "none", font: `700 clamp(14px,1.6vw,16px) ${CORPO}`, color: "#0F1B2D" }}>{q}</summary>
@@ -596,9 +646,11 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       <section style={{ width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(700px 320px at 50% 0,rgba(34,197,94,.22),transparent 70%),linear-gradient(180deg,#0E2A1A,#081410)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", textAlign: "center" }}>
           <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(255,255,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", color: "#35D07F" }}><Clock size={22} strokeWidth={2} /></div>
-          <h3 style={{ font: `800 clamp(24px,3.6vw,32px) ${TIT}`, color: "#fff", margin: "0 0 10px", letterSpacing: "-.02em" }}>Quem compra melhor, <span style={{ color: "#35D07F" }}>lucra mais.</span></h3>
-          <p style={{ font: `500 15px ${CORPO}`, color: "#9FB0C4", margin: "0 0 26px" }}>{c.finalSub}</p>
-          <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : "ACESSAR O REPASSE LIVRE PRO"} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
+          <div style={eyebrowEsc}>Última chamada</div>
+          <h3 style={{ font: `800 clamp(24px,3.6vw,32px)/1.16 ${TIT}`, color: "#fff", margin: "0 0 12px", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros ainda procuram, você pode estar <span style={{ color: "#35D07F" }}>fechando o próximo negócio.</span></h3>
+          <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#9FB0C4", margin: "0 0 18px", maxWidth: 560, marginInline: "auto" }}>{c.finalSub}</p>
+          <p style={{ font: `800 clamp(16px,2vw,19px) ${TIT}`, color: "#fff", margin: "0 0 26px" }}>Encontre oportunidades. Compre melhor. <span style={{ color: "#35D07F" }}>Aumente sua margem.</span></p>
+          <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : "QUERO TER VANTAGEM NO MERCADO"} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
           <div style={{ marginTop: 18, font: `500 12px ${CORPO}`, color: "#6f8598" }}>→ Enquanto você lia isto, mais carros entraram abaixo da FIPE.</div>
         </div>
       </section>
