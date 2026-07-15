@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Loader2, Play } from "lucide-react";
 import { dispararVarreduraManual, salvarConfigWorker } from "@/app/actions";
 
@@ -22,6 +22,18 @@ export interface RunWorker {
 export interface ConfigWorker {
   chave: string;
   valor: string;
+}
+
+export interface RegiaoFacebook {
+  nome: string;
+  url: string;
+  uf: string;
+}
+
+/** Segmento do caminho /marketplace/<seg>/ — chave p/ casar um run FB com a região
+ * do painel (a URL do run e a url base da região compartilham esse trecho). */
+function segmentoMarketplace(url: string): string {
+  return url.match(/marketplace\/([^/?]+)/i)?.[1]?.toLowerCase() ?? "";
 }
 
 const CAMPOS_CONFIG: Array<{ chave: string; rotulo: string; ajuda: string }> = [
@@ -85,7 +97,15 @@ function formatarDuracao(inicio: string, fim: string | null): string {
   return `${Math.floor(segundos / 60)}min ${segundos % 60}s`;
 }
 
-export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: ConfigWorker[] }) {
+export function PainelWorker({
+  runs,
+  configs,
+  regioesFacebook = [],
+}: {
+  runs: RunWorker[];
+  configs: ConfigWorker[];
+  regioesFacebook?: RegiaoFacebook[];
+}) {
   const [pendente, iniciarTransicao] = useTransition();
   const [disparando, setDisparando] = useState(false);
   const [segundosDecorridos, setSegundosDecorridos] = useState(0);
@@ -105,6 +125,64 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
   const fontesPresentes = ORDEM_FONTES.filter((f) => runs.some((r) => fonteDaUrl(r.categoria_url) === f));
   const [abaAtiva, setAbaAtiva] = useState<Fonte>(fontesPresentes[0] ?? "OLX");
   const runsDaAba = runs.filter((r) => fonteDaUrl(r.categoria_url) === abaAtiva);
+
+  // Facebook: cada run é a execução de UMA região (cidade). Cruzamos o segmento
+  // /marketplace/<seg>/ do run com as regiões do painel pra recuperar UF + nome
+  // (a URL do run não carrega o estado) e agrupar o histórico por estado.
+  const mapaRegiao = useMemo(() => {
+    const m = new Map<string, { uf: string; nome: string }>();
+    for (const r of regioesFacebook) {
+      const seg = segmentoMarketplace(r.url);
+      if (seg) m.set(seg, { uf: r.uf, nome: r.nome });
+    }
+    return m;
+  }, [regioesFacebook]);
+  const regiaoDoRun = (run: RunWorker) => mapaRegiao.get(segmentoMarketplace(run.categoria_url));
+
+  // Grupos por UF (só na aba Facebook), "sem estado" por último.
+  const gruposFacebook = useMemo(() => {
+    if (abaAtiva !== "FACEBOOK") return [] as Array<[string, RunWorker[]]>;
+    const m = new Map<string, RunWorker[]>();
+    for (const run of runsDaAba) {
+      const uf = regiaoDoRun(run)?.uf || "—";
+      const lista = m.get(uf) ?? [];
+      lista.push(run);
+      m.set(uf, lista);
+    }
+    return [...m.entries()].sort(([a], [b]) => (a === "—" ? 1 : b === "—" ? -1 : a.localeCompare(b)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abaAtiva, runsDaAba, mapaRegiao]);
+
+  const linhaRun = (run: RunWorker, celulaEstado: string) => (
+    <tr key={run.id} className="usuarios-linha">
+      <td>{formatarData(run.iniciado_em)}</td>
+      <td>{celulaEstado}</td>
+      <td>{run.modo}</td>
+      <td>
+        <span
+          className={`worker-selo worker-selo-${run.status === "sucesso" ? "sucesso" : run.status === "erro" ? "erro" : "andamento"}`}
+          title={run.erro_mensagem ?? undefined}
+        >
+          {run.status === "sucesso" ? "Sucesso" : run.status === "erro" ? "Erro" : "Em andamento"}
+        </span>
+      </td>
+      <td>{formatarDuracao(run.iniciado_em, run.finalizado_em)}</td>
+      <td>
+        {run.status === "erro" ? (
+          run.erro_mensagem ?? "—"
+        ) : (
+          <>
+            {`${run.novos ?? "—"} / ${run.elegiveis ?? "—"} / ${run.descartados ?? "—"} / ${run.sem_fipe ?? "—"}`}
+            {run.observacao ? (
+              <span className="worker-obs" style={{ display: "block", fontSize: "0.8em", opacity: 0.7 }}>
+                {run.observacao}
+              </span>
+            ) : null}
+          </>
+        )}
+      </td>
+    </tr>
+  );
 
   const valorAtual = (chave: string): string => configs.find((c) => c.chave === chave)?.valor ?? "";
   const [valores, setValores] = useState<Record<string, string>>(
@@ -220,45 +298,30 @@ export function PainelWorker({ runs, configs }: { runs: RunWorker[]; configs: Co
               <thead>
                 <tr>
                   <th>Início</th>
-                  <th>Estado</th>
+                  <th>{abaAtiva === "FACEBOOK" ? "Região" : "Estado"}</th>
                   <th>Modo</th>
                   <th>Status</th>
                   <th>Duração</th>
                   <th>Novos / Elegíveis / Descartados / Sem FIPE</th>
                 </tr>
               </thead>
-              <tbody>
-                {runsDaAba.map((run) => (
-                  <tr key={run.id} className="usuarios-linha">
-                    <td>{formatarData(run.iniciado_em)}</td>
-                    <td>{extrairEstado(run.categoria_url)}</td>
-                    <td>{run.modo}</td>
-                    <td>
-                      <span
-                        className={`worker-selo worker-selo-${run.status === "sucesso" ? "sucesso" : run.status === "erro" ? "erro" : "andamento"}`}
-                        title={run.erro_mensagem ?? undefined}
-                      >
-                        {run.status === "sucesso" ? "Sucesso" : run.status === "erro" ? "Erro" : "Em andamento"}
-                      </span>
-                    </td>
-                    <td>{formatarDuracao(run.iniciado_em, run.finalizado_em)}</td>
-                    <td>
-                      {run.status === "erro" ? (
-                        run.erro_mensagem ?? "—"
-                      ) : (
-                        <>
-                          {`${run.novos ?? "—"} / ${run.elegiveis ?? "—"} / ${run.descartados ?? "—"} / ${run.sem_fipe ?? "—"}`}
-                          {run.observacao ? (
-                            <span className="worker-obs" style={{ display: "block", fontSize: "0.8em", opacity: 0.7 }}>
-                              {run.observacao}
-                            </span>
-                          ) : null}
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              {abaAtiva === "FACEBOOK" ? (
+                gruposFacebook.map(([uf, runsUf]) => (
+                  <tbody key={uf}>
+                    <tr className="worker-grupo-estado">
+                      <td colSpan={6}>
+                        {uf === "—" ? "Sem estado definido no painel" : `Estado ${uf}`}
+                        <span className="worker-grupo-contagem">
+                          {runsUf.length} {runsUf.length === 1 ? "execução" : "execuções"}
+                        </span>
+                      </td>
+                    </tr>
+                    {runsUf.map((run) => linhaRun(run, regiaoDoRun(run)?.nome || extrairEstado(run.categoria_url)))}
+                  </tbody>
+                ))
+              ) : (
+                <tbody>{runsDaAba.map((run) => linhaRun(run, extrairEstado(run.categoria_url)))}</tbody>
+              )}
             </table>
             </div>
           </>
