@@ -13,16 +13,23 @@ import { salvarConfigWorker } from "@/app/actions";
  */
 
 interface Regiao {
-  nome: string;
+  nome: string; // só a CIDADE (a UF vai no campo próprio)
   url: string;
   raio: string; // km — o FB prioriza o centro; raio menor + vários centros cobre melhor
+  uf: string; // estado — organiza o painel em abas e entra no slug (cidade-uf)
 }
 
 const RAIOS = ["80", "100", "250", "500"];
+const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
-/** MESMA lógica do worker (facebookMain.slug) — o valor de FACEBOOK_REGIAO no cron da Railway. */
+/** MESMA lógica do worker (facebookMain.slug). */
 function slugify(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+/** FACEBOOK_REGIAO = slug da cidade + UF → único entre estados (Santa Maria RS ≠ Santa Maria SC). */
+function slugRegiao(r: Regiao): string {
+  return [slugify(r.nome), r.uf ? r.uf.toLowerCase() : ""].filter(Boolean).join("-");
 }
 
 function lerRegioes(bruto: string | undefined): Regiao[] {
@@ -31,7 +38,17 @@ function lerRegioes(bruto: string | undefined): Regiao[] {
     if (!Array.isArray(v)) return [];
     return v
       .filter((r) => typeof r?.url === "string")
-      .map((r) => ({ nome: r.nome ?? "", url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250") }));
+      .map((r) => {
+        let nome = String(r.nome ?? "");
+        let uf = String(r.uf ?? "");
+        // Migra formato antigo: UF no fim do nome ("Porto Alegre RS") → campo próprio.
+        const m = nome.match(/\s+([A-Za-z]{2})$/);
+        if (!uf && m && UFS.includes(m[1].toUpperCase())) {
+          uf = m[1].toUpperCase();
+          nome = nome.slice(0, m.index).trim();
+        }
+        return { nome, url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250"), uf };
+      });
   } catch {
     return [];
   }
@@ -63,8 +80,15 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
   const [regioes, setRegioes] = useState<Regiao[]>(() => lerRegioes(configs["FACEBOOK_REGIOES"]));
   const [salvando, iniciar] = useTransition();
   const [salvo, setSalvo] = useState(false);
-
   const marcarSujo = () => setSalvo(false);
+
+  // Abas por ESTADO (evita a tripa longa). Aba "" = regiões ainda sem UF (mostradas como "?").
+  const ufsPresentes = useMemo(() => [...new Set(regioes.map((r) => r.uf || ""))], [regioes]);
+  const [ufAtiva, setUfAtiva] = useState<string>(() => regioes.find((r) => r.uf)?.uf ?? "RS");
+  const abas = useMemo(
+    () => [...new Set([...ufsPresentes, ufAtiva])].sort((a, b) => (a === "" ? -1 : b === "" ? 1 : a.localeCompare(b))),
+    [ufsPresentes, ufAtiva]
+  );
 
   function salvarTudo() {
     const limpas = regioes.filter((r) => r.nome.trim() && r.url.trim());
@@ -139,80 +163,118 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         Ano mín. 1995 corta ônibus/motorhome antigos. “Mais recentes” prioriza anúncios frescos.
       </p>
 
-      {/* Regiões */}
+      {/* Regiões — em ABAS por estado (UF) pra não virar tripa longa com muitas regiões. */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: "flex", alignItems: "center", gap: 7 }}>
           <MapPin size={16} strokeWidth={2} /> Regiões ({regioes.length})
         </h3>
         <button
           type="button"
-          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250" }]); marcarSujo(); }}
+          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250", uf: ufAtiva }]); marcarSujo(); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#059669", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 8, cursor: "pointer" }}
         >
-          <Plus size={14} /> Adicionar região
+          <Plus size={14} /> Adicionar {ufAtiva ? `em ${ufAtiva}` : "região"}
         </button>
+      </div>
+
+      {/* Abas por estado + adicionar novo estado */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12, borderBottom: "1px solid #e5e7eb", paddingBottom: 8 }}>
+        {abas.map((uf) => {
+          const n = regioes.filter((r) => r.uf === uf).length;
+          const ativa = uf === ufAtiva;
+          return (
+            <button
+              key={uf}
+              type="button"
+              onClick={() => setUfAtiva(uf)}
+              title={uf === "" ? "Regiões ainda sem estado definido" : undefined}
+              style={{ padding: "5px 12px", fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: "pointer", border: `1px solid ${ativa ? "#059669" : uf === "" ? "#fca5a5" : "#e5e7eb"}`, background: ativa ? "#ecfdf5" : "#fff", color: ativa ? "#059669" : uf === "" ? "#dc2626" : "#6b7280" }}
+            >
+              {uf || "? sem UF"}{n > 0 && <span style={{ fontWeight: 500, opacity: 0.7 }}> ({n})</span>}
+            </button>
+          );
+        })}
+        <select
+          value=""
+          aria-label="Adicionar estado"
+          onChange={(e) => { if (e.target.value) setUfAtiva(e.target.value); }}
+          style={{ padding: "5px 8px", fontSize: 12.5, border: "1px dashed #cbd5e1", borderRadius: 8, color: "#6b7280", cursor: "pointer", background: "#fff" }}
+        >
+          <option value="">+ estado</option>
+          {UFS.filter((u) => !abas.includes(u)).map((u) => (
+            <option key={u} value={u}>{u}</option>
+          ))}
+        </select>
       </div>
 
       <p style={{ margin: "0 0 12px", fontSize: 12, color: "#9ca3af", lineHeight: 1.5 }}>
         O FB prioriza o <strong>centro</strong> do raio e abre por escassez. Prefira <strong>raio menor + vários
-        centros</strong> (ex.: Florianópolis 250km + Chapecó 250km) a um centro gigante com 500km (metade cai no mar).
+        centros</strong> por estado (ex.: no RS: Porto Alegre + Passo Fundo + Santa Maria, cada um 250km).
       </p>
 
-      {regioes.length === 0 && (
-        <p style={{ margin: "4px 0 12px", fontSize: 13, color: "#9ca3af" }}>Nenhuma região ainda. Adicione uma e cole a URL-base do Marketplace.</p>
+      {regioes.filter((r) => r.uf === ufAtiva).length === 0 && (
+        <p style={{ margin: "4px 0 12px", fontSize: 13, color: "#9ca3af" }}>Nenhuma região em {ufAtiva || "“sem UF”"}. Use “Adicionar” e cole a URL-base do Marketplace.</p>
       )}
 
-      {regioes.map((r, i) => (
-        <div key={i} style={{ marginBottom: 10 }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <input
-              style={{ ...inputEstilo, flex: "0 0 140px" }}
-              value={r.nome}
-              placeholder="Florianópolis"
-              onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
-            />
-            <input
-              style={{ ...inputEstilo, flex: 1, minWidth: 180, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
-              value={r.url}
-              placeholder="https://web.facebook.com/marketplace/florianopolis/vehicles/?exact=false&locale=pt_BR"
-              onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
-            />
-            <select
-              style={{ ...inputEstilo, flex: "0 0 92px" }}
-              value={r.raio}
-              aria-label="Raio (km)"
-              onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], raio: e.target.value }; setRegioes(n); marcarSujo(); }}
-            >
-              {RAIOS.map((km) => (
-                <option key={km} value={km}>{km} km</option>
-              ))}
-            </select>
-            <button
-              type="button"
-              aria-label="Remover"
-              onClick={() => { setRegioes((rs) => rs.filter((_, j) => j !== i)); marcarSujo(); }}
-              style={{ padding: 9, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 9, cursor: "pointer", color: "#dc2626", flexShrink: 0 }}
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-          {r.nome.trim() && (
-            <div style={{ marginTop: 4, marginLeft: 2, display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#9ca3af" }}>
-              <span>
-                Cron da Railway → <code style={{ color: "#6b7280", background: "#f1f5f9", padding: "1px 6px", borderRadius: 5, fontFamily: "ui-monospace, monospace" }}>FACEBOOK_REGIAO={slugify(r.nome)}</code>
-              </span>
+      {regioes.map((r, i) =>
+        r.uf === ufAtiva ? (
+          <div key={i} style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                style={{ ...inputEstilo, flex: "0 0 128px" }}
+                value={r.nome}
+                placeholder="Passo Fundo"
+                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
+              />
+              <input
+                style={{ ...inputEstilo, flex: 1, minWidth: 150, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
+                value={r.url}
+                placeholder="https://web.facebook.com/marketplace/<cidade-ou-id>/vehicles/?exact=false&locale=pt_BR"
+                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
+              />
+              <select
+                style={{ ...inputEstilo, flex: "0 0 62px" }}
+                value={r.uf}
+                aria-label="Estado (UF)"
+                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], uf: e.target.value }; setRegioes(n); marcarSujo(); }}
+              >
+                {UFS.map((u) => <option key={u} value={u}>{u}</option>)}
+              </select>
+              <select
+                style={{ ...inputEstilo, flex: "0 0 84px" }}
+                value={r.raio}
+                aria-label="Raio (km)"
+                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], raio: e.target.value }; setRegioes(n); marcarSujo(); }}
+              >
+                {RAIOS.map((km) => <option key={km} value={km}>{km} km</option>)}
+              </select>
               <button
                 type="button"
-                aria-label="Copiar valor da variável"
-                onClick={() => navigator.clipboard?.writeText(slugify(r.nome))}
-                style={{ display: "inline-flex", alignItems: "center", padding: 3, background: "transparent", border: "none", cursor: "pointer", color: "#9ca3af" }}
+                aria-label="Remover"
+                onClick={() => { setRegioes((rs) => rs.filter((_, j) => j !== i)); marcarSujo(); }}
+                style={{ padding: 9, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 9, cursor: "pointer", color: "#dc2626", flexShrink: 0 }}
               >
-                <Copy size={13} />
+                <Trash2 size={16} />
               </button>
             </div>
-          )}
-        </div>
-      ))}
+            {r.nome.trim() && (
+              <div style={{ marginTop: 4, marginLeft: 2, display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#9ca3af" }}>
+                <span>
+                  Tarefa local → <code style={{ color: "#6b7280", background: "#f1f5f9", padding: "1px 6px", borderRadius: 5, fontFamily: "ui-monospace, monospace" }}>run-fb.cmd {slugRegiao(r)}</code>
+                </span>
+                <button
+                  type="button"
+                  aria-label="Copiar slug"
+                  onClick={() => navigator.clipboard?.writeText(slugRegiao(r))}
+                  style={{ display: "inline-flex", alignItems: "center", padding: 3, background: "transparent", border: "none", cursor: "pointer", color: "#9ca3af" }}
+                >
+                  <Copy size={13} />
+                </button>
+              </div>
+            )}
+          </div>
+        ) : null
+      )}
 
       {previa && (
         <div style={{ marginTop: 12, padding: "10px 12px", background: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 9 }}>

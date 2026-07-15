@@ -95,7 +95,10 @@ interface Regiao {
   nome: string;
   url: string;
   raio?: string; // km (80/100/250/500); campo do painel. Default 250.
+  uf?: string; // estado; entra no slug (cidade-uf) pra ser único entre estados. Ver PainelMotorBusca.
 }
+/** FACEBOOK_REGIAO = slug da cidade + UF (Santa Maria RS ≠ Santa Maria SC). Compatível com o painel. */
+const slugRegiao = (r: Regiao): string => [slug(r.nome), r.uf ? r.uf.toLowerCase() : ""].filter(Boolean).join("-");
 interface ConfigFb {
   ativo: boolean;
   regioes: Regiao[];
@@ -309,7 +312,7 @@ async function main(): Promise<void> {
 
   // Seleção de região: argumento CLI > env FACEBOOK_REGIAO (rótulo) > TODAS (fallback local/single).
   const alvo = (process.argv[2] ?? process.env.FACEBOOK_REGIAO ?? "").trim();
-  const regioes = alvo ? cfg.regioes.filter((r) => slug(r.nome) === slug(alvo)) : cfg.regioes;
+  const regioes = alvo ? cfg.regioes.filter((r) => slugRegiao(r) === slug(alvo)) : cfg.regioes;
   if (regioes.length === 0) {
     console.warn(alvo ? `[fb] região "${alvo}" não encontrada no painel.` : "[fb] nenhuma região configurada no painel.");
     return;
