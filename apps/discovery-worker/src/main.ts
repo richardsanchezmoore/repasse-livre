@@ -85,7 +85,14 @@ interface ResultadoVarredura {
   elegiveis: number;
   descartados: number;
   semFipe: number;
+  falhasDetalheSeguidas: number; // disjuntor de bloqueio (transiente, não vai pro banco)
 }
+
+// Quando a OLX bloqueia o worker, ela ainda serve a LISTAGEM mas trava as páginas
+// de DETALHE de cada anúncio → cada fetch bate o timeout (165s) e o run moía horas
+// até a faxina matar ("run preso"). N falhas de detalhe SEGUIDAS = fonte bloqueada →
+// aborta o run com erro honesto (o próximo cron tenta de novo, o IP pode ter girado).
+const LIMIAR_BLOQUEIO_DETALHE = 10;
 
 /**
  * O FIPE usado aqui vem direto da página individual do anúncio (a OLX já
@@ -106,9 +113,17 @@ async function processarAnuncio(
   let detalhes;
   try {
     detalhes = await buscarDetalhesDaPaginaAnuncio(anuncio.linkOrigem);
+    resultado.falhasDetalheSeguidas = 0; // fetch OK → zera o disjuntor
   } catch (erro) {
     console.warn(`[motor-descoberta] Falha ao buscar FIPE na página de "${anuncio.titulo}":`, erro);
     resultado.semFipe++;
+    resultado.falhasDetalheSeguidas++;
+    if (resultado.falhasDetalheSeguidas >= LIMIAR_BLOQUEIO_DETALHE) {
+      throw new Error(
+        `OLX bloqueado — ${resultado.falhasDetalheSeguidas} detalhes de anúncio seguidos falharam no fetch. ` +
+          `Abortando o run (evita moer horas até a faxina). Próximo cron tenta de novo.`
+      );
+    }
     return;
   }
 
@@ -281,7 +296,7 @@ async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVar
     janelaIntervaloInicio: JANELA_INICIO,
     janelaIntervaloFim: JANELA_FIM,
   } = obterConfig();
-  const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0 };
+  const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, falhasDetalheSeguidas: 0 };
   const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
   const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
   let maiorDataVistaEpoch: number | null = null;
