@@ -52,8 +52,12 @@ const HEADERS: Record<string, string> = {
   "sec-ch-ua-platform": '"Windows"',
   "sec-fetch-dest": "document",
   "sec-fetch-mode": "navigate",
+  // sec-fetch-site FICA "none": testado, "cross-site" faz o FB devolver 400. O Referer do Google
+  // (sozinho, com site=none) mantém o 200 E dá o sinal de tráfego ORGÂNICO de busca — camada
+  // defensiva pra o IP residencial não ser fichado com o volume/tempo. Ver memória do FB.
   "sec-fetch-site": "none",
   "sec-fetch-user": "?1",
+  referer: "https://www.google.com/",
   "upgrade-insecure-requests": "1",
 };
 
