@@ -116,6 +116,41 @@ export async function resolverChaveFiltroFipe(categoriaUrlBase: string): Promise
  * coerente com ela), por isso não definimos headers manualmente aqui — só
  * o Referer, que o script não fixa por ser específico da OLX.
  */
+// ── Rotação de proxy (distribui o tráfego pra não estrangular 1 IP só) ──────
+// Lê PROXY_URL, PROXY_URL_2, PROXY_URL_3… (round-robin entre eles) E injeta uma
+// SESSÃO nova por fetch no usuário Bright Data → o gateway espalha entre os IPs
+// da ZONA (mesma ideia do sessid do ML). Com 2 IPs, cada um pega ~metade → some o
+// 504 por fair-use. Escala sozinho: adicionar IP na zona já entra no rodízio.
+let contadorProxy = 0;
+function lerProxies(): string[] {
+  const lista: string[] = [];
+  if (process.env.PROXY_URL) lista.push(process.env.PROXY_URL);
+  for (let i = 2; process.env[`PROXY_URL_${i}`]; i++) lista.push(process.env[`PROXY_URL_${i}`]!);
+  return lista;
+}
+/** Injeta -session-<id> no usuário Bright Data (…-zone-XXX → …-zone-XXX-session-<id>)
+ *  pra o gateway-base espalhar entre os IPs da zona. No-op quando o IP já está PINADO
+ *  (`-ip-…`, config recomendada), já tem sessão, ou não é Bright-Data → devolve intacto. */
+function comSessaoNova(proxyUrl: string): string {
+  try {
+    const u = new URL(proxyUrl);
+    const jaTemAlvo = /-session-/i.test(u.username) || /-ip-/i.test(u.username);
+    if (/brd-customer/i.test(u.username) && !jaTemAlvo) {
+      const sessao = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+      u.username = `${u.username}-session-${sessao}`;
+      return u.toString();
+    }
+  } catch {
+    /* URL não-parseável → devolve como veio */
+  }
+  return proxyUrl; // IP pinado / não-Bright-Data / já com sessão → intacto (sem re-encode)
+}
+function proxyRotativo(): string | undefined {
+  const proxies = lerProxies();
+  if (proxies.length === 0) return undefined;
+  return comSessaoNova(proxies[contadorProxy++ % proxies.length]);
+}
+
 async function buscarHtml(url: string): Promise<string> {
   // --connect-timeout / --max-time: sem eles, um proxy ou a OLX travando a
   // conexão deixa o curl PENDURADO pra sempre → a varredura nunca finaliza e o
@@ -124,8 +159,9 @@ async function buscarHtml(url: string): Promise<string> {
   // não como zumbi. Backstop no exec (mata o processo) caso o curl ignore o -m.
   const args = ["-s", "--connect-timeout", "30", "--max-time", "150", "-H", "Referer: https://www.olx.com.br/"];
 
-  if (process.env.PROXY_URL) {
-    args.push("-x", process.env.PROXY_URL);
+  const proxy = proxyRotativo();
+  if (proxy) {
+    args.push("-x", proxy);
   }
 
   args.push(url);
