@@ -3,7 +3,7 @@ import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "
 import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
-import { formatarDataCaptura, formatarKm, formatarMoeda } from "@/lib/formatadores";
+import { formatarPublicacaoRelativa, formatarKm, formatarMoeda } from "@/lib/formatadores";
 import { ocultarTelefonesNaDescricao } from "@/lib/mascaras";
 import { urlOportunidade } from "@/lib/site";
 import { lerAtributo, chavesFonte, type CampoCanonico } from "@/lib/atributos";
@@ -215,6 +215,11 @@ export async function PaginaOportunidade({
             </dt>
             <dd>
               {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
+              {(oportunidade.data_publicacao_origem ?? oportunidade.data_captura) && (
+                <span className="pagina-oportunidade-publicado">
+                  {formatarPublicacaoRelativa(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
+                </span>
+              )}
             </dd>
           </div>
           <div className="pagina-oportunidade-ficha-item">
@@ -324,10 +329,6 @@ export async function PaginaOportunidade({
             {ROTULO_PERFIL_REMETENTE[oportunidade.perfil_remetente as PerfilRemetente]}
           </p>
         )}
-
-        <p className="pagina-oportunidade-data">
-          Publicado em {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
-        </p>
 
         {bloqueado ? (
           <BlocoAcessoBloqueado oportunidadeId={oportunidade.id} />

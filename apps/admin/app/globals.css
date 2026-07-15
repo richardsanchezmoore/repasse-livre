@@ -6674,6 +6674,16 @@ button.bemvindo-secundario {
   margin: 0;
 }
 
+/* Frescor do anúncio (abaixo da cidade) — pequeno e discreto, mas visível pra
+   passar movimento/recência sem competir com o valor da cidade. */
+.pagina-oportunidade-publicado {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #667781;
+}
+
 .pagina-oportunidade-ficha-item-linha {
   grid-column: 1 / -1;
   border-right: none !important;
