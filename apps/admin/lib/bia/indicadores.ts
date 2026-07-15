@@ -188,16 +188,23 @@ export function exclusividade({ anuncio, universo }: CtxIndicador): ResultadoInd
 }
 
 /**
- * KM CONFIÁVEL pra análise (Copiloto + estrelas). Descarta dado sujo: <1000 sempre (erro
- * absoluto); e pra carro com +5 ANOS de uso, <5000 é quase certo erro/omissão de dígito
- * (ex.: 1.111 = 111 mil km num 2009). Melhor NÃO considerar do que elogiar KM baixa improvável
- * — o pior é afirmar algo bom pra algo pouco provável. Decisão do usuário. Retorna o km ou null.
+ * KM CONFIÁVEL pra análise (Copiloto + estrelas). Descarta KM improvavelmente baixa
+ * pra idade — quase certo erro/omissão de dígito (11.111 num 2008 = 111.111 real;
+ * 22.222 num 1998 = 222.222). Melhor NÃO considerar do que elogiar KM pouco factível:
+ * o pior é mencionar um critério improvável e perder a confiança da análise. Escada
+ * de cortes por idade (decisão do usuário): +20 anos → <40 mil; +15 → <30 mil;
+ * +10 → <20 mil; +5 → <5 mil; sempre <1000. Retorna o km ou null.
  */
 export function kmConfiavel(km: number | null, ano: string | null): number | null {
   if (km == null || km < 1000) return null;
   const anoNum = Number.parseInt(ano ?? "", 10);
   const idade = Number.isFinite(anoNum) ? new Date().getFullYear() - anoNum : 0;
-  if (idade > 5 && km < 5000) return null;
+  let limite = 0;
+  if (idade > 20) limite = 40000;
+  else if (idade > 15) limite = 30000;
+  else if (idade > 10) limite = 20000;
+  else if (idade > 5) limite = 5000;
+  if (km < limite) return null;
   return km;
 }
 

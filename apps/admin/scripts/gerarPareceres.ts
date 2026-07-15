@@ -37,6 +37,17 @@ const SO_EXISTENTES = process.argv.includes("--so-existentes");
 // (a régua precisa dela), mas só esse id é (re)gerado.
 const ALVO_ID = process.argv.find((a) => a.startsWith("--id="))?.split("=")[1] || null;
 
+// --ids=<uuid,uuid,...> — regenera um conjunto específico numa passada só (ex.:
+// os afetados por uma mudança de régua). Une com --id se ambos vierem.
+const ALVO_IDS = new Set<string>(
+  [
+    ...(process.argv.find((a) => a.startsWith("--ids="))?.split("=")[1]?.split(",") ?? []),
+    ...(ALVO_ID ? [ALVO_ID] : []),
+  ]
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
+
 const CAMPOS =
   "id, fipe_codigo, veiculo, ano, estado, preco, fipe_valor, margem_percentual, km, data_captura, foto_principal, fotos_secundarias, descricao, atributos_olx, link_origem, status, copiloto_fingerprint";
 
@@ -93,10 +104,10 @@ async function main(): Promise<void> {
 
   let pendentes = 0, gerados = 0, jaFrescos = 0, falhas = 0, foraJanela = 0, foraMargem = 0, semParecer = 0;
   for (const [, universo] of grupos) {
-    if (ALVO_ID && !universo.some((a) => a.id === ALVO_ID)) continue; // --id: só a coorte do alvo
+    if (ALVO_IDS.size && !universo.some((a) => ALVO_IDS.has(a.id))) continue; // --id/--ids: só a coorte dos alvos
     const precoLog = await carregarPrecoLog(universo.map((a) => a.link_origem));
     for (const anuncio of universo) {
-      if (ALVO_ID && anuncio.id !== ALVO_ID) continue;
+      if (ALVO_IDS.size && !ALVO_IDS.has(anuncio.id)) continue;
       // Fora da janela → não gera (mas segue na coorte 'universo' acima).
       if (DESDE && (!anuncio.data_captura || anuncio.data_captura < DESDE)) { foraJanela++; continue; }
       if (MARGEM_MAX != null && (anuncio.margem_percentual == null || anuncio.margem_percentual > MARGEM_MAX)) { foraMargem++; continue; }
