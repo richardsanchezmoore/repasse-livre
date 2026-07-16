@@ -236,7 +236,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <h2 style={{ font: `800 clamp(26px,3.6vw,38px)/1.12 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               O mercado inteiro <span style={{ color: "#35D07F" }}>gira em torno de você.</span>
             </h2>
-            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>Enquanto você trabalha, o Repasse Livre monitora continuamente os principais marketplaces do Brasil. Quando uma oportunidade aparece, o BIA organiza os dados, o Copiloto interpreta o contexto e você recebe uma análise pronta.</p>
+            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>Enquanto você trabalha, o Repasse Livre monitora continuamente os principais marketplaces do Brasil. Quando uma oportunidade aparece, nossa inteligência organiza os dados, o Copiloto interpreta o contexto e você recebe uma análise pronta.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
               {["Sem abrir vários sites", "Sem comparar dezenas de anúncios", "Sem perder tempo"].map((x) => (
                 <div key={x} style={{ display: "flex", gap: 10, alignItems: "center", font: `600 14px ${CORPO}`, color: "#D6E2EC" }}>
