@@ -88,6 +88,16 @@ function Fone({ src, alt, largura, aspecto = "350 / 708", flutua = false }: { sr
   );
 }
 
+/** CTA intermediário — âncora pro card de oferta (#oferta), pra converter de qualquer altura da página. */
+function CTAInline({ rotulo, texto }: { rotulo: string; texto?: string }) {
+  return (
+    <div style={{ textAlign: "center", marginTop: 36 }}>
+      {texto && <div style={{ font: `700 clamp(15px,1.9vw,19px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.01em", margin: "0 auto 16px", maxWidth: 500, textWrap: "balance" }}>{texto}</div>}
+      <a href="#oferta" className="rlv-cta rlv-cta--inline"><Gem size={16} fill="#fff" strokeWidth={0} /> {rotulo}</a>
+    </div>
+  );
+}
+
 export function PaginaVendas({ dados }: { dados: DadosVendas }) {
   const c = COPY[dados.variante];
   const rotuloAssinar = "QUERO ACESSAR O REPASSE LIVRE PRO";
@@ -358,6 +368,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             </div>
           </div>
           <div style={{ textAlign: "center", marginTop: 28, maxWidth: 600, marginInline: "auto", font: `800 clamp(18px,2.4vw,24px)/1.3 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros procuram informações, <span style={{ color: "#16A34A" }}>você toma decisões.</span></div>
+          <CTAInline rotulo="QUERO CHEGAR PRIMEIRO" />
         </div>
       </section>
 
@@ -535,6 +546,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências do mês" },
             ]}
           />
+          <CTAInline texto="Tudo isso na palma da sua mão, todo dia." rotulo="QUERO ACESSAR AGORA" />
         </div>
       </section>
 
@@ -561,6 +573,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             </div>
           </div>
           <div style={{ marginTop: 32, font: `800 clamp(22px,3.4vw,32px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>Um bom negócio pode pagar anos de Repasse Livre PRO.</div>
+          <CTAInline rotulo="QUERO ACESSAR O REPASSE LIVRE PRO" />
         </div>
       </section>
 
