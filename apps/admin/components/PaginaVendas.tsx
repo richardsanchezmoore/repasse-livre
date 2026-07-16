@@ -524,6 +524,9 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <div style={{ flex: "0 1 240px", minWidth: 210, display: "flex", justifyContent: "center" }}>
             <Fone src="/vendas/bia-parte6-tendencias.png" alt="Tendências do mês" largura="min(220px,62vw)" flutua />
           </div>
+          <div style={{ flexBasis: "100%" }}>
+            <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
+          </div>
         </div>
       </section>
 
