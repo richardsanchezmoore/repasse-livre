@@ -132,7 +132,7 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
   }, []);
 
   return (
-    <div style={{ width: "100%", overflow: "hidden", background: "#EEF1F4" }}>
+    <div style={{ width: "100%", overflowX: "clip", background: "#EEF1F4" }}>
 
       {dados.aviso === "sucesso" && (
         <div style={{ background: "#0F7A3D", color: "#fff", padding: "12px clamp(20px,5vw,56px)", font: `600 13px ${CORPO}`, display: "flex", gap: 8, alignItems: "center", justifyContent: "center", textAlign: "center" }}>
@@ -145,9 +145,9 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
 
       {/* 1 ── barra de urgência sticky */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, width: "100%", background: "#081410", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "10px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ lineHeight: 1.15 }}>
-            {dados.descontoPct != null && <div style={{ font: `800 clamp(12px,1.6vw,14px) ${CORPO}`, color: "#35D07F" }}>HOJE: {dados.descontoPct}% OFF</div>}
+        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "10px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px 28px", flexWrap: "wrap" }}>
+          <div style={{ lineHeight: 1.1, textAlign: "center" }}>
+            {dados.descontoPct != null && <div style={{ font: `800 clamp(18px,2.6vw,26px) ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>HOJE: {dados.descontoPct}% OFF</div>}
             <div style={{ font: `600 10px ${CORPO}`, letterSpacing: ".04em", color: "#7f93a3" }}>Oferta por tempo limitado</div>
           </div>
           <ContadorRelogio />
