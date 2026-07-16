@@ -6,6 +6,7 @@ import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import { CarrosselVendas } from "@/components/CarrosselVendas";
+import { PixIcon } from "@/components/PixIcon";
 import type { OfertaDemo } from "@/lib/ofertaDemo";
 
 export interface DadosVendas {
@@ -659,9 +660,12 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 24, padding: "clamp(26px,4vw,34px) clamp(22px,3vw,30px)", boxShadow: "0 30px 70px -22px rgba(0,0,0,.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}>
               <div style={{ textAlign: "center", font: `700 10px ${CORPO}`, letterSpacing: ".16em", color: "#5f8a72", textTransform: "uppercase", marginBottom: 8 }}>Semana do Comprador</div>
               {dados.precoAncoraTexto && <div style={{ textAlign: "center", font: `600 13px ${CORPO}`, color: "#7f93a3", textDecoration: "line-through" }}>De {dados.precoAncoraTexto}/mês</div>}
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 5, margin: "4px 0 14px" }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 5, margin: "4px 0 8px" }}>
                 <span style={{ font: `800 clamp(48px,7vw,60px)/1 ${TIT}`, color: "#fff", letterSpacing: "-.03em" }}>{dados.precoValor}</span>
                 <span style={{ font: `700 18px ${TIT}`, color: "#A9BBCB" }}>{dados.precoIntervalo}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, margin: "0 0 18px", font: `700 12.5px ${CORPO}`, color: "#CDE9D6" }}>
+                <PixIcon size={15} /> Pagamento facilitado por PIX
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(221,107,54,.16)", color: "#F0A868", padding: "10px 14px", borderRadius: 12, font: `700 13px ${CORPO}`, marginBottom: 22 }}>
                 <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <ContadorTexto />
