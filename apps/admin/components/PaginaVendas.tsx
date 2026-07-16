@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, type CSSProperties, type ReactNode } from "react";
-import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, ArrowRight, Lock } from "lucide-react";
+import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, ArrowRight, Lock, Store, Code, User, Lightbulb } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
@@ -375,7 +375,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       </section>
 
       {/* 7 ── features + celular */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,52px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 380px", minWidth: 280 }}>
             <div style={eyebrow}>O que você desbloqueia</div>
@@ -528,7 +528,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       </section>
 
       {/* 13 ── quanto vale (equação) */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", textAlign: "center" }}>
           <div style={eyebrow}>A conta é simples</div>
           <h3 style={{ font: `800 clamp(24px,3.4vw,34px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Quanto vale isso?</h3>
@@ -554,20 +554,28 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
       </section>
 
       {/* 13b ── para quem é */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 820, margin: "0 auto", padding: PAD, textAlign: "center" }}>
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD, textAlign: "center" }}>
           <div style={eyebrow}>Para quem é</div>
           <h3 style={{ font: `800 clamp(24px,3.4vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px", textWrap: "balance" }}>
-            Feito pra quem compra veículos <span style={{ color: "#16A34A" }}>de forma estratégica.</span>
+            Feito para quem compra veículos <span style={{ color: "#16A34A" }}>de forma estratégica.</span>
           </h3>
-          <p style={{ font: `500 clamp(15px,1.6vw,17px)/1.6 ${CORPO}`, color: "#6A7686", maxWidth: 580, margin: "0 auto 28px" }}>
-            Se a sua margem depende de comprar bem e na hora certa, o Repasse Livre PRO foi desenhado pra você.
+          <p style={{ font: `500 clamp(15px,1.6vw,17px)/1.6 ${CORPO}`, color: "#6A7686", maxWidth: 560, margin: "0 auto 34px" }}>
+            Se a sua margem depende de comprar bem e na hora certa, o Repasse Livre PRO foi desenhado para você.
           </p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-            {["Lojistas", "Intermediadores", "Investidores", "Repassadores", "Compradores profissionais", "Quem entende que informação gera margem"].map((x) => (
-              <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "9px 16px", font: `700 13px ${CORPO}`, color: "#2f6446" }}>
-                <Check size={13} strokeWidth={3} color="#16A34A" /> {x}
-              </span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 16 }}>
+            {[
+              { Ic: Store, t: "Lojistas", dark: false },
+              { Ic: Code, t: "Intermediadores", dark: false },
+              { Ic: BarChart3, t: "Investidores", dark: false },
+              { Ic: ArrowRight, t: "Repassadores", dark: false },
+              { Ic: User, t: "Compradores profissionais", dark: false },
+              { Ic: Lightbulb, t: "Quem entende que informação gera margem", dark: true },
+            ].map(({ Ic, t, dark }) => (
+              <div key={t} style={{ background: dark ? "#0F1B2D" : "#fff", border: `1px solid ${dark ? "#0F1B2D" : "#E6EAEF"}`, borderRadius: 18, padding: "28px 18px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, boxShadow: dark ? "0 24px 48px -22px rgba(15,27,45,.55)" : "0 14px 32px -22px rgba(15,27,45,.2)" }}>
+                <span style={{ flex: "none", width: 48, height: 48, borderRadius: 12, background: dark ? "rgba(53,208,127,.16)" : "rgba(22,163,74,.12)", color: dark ? "#35D07F" : "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic size={22} strokeWidth={2} /></span>
+                <div style={{ font: `700 clamp(14px,1.6vw,15px)/1.3 ${CORPO}`, color: dark ? "#fff" : "#0F1B2D", textWrap: "balance" }}>{t}</div>
+              </div>
             ))}
           </div>
         </div>
