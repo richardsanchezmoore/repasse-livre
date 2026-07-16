@@ -393,7 +393,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 22px" }}>Tudo para comprar melhor.</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "16px 24px" }}>
               {[
-                { Ic: LayoutGrid, t: "BIA", s: "Organiza milhares de anúncios em inteligência de mercado" },
+                { Ic: LayoutGrid, t: "BIA (nossa IA)", s: "Organiza milhares de anúncios em inteligência de mercado" },
                 { Ic: Compass, t: "Copiloto", s: "Analisa automaticamente cada oportunidade" },
                 { Ic: BarChart3, t: "Comparativos", s: "Cidade, estado e Brasil — onde o veículo se posiciona" },
                 { Ic: Bell, t: "Alertas", s: "Receba oportunidades antes da maioria" },
