@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type CSSProperties, type ReactNode } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, ArrowRight, Lock, Store, Code, User, Lightbulb, AlertTriangle } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
@@ -56,24 +56,6 @@ const RADAR_LOGOS = [
 
 const eyebrow: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#16A34A", textTransform: "uppercase", marginBottom: 10 };
 const eyebrowEsc: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#35D07F", textTransform: "uppercase", marginBottom: 14 };
-
-/** Realça (negrito branco) trechos específicos dentro de um texto do hero. */
-function comNegrito(texto: string, frases: string[]): ReactNode {
-  let partes: ReactNode[] = [texto];
-  for (const f of frases) {
-    partes = partes.flatMap((p, idx) => {
-      if (typeof p !== "string" || !p.includes(f)) return [p];
-      const seg = p.split(f);
-      const out: ReactNode[] = [];
-      seg.forEach((s, i) => {
-        if (s) out.push(s);
-        if (i < seg.length - 1) out.push(<b key={`${f}-${idx}-${i}`} style={{ color: "#fff", fontWeight: 700 }}>{f}</b>);
-      });
-      return out;
-    });
-  }
-  return partes;
-}
 
 /** Moldura de celular com screenshot. */
 function Fone({ src, alt, largura, aspecto = "350 / 708", flutua = false }: { src: string; alt: string; largura: string; aspecto?: string; flutua?: boolean }) {
@@ -171,81 +153,16 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
         </div>
       </div>
 
-      {/* 2 ── hero (full-bleed, 2 col) */}
-      <section style={{ width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(900px 500px at 82% 10%,rgba(34,197,94,.20),transparent 60%),linear-gradient(165deg,#0E2A1A 0%,#0A1C13 55%,#081410 100%)" }}>
-        <div style={{ position: "absolute", top: 40, right: -60, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(53,208,127,.22),transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", maxWidth: 1160, margin: "0 auto", padding: "clamp(40px,5vw,72px) clamp(20px,5vw,56px) clamp(48px,6vw,80px)", display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,56px)", alignItems: "center" }}>
-          <div style={{ flex: "1 1 400px", minWidth: 290 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(53,208,127,.12)", color: "#35D07F", border: "1px solid rgba(53,208,127,.3)", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".14em", marginBottom: 22 }}>
-              <Gem size={12} fill="#35D07F" strokeWidth={0} /> REPASSE LIVRE PRO
-            </div>
-            <h1 style={{ font: `800 clamp(30px,4.4vw,50px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 18px", textWrap: "balance" }}>
-              {c.h1a}
-              <span style={{ color: "#35D07F" }}>{c.h1b}</span>
-            </h1>
-            <p style={{ font: `500 clamp(15px,1.5vw,17px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 520, margin: "0 0 22px" }}>{comNegrito(c.sub, ["abaixo da FIPE", "aumenta sua margem"])}</p>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(53,208,127,.1)", border: "1px solid rgba(53,208,127,.24)", padding: "9px 16px", borderRadius: 999, marginBottom: 28 }}>
-              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite", flex: "none" }} />
-              {dados.kpiAoVivo ? (
-                <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>
-                  Mais de <b data-count-to={dados.kpiAoVivo} style={{ fontWeight: 800, color: "#fff" }}>0</b>+ oportunidades monitoradas agora
-                </span>
-              ) : (
-                <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>Milhares de oportunidades monitoradas agora</span>
-              )}
-            </div>
-            <div style={{ maxWidth: 440 }}>
-              <a href="#oferta" className="rlv-cta">
-                <Gem size={16} fill="#fff" strokeWidth={0} /> QUERO TER VANTAGEM NO MERCADO
-              </a>
-              <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", font: `600 12.5px ${CORPO}`, color: "#8fa2b3" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#35D07F" }}>
-                  <Check size={14} strokeWidth={2.4} /> Sem fidelidade
-                </span>
-                <span style={{ color: "#5f7183" }}>·</span>cancele quando quiser
-              </div>
-            </div>
-          </div>
-          <div style={{ flex: "1 1 300px", minWidth: 260, display: "flex", justifyContent: "center" }}>
-            <Fone src="/vendas/home.png" alt="Painel Repasse Livre" largura="min(240px,62vw)" aspecto="350 / 712" flutua />
-          </div>
-        </div>
-      </section>
-
-      {/* 2b ── o problema */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", padding: "clamp(48px,6vw,80px) clamp(20px,5vw,56px)", textAlign: "center" }}>
-          <div style={{ font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#DD6B36", textTransform: "uppercase", marginBottom: 14 }}>O problema</div>
-          <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.16 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px", textWrap: "balance" }}>
-            Todo mundo vê os mesmos anúncios. Mas poucos conseguem identificar <span style={{ color: "#DD6B36" }}>quais realmente valem a pena.</span>
-          </h2>
-          <p style={{ font: `500 clamp(15px,1.6vw,17px)/1.6 ${CORPO}`, color: "#6A7686", maxWidth: 600, margin: "0 auto 30px" }}>Todos os dias milhares de veículos entram na OLX, Mercado Livre e Webmotors. A maioria das pessoas passa horas pesquisando, comparando preços e consultando a FIPE — tentando descobrir se aquele carro realmente é uma oportunidade.</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
-            {[
-              { Ic: Clock, t: "Horas pesquisando em vários sites" },
-              { Ic: BarChart3, t: "Comparando preço e FIPE na mão" },
-              { Ic: X, t: "Sem saber se vale mesmo a pena" },
-            ].map(({ Ic, t }) => (
-              <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FDF3F2", border: "1px solid #F3D3CF", borderRadius: 12, padding: "11px 16px", font: `600 13px ${CORPO}`, color: "#8a5d59" }}>
-                <Ic size={15} strokeWidth={2.2} color="#D9463E" /> {t}
-              </span>
-            ))}
-          </div>
-          <p style={{ font: `600 clamp(15px,1.7vw,17px) ${CORPO}`, color: "#6A7686", margin: "0 0 8px" }}>Enquanto isso… quem possui melhores informações compra primeiro.</p>
-          <div style={{ font: `800 clamp(19px,2.6vw,26px)/1.3 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", maxWidth: 560, margin: "0 auto", textWrap: "balance" }}>As melhores oportunidades não esperam <span style={{ color: "#DD6B36" }}>quem demora para decidir.</span></div>
-          <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
-        </div>
-      </section>
-
-      {/* 3 ── radar / orbit */}
+      {/* SLIM: hero + "o problema" removidos — o radar/Solução é o topo do conteúdo */}
+      {/* 3 ── radar / orbit (topo no slim) */}
       <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(700px 500px at 78% 50%,rgba(34,197,94,.14),transparent 62%),linear-gradient(160deg,#0C2417,#07120C)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(32px,4vw,56px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 360px", minWidth: 280 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(53,208,127,.12)", border: "1px solid rgba(53,208,127,.28)", color: "#35D07F", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".16em", marginBottom: 20 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite" }} /> A SOLUÇÃO
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite" }} /> REPASSE LIVRE → A SOLUÇÃO
             </div>
-            <h2 style={{ font: `800 clamp(26px,3.6vw,38px)/1.12 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
-              O mercado inteiro <span style={{ color: "#35D07F" }}>gira em torno de você.</span>
+            <h2 style={{ font: `800 clamp(30px,4.4vw,50px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
+              {c.h1a}<span style={{ color: "#35D07F" }}>{c.h1b}</span>
             </h2>
             <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
@@ -256,13 +173,13 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
               ))}
             </div>
             <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>O mercado inteiro chega até você.</div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 999, padding: "8px 14px", font: `700 12.5px ${CORPO}`, color: "#D6E2EC" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F", flex: "none" }} /> <b style={{ color: "#fff" }}>4</b> plataformas conectadas
-              </span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 999, padding: "8px 14px", font: `700 12.5px ${CORPO}`, color: "#D6E2EC" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F0A868", flex: "none" }} /> Facebook Marketplace conectado
-              </span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(53,208,127,.1)", border: "1px solid rgba(53,208,127,.24)", padding: "9px 16px", borderRadius: 999, marginTop: 22 }}>
+              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite", flex: "none" }} />
+              {dados.kpiAoVivo ? (
+                <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>Mais de <b data-count-to={dados.kpiAoVivo} style={{ fontWeight: 800, color: "#fff" }}>0</b>+ oportunidades monitoradas agora</span>
+              ) : (
+                <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>Milhares de oportunidades monitoradas agora</span>
+              )}
             </div>
             <div style={{ marginTop: 22, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#5f8a72", textTransform: "uppercase" }}>
               Sincronização 100% nativa <span style={{ color: "#35D07F" }}>·</span> Únicos no Brasil
