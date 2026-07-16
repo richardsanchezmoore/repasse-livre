@@ -233,6 +233,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           </div>
           <p style={{ font: `600 clamp(15px,1.7vw,17px) ${CORPO}`, color: "#6A7686", margin: "0 0 8px" }}>Enquanto isso… quem possui melhores informações compra primeiro.</p>
           <div style={{ font: `800 clamp(19px,2.6vw,26px)/1.3 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", maxWidth: 560, margin: "0 auto", textWrap: "balance" }}>As melhores oportunidades não esperam <span style={{ color: "#DD6B36" }}>quem demora para decidir.</span></div>
+          <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
         </div>
       </section>
 
@@ -315,6 +316,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               </div>
             ))}
           </div>
+          <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
         </div>
       </section>
 
