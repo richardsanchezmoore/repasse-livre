@@ -367,7 +367,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <div style={{ flex: "1 1 360px", minWidth: 280 }}>
             <div style={eyebrow}>Demonstração</div>
             <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Abra uma oportunidade real e veja o Copiloto trabalhar.</h3>
-            <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 12px" }}>Esta é uma oportunidade verdadeira. Sem demonstração, sem cadastro, sem edição. Veja como um anúncio comum ganha contexto quando passa pelo Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos, Score e análise.</b> Tudo pronto para você decidir.</p>
+            <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 12px" }}>Esta é uma oportunidade verdadeira. Veja como um anúncio comum ganha contexto quando passa pelo Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos, Score e análise.</b> Tudo pronto para você decidir.</p>
             <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 18px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
