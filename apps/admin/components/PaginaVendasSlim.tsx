@@ -161,7 +161,7 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(53,208,127,.12)", border: "1px solid rgba(53,208,127,.28)", color: "#35D07F", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".16em", marginBottom: 20 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite" }} /> REPASSE LIVRE → A SOLUÇÃO
             </div>
-            <h2 style={{ font: `800 clamp(30px,4.4vw,50px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
+            <h2 style={{ font: `800 clamp(30px,4.4vw,39px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               {c.h1a}<span style={{ color: "#35D07F" }}>{c.h1b}</span>
             </h2>
             <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
