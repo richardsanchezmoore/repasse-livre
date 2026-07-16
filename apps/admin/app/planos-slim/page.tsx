@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CapturaDestino } from "@/components/CapturaDestino";
-import { PaginaVendas } from "@/components/PaginaVendas";
+import { PaginaVendasSlim } from "@/components/PaginaVendasSlim";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
@@ -8,14 +8,12 @@ import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, busca
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
-// Variante A/B da landing ("vantagem competitiva" — FOMO). MESMO layout (design
-// Premium Escuro), só o copy muda (variante="fomo" no PaginaVendas). noindex pra
-// não competir com a /planos no Google.
 export const metadata: Metadata = {
-  title: "Repasse Livre PRO — chegue primeiro nas oportunidades abaixo da FIPE",
+  title: "Repasse Livre PRO — inteligência de mercado pra comprar abaixo da FIPE",
   description:
-    "Enquanto outros procuram carros, os assinantes do Repasse Livre encontram oportunidades. O BIA monitora milhares de anúncios e entrega inteligência pra quem compra primeiro.",
-  robots: { index: false, follow: true },
+    "Enquanto outros procuram carros, você encontra oportunidades. O Repasse Livre monitora OLX, Webmotors, Mercado Livre e Facebook, identifica o que está abaixo da FIPE e entrega análise pronta — pra você comprar melhor e aumentar sua margem.",
+  // Variante de teste A/B — fora do índice pra não competir com /planos (conteúdo duplicado).
+  robots: { index: false, follow: false },
 };
 
 export default async function PlanosSlimPage({
@@ -36,6 +34,9 @@ export default async function PlanosSlimPage({
     buscarGatewayAtivo(),
   ]);
 
+  // Checkout hospedado (Cakto OU Ticto — mesmo padrão de link + sck). Logado → leva
+  // o user_id no sck (match exato); NÃO logado → checkout direto SEM login (o webhook
+  // cria/acha a conta pelo email, ou o token de claim faz o auto-login em /bem-vindo).
   const urlHospedada = gatewayAtivo === "cakto" ? caktoUrl : gatewayAtivo === "ticto" ? tictoUrl : null;
   const checkoutUrl = urlHospedada
     ? usuario
@@ -61,9 +62,9 @@ export default async function PlanosSlimPage({
   return (
     <main className={`fv-raiz ${fonteTitulo.variable} ${fonteCorpo.variable}`}>
       <CapturaDestino />
-      <PaginaVendas
+      <PaginaVendasSlim
         dados={{
-          variante: "fomo",
+          variante: "padrao",
           precoValor: preco.valor,
           precoIntervalo: preco.intervalo,
           precoAncoraTexto: precoAncora?.texto ?? null,
