@@ -100,7 +100,7 @@ function CTAInline({ rotulo, texto }: { rotulo: string; texto?: string }) {
 
 export function PaginaVendas({ dados }: { dados: DadosVendas }) {
   const c = COPY[dados.variante];
-  const rotuloAssinar = "QUERO ACESSAR O REPASSE LIVRE PRO";
+  const rotuloAssinar = "QUERO TER VANTAGEM AGORA";
 
   useEffect(() => {
     const countUp = (el: HTMLElement) => {
