@@ -534,7 +534,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <h3 style={{ font: `800 clamp(24px,3.4vw,34px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Quanto vale uma boa decisão?</h3>
           <p style={{ font: `500 clamp(15px,1.6vw,17px) ${CORPO}`, color: "#6A7686", maxWidth: 560, margin: "0 auto 32px" }}>Imagine encontrar apenas <b style={{ color: "#0F1B2D" }}>um único</b> veículo que gere R$ 5.000 de margem adicional. Agora compare isso com o preço do seu acesso.</p>
           <div className="pv-vert" style={{ gap: "clamp(14px,2vw,22px)" }}>
-            <div className="pv-vert-box" style={{ flex: "1 1 280px", maxWidth: 360, background: "#fff", border: "1px solid #E4EAF0", borderRadius: 20, padding: "26px 24px", boxShadow: "0 20px 44px -22px rgba(15,27,45,.3)" }}>
+            <div className="pv-vert-box" style={{ flex: "1 1 280px", maxWidth: 360, background: "#F7FAFC", border: "1px solid #E4EAF0", borderRadius: 20, padding: "26px 24px", boxShadow: "0 20px 44px -22px rgba(15,27,45,.3)" }}>
               <div style={{ font: `700 10px ${CORPO}`, letterSpacing: ".14em", color: "#9AA6B4", textTransform: "uppercase", marginBottom: 8 }}>1 oportunidade abaixo da FIPE</div>
               <div style={{ font: `800 clamp(30px,4.5vw,40px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>+ R$ 5.000</div>
               <div style={{ font: `600 13px ${CORPO}`, color: "#6A7686", marginTop: 4 }}>de margem no seu bolso</div>
