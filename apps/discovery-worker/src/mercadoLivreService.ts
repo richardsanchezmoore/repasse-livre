@@ -244,6 +244,48 @@ interface DetalhesPaginaML {
   /** FIPE que o ML mostra na página (tooltip_fipe). Aproximada, mas boa pra
    *  desempatar o trim certo via âncora (ver corrigirFipeComAncora). */
   fipePagina: number | null;
+  /** Subtítulo cru do ML ("2013 | 200.000 km · Anunciado há 1 dia") — carrega o ÚNICO
+   *  sinal de publicação que o ML expõe. Parseado por `publicacaoDoSubtitulo`. */
+  subtitulo: string | null;
+}
+
+/**
+ * ★ Data de publicação do ML a partir do subtítulo ("... · Anunciado há 1 dia").
+ *
+ * ⚠️ O ML NÃO expõe timestamp absoluto: varrida a página inteira, não há ISO, epoch nem
+ * JSON-LD, e a API /items dá 403 (PolicyAgent, exigiria OAuth). Só existe este texto
+ * RELATIVO e ARREDONDADO. Então o resultado é uma APROXIMAÇÃO ancorada em `agora`:
+ *   - "há X minutos/horas" → precisão boa (o erro é o arredondamento da hora).
+ *   - "há N dias/meses"    → precisão BAIXA (erro de até ~12h em "1 dia").
+ * Com o filtro "Anunciados Hoje" (MERCADOLIVRE_SOMENTE_HOJE) o caso comum é "há X horas",
+ * onde a aproximação é boa. Mesmo no caso ruim é melhor que o status quo, que exibia a
+ * data de CAPTURA como se fosse a de publicação.
+ *
+ * Retorna null quando não há sinal — melhor a página cair no fallback conhecido do que
+ * gravarmos um palpite sem base.
+ */
+export function publicacaoDoSubtitulo(subtitulo: string | null, agora: Date = new Date()): string | null {
+  if (!subtitulo) return null;
+  // "mais de" é opcional ("Anunciado há mais de 1 mês"); o plural cai no mesmo stem
+  // ("dias"→dia, "meses"→mes, "horas"→hora) porque o alternador casa o prefixo.
+  const m = /Anunciado\s+h[áa]\s+(?:mais\s+de\s+)?(\d+)\s+(minuto|hora|dia|semana|m[êe]s|mes|ano)/i.exec(subtitulo);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n) || n < 0) return null;
+  const unidade = m[2].toLowerCase();
+  const MIN = 60_000;
+  const fator: Record<string, number> = {
+    minuto: MIN,
+    hora: 60 * MIN,
+    dia: 24 * 60 * MIN,
+    semana: 7 * 24 * 60 * MIN,
+    "mês": 30 * 24 * 60 * MIN,
+    mes: 30 * 24 * 60 * MIN,
+    ano: 365 * 24 * 60 * MIN,
+  };
+  const ms = fator[unidade];
+  if (!ms) return null;
+  return new Date(agora.getTime() - n * ms).toISOString();
 }
 
 /**
@@ -264,7 +306,7 @@ function tipoWall(page: Page): "captcha/wall" | "account-verification" | null {
   return null;
 }
 
-const DETALHE_VAZIO: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {}, fipePagina: null };
+const DETALHE_VAZIO: DetalhesPaginaML = { fotos: [], descricao: null, cambio: null, atributos: {}, fipePagina: null, subtitulo: null };
 
 /** Extrai os detalhes de uma página de anúncio JÁ CARREGADA (aba aberta via clique). */
 async function extrairDetalhesDaPagina(page: Page): Promise<DetalhesPaginaML> {
@@ -323,7 +365,12 @@ async function extrairDetalhesDaPagina(page: Page): Promise<DetalhesPaginaML> {
       if (Number.isFinite(n) && n > 0) fipePagina = n;
     }
 
-    return { fotos, descricao, cambio, atributos, fipePagina };
+    // Subtítulo: "2013 | 200.000 km · Anunciado há 1 dia". É o único lugar em que o ML
+    // conta quando o anúncio foi publicado (não há data absoluta em lugar nenhum da página).
+    const subtitulo =
+      document.querySelector(".ui-pdp-subtitle")?.textContent?.trim() || null;
+
+    return { fotos, descricao, cambio, atributos, fipePagina, subtitulo };
   });
 }
 
@@ -492,7 +539,11 @@ async function salvarElegivel(el: Elegivel, detalhes: DetalhesPaginaML, resultad
     descricao: detalhes.descricao,
     origem_tipo: "descoberta",
     status: "descoberta",
-    data_publicacao_origem: null,
+    // Era null de PROPÓSITO: com a ordem embaralhada, o ML trazia anúncio de 90 dias e a
+    // data confundia. Com o filtro "Anunciados Hoje" ativo o feed é fresco, então a data
+    // real vale mais pro cliente que o fallback (que exibia a CAPTURA como publicação).
+    // Aproximada — o ML só dá texto relativo. Ver publicacaoDoSubtitulo.
+    data_publicacao_origem: publicacaoDoSubtitulo(detalhes.subtitulo),
     atributos_olx: detalhes.atributos,
     anunciante_profissional: false,
   };
