@@ -609,10 +609,10 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           <div style={{ flex: "1 1 380px", minWidth: 290 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(53,208,127,.14)", color: "#35D07F", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}><Gem size={11} fill="#35D07F" strokeWidth={0} /> REPASSE LIVRE PRO</span>
-              <span style={{ background: "rgba(217,119,46,.2)", color: "#F0A868", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}>OFERTA DE LANÇAMENTO</span>
+              <span style={{ background: "rgba(217,119,46,.2)", color: "#F0A868", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}>SEMANA DO COMPRADOR</span>
             </div>
             <h3 style={{ font: `800 clamp(26px,3.6vw,38px)/1.14 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 14px", textWrap: "balance" }}>Repasse Livre PRO</h3>
-            <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", maxWidth: 460, margin: "0 0 24px" }}>Tudo o que você precisa para encontrar oportunidades antes da concorrência. Comece hoje pelas condições especiais de lançamento — antes de o valor voltar ao normal.</p>
+            <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", maxWidth: 460, margin: "0 0 24px" }}>Tudo o que você precisa para encontrar oportunidades antes da concorrência. Comece hoje pelas condições especiais da Semana do Comprador — antes de o valor voltar ao normal.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
               {[
                 <>Acesso total: <b style={{ color: "#fff" }}>BIA, Copiloto, Dashboard, Alertas, Comparativos e Score</b></>,
@@ -633,7 +633,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
           </div>
           <div style={{ flex: "0 1 400px", minWidth: 300 }}>
             <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 24, padding: "clamp(26px,4vw,34px) clamp(22px,3vw,30px)", boxShadow: "0 30px 70px -22px rgba(0,0,0,.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}>
-              <div style={{ textAlign: "center", font: `700 10px ${CORPO}`, letterSpacing: ".16em", color: "#5f8a72", textTransform: "uppercase", marginBottom: 8 }}>Oferta de lançamento</div>
+              <div style={{ textAlign: "center", font: `700 10px ${CORPO}`, letterSpacing: ".16em", color: "#5f8a72", textTransform: "uppercase", marginBottom: 8 }}>Semana do Comprador</div>
               {dados.precoAncoraTexto && <div style={{ textAlign: "center", font: `600 13px ${CORPO}`, color: "#7f93a3", textDecoration: "line-through" }}>De {dados.precoAncoraTexto}/mês</div>}
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 5, margin: "4px 0 14px" }}>
                 <span style={{ font: `800 clamp(48px,7vw,60px)/1 ${TIT}`, color: "#fff", letterSpacing: "-.03em" }}>{dados.precoValor}</span>
