@@ -333,14 +333,27 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 6 ── banda escura "o verdadeiro produto" */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(600px 300px at 50% -20px,rgba(34,197,94,.18),transparent 65%),linear-gradient(165deg,#0E2A1A,#081410)" }}>
-        <div style={{ maxWidth: 840, margin: "0 auto", padding: "clamp(44px,5.5vw,76px) clamp(20px,5vw,56px)", textAlign: "center" }}>
-          <div style={eyebrowEsc}>O que você está comprando</div>
-          <h3 style={{ font: `800 clamp(22px,3vw,28px)/1.2 ${TIT}`, color: "#fff", margin: "0 0 6px" }}>Você não está comprando acesso a anúncios.</h3>
-          <p style={{ font: `500 14px ${CORPO}`, color: "#9FB0C4", margin: "0 0 20px" }}>Você está investindo em:</p>
-          <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>Tempo. Informação. Contexto. Inteligência. Velocidade. Margem. <span style={{ color: "#fff" }}>Decisões melhores.</span></div>
-          <p style={{ font: `700 clamp(15px,1.8vw,18px) ${TIT}`, color: "#fff", margin: "20px 0 0" }}>Quanto melhor a decisão, <span style={{ color: "#35D07F" }}>maior a margem.</span></p>
+      {/* 6 ── demonstração (demo real) */}
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ flex: "1 1 360px", minWidth: 280 }}>
+            <div style={eyebrow}>Demonstração</div>
+            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Abra uma oferta real e veja o Copiloto trabalhar.</h3>
+            <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Esta é uma oportunidade de verdade, abaixo da FIPE, com o Copiloto e a análise <b style={{ color: "#0F1B2D" }}>liberados</b> pra você sentir o produto — sem cadastro e sem sair daqui.</p>
+            <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 18px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
+                <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "7px 13px", font: `700 12px ${CORPO}`, color: "#2f6446" }}>
+                  <Check size={12} strokeWidth={3} color="#16A34A" /> {x}
+                </span>
+              ))}
+            </div>
+          </div>
+          {dados.ofertaDemo && (
+            <div style={{ flex: "0 1 320px", minWidth: 280, width: "100%", maxWidth: 340 }}>
+              <ExperimenteDemo oferta={dados.ofertaDemo} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -497,30 +510,6 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 12 ── experimente agora (demo real) */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ flex: "1 1 360px", minWidth: 280 }}>
-            <div style={eyebrow}>Experimente agora — sem compromisso</div>
-            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Abra uma oferta real e veja o Copiloto trabalhar.</h3>
-            <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Esta é uma oportunidade de verdade, abaixo da FIPE, com o Copiloto e a análise <b style={{ color: "#0F1B2D" }}>liberados</b> pra você sentir o produto — sem cadastro e sem sair daqui.</p>
-            <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 18px" }}>Enquanto a maioria ainda está procurando… <span style={{ color: "#16A34A" }}>você já encontrou.</span></p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
-                <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "7px 13px", font: `700 12px ${CORPO}`, color: "#2f6446" }}>
-                  <Check size={12} strokeWidth={3} color="#16A34A" /> {x}
-                </span>
-              ))}
-            </div>
-          </div>
-          {dados.ofertaDemo && (
-            <div style={{ flex: "0 1 320px", minWidth: 280, width: "100%", maxWidth: 340 }}>
-              <ExperimenteDemo oferta={dados.ofertaDemo} />
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* 13 ── quanto vale (equação) */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", textAlign: "center" }}>
@@ -564,6 +553,17 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               </span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 13c ── banda escura "o que você está comprando" */}
+      <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(600px 300px at 50% -20px,rgba(34,197,94,.18),transparent 65%),linear-gradient(165deg,#0E2A1A,#081410)" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto", padding: "clamp(44px,5.5vw,76px) clamp(20px,5vw,56px)", textAlign: "center" }}>
+          <div style={eyebrowEsc}>O que você está comprando</div>
+          <h3 style={{ font: `800 clamp(22px,3vw,28px)/1.2 ${TIT}`, color: "#fff", margin: "0 0 6px" }}>Você não está comprando acesso a anúncios.</h3>
+          <p style={{ font: `500 14px ${CORPO}`, color: "#9FB0C4", margin: "0 0 20px" }}>Você está investindo em:</p>
+          <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>Tempo. Informação. Contexto. Inteligência. Velocidade. Margem. <span style={{ color: "#fff" }}>Decisões melhores.</span></div>
+          <p style={{ font: `700 clamp(15px,1.8vw,18px) ${TIT}`, color: "#fff", margin: "20px 0 0" }}>Quanto melhor a decisão, <span style={{ color: "#35D07F" }}>maior a margem.</span></p>
         </div>
       </section>
 
