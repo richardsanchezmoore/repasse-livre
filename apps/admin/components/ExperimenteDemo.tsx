@@ -38,7 +38,7 @@ export function ExperimenteDemo({ oferta }: { oferta: OfertaDemo }) {
 
   function irParaAssinatura() {
     setAberto(false);
-    document.getElementById("assinar")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("oferta")?.scrollIntoView({ behavior: "smooth" });
   }
 
   const titulo = oferta.veiculo;
@@ -138,7 +138,7 @@ export function ExperimenteDemo({ oferta }: { oferta: OfertaDemo }) {
             <footer className="demo-modal-rodape">
               <p>É exatamente isto que o PRO destrava — em cada oferta abaixo da FIPE.</p>
               <button type="button" className="planos-cta" onClick={irParaAssinatura}>
-                <Sparkles size={16} strokeWidth={2} /> QUERO ISSO NO MEU PRO
+                <Sparkles size={16} strokeWidth={2} /> ENCONTRAR MAIS OPORTUNIDADES
               </button>
             </footer>
           </div>
