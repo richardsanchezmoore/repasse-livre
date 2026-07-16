@@ -11,7 +11,7 @@ import { buscarKpisTopo } from "@/lib/kpisTopo";
 export const metadata: Metadata = {
   title: "Repasse Livre PRO — inteligência de mercado pra comprar abaixo da FIPE",
   description:
-    "Enquanto outros procuram carros, você encontra oportunidades. O Repasse Livre monitora OLX, Webmotors e Mercado Livre, identifica o que está abaixo da FIPE e entrega análise pronta — pra você comprar melhor e aumentar sua margem.",
+    "Enquanto outros procuram carros, você encontra oportunidades. O Repasse Livre monitora OLX, Webmotors, Mercado Livre e Facebook, identifica o que está abaixo da FIPE e entrega análise pronta — pra você comprar melhor e aumentar sua margem.",
 };
 
 export default async function PlanosPage({

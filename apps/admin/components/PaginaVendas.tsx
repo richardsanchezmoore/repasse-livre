@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type CSSProperties } from "react";
+import { useEffect, type CSSProperties, type ReactNode } from "react";
 import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, ArrowRight, Lock } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
@@ -34,7 +34,7 @@ const COPY = {
   padrao: {
     h1a: "Enquanto outros procuram carros, você encontra ",
     h1b: "oportunidades.",
-    sub: "O Repasse Livre monitora continuamente os maiores marketplaces do Brasil e identifica oportunidades abaixo da FIPE antes que elas desapareçam. O BIA organiza milhares de anúncios, o Copiloto analisa cada oportunidade — e você economiza tempo, compra melhor e aumenta sua margem.",
+    sub: "O Repasse Livre monitora continuamente os maiores marketplaces do Brasil e identifica oportunidades abaixo da FIPE antes que elas desapareçam — e você economiza tempo, compra melhor e aumenta sua margem.",
     timeline: "Quem compra primeiro normalmente encontrou primeiro.",
     finalSub: "Todos os dias milhares de anúncios entram no mercado. Poucos realmente representam uma oportunidade — e o Repasse Livre foi criado para encontrar essas oportunidades antes da maioria.",
   },
@@ -51,11 +51,29 @@ const RADAR_LOGOS = [
   { src: "/vendas/olx-sem-fundo.png", alt: "OLX", h: "clamp(20px,4.4vw,26px)", delay: "0s" },
   { src: "/vendas/logo-webmotors.png", alt: "Webmotors", h: "clamp(16px,3.4vw,20px)", delay: "-6.5s" },
   { src: "/vendas/mercado-livre-logo.png", alt: "Mercado Livre", h: "clamp(20px,4.4vw,26px)", delay: "-13s" },
-  { src: "/vendas/logo-facebook.png", alt: "Facebook Marketplace", h: "clamp(18px,3.8vw,22px)", delay: "-19.5s", breve: true },
+  { src: "/vendas/logo-facebook.png", alt: "Facebook Marketplace", h: "clamp(18px,3.8vw,22px)", delay: "-19.5s" },
 ];
 
 const eyebrow: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#16A34A", textTransform: "uppercase", marginBottom: 10 };
 const eyebrowEsc: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#35D07F", textTransform: "uppercase", marginBottom: 14 };
+
+/** Realça (negrito branco) trechos específicos dentro de um texto do hero. */
+function comNegrito(texto: string, frases: string[]): ReactNode {
+  let partes: ReactNode[] = [texto];
+  for (const f of frases) {
+    partes = partes.flatMap((p, idx) => {
+      if (typeof p !== "string" || !p.includes(f)) return [p];
+      const seg = p.split(f);
+      const out: ReactNode[] = [];
+      seg.forEach((s, i) => {
+        if (s) out.push(s);
+        if (i < seg.length - 1) out.push(<b key={`${f}-${idx}-${i}`} style={{ color: "#fff", fontWeight: 700 }}>{f}</b>);
+      });
+      return out;
+    });
+  }
+  return partes;
+}
 
 /** Moldura de celular com screenshot. */
 function Fone({ src, alt, largura, aspecto = "350 / 708", flutua = false }: { src: string; alt: string; largura: string; aspecto?: string; flutua?: boolean }) {
@@ -155,7 +173,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               {c.h1a}
               <span style={{ color: "#35D07F" }}>{c.h1b}</span>
             </h1>
-            <p style={{ font: `500 clamp(15px,1.5vw,17px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 520, margin: "0 0 22px" }}>{c.sub}</p>
+            <p style={{ font: `500 clamp(15px,1.5vw,17px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 520, margin: "0 0 22px" }}>{comNegrito(c.sub, ["abaixo da FIPE", "aumenta sua margem"])}</p>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(53,208,127,.1)", border: "1px solid rgba(53,208,127,.24)", padding: "9px 16px", borderRadius: 999, marginBottom: 28 }}>
               <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite", flex: "none" }} />
               {dados.kpiAoVivo ? (
@@ -218,13 +236,13 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <h2 style={{ font: `800 clamp(26px,3.6vw,38px)/1.12 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               O mercado inteiro <span style={{ color: "#35D07F" }}>gira em torno de você.</span>
             </h2>
-            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 24px" }}>OLX, Webmotors e Mercado Livre monitorados 24 horas por dia, num radar só. O BIA varre cada plataforma sem parar — você recebe a oportunidade pronta, no centro de tudo.</p>
+            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 24px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia, num radar só. O Repasse Livre varre cada plataforma sem parar — você recebe a oportunidade pronta, no centro de tudo.</p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 999, padding: "8px 14px", font: `700 12.5px ${CORPO}`, color: "#D6E2EC" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F" }} /> 3 plataformas conectadas
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F" }} /> 4 plataformas conectadas
               </span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 999, padding: "8px 14px", font: `700 12.5px ${CORPO}`, color: "#D6E2EC" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F0A868" }} /> Facebook Marketplace em breve
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F" }} /> Facebook Marketplace incluído
               </span>
             </div>
             <div style={{ marginTop: 22, font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#5f8a72", textTransform: "uppercase" }}>Sincronização 100% nativa</div>
@@ -239,10 +257,9 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               {RADAR_LOGOS.map((l) => (
                 <div key={l.alt} style={{ position: "absolute", inset: 0, animation: "rl-orbit 26s linear infinite", animationDelay: l.delay }}>
                   <div style={{ position: "absolute", top: 0, left: "50%", transform: "translate(-50%,-50%)", animation: "rl-orbit-rev 26s linear infinite", animationDelay: l.delay }}>
-                    <span style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", height: "clamp(42px,10vw,54px)", padding: "0 clamp(12px,2.4vw,16px)", background: "#fff", borderRadius: 14, boxShadow: "0 12px 26px -8px rgba(0,0,0,.5)", opacity: l.breve ? 0.7 : 1 }}>
+                    <span style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", height: "clamp(42px,10vw,54px)", padding: "0 clamp(12px,2.4vw,16px)", background: "#fff", borderRadius: 14, boxShadow: "0 12px 26px -8px rgba(0,0,0,.5)" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={l.src} alt={l.alt} style={{ height: l.h, width: "auto", display: "block" }} />
-                      {l.breve && <span style={{ position: "absolute", top: -9, right: -6, background: "#F0A868", color: "#3a2410", font: `800 7px ${CORPO}`, letterSpacing: ".08em", padding: "2px 6px", borderRadius: 6 }}>EM BREVE</span>}
                     </span>
                   </div>
                 </div>
@@ -628,7 +645,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
         <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
           <h3 style={{ font: `800 clamp(24px,3.2vw,30px) ${TIT}`, color: "#0F1B2D", textAlign: "center", margin: "0 0 26px" }}>Perguntas frequentes</h3>
           {[
-            { q: "O Repasse Livre vende veículos?", a: "Não. Monitoramos oportunidades publicadas nos principais marketplaces do Brasil — OLX, Webmotors e Mercado Livre — e transformamos esses anúncios em inteligência de mercado." },
+            { q: "O Repasse Livre vende veículos?", a: "Não. Monitoramos oportunidades publicadas nos principais marketplaces do Brasil — OLX, Webmotors, Mercado Livre e Facebook — e transformamos esses anúncios em inteligência de mercado." },
             { q: "O que é o BIA?", a: "É o Banco de Inteligência Automotiva do Repasse Livre. Ele organiza, compara e interpreta milhares de anúncios para gerar inteligência que apoia a sua decisão." },
             { q: "O que é o Copiloto?", a: "É a tecnologia que analisa cada oportunidade usando os dados do BIA e apresenta uma recomendação baseada no contexto de mercado." },
             { q: "Os anúncios são do Repasse Livre?", a: "Não. Os anúncios são monitorados em diferentes marketplaces e enriquecidos com a inteligência exclusiva do Repasse Livre." },
