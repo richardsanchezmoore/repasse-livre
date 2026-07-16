@@ -41,6 +41,7 @@ export interface AnuncioFacebook {
   fotos: string[]; // TODAS as fotos do anúncio (até 10), como ML/OLX
   leilao: "Sim" | "Não" | null; // procedência de leilão extraída da DESCRIÇÃO (FB não tem atributo)
   suspeitaIsca: boolean; // descrição tem cara de financiamento/entrada de loja
+  publicadoEm: string | null; // ISO: quando o VENDEDOR publicou (creation_time do FB) — não é quando captamos
 }
 
 /**
@@ -422,6 +423,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     fotos: fotos.length > 0 ? fotos : ogMeta(html, "image") ? [ogMeta(html, "image")!] : [],
     leilao: detectarLeilao(descricao),
     suspeitaIsca,
+    publicadoEm: publicacaoDoPrincipal(html),
   };
 
   // POLÍTICA DE PREÇO = (b): descartar LOJA/ISCA e focar em PARTICULAR genuíno. O preço-campo
@@ -509,6 +511,30 @@ function extrairFotos(html: string): string[] {
 }
 
 /** Texto da descrição do anúncio principal. */
+/**
+ * ★ Quando o VENDEDOR publicou (`creation_time` do FB, Unix em segundos) → ISO.
+ *
+ * O FB ordena o feed por creation_time_descend mas NÃO expõe o campo na página de BUSCA — só na
+ * página do ANÚNCIO (que já fetchamos no loop, então sai de graça, sem request extra).
+ *
+ * Colide igual preço/título: a página traz ~20 relacionados, cada um com o seu creation_time
+ * (medido: o 2º mais próximo fica a ~22k chars da âncora). Por isso lê da `janelaPrincipal` e
+ * NUNCA por first-match global. Validado ao vivo (Strada 2018 Maringá): 1 única ocorrência na
+ * janela, a 417 chars da âncora, batendo com o "Há 20 minutos" que o FB mostrava na tela.
+ *
+ * Serve a três coisas: (1) `data_publicacao_origem` honesta na página (antes caía no fallback da
+ * data de CAPTURA e dizia "Anunciado há X" pra hora em que NÓS passamos); (2) precisão em minutos;
+ * (3) medir a perda do radar pelo span dos 24 da página 1. Ver a memória do motor do FB.
+ */
+function publicacaoDoPrincipal(html: string): string | null {
+  const m = /"creation_time":(\d{9,11})/.exec(janelaPrincipal(html));
+  if (!m) return null;
+  const ts = Number(m[1]) * 1000;
+  // Sanidade: descarta timestamp absurdo (futuro ou antes de 2010) em vez de gravar lixo.
+  if (!Number.isFinite(ts) || ts > Date.now() + 86_400_000 || ts < 1_262_304_000_000) return null;
+  return new Date(ts).toISOString();
+}
+
 function descricaoDoPrincipal(html: string): string | null {
   const di = html.indexOf('"redacted_description":{"text":"');
   if (di === -1) return null;

@@ -29,8 +29,13 @@ export function formatarDataCaptura(dataIso: string): string {
 /**
  * Frescor do anúncio pra destacar MOVIMENTO logo abaixo da cidade (decisão do
  * usuário — a data no rodapé passava despercebida e gerava dúvida de "anúncio
- * velho"). Regras: <10h → "Anunciado há X horas" (relativo, mostra recência);
+ * velho"). Regras: <1h → "Anunciado há X minutos"; <10h → "Anunciado há X horas";
  * hoje mas ≥10h → "Hoje às HH:MM"; dias anteriores → padrão existente.
+ *
+ * Recebe `data_publicacao_origem ?? data_captura`. A precisão de minutos só é
+ * verdadeira quando a origem preenche a publicação (FB dá creation_time; Webmotors,
+ * create_date). Onde ela é null, o fallback é a data de CAPTURA e o texto vira, na
+ * prática, "capturado há X" — impreciso quando o radar chega atrasado.
  */
 export function formatarPublicacaoRelativa(dataIso: string): string {
   const data = new Date(dataIso);
@@ -40,9 +45,17 @@ export function formatarPublicacaoRelativa(dataIso: string): string {
     agora.toLocaleDateString("pt-BR", { timeZone: FUSO_HORARIO });
   if (!ehHoje) return `Anunciado em ${formatarDataCaptura(dataIso)}`;
 
-  const horas = (agora.getTime() - data.getTime()) / 3_600_000;
+  const minutos = (agora.getTime() - data.getTime()) / 60_000;
+  const horas = minutos / 60;
   if (horas < 10) {
-    if (horas < 1) return "Anunciado há menos de 1 hora";
+    // Abaixo de 1h, minuto a minuto (o FB dá essa precisão e ela é o auge do frescor:
+    // "há 12 minutos" é sinal de chegar antes da concorrência; "menos de 1 hora" jogava
+    // isso fora). <1min vira "agora mesmo" pra não exibir "há 0 minutos".
+    if (horas < 1) {
+      const m = Math.floor(minutos);
+      if (m < 1) return "Anunciado agora mesmo";
+      return `Anunciado há ${m} ${m === 1 ? "minuto" : "minutos"}`;
+    }
     const h = Math.floor(horas);
     return `Anunciado há ${h} ${h === 1 ? "hora" : "horas"}`;
   }

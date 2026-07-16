@@ -207,7 +207,10 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
     descricao: a.descricao,
     origem_tipo: "descoberta",
     status: "descoberta",
-    data_publicacao_origem: null,
+    // creation_time do FB = quando o VENDEDOR publicou. Antes era null e a página caía no
+    // fallback `data_publicacao_origem ?? data_captura`, ou seja, dizia "Anunciado há X" pra
+    // hora em que NÓS passamos — mentira sempre que o radar chega atrasado (run em GAP).
+    data_publicacao_origem: a.publicadoEm,
     atributos_olx: atributos,
     anunciante_profissional: a.sellerType === "DEALER" ? true : a.sellerType === "PRIVATE_SELLER" ? false : null,
   };
