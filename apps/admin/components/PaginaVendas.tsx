@@ -460,6 +460,9 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Enquanto milhares de compradores ainda estão pesquisando, você já recebeu o alerta, já viu a análise e já sabe se vale a pena comprar.</p>
             <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: 0 }}>As melhores oportunidades aparecem primeiro <span style={{ color: "#16A34A" }}>para quem está preparado.</span></p>
           </div>
+          <div style={{ flexBasis: "100%" }}>
+            <CTAInline rotulo="QUERO RECEBER OS ALERTAS" />
+          </div>
         </div>
       </section>
 
