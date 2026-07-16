@@ -346,6 +346,9 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
           <div style={{ flex: "1 1 260px", minWidth: 240, display: "flex", justifyContent: "center" }}>
             <Fone src="/vendas/anuncio-copiloto.png" alt="Análise do Copiloto" largura="min(230px,64vw)" />
           </div>
+          <div style={{ flexBasis: "100%" }}>
+            <CTAInline rotulo="QUERO ACESSAR AGORA" />
+          </div>
         </div>
       </section>
 
