@@ -236,7 +236,7 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
             <h2 style={{ font: `800 clamp(26px,3.6vw,38px)/1.12 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               O mercado inteiro <span style={{ color: "#35D07F" }}>gira em torno de você.</span>
             </h2>
-            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>Enquanto você trabalha, o Repasse Livre monitora continuamente os principais marketplaces do Brasil. Quando uma oportunidade aparece, nossa inteligência organiza os dados, o Copiloto interpreta o contexto e você recebe uma análise pronta.</p>
+            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook Marketplace monitorados 24 horas por dia. Quando uma oportunidade aparece, nossa inteligência organiza os dados, o Copiloto interpreta o contexto e você recebe uma análise pronta.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
               {["Sem abrir vários sites", "Sem comparar dezenas de anúncios", "Sem perder tempo"].map((x) => (
                 <div key={x} style={{ display: "flex", gap: 10, alignItems: "center", font: `600 14px ${CORPO}`, color: "#D6E2EC" }}>
@@ -245,6 +245,17 @@ export function PaginaVendas({ dados }: { dados: DadosVendas }) {
               ))}
             </div>
             <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>O mercado inteiro chega até você.</div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 999, padding: "8px 14px", font: `700 12.5px ${CORPO}`, color: "#D6E2EC" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F", flex: "none" }} /> <b style={{ color: "#fff" }}>4</b> plataformas conectadas
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 999, padding: "8px 14px", font: `700 12.5px ${CORPO}`, color: "#D6E2EC" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F0A868", flex: "none" }} /> Facebook Marketplace conectado
+              </span>
+            </div>
+            <div style={{ marginTop: 22, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#5f8a72", textTransform: "uppercase" }}>
+              Sincronização 100% nativa <span style={{ color: "#35D07F" }}>·</span> Únicos no Brasil
+            </div>
           </div>
           <div style={{ flex: "1 1 360px", minWidth: 290, display: "flex", justifyContent: "center" }}>
             <div style={{ position: "relative", width: "min(440px,86vw)", aspectRatio: "1" }}>
