@@ -383,25 +383,7 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 9 ── dashboard showcase */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD }}>
-          <div style={{ textAlign: "center", marginBottom: 26 }}>
-            <div style={eyebrow}>Inteligência de estoque</div>
-            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>Onde estão os carros — e por quanto.</h3>
-          </div>
-          <div style={{ borderRadius: 16, overflow: "hidden", boxShadow: "0 30px 60px -20px rgba(15,27,45,.4)", border: "1px solid #E2E6EC", background: "#fff" }}>
-            <div style={{ display: "flex", gap: 6, alignItems: "center", padding: "11px 14px", background: "#F3F5F8", borderBottom: "1px solid #E7EAEE" }}>
-              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#FF5F57" }} />
-              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#FEBC2E" }} />
-              <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#28C840" }} />
-              <span style={{ marginLeft: 12, background: "#fff", border: "1px solid #E7EAEE", borderRadius: 7, padding: "4px 12px", font: `600 11px ${CORPO}`, color: "#8A96A5" }}>repasselivre.com/painel</span>
-            </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/vendas/home-full-2.png" alt="Dashboard do mercado" style={{ width: "100%", display: "block" }} />
-          </div>
-        </div>
-      </section>
+      {/* SLIM: seção "dashboard showcase" (Inteligência de estoque) removida */}
 
       {/* 10 ── tendências */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
