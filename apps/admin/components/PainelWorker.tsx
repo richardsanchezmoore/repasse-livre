@@ -117,6 +117,7 @@ export function PainelWorker({
   const [salvandoChave, setSalvandoChave] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
+  const [ufFbSel, setUfFbSel] = useState<string | null>(null); // sub-aba de estado (aba Facebook)
 
   useEffect(() => {
     if (!disparando) return;
@@ -157,6 +158,11 @@ export function PainelWorker({
     return [...m.entries()].sort(([a], [b]) => (a === "—" ? 1 : b === "—" ? -1 : a.localeCompare(b)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abaAtiva, runsDaAba, mapaRegiao]);
+
+  // Sub-aba de estado ativa (aba Facebook): a selecionada, se ainda existe; senão a 1ª.
+  const ufsFacebook = gruposFacebook.map(([uf]) => uf);
+  const ufFbAtiva = ufFbSel && ufsFacebook.includes(ufFbSel) ? ufFbSel : ufsFacebook[0] ?? null;
+  const runsUfFb = gruposFacebook.find(([uf]) => uf === ufFbAtiva)?.[1] ?? [];
 
   const linhaRun = (run: RunWorker, celulaEstado: string) => (
     <tr key={run.id} className="usuarios-linha">
@@ -298,6 +304,22 @@ export function PainelWorker({
                 </button>
               ))}
             </div>
+            {abaAtiva === "FACEBOOK" && ufsFacebook.length > 0 && (
+              <div className="worker-abas worker-abas-estado" role="tablist">
+                {gruposFacebook.map(([uf, runsUf]) => (
+                  <button
+                    key={uf}
+                    type="button"
+                    role="tab"
+                    aria-selected={uf === ufFbAtiva}
+                    className={`worker-aba worker-aba-estado${uf === ufFbAtiva ? " worker-aba-ativa" : ""}`}
+                    onClick={() => setUfFbSel(uf)}
+                  >
+                    {uf === "—" ? "Sem estado" : uf} <span style={{ opacity: 0.7, fontWeight: 500 }}>({runsUf.length})</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="usuarios-tabela-container">
             <table className="usuarios-tabela">
               <thead>
@@ -311,19 +333,7 @@ export function PainelWorker({
                 </tr>
               </thead>
               {abaAtiva === "FACEBOOK" ? (
-                gruposFacebook.map(([uf, runsUf]) => (
-                  <tbody key={uf}>
-                    <tr className="worker-grupo-estado">
-                      <td colSpan={6}>
-                        {uf === "—" ? "Sem estado definido no painel" : `Estado ${uf}`}
-                        <span className="worker-grupo-contagem">
-                          {runsUf.length} {runsUf.length === 1 ? "execução" : "execuções"}
-                        </span>
-                      </td>
-                    </tr>
-                    {runsUf.map((run) => linhaRun(run, regiaoDoRun(run)?.nome || extrairEstado(run.categoria_url)))}
-                  </tbody>
-                ))
+                <tbody>{runsUfFb.map((run) => linhaRun(run, regiaoDoRun(run)?.nome || extrairEstado(run.categoria_url)))}</tbody>
               ) : (
                 <tbody>{runsDaAba.map((run) => linhaRun(run, extrairEstado(run.categoria_url)))}</tbody>
               )}

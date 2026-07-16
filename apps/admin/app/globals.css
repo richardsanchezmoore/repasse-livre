@@ -2069,6 +2069,17 @@ body {
   color: #0a5d2c;
 }
 
+/* Sub-abas de estado (aba Facebook) — menores e mais discretas que as de fonte,
+   pra mostrar a hierarquia (fonte → estado). */
+.worker-abas-estado {
+  margin-top: -8px;
+  margin-bottom: 14px;
+}
+.worker-aba-estado {
+  font-size: 12px;
+  padding: 5px 12px;
+}
+
 .worker-aba-ativa,
 .worker-aba-ativa:hover {
   background: #0a5d2c;
