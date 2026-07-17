@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, type CSSProperties } from "react";
+import { Suspense, useEffect, type CSSProperties } from "react";
 import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, ArrowRight, Lock, Store, Code, User, Lightbulb, AlertTriangle } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
+import { AvisoAssinatura } from "@/components/AvisoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import { CarrosselVendas } from "@/components/CarrosselVendas";
@@ -17,14 +18,15 @@ export interface DadosVendas {
   descontoPct: number | null;
   kpiAoVivo: number | null;
   ofertaDemo: OfertaDemo | null;
+  /** Checkout hospedado SEM `sck` — a página é estática; o `sck` do logado entra no
+   *  cliente, via AcaoAssinatura no modo "auto". */
   checkoutUrl: string | null;
   gerenciarUrl: string | null;
-  estado: "assinar" | "gerenciar";
-  jaPremium: boolean;
   whatsappSuporte: string | null;
   gateway: string | null;
-  aviso: "sucesso" | "cancelado" | null;
 }
+// `estado`/`aviso`/`jaPremium` saíram daqui pelo mesmo motivo do PaginaVendas: eram o
+// que forçava o server-render a cada visita. Ver o comentário lá.
 
 const TIT = "var(--fv-titulo), Poppins, sans-serif";
 const CORPO = "var(--fv-corpo), Manrope, sans-serif";
@@ -134,14 +136,10 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
   return (
     <div style={{ width: "100%", overflowX: "clip", background: "#EEF1F4" }}>
 
-      {dados.aviso === "sucesso" && (
-        <div style={{ background: "#0F7A3D", color: "#fff", padding: "12px clamp(20px,5vw,56px)", font: `600 13px ${CORPO}`, display: "flex", gap: 8, alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-          <Check size={16} strokeWidth={2.5} /> Pagamento recebido! Seu acesso PRO libera em instantes — recarregue em alguns segundos se ainda não apareceu.
-        </div>
-      )}
-      {dados.aviso === "cancelado" && (
-        <div style={{ background: "#F3F5F8", color: "#566577", padding: "12px clamp(20px,5vw,56px)", font: `600 13px ${CORPO}`, textAlign: "center" }}>Checkout cancelado. Quando quiser, é só voltar e assinar.</div>
-      )}
+      {/* Retorno do checkout: lido da URL no CLIENTE (a página é estática/ISR). */}
+      <Suspense fallback={null}>
+        <AvisoAssinatura CORPO={CORPO} />
+      </Suspense>
 
       {/* 1 ── barra de urgência sticky */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, width: "100%", background: "#081410", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
@@ -569,7 +567,7 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(221,107,54,.16)", color: "#F0A868", padding: "10px 14px", borderRadius: 12, font: `700 13px ${CORPO}`, marginBottom: 22 }}>
                 <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <ContadorTexto />
               </div>
-              <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta" />
+              <AcaoAssinatura estado="auto" rotulo={rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta" />
               <div style={{ textAlign: "center", marginTop: 14, font: `600 12px ${CORPO}`, color: "#8fa2b3", display: "flex", gap: 7, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}><ShieldCheck size={14} strokeWidth={2} color="#35D07F" /> Sem fidelidade. Cancele quando quiser.</div>
               {dados.precoAncoraTexto && <div style={{ textAlign: "center", marginTop: 8, font: `500 12px ${CORPO}`, color: "#7f93a3" }}>Quando a oferta acabar, novos assinantes entram por <b style={{ color: "#A9BBCB" }}>{dados.precoAncoraTexto}/mês</b> — o seu fica travado.</div>}
               {dados.whatsappSuporte && (
@@ -608,7 +606,7 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
           <h3 style={{ font: `800 clamp(24px,3.6vw,34px)/1.16 ${TIT}`, color: "#fff", margin: "0 0 14px", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros ainda estão procurando, você pode estar <span style={{ color: "#35D07F" }}>fechando o próximo negócio.</span></h3>
           <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", margin: "0 0 22px", maxWidth: 560, marginInline: "auto" }}>{c.finalSub}</p>
           <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#CDE9D6", margin: "0 0 28px", letterSpacing: "-.01em" }}>Encontre oportunidades. Compre melhor. Aumente sua margem.</div>
-          <AcaoAssinatura estado={dados.estado} rotulo={dados.estado === "gerenciar" ? undefined : "QUERO TER VANTAGEM NO MERCADO"} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
+          <AcaoAssinatura estado="auto" rotulo="QUERO TER VANTAGEM NO MERCADO" checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
           <div style={{ marginTop: 18, font: `500 12px ${CORPO}`, color: "#6f8598" }}>→ Enquanto você lia isto, mais carros entraram abaixo da FIPE.</div>
         </div>
       </section>

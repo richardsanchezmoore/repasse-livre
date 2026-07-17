@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CapturaDestino } from "@/components/CapturaDestino";
 import { PaginaVendasSlim } from "@/components/PaginaVendasSlim";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
-import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
 import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarTictoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
 import { buscarOfertaDemo } from "@/lib/ofertaDemo";
@@ -16,14 +15,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PlanosSlimPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ assinatura?: string }>;
-}) {
-  const { assinatura } = await searchParams;
-  const [usuario, preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, tictoUrl, gatewayAtivo] = await Promise.all([
-    obterUsuarioAtual(),
+/** Estática (ISR), pelo mesmo motivo e com o mesmo desenho da /planos — ver o comentário
+ *  extenso lá. Como é a variante do A/B, tem que ficar idêntica em comportamento, senão
+ *  o teste compara velocidade em vez de comparar copy. */
+export const revalidate = 900;
+
+export default async function PlanosSlimPage() {
+  const [preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, tictoUrl, gatewayAtivo] = await Promise.all([
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
     buscarWhatsappSuporte(),
@@ -34,25 +32,15 @@ export default async function PlanosSlimPage({
     buscarGatewayAtivo(),
   ]);
 
-  // Checkout hospedado (Cakto OU Ticto — mesmo padrão de link + sck). Logado → leva
-  // o user_id no sck (match exato); NÃO logado → checkout direto SEM login (o webhook
-  // cria/acha a conta pelo email, ou o token de claim faz o auto-login em /bem-vindo).
+  // Vai SEM `sck` — a página é estática. O AcaoAssinatura anexa no cliente (`sck={user_id}`
+  // pro logado; token de claim pro guest). Ver /planos.
   const urlHospedada = gatewayAtivo === "cakto" ? caktoUrl : gatewayAtivo === "ticto" ? tictoUrl : null;
-  const checkoutUrl = urlHospedada
-    ? usuario
-      ? `${urlHospedada}${urlHospedada.includes("?") ? "&" : "?"}sck=${usuario.id}`
-      : urlHospedada
-    : null;
+  const checkoutUrl = urlHospedada;
   const gerenciarUrl = whatsappSuporte
     ? `https://wa.me/${whatsappSuporte}?text=${encodeURIComponent("Olá! Quero gerenciar minha assinatura do Repasse Livre PRO.")}`
     : null;
 
   const abaixoFipeVivo = kpis.abaixoFipe >= 1000 ? Math.floor(kpis.abaixoFipe / 500) * 500 : null;
-
-  const expiraMs = usuario?.premiumExpiraEm ? new Date(usuario.premiumExpiraEm).getTime() : 0;
-  const assinaturaAtiva =
-    (usuario?.assinaturaStatus === "active" || usuario?.assinaturaStatus === "trialing") && expiraMs > Date.now();
-  const estado: "assinar" | "gerenciar" = assinaturaAtiva ? "gerenciar" : "assinar";
 
   const descontoPct =
     precoAncora && precoAncora.centavos > preco.centavos
@@ -73,11 +61,8 @@ export default async function PlanosSlimPage({
           ofertaDemo,
           checkoutUrl,
           gerenciarUrl,
-          estado,
-          jaPremium: Boolean(usuario?.premium),
           whatsappSuporte,
           gateway: gatewayAtivo,
-          aviso: assinatura === "sucesso" ? "sucesso" : assinatura === "cancelado" ? "cancelado" : null,
         }}
       />
     </main>

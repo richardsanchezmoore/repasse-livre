@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { buscarEstadosDisponiveis, contarOportunidades } from "@/components/DiscoveriesBoard";
@@ -6,14 +7,25 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { buscarSugestoes404 } from "@/lib/sugestoes404";
-import { obterUsuarioAtual } from "@/lib/supabase-server";
 
+/**
+ * ★ NÃO LER A SESSÃO AQUI. Este arquivo é o boundary de 404 de TODA rota do app: o Next
+ * não sabe de antemão quem vai chamar notFound(), então se ele usa uma API dinâmica
+ * (`cookies()`, via obterUsuarioAtual), o app INTEIRO é rebaixado pra dinâmico — até uma
+ * página de texto puro como /privacidade, e até um `<div>` vazio (medido no build).
+ *
+ * Era o que acontecia: o `revalidate` abaixo já estava aqui, mas o `obterUsuarioAtual()`
+ * o anulava — o arquivo pedia ISR e não podia ter. Efeito colateral: /planos renderizava
+ * as 719 linhas do PaginaVendas a cada visita (~28% da Active CPU da conta).
+ *
+ * Custo da correção: quem está logado vê o topo/sidebar do 404 como visitante anônimo.
+ * É uma página de ERRO — troca barata por deixar o site inteiro cacheável.
+ */
 export const revalidate = 3600;
 
 export default async function NaoEncontrado() {
-  const usuario = await obterUsuarioAtual();
   const [contagens, estadosDisponiveis, sugestoes] = await Promise.all([
-    contarOportunidades(usuario),
+    contarOportunidades(null),
     buscarEstadosDisponiveis(),
     buscarSugestoes404(),
   ]);
@@ -21,14 +33,12 @@ export default async function NaoEncontrado() {
   return (
     <NavegacaoProvider>
       <SelecaoMultiplaProvider>
-        <TopBar aba="aprovadas" estadosDisponiveis={estadosDisponiveis} usuario={usuario} />
+        {/* TopBar usa useSearchParams; numa página estática isso exige Suspense. */}
+        <Suspense fallback={null}>
+          <TopBar aba="aprovadas" estadosDisponiveis={estadosDisponiveis} usuario={null} />
+        </Suspense>
         <div className="layout">
-          <Sidebar
-            abaAtiva="aprovadas"
-            contagens={contagens}
-            role={usuario?.role ?? null}
-            usuarioLogado={Boolean(usuario)}
-          />
+          <Sidebar abaAtiva="aprovadas" contagens={contagens} role={null} usuarioLogado={false} />
           <main className="conteudo">
             <section className="pagina-404">
               <p className="pagina-404-codigo">404</p>
