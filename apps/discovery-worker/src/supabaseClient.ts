@@ -100,23 +100,28 @@ export async function buscarDuplicataPorTituloEKm(
 /**
  * Duplicata NO FACEBOOK: a mesma loja (ou multi-conta) republica o MESMO carro em
  * vários anúncios/perfis — links diferentes, produto idêntico (visto ao vivo: 4× o
- * mesmo Citroën C3, mesmo preço e KM, captados em 30s).
+ * mesmo Citroën C3, mesmo preço, mesma cidade, captados em 30s).
  *
- * ★ CHAVE = veículo + preço + KM (os TRÊS), mais conservadora que a de rede da OLX.
- * Motivo: no FB o KM é lixo frequente (`111111` = vendedor batendo "1" seis vezes).
- * Só `título+km` (como na OLX) fundiria carros DIFERENTES que casam KM-lixo por acaso,
- * ou deixaria passar o mesmo carro com KM digitado diferente. Exigir os três iguais só
- * funde quando é quase-certo o mesmo anúncio copiado — precisão sobre recall (decisão
- * do user): melhor deixar passar 1 duplicata do que apagar uma oportunidade real.
+ * ★ CHAVE = veículo + preço + CIDADE (SEM KM). Distinção decidida com o user (17/07):
+ *  - OLX/Webmotors = lojas sérias em REGIÕES diferentes → KM separa carros reais (mesma
+ *    rede, mesmo modelo/preço, KM diferente = carros diferentes). Lá a chave é título+KM.
+ *  - Facebook = a MESMA loja pulveriza anúncios na MESMA cidade. O KM é lixo frequente e
+ *    VARIA por digitação entre os perfis (visto: Uno 130000/126000, Ka 165000/190000, o
+ *    mesmo carro). Incluir KM DEIXAVA PASSAR essas republicações. Trocado por CIDADE:
+ *    mesmo modelo+preço exato+cidade = mesmo carro. Mais rígido, casa o padrão do FB.
+ *  - Trade-off aceito pelo user: na pior hipótese funde dois carros iguais-modelo-preço-
+ *    cidade que sejam distintos (raro; o preço EXATO discrimina). Precisão da vitrine >
+ *    recall — republicação visível é pior que perder 1 carro ocasional. Sem cidade no
+ *    anúncio → a chave NÃO aplica (o chamador deixa passar; não funde às cegas).
  *
- * PRESERVA O EXISTENTE: retorna o primeiro anúncio já salvo com essa identidade
- * (independente do status — pode já estar aprovado/compartilhado). O chamador descarta
- * o NOVO e mantém o que já está na plataforma.
+ * PRESERVA O EXISTENTE: retorna o anúncio já salvo com essa identidade (o mais antigo).
+ * O chamador descarta o NOVO. Em tempo real o novo é sempre "descoberta", então nunca
+ * desbanca um aprovado/compartilhado que já esteja na plataforma.
  */
 export async function buscarDuplicataFacebook(
   veiculo: string,
   preco: number,
-  km: number
+  cidade: string
 ): Promise<OportunidadeDuplicada | null> {
   const { data, error } = await supabase
     .from("opportunities")
@@ -125,13 +130,13 @@ export async function buscarDuplicataFacebook(
     )
     .eq("veiculo", veiculo)
     .eq("preco", preco)
-    .eq("km", km)
+    .eq("cidade", cidade)
     .order("data_captura", { ascending: true }) // o mais ANTIGO = o que já está na plataforma
     .limit(1)
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Falha ao consultar duplicata FB (veículo+preço+km): ${error.message}`);
+    throw new Error(`Falha ao consultar duplicata FB (veículo+preço+cidade): ${error.message}`);
   }
   return data;
 }
