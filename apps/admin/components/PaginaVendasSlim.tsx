@@ -163,7 +163,7 @@ export function PaginaVendasSlim({ dados }: { dados: DadosVendas }) {
             <h2 style={{ font: `800 clamp(30px,4.4vw,39px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               {c.h1a}<span style={{ color: "#35D07F" }}>{c.h1b}</span>
             </h2>
-            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade Abaixo da FIPE aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
+            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade <b style={{ color: "#35D07F" }}>abaixo da FIPE</b> aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
               {["Sem abrir vários sites", "Sem comparar dezenas de anúncios", "Sem perder tempo"].map((x) => (
                 <div key={x} style={{ display: "flex", gap: 10, alignItems: "center", font: `600 14px ${CORPO}`, color: "#D6E2EC" }}>
