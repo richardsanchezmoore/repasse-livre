@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import type { Oportunidade, StatusOportunidade } from "@/lib/types";
+import { registrarAlertasParaAprovados } from "@/lib/alertas/matching";
 
 const MARCADOR_BUCKET_FOTOS = "/oportunidades-fotos/";
 
@@ -101,6 +102,12 @@ async function atualizarStatusEmMassa(ids: string[], status: StatusOportunidade)
   const { error } = await supabaseAdmin.from("opportunities").update({ status }).in("id", ids);
   if (error) {
     throw new Error(`Falha ao atualizar status: ${error.message}`);
+  }
+  // ★ Alerta PRO: ao APROVAR (não na captação — descoberta é 404 pro público), casa os
+  // anúncios contra as buscas salvas e registra os pendentes. Best-effort: nunca derruba
+  // a aprovação. A entrega (e-mail/resumo) é passo separado. Ver lib/alertas/matching.
+  if (status === "aprovada") {
+    void registrarAlertasParaAprovados(ids);
   }
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
