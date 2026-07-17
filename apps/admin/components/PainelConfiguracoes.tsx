@@ -5,6 +5,7 @@ import { Settings, CreditCard, Radar, type LucideIcon } from "lucide-react";
 import { CampoConfig } from "./CampoConfig";
 import { PainelPagamentos } from "./PainelPagamentos";
 import { PainelMotorBusca } from "./PainelMotorBusca";
+import { PainelAnunciosAds } from "./PainelAnunciosAds";
 
 /**
  * Painel de Configurações em ABAS (antes era uma tripa só):
@@ -132,7 +133,7 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
           </CampoConfig>
 
           <h2 style={{ margin: "8px 0 6px", fontSize: 18, fontWeight: 700 }}>Extras da página de vendas</h2>
-          <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 14 }}>Âncora, anúncio-vitrine e contato.</p>
+          <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 14 }}>Preço-âncora e contato.</p>
 
           <CampoConfig
             chave="PRECO_ANCORA"
@@ -148,19 +149,6 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
           </CampoConfig>
 
           <CampoConfig
-            chave="DEMO_OPPORTUNITY_ID"
-            valorInicial={configs["DEMO_OPPORTUNITY_ID"] ?? ""}
-            titulo="Anúncio-vitrine da página de vendas"
-            tipo="texto"
-            placeholder="cole a URL do anúncio (ou o ID)"
-          >
-            A oferta que o visitante de campanha <strong>experimenta</strong> na /planos (seção “Experimente agora”):
-            abre num modal com o <strong>Copiloto e o acesso liberados</strong> — a experiência completa, só pra
-            <strong> este</strong> anúncio. Cole a <strong>URL</strong> do anúncio (ou o ID cru); extraímos o ID
-            sozinhos. Escolha uma oferta boa e com foto. Em branco → cai no card de exemplo estático.
-          </CampoConfig>
-
-          <CampoConfig
             chave="WHATSAPP_SUPORTE"
             valorInicial={configs["WHATSAPP_SUPORTE"] ?? ""}
             titulo="WhatsApp de vendas/suporte"
@@ -171,6 +159,13 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
             (e no “gerenciar assinatura” do Repasse Livre PRO). Formato internacional <strong>DDI 55 + DDD + número</strong>,
             só dígitos (ex.: <code>5548999998888</code>). Deixe em branco pra esconder. Vale na hora.
           </CampoConfig>
+
+          <h2 style={{ margin: "20px 0 6px", fontSize: 18, fontWeight: 700 }}>Anúncios direcionados para ADS</h2>
+          <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 14 }}>
+            Os anúncios com a área premium liberada: o âncora que alimenta as páginas de venda e os destinos
+            das campanhas.
+          </p>
+          <PainelAnunciosAds configs={configs} />
         </>
       )}
     </div>

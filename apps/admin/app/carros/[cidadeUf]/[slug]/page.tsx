@@ -20,7 +20,7 @@ import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
-import { buscarMargemPremium, buscarDemoOportunidadeId } from "@/lib/configWorker";
+import { buscarMargemPremium, buscarIdsLiberados } from "@/lib/configWorker";
 import { resumirParecer, semParecer } from "@/lib/copilotoResumo";
 import { resolverLocalidade } from "@/lib/localidade";
 import { extrairMarca } from "@/lib/marca";
@@ -329,12 +329,15 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     },
   };
 
-  // Anúncio-vitrine da /planos (config DEMO_OPPORTUNITY_ID): pra ESSE id só, o
-  // paywall cai (Copiloto completo + acesso liberados) pra qualquer visitante —
-  // exceção de marketing consciente, um anúncio, pra dar a experiência completa
-  // a quem chega de campanha. Ver lib/ofertaDemo + /planos (ExperimenteDemo).
-  const demoId = await buscarDemoOportunidadeId();
-  const ehDemo = demoId === oportunidade.id;
+  // ★ ANÚNCIOS LIBERADOS = âncora (DEMO_OPPORTUNITY_ID, que alimenta o modal da
+  // /planos) + campanhas (ADS_OPORTUNIDADES, os destinos dos criativos). Pra ESSES
+  // ids o paywall cai (Copiloto completo + acesso) pra qualquer visitante — exceção
+  // de marketing consciente: o criativo vende o CARRO, e quem clica precisa ver a
+  // análise inteira pra a assinatura virar decisão lógica. Fora da lista, nada muda.
+  // Fail-closed: erro de leitura/JSON → conjunto vazio, nunca "libera tudo".
+  // Ver lib/configWorker (buscarIdsLiberados) + lib/ofertaDemo + /planos.
+  const liberados = await buscarIdsLiberados();
+  const ehDemo = liberados.has(oportunidade.id);
 
   const ehAdminPagina = usuario?.role === "admin";
   const podeVerCopiloto = ehAdminPagina || Boolean(usuario?.premium) || ehDemo;

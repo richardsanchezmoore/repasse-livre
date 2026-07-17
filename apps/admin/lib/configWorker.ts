@@ -49,12 +49,21 @@ export async function buscarStripePriceId(): Promise<string | null> {
   return doEnv || null;
 }
 
+/** UUID de qualquer coisa que o admin colar: a URL inteira do anúncio ou o ID cru. */
+const RX_UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+export function extrairIdOportunidade(bruto: string): string | null {
+  const m = (bruto ?? "").trim().match(RX_UUID);
+  return m ? m[0] : null;
+}
+
 /**
- * ID do anúncio-vitrine da /planos — a oferta REAL que o visitante de campanha
- * "experimenta" (com Copiloto e acesso liberados, exceção de marketing pra UM
- * anúncio só). Vem do painel (`worker_config.DEMO_OPPORTUNITY_ID`); o admin pode
- * colar a URL inteira do anúncio OU o ID cru — extraímos o UUID de qualquer um.
- * null = sem demo (a /planos cai no card de exemplo estático). Server-only.
+ * ID do ANÚNCIO-ÂNCORA — a oferta REAL que o visitante "experimenta" na /planos e
+ * na /planos-slim (Copiloto e acesso liberados, exceção de marketing pra UM anúncio).
+ * Vem do painel (`worker_config.DEMO_OPPORTUNITY_ID`); o admin cola a URL ou o ID cru.
+ * null = sem âncora (a /planos cai no card de exemplo estático). Server-only.
+ *
+ * ⚠️ NÃO confundir com PRECO_ANCORA (o valor riscado da oferta) — moram na mesma aba
+ * do painel e a palavra "âncora" colide. Aqui é ANÚNCIO; lá é PREÇO.
  */
 export async function buscarDemoOportunidadeId(): Promise<string | null> {
   const { data } = await supabaseAdmin
@@ -62,9 +71,84 @@ export async function buscarDemoOportunidadeId(): Promise<string | null> {
     .select("valor")
     .eq("chave", "DEMO_OPPORTUNITY_ID")
     .maybeSingle();
-  const bruto = (data?.valor ?? "").trim();
-  const m = bruto.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-  return m ? m[0] : null;
+  return extrairIdOportunidade(data?.valor ?? "");
+}
+
+/** Um anúncio de campanha: a URL que o criativo do ADS aponta. */
+export interface AnuncioAds {
+  /** URL da página do anúncio (ou o ID cru) — o que o admin colou. */
+  url: string;
+  /** Rótulo livre pra se achar no painel ("Corolla XEi 18%", "teste Meta jul"). */
+  rotulo: string;
+}
+
+/**
+ * ANÚNCIOS DE CAMPANHA (ADS) — `worker_config.ADS_OPORTUNIDADES`, JSON:
+ * `[{ "url": "...", "rotulo": "..." }]`.
+ *
+ * A tese do user: o criativo do anúncio é o CARRO, não a plataforma. A pessoa clica
+ * porque quer ver um bom negócio; ao entrar, encontra a análise completa (Referência
+ * de Preço, Copiloto, Comparativos, BIA) e só então descobre a plataforma por trás.
+ * Por isso TODA URL cadastrada aqui tem a área premium LIBERADA — o visitante frio
+ * precisa ver o produto inteiro pra a assinatura virar decisão lógica.
+ *
+ * Diferença pro ANÚNCIO-ÂNCORA (DEMO_OPPORTUNITY_ID): a âncora é UM só e alimenta o
+ * modal "Experimente agora" da /planos e da /planos-slim. Estes aqui são os destinos
+ * das campanhas — vários, e é sobre eles que os gatilhos de overlay vão agir (a fazer).
+ * A âncora também fica liberada; ver `buscarIdsLiberados`. Server-only.
+ */
+export async function buscarAnunciosAds(): Promise<AnuncioAds[]> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "ADS_OPORTUNIDADES")
+    .maybeSingle();
+  try {
+    const v: unknown = JSON.parse((data?.valor ?? "[]").trim() || "[]");
+    if (!Array.isArray(v)) return [];
+    return (v as AnuncioAds[])
+      .filter((a) => a && typeof a.url === "string" && extrairIdOportunidade(a.url))
+      .map((a) => ({ url: a.url.trim(), rotulo: (a.rotulo ?? "").trim() }));
+  } catch {
+    return []; // config inválida → nenhum liberado (fail-closed: nunca abre premium por erro de parse)
+  }
+}
+
+/**
+ * ★ CONJUNTO DE IDs COM A ÁREA PREMIUM LIBERADA = âncora + campanhas.
+ *
+ * É a exceção de marketing: estes anúncios mostram Copiloto e acesso completo a
+ * QUALQUER visitante, logado ou não. Fora desta lista, nada muda — o gate premium
+ * normal continua valendo. **Fail-closed por desenho**: qualquer erro de leitura ou
+ * JSON inválido devolve conjunto VAZIO, nunca "libera tudo".
+ *
+ * Uma consulta só (a página do anúncio é dinâmica e roda isso por request).
+ */
+export async function buscarIdsLiberados(): Promise<Set<string>> {
+  const liberados = new Set<string>();
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("chave, valor")
+    .in("chave", ["DEMO_OPPORTUNITY_ID", "ADS_OPORTUNIDADES"]);
+
+  for (const linha of data ?? []) {
+    if (linha.chave === "DEMO_OPPORTUNITY_ID") {
+      const id = extrairIdOportunidade(linha.valor ?? "");
+      if (id) liberados.add(id);
+    } else if (linha.chave === "ADS_OPORTUNIDADES") {
+      try {
+        const v: unknown = JSON.parse((linha.valor ?? "[]").trim() || "[]");
+        if (!Array.isArray(v)) continue;
+        for (const a of v as AnuncioAds[]) {
+          const id = extrairIdOportunidade(a?.url ?? "");
+          if (id) liberados.add(id);
+        }
+      } catch {
+        /* JSON inválido → ignora a lista; a âncora segue valendo */
+      }
+    }
+  }
+  return liberados;
 }
 
 /**
