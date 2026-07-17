@@ -266,8 +266,17 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
     // caso real — Cascavel cadastrada com o location id de MARINGÁ: a UF batia (PR), então a
     // guarda acima não pegaria; o que denuncia é o centro ausente. Não é erro fatal porque uma
     // praça pequena pode passar um ciclo sem anúncio novo no centro → só sinaliza no board.
-    const centroAusente =
-      geo.cidades.length >= AMOSTRA_MINIMA && !geo.cidades.some((c) => slug(c) === slug(regiao.nome));
+    //
+    // ★ O nome da região NÃO é o nome da cidade: o user rotula com sufixo ("Sao Paulo 40km",
+    // "Bauru 80km") pra se achar no painel. Comparar slug puro dava falso positivo nas 9 de SP.
+    // Então casa por PREFIXO: "sao-paulo-40km" começa com "sao-paulo-" → é o centro. Continua
+    // pegando o caso real (nome "cascavel" NÃO começa com "maringa-").
+    const nomeSlug = slug(regiao.nome);
+    const ehCentro = (cidade: string) => {
+      const c = slug(cidade);
+      return nomeSlug === c || nomeSlug.startsWith(`${c}-`);
+    };
+    const centroAusente = geo.cidades.length >= AMOSTRA_MINIMA && !geo.cidades.some(ehCentro);
     if (centroAusente) {
       console.warn(
         `[fb:${regiao.nome}] ⚠ a cidade "${regiao.nome}" não aparece em nenhum dos ${geo.cidades.length} anúncios da busca ` +
