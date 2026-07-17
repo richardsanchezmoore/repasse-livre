@@ -64,6 +64,7 @@ export interface OportunidadeDuplicada {
   fipe_codigo: string | null;
   data_publicacao_origem: string | null;
   ultimo_visto: string | null;
+  link_origem?: string | null;
 }
 
 /**
@@ -93,6 +94,45 @@ export async function buscarDuplicataPorTituloEKm(
     throw new Error(`Falha ao consultar duplicata por título+km: ${error.message}`);
   }
 
+  return data;
+}
+
+/**
+ * Duplicata NO FACEBOOK: a mesma loja (ou multi-conta) republica o MESMO carro em
+ * vários anúncios/perfis — links diferentes, produto idêntico (visto ao vivo: 4× o
+ * mesmo Citroën C3, mesmo preço e KM, captados em 30s).
+ *
+ * ★ CHAVE = veículo + preço + KM (os TRÊS), mais conservadora que a de rede da OLX.
+ * Motivo: no FB o KM é lixo frequente (`111111` = vendedor batendo "1" seis vezes).
+ * Só `título+km` (como na OLX) fundiria carros DIFERENTES que casam KM-lixo por acaso,
+ * ou deixaria passar o mesmo carro com KM digitado diferente. Exigir os três iguais só
+ * funde quando é quase-certo o mesmo anúncio copiado — precisão sobre recall (decisão
+ * do user): melhor deixar passar 1 duplicata do que apagar uma oportunidade real.
+ *
+ * PRESERVA O EXISTENTE: retorna o primeiro anúncio já salvo com essa identidade
+ * (independente do status — pode já estar aprovado/compartilhado). O chamador descarta
+ * o NOVO e mantém o que já está na plataforma.
+ */
+export async function buscarDuplicataFacebook(
+  veiculo: string,
+  preco: number,
+  km: number
+): Promise<OportunidadeDuplicada | null> {
+  const { data, error } = await supabase
+    .from("opportunities")
+    .select(
+      "id, preco, origem_tipo, fonte, classificacao, margem_percentual, status, data_captura, veiculo, versao, ano, estado, fipe_codigo, data_publicacao_origem, ultimo_visto, link_origem"
+    )
+    .eq("veiculo", veiculo)
+    .eq("preco", preco)
+    .eq("km", km)
+    .order("data_captura", { ascending: true }) // o mais ANTIGO = o que já está na plataforma
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Falha ao consultar duplicata FB (veículo+preço+km): ${error.message}`);
+  }
   return data;
 }
 

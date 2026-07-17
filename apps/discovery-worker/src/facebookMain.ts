@@ -14,6 +14,7 @@ import {
   linkOrigemJaExiste,
   registrarVistoFacebook,
   salvarOportunidade,
+  buscarDuplicataFacebook,
 } from "./supabaseClient.js";
 import {
   extrairAnuncioFacebook,
@@ -382,7 +383,22 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         await dormir(cfg.pacingMs);
         continue;
       }
-      await salvarOportunidade(montarOportunidade(a, ref, margem, classificacao));
+      // Anti-duplicata do FB: a mesma loja republica o MESMO carro em vários perfis
+      // (visto: 4× o mesmo C3, links diferentes, preço+KM idênticos). Chave veículo+
+      // preço+KM (os três) preserva o que já está e descarta o novo. Só com KM (o FB
+      // sempre traz, mas é lixo às vezes) pra não fundir carros diferentes de KM nulo.
+      // Ver buscarDuplicataFacebook.
+      const op = montarOportunidade(a, ref, margem, classificacao);
+      if (a.km !== null) {
+        const dup = await buscarDuplicataFacebook(op.veiculo, op.preco, a.km);
+        if (dup && dup.link_origem !== op.link_origem) {
+          console.log(`[fb:${regiao.nome}] ⧉ duplicata de "${op.veiculo}" R$${op.preco} ${a.km}km (já na plataforma via ${dup.link_origem}) — descartado.`);
+          await registrarVistoFacebook(id, "duplicado");
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+      }
+      await salvarOportunidade(op);
       elegiveis++;
       await registrarVistoFacebook(id, "salvo");
       await garantirHistoricoFipe(ref.codigoFipe, ref.anoModelo);
