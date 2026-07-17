@@ -4,6 +4,7 @@ import {
   varrerEProcessarMercadoLivre,
 } from "./mercadoLivreService.js";
 import type { ResultadoLoteMercadoLivre } from "./mercadoLivreService.js";
+import { autoReiniciarRoteador } from "./autoReiniciarRoteador.js";
 import { definirTetoSuspeita, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import {
   finalizarRegistroVarreduraComErro,
@@ -63,6 +64,10 @@ async function executarComRegistro(categoriaUrlBase: string): Promise<void> {
         `ML BLOQUEADO — 0 páginas carregaram, ${paginasBloqueadas} bloqueadas (account-verification: IP residencial fichado).`
       );
       console.log("[motor-descoberta-mercadolivre] ⚠ run BLOQUEADO — registrado como ERRO no painel.");
+      // Gatilho do reboot: já com o erro REGISTRADO (pra bloqueiosConsecutivosMl contar a
+      // run atual). Decide sozinho — só age em 2 bloqueios seguidos, janela livre, anti-loop.
+      // Best-effort: nunca derruba a run. Ver autoReiniciarRoteador.
+      await autoReiniciarRoteador();
       return;
     }
 
