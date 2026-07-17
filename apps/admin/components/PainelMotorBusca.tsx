@@ -21,7 +21,17 @@ interface Regiao {
   // Balneário Camboriú têm muito carro na casa dos milhões → régua maior pra não perdê-los.
 }
 
-const RAIOS = ["80", "100", "250", "500"];
+/**
+ * Escala COMPLETA de raios do Facebook (a mesma do modal "Mudar localização" dele).
+ *
+ * ⚠️ O FB é INSTÁVEL com raio: às vezes obedece, às vezes ignora e aplica outro (medido
+ * 16/07: pedindo 2 e pedindo 500, ele ecoava o nosso valor como texto mas APLICAVA 65 km
+ * nas 13 regiões — e `exact=true` não mudou nada). Não é motivo pra tirar o controle: o
+ * user acompanha há tempo e vê funcionar em boa parte das vezes; é bug/afrouxamento do
+ * lado deles. Regra prática: **localização é o que controla de fato; raio é um pedido**.
+ * Ver a memória do motor do FB (raio instável).
+ */
+const RAIOS = ["1", "2", "5", "10", "20", "25", "40", "60", "80", "100", "250", "500"];
 const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
 /** MESMA lógica do worker (facebookMain.slug). */
