@@ -161,6 +161,9 @@ export async function apagarUsuario(userId: string): Promise<void> {
   revalidatePath("/usuarios");
 }
 
+/** Landings de venda: ESTÁTICAS (ISR 900s) e alimentadas por worker_config. */
+const LANDINGS_DE_VENDA = ["/planos", "/planos-slim"];
+
 export async function salvarConfigWorker(chave: string, valor: string): Promise<void> {
   await exigirAdmin();
   const { error } = await supabaseAdmin
@@ -170,6 +173,16 @@ export async function salvarConfigWorker(chave: string, valor: string): Promise<
     throw new Error(`Falha ao salvar config "${chave}": ${error.message}`);
   }
   revalidatePath("/worker");
+
+  // ★ As landings viram do CDN (ISR 900s) → sem isto, mexer em PRECO_MENSAL/PRECO_ANCORA/
+  // oferta demo/checkout/gateway levava ATÉ 15 MIN pra aparecer. Com tráfego pago rodando,
+  // preço é alavanca de campanha: tem que valer na hora.
+  //
+  // Revalida em QUALQUER chave, de propósito — e não só nas que a landing lê. Uma allowlist
+  // apodrece calada (alguém adiciona uma chave nova, esquece de incluir, e a página fica
+  // velha sem ninguém notar). O custo de errar pra mais é marcar 2 páginas como stale;
+  // errar pra menos é anunciar preço errado.
+  for (const rota of LANDINGS_DE_VENDA) revalidatePath(rota);
 }
 
 export async function salvarConfigSeo(chave: string, dados: { titulo: string; descricao: string }): Promise<void> {

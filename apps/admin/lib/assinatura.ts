@@ -14,8 +14,6 @@ export interface PrecoExibicao {
 }
 
 const PRECO_FALLBACK: PrecoExibicao = { valor: "R$ 97", intervalo: "/mês", centavos: 9700 };
-let cachePreco: { em: number; valor: PrecoExibicao } | null = null;
-const PRECO_TTL_MS = 5 * 60 * 1000;
 
 function formatarPreco(centavos: number, intervalo: string): PrecoExibicao {
   const formatado = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
@@ -27,12 +25,19 @@ function formatarPreco(centavos: number, intervalo: string): PrecoExibicao {
 /**
  * Preço a EXIBIR na /planos — GATEWAY-AWARE (não hardcode):
  *  - gateway ativo = Stripe → vem do próprio Stripe (Price ID, fonte única).
- *  - Cakto/Asaas/nenhum → vem da config `PRECO_MENSAL` (em reais), editável no
- *    painel; deve BATER com o que o gateway ativo cobra. É também a base do
- *    "% OFF" do contador. Cacheado 5min; cai num fallback se nada configurado.
+ *  - Cakto/Ticto/Asaas/nenhum → vem da config `PRECO_MENSAL` (em reais), editável
+ *    no painel; deve BATER com o que o gateway ativo cobra. É também a base do
+ *    "% OFF" do contador. Cai num fallback se nada configurado.
+ *
+ * ★ SEM CACHE DE PROCESSO (tinha 5min; removido). Motivo: ele existia pra não bater
+ * no Stripe (`prices.retrieve`) a cada render — mas a /planos e a /planos-slim agora
+ * são ESTÁTICAS (ISR 900s), então já renderizam no máximo 1x por janela e o cache não
+ * protegia mais nada. Pior: ele ANULAVA o `revalidatePath` do painel — a página
+ * regenerava na hora e lia o preço velho da memória (e, sendo por-instância, nem dava
+ * pra limpar de fora: quem salva pode estar noutra instância de quem renderiza).
+ * Se um dia a /planos voltar a ser dinâmica COM gateway=stripe, o cache precisa voltar.
  */
 export async function buscarPrecoExibicao(): Promise<PrecoExibicao> {
-  if (cachePreco && Date.now() - cachePreco.em < PRECO_TTL_MS) return cachePreco.valor;
   try {
     let valor: PrecoExibicao | null = null;
     const gateway = await buscarGatewayAtivo();
@@ -55,9 +60,7 @@ export async function buscarPrecoExibicao(): Promise<PrecoExibicao> {
       if (Number.isFinite(n) && n > 0) valor = formatarPreco(Math.round(n * 100), "/mês");
     }
 
-    valor = valor ?? PRECO_FALLBACK;
-    cachePreco = { em: Date.now(), valor };
-    return valor;
+    return valor ?? PRECO_FALLBACK;
   } catch {
     return PRECO_FALLBACK;
   }
