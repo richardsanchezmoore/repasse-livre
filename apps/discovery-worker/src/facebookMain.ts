@@ -18,6 +18,7 @@ import {
 import {
   extrairAnuncioFacebook,
   extrairIdsDaBusca,
+  geografiaDaBusca,
   financiamentoAssumido,
   montarUrlBuscaFacebook,
   montarVeiculoPadrao,
@@ -243,6 +244,37 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         })
       );
     }
+    // ★★ GUARDA DE GEOGRAFIA — roda ANTES de gastar 24 fetches de item.
+    //
+    // A URL de região MENTE CALADA: slug que o FB não conhece NÃO dá erro — devolve HTTP 200
+    // com anúncios do local PADRÃO dele (San Francisco/Bay Area; provado ao vivo com o slug
+    // `cascavel`). Sem esta guarda, uma URL torta no painel ingere carro da Califórnia como
+    // se fosse Paraná: preço em dólar lido como real, FIPE do modelo errado. Hoje o que nos
+    // salvaria seria o teto de margem de 40% — que existe pra outra coisa. Isso é sorte, não
+    // engenharia. Ver a memória do motor do FB (armadilha da URL de região).
+    const geo = geografiaDaBusca(htmlBusca);
+    const uf = regiao.uf?.trim().toUpperCase();
+    const AMOSTRA_MINIMA = 5; // com menos cards que isso não dá pra julgar sem falso positivo
+    if (uf && geo.estados.length >= AMOSTRA_MINIMA && !geo.estados.includes(uf)) {
+      const vistosEstados = [...new Set(geo.estados)].slice(0, 6).join(", ");
+      throw new Error(
+        `geografia errada: região "${regiao.nome}" é ${uf}, mas a busca voltou ${geo.estados.length} anúncios e NENHUM é de ${uf} (veio: ${vistosEstados}). ` +
+          `Quase certo URL errada no painel. Nada foi ingerido.`
+      );
+    }
+    // Aviso (NÃO derruba a run): a cidade-centro não aparece no próprio feed. Foi o sintoma do
+    // caso real — Cascavel cadastrada com o location id de MARINGÁ: a UF batia (PR), então a
+    // guarda acima não pegaria; o que denuncia é o centro ausente. Não é erro fatal porque uma
+    // praça pequena pode passar um ciclo sem anúncio novo no centro → só sinaliza no board.
+    const centroAusente =
+      geo.cidades.length >= AMOSTRA_MINIMA && !geo.cidades.some((c) => slug(c) === slug(regiao.nome));
+    if (centroAusente) {
+      console.warn(
+        `[fb:${regiao.nome}] ⚠ a cidade "${regiao.nome}" não aparece em nenhum dos ${geo.cidades.length} anúncios da busca ` +
+          `(veio: ${[...new Set(geo.cidades)].slice(0, 5).join(", ")}). Conferir a URL da região no painel.`
+      );
+    }
+
     const vistos = await buscarIdsVistosFacebook(idsBusca);
     const novosIds = idsBusca.filter((id) => !vistos.has(id));
     const alcancouConhecido = novosIds.length < idsBusca.length; // já havia id conhecido na página
@@ -358,7 +390,9 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         : novosIds.length === 0
           ? "nada novo desde o último run"
           : "página toda nova (sem já-visto — provável 1ª run/feed rápido)";
-    const observacao = `${regiao.nome} · ${processados}/${idsBusca.length} processados · ${cobertura}`;
+    // O aviso entra na observação (e não só no log) porque é no board que o user olha.
+    const alertaCentro = centroAusente ? ` · ⚠ "${regiao.nome}" não apareceu no próprio feed — conferir a URL da região` : "";
+    const observacao = `${regiao.nome} · ${processados}/${idsBusca.length} processados · ${cobertura}${alertaCentro}`;
     await finalizarRegistroVarreduraComSucesso(registroId, { novos, elegiveis, descartados, semFipe }, observacao);
     console.log(`[fb:${regiao.nome}] ${observacao} | ${elegiveis} oportunidades salvas`);
   } catch (erro) {

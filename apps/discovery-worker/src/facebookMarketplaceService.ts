@@ -456,6 +456,23 @@ function normalizarEngineSize(v: string | null): string | null {
   return null;
 }
 
+/**
+ * ★ GEOGRAFIA DA PÁGINA DE BUSCA — cada card traz o seu `reverse_geocode` (cidade+estado).
+ * É a única forma de saber ONDE o FB realmente buscou, e existe porque a URL de região MENTE
+ * calada: slug inexistente NÃO dá erro, devolve HTTP 200 com anúncios de SAN FRANCISCO (o
+ * local padrão do FB). Provado ao vivo: slug `cascavel` → San Francisco/CA, Napa, Petaluma;
+ * `curitiba` → Curitiba/PR. Ver a guarda em facebookMain.processarRegiao e a memória do FB.
+ */
+export function geografiaDaBusca(html: string): { estados: string[]; cidades: string[] } {
+  const estados: string[] = [];
+  const cidades: string[] = [];
+  for (const m of html.matchAll(/"reverse_geocode":\{[^}]*?"city":"([^"]+)"[^}]*?"state":"([^"]+)"/g)) {
+    cidades.push(decodar(m[1]));
+    estados.push(decodar(m[2]).trim().toUpperCase());
+  }
+  return { estados, cidades };
+}
+
 /** Janela do anúncio PRINCIPAL: o nó do `redacted_description` é único do principal, então
  *  campos que colidem (preço/título/localização) são lidos AQUI, não por first-match global. */
 function janelaPrincipal(html: string): string {
