@@ -98,9 +98,9 @@ export default async function ContaPage() {
               </header>
 
               <section className="conta-card">
-                <h2 className="conta-card-titulo">Seu plano</h2>
                 {assinaturaAtiva ? (
                   <>
+                    <h2 className="conta-card-titulo">Seu plano</h2>
                     <p className="conta-plano-nome">
                       Plano <strong>PRO</strong> · {rotuloStatus(usuario.assinaturaStatus)}
                     </p>
@@ -109,6 +109,7 @@ export default async function ContaPage() {
                   </>
                 ) : ehPro ? (
                   <>
+                    <h2 className="conta-card-titulo">Seu plano</h2>
                     <p className="conta-plano-nome">
                       Plano <strong>PRO</strong> {ehAdmin ? "(admin)" : "(cortesia)"}
                     </p>
@@ -116,15 +117,22 @@ export default async function ContaPage() {
                   </>
                 ) : (
                   <>
-                    <p className="conta-plano-nome">
-                      Você está no plano <strong>Gratuito</strong>.
-                    </p>
+                    <h2 className="conta-card-titulo">
+                      Você está no plano <strong>Gratuito</strong>
+                    </h2>
+                    <p className="conta-plano-headline">Quem chega primeiro compra melhor.</p>
                     <p className="conta-muted">
-                      Assine o PRO pra liberar a inteligência de mercado (BIA), todas as ofertas e a análise do Copiloto.
+                      Desbloqueie as oportunidades com maior potencial de lucro. Receba alertas inteligentes e
+                      análises exclusivas para comprar melhor, aumentar sua margem e chegar antes da concorrência.
                     </p>
-                    <Link href="/planos" className="conta-cta">
-                      <Gem size={16} strokeWidth={2} /> Conhecer o PRO
-                    </Link>
+                    <div className="conta-plano-acoes">
+                      <Link href="/planos" className="conta-cta">
+                        <Gem size={16} strokeWidth={2} /> Desbloquear o PRO
+                      </Link>
+                      <Link href="/" className="conta-cta-secundario">
+                        Ver oportunidades de menor margem
+                      </Link>
+                    </div>
                   </>
                 )}
               </section>
@@ -169,7 +177,14 @@ export default async function ContaPage() {
                       <span className="conta-atalho-titulo">Buscas salvas</span>
                       <span className="conta-atalho-sub">Avisos automáticos do carro que você procura</span>
                     </span>
-                    <span className="conta-atalho-soon">Em breve</span>
+                    <span className="conta-atalho-badges">
+                      {!ehPro && (
+                        <span className="conta-atalho-pro">
+                          <Lock size={12} strokeWidth={2.5} /> PRO
+                        </span>
+                      )}
+                      <span className="conta-atalho-soon">Em breve</span>
+                    </span>
                   </div>
 
                   <Link href="/?aba=favoritos" className="conta-atalho">

@@ -3186,6 +3186,45 @@ body {
 .conta-cta:hover {
   background: #128a3e;
 }
+/* Headline de conversão do card free ("Quem chega primeiro compra melhor"). */
+.conta-plano-headline {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #111b21;
+  text-wrap: balance;
+}
+.conta-plano-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-top: 14px;
+}
+.conta-plano-acoes .conta-cta {
+  margin-top: 0;
+}
+/* Saída discreta pro free: ver a base de menor margem sem assinar. */
+.conta-cta-secundario {
+  font-size: 14px;
+  font-weight: 600;
+  color: #667781;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.conta-cta-secundario:hover {
+  color: #16a34a;
+  border-bottom-color: #16a34a;
+}
+/* Recurso PRO ainda não lançado: mostra "PRO" + "Em breve" lado a lado. */
+.conta-atalho-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
 .conta-atalhos {
   display: flex;
   flex-direction: column;
