@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { URL_BASE_SITE, urlCidade, urlEstado, urlMarca, urlOportunidade } from "@/lib/site";
 import { extrairMarca } from "@/lib/marca";
 import { gerarSlugCidade, slugify } from "@/lib/slug";
+import { listarPostsPublicados } from "@/lib/cms";
 import type { Oportunidade } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -118,6 +119,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Blog: a listagem + cada post publicado.
+  const posts = await listarPostsPublicados();
+  const blog: MetadataRoute.Sitemap = [
+    { url: `${URL_BASE_SITE}/blog`, changeFrequency: "weekly" },
+    ...posts.map((p) => ({
+      url: `${URL_BASE_SITE}/blog/${p.slug}`,
+      lastModified: p.publicadoEm ?? undefined,
+      changeFrequency: "monthly" as const,
+    })),
+  ];
+
   return [
     {
       url: URL_BASE_SITE,
@@ -125,6 +137,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 1,
     },
+    ...blog,
     ...estados,
     ...cidades,
     ...marcasNacional,

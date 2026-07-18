@@ -13,6 +13,7 @@ import {
   Home,
   LogIn,
   Menu,
+  Newspaper,
   Plus,
   Search,
   Send,
@@ -203,6 +204,16 @@ export function Sidebar({
                 <Settings size={18} strokeWidth={1.75} />
               </span>
             </button>
+            <button
+              type="button"
+              onClick={() => navegar("/conteudo")}
+              className={`sidebar-item ${pathname.startsWith("/conteudo") ? "sidebar-item-ativo" : ""}`}
+              title="Conteúdo"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Newspaper size={18} strokeWidth={1.75} />
+              </span>
+            </button>
           </div>
         )}
       </nav>
@@ -349,6 +360,16 @@ export function Sidebar({
                 <Settings size={18} strokeWidth={1.75} />
               </span>
               <span className="sidebar-rotulo">Configurações</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/conteudo")}
+              className={`sidebar-item ${pathname.startsWith("/conteudo") ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Newspaper size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Conteúdo</span>
             </button>
           </div>
         )}

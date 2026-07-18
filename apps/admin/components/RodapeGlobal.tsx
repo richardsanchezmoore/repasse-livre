@@ -18,6 +18,7 @@ const PREFIXOS_OCULTOS = [
   "/privacidade",
   "/termos",
   "/exclusao-de-dados",
+  "/blog",
   ...ROTAS_PAINEL_ADMIN,
 ];
 
