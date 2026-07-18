@@ -4,7 +4,7 @@ import {
   varrerEProcessarMercadoLivre,
 } from "./mercadoLivreService.js";
 import type { ResultadoLoteMercadoLivre } from "./mercadoLivreService.js";
-import { autoReiniciarRoteador } from "./autoReiniciarRoteador.js";
+import { autoReiniciarRoteador, aguardarInternet } from "./autoReiniciarRoteador.js";
 import { definirTetoSuspeita, MARGEM_MINIMA_PADRAO } from "./margin.js";
 import {
   finalizarRegistroVarreduraComErro,
@@ -32,13 +32,18 @@ async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<
   // dia, sem re-arar a ordem embaralhada. Ligado por padrão; desliga com
   // MERCADOLIVRE_SOMENTE_HOJE=false pra voltar à varredura de estoque completo.
   const somenteHoje = ((await lerConfig("MERCADOLIVRE_SOMENTE_HOJE")) ?? process.env.MERCADOLIVRE_SOMENTE_HOJE ?? "true") !== "false";
+  // Cadência humana entre detalhes (o principal ritmo da varredura). Configurável pra
+  // afrouxar sem redeploy: mais lento = menos cara de robô por TAXA (não reduz volume).
+  // Defaults acima do que era hardcoded antes (3000/6000) — ver a memória de fichamento.
+  const pausaMin = Number((await lerConfig("MERCADOLIVRE_PAUSA_DETALHE_MIN_MS")) ?? process.env.MERCADOLIVRE_PAUSA_DETALHE_MIN_MS ?? 4500);
+  const pausaMax = Number((await lerConfig("MERCADOLIVRE_PAUSA_DETALHE_MAX_MS")) ?? process.env.MERCADOLIVRE_PAUSA_DETALHE_MAX_MS ?? 9000);
 
   const urlComFiltro = gerarUrlCategoriaParticular(categoriaUrlBase);
   console.log(
-    `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | ${somenteHoje ? "ANUNCIADOS HOJE" : "estoque completo"} | páginas: ${paginaInicial}..${paginaInicial + maxPaginas - 1} | margem mínima: ${margemMinima}%`
+    `[motor-descoberta-mercadolivre] Categoria: ${urlComFiltro} | ${somenteHoje ? "ANUNCIADOS HOJE" : "estoque completo"} | páginas: ${paginaInicial}..${paginaInicial + maxPaginas - 1} | margem mínima: ${margemMinima}% | pausa detalhe: ${pausaMin}-${pausaMax}ms`
   );
 
-  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima, paginaInicial, somenteHoje);
+  const resultado = await varrerEProcessarMercadoLivre(urlComFiltro, maxPaginas, margemMinima, paginaInicial, somenteHoje, pausaMin, pausaMax);
 
   console.log(
     `[motor-descoberta-mercadolivre] Resultado: ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados | ${resultado.semFipe} sem FIPE | ${resultado.pulados} pulados (já vistos).`
@@ -47,7 +52,7 @@ async function executarVarreduraMercadoLivre(categoriaUrlBase: string): Promise<
   return resultado;
 }
 
-async function executarComRegistro(categoriaUrlBase: string): Promise<void> {
+async function executarComRegistro(categoriaUrlBase: string, jaReexecutou = false): Promise<void> {
   const registroId = await iniciarRegistroVarredura(categoriaUrlBase, MODO);
   try {
     const resultado = await executarVarreduraMercadoLivre(categoriaUrlBase);
@@ -67,7 +72,21 @@ async function executarComRegistro(categoriaUrlBase: string): Promise<void> {
       // Gatilho do reboot: já com o erro REGISTRADO (pra bloqueiosConsecutivosMl contar a
       // run atual). Decide sozinho — só age em 2 bloqueios seguidos, janela livre, anti-loop.
       // Best-effort: nunca derruba a run. Ver autoReiniciarRoteador.
-      await autoReiniciarRoteador();
+      const { reiniciou } = await autoReiniciarRoteador();
+
+      // ★ FECHA O GAP: se reiniciou de fato, espera a rede voltar e re-executa NA HORA
+      // com o IP novo — em vez de esperar o próximo cron (~2h). Só 1 re-run: `jaReexecutou`
+      // + o anti-loop de 90 min do autoReiniciarRoteador impedem loop (se o IP novo também
+      // vier fichado, o próximo bloqueio não dispara reboot → reiniciou=false → para).
+      const rerunLigado =
+        ((await lerConfig("MERCADOLIVRE_RERUN_POS_REBOOT")) ?? process.env.MERCADOLIVRE_RERUN_POS_REBOOT ?? "true") !== "false";
+      if (reiniciou && rerunLigado && !jaReexecutou) {
+        const online = await aguardarInternet();
+        if (online) {
+          console.log("[motor-descoberta-mercadolivre] IP novo no ar → re-executando ML imediatamente (fecha o gap).");
+          await executarComRegistro(categoriaUrlBase, true);
+        }
+      }
       return;
     }
 

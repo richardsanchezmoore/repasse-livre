@@ -97,13 +97,13 @@ async function capturarIpPublico(): Promise<string | null> {
  * Best-effort: qualquer erro aqui é logado e engolido — NUNCA derruba o worker.
  * `agora` é injetável só pra teste; em produção usa o relógio.
  */
-export async function autoReiniciarRoteador(agora: number = Date.now()): Promise<void> {
+export async function autoReiniciarRoteador(agora: number = Date.now()): Promise<{ reiniciou: boolean }> {
   const P = "[auto-roteador]";
   try {
     const bloqueios = await bloqueiosConsecutivosMl();
     if (bloqueios < BLOQUEIOS_PARA_REINICIAR) {
       console.log(`${P} ${bloqueios} bloqueio(s) consecutivo(s) — abaixo de ${BLOQUEIOS_PARA_REINICIAR}, aguardo o próximo ciclo.`);
-      return;
+      return { reiniciou: false };
     }
 
     // Anti-loop: já reiniciei há pouco? Então o IP novo também está fichado (raro) — não
@@ -112,7 +112,7 @@ export async function autoReiniciarRoteador(agora: number = Date.now()): Promise
     if (desdeReboot < ANTI_LOOP_MS) {
       const min = Math.round(desdeReboot / 60_000);
       console.warn(`${P} ⚠ ${bloqueios} bloqueios, MAS já reiniciei há ${min} min — anti-loop. NÃO reinicio (o IP novo pode estar fichado; investigar).`);
-      return;
+      return { reiniciou: false };
     }
 
     console.log(`${P} ${bloqueios} bloqueios consecutivos → vou reiniciar o roteador. Aguardando janela livre do FB…`);
@@ -122,7 +122,7 @@ export async function autoReiniciarRoteador(agora: number = Date.now()): Promise
     while (await fbCaptandoAgora()) {
       if (Date.now() > limite) {
         console.warn(`${P} ⚠ janela do FB não abriu em ${JANELA_TIMEOUT_MS / 60_000} min — ADIO o reboot pro próximo ciclo do ML.`);
-        return;
+        return { reiniciou: false };
       }
       await new Promise((r) => setTimeout(r, JANELA_POLL_MS));
     }
@@ -142,8 +142,45 @@ export async function autoReiniciarRoteador(agora: number = Date.now()): Promise
     // externo; se a conexão já tiver caído, o erro é engolido lá dentro). Assim o admin
     // vê "aqui reiniciamos" e não confunde com queda real de internet.
     await registrarEventoReinicioRoteador(r.ok, bloqueios, r.erro ?? "", ipAntes);
+
+    // reiniciou = reboot REALMENTE disparado (a internet vai cair). Só aí faz sentido o
+    // chamador esperar a rede voltar e re-executar na hora (fechar o gap até o próximo cron).
+    return { reiniciou: r.ok };
   } catch (e) {
     // Best-effort: falha aqui não pode quebrar a run do ML (que já terminou de qualquer jeito).
     console.error(`${P} falha inesperada (ignorada):`, e instanceof Error ? e.message : e);
+    return { reiniciou: false };
   }
+}
+
+/**
+ * Espera a internet voltar depois de um reboot (a rede cai ~1-5 min). Faz polls a um
+ * alvo leve e confiável até responder OU estourar o timeout. Sem isso, re-executar o ML
+ * logo após o reboot cairia em `fetch failed` (rede ainda fora). Best-effort: retorna
+ * true assim que responde; false se não voltou no tempo (o cron normal segue como rede).
+ */
+export async function aguardarInternet(timeoutMs = 6 * 60_000, intervaloMs = 15_000): Promise<boolean> {
+  const P = "[auto-roteador]";
+  const limite = Date.now() + timeoutMs;
+  // Dá um respiro antes do 1º poll: logo após o POST de reboot a rede ainda está de pé
+  // por alguns segundos e responderia um falso "online".
+  await new Promise((r) => setTimeout(r, 20_000));
+  while (Date.now() < limite) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 5000);
+      const resp = await fetch("https://api.ipify.org?format=text", { signal: ctrl.signal });
+      clearTimeout(t);
+      if (resp.ok) {
+        const ip = (await resp.text()).trim();
+        console.log(`${P} 🌐 internet de volta (IP ${ip}).`);
+        return true;
+      }
+    } catch {
+      // ainda fora — segue tentando
+    }
+    await new Promise((r) => setTimeout(r, intervaloMs));
+  }
+  console.warn(`${P} ⚠ internet não voltou em ${Math.round(timeoutMs / 60_000)} min — deixo pro próximo cron.`);
+  return false;
 }

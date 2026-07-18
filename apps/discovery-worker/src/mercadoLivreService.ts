@@ -763,9 +763,14 @@ export async function varrerEProcessarMercadoLivre(
   maxPaginas: number,
   margemMinima: number,
   paginaInicial = 1,
-  somenteHoje = false
+  somenteHoje = false,
+  pausaDetalheMin = 3000,
+  pausaDetalheMax = 6000
 ): Promise<ResultadoLoteMercadoLivre> {
   const resultado: ResultadoLoteMercadoLivre = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, pulados: 0, paginasCarregadas: 0, paginasBloqueadas: 0 };
+  // Pausa humana entre detalhes (ms). Configurável no main pra afrouxar a cadência sem
+  // redeploy — parecer menos robô por TAXA de requisições. Ver mercadoLivreMain.
+  const pausaDetalhe = () => pausaDetalheMin + Math.floor(Math.random() * Math.max(0, pausaDetalheMax - pausaDetalheMin));
   // sessid base aleatório por run — evita reusar um IP já fichado.
   const baseSess = 1 + Math.floor(Math.random() * 9000);
   // Parada por página seca: só no modo "hoje" (universo limitado ao dia). Na ordem
@@ -815,12 +820,12 @@ export async function varrerEProcessarMercadoLivre(
             if (correcao.descartar) {
               resultado.descartados++;
               await registrarVistoML(el.mlbId, "margem", el.preco); // não re-buscar o detalhe do falso-positivo
-              await page.waitForTimeout(3000 + Math.floor(Math.random() * 3000));
+              await page.waitForTimeout(pausaDetalhe());
               continue;
             }
             await salvarElegivel(correcao.el, detalhes, resultado);
             console.log(`[motor-descoberta-mercadolivre] ✓ ${correcao.el.anuncio.titulo} (${detalhes.fotos.length} fotos)`);
-            await page.waitForTimeout(3000 + Math.floor(Math.random() * 3000)); // pacing humano entre detalhes
+            await page.waitForTimeout(pausaDetalhe()); // pacing humano entre detalhes
           } catch (erro) {
             if (erro instanceof WallError) {
               saturou = true;
