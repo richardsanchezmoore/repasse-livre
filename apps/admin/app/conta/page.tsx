@@ -140,24 +140,15 @@ export default async function ContaPage() {
               <section className="conta-card">
                 <h2 className="conta-card-titulo">Acessos</h2>
                 <nav className="conta-atalhos">
-                  <Link href="/completar-dados" className="conta-atalho">
-                    <IdCard size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                  {/* Módulo de alertas (buscas salvas → aviso por e-mail quando entra
+                      anúncio na faixa/modelo). PRO: vai pra /buscas; free clica e o
+                      gate de app/(pro) redireciona pro /planos-slim (upsell). Ver
+                      project_repasse_livre_notificacoes_predefinicoes. */}
+                  <Link href={podeAbrirBia ? "/buscas" : "/planos-slim"} className="conta-atalho">
+                    <BellRing size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Meus dados</span>
-                      <span className="conta-atalho-sub">Nome e WhatsApp usados ao anunciar</span>
-                    </span>
-                    {dadosIncompletos ? (
-                      <span className="conta-atalho-alerta">Completar</span>
-                    ) : (
-                      <ChevronRight size={18} className="conta-atalho-seta" />
-                    )}
-                  </Link>
-
-                  <Link href={podeAbrirBia ? "/bia" : "/planos-slim"} className="conta-atalho">
-                    <ScanSearch size={20} strokeWidth={1.9} className="conta-atalho-icone" />
-                    <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Inteligência de mercado (BIA)</span>
-                      <span className="conta-atalho-sub">Tendências, mais disputados e mapa por região</span>
+                      <span className="conta-atalho-titulo">Alertas de Mercado</span>
+                      <span className="conta-atalho-sub">Avisos automáticos do carro que você procura</span>
                     </span>
                     {podeAbrirBia ? (
                       <ChevronRight size={18} className="conta-atalho-seta" />
@@ -168,15 +159,11 @@ export default async function ContaPage() {
                     )}
                   </Link>
 
-                  {/* Módulo de alertas (buscas salvas → aviso por e-mail quando entra
-                      anúncio na faixa/modelo). PRO: vai pra /buscas; free clica e o
-                      gate de app/(pro) redireciona pro /planos-slim (upsell). Ver
-                      project_repasse_livre_notificacoes_predefinicoes. */}
-                  <Link href={podeAbrirBia ? "/buscas" : "/planos-slim"} className="conta-atalho">
-                    <BellRing size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                  <Link href={podeAbrirBia ? "/bia" : "/planos-slim"} className="conta-atalho">
+                    <ScanSearch size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Buscas salvas</span>
-                      <span className="conta-atalho-sub">Avisos automáticos do carro que você procura</span>
+                      <span className="conta-atalho-titulo">Inteligência de Mercado</span>
+                      <span className="conta-atalho-sub">Tendências, mais disputados e mapa por região</span>
                     </span>
                     {podeAbrirBia ? (
                       <ChevronRight size={18} className="conta-atalho-seta" />
@@ -199,10 +186,25 @@ export default async function ContaPage() {
                   <Link href="/enviar" className="conta-atalho">
                     <Car size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
-                      <span className="conta-atalho-titulo">Anunciar um veículo</span>
+                      <span className="conta-atalho-titulo">Anunciar</span>
                       <span className="conta-atalho-sub">Coloque seu carro na vitrine</span>
                     </span>
                     <ChevronRight size={18} className="conta-atalho-seta" />
+                  </Link>
+
+                  {/* Meus dados por último: é config de perfil, não uma "feature" —
+                      fica ao fim da lista de acessos. */}
+                  <Link href="/completar-dados" className="conta-atalho">
+                    <IdCard size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                    <span className="conta-atalho-texto">
+                      <span className="conta-atalho-titulo">Meus dados</span>
+                      <span className="conta-atalho-sub">Nome e WhatsApp usados ao anunciar</span>
+                    </span>
+                    {dadosIncompletos ? (
+                      <span className="conta-atalho-alerta">Completar</span>
+                    ) : (
+                      <ChevronRight size={18} className="conta-atalho-seta" />
+                    )}
                   </Link>
                 </nav>
               </section>
