@@ -7926,7 +7926,6 @@ button.bemvindo-secundario {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin-bottom: 10px;
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -8109,6 +8108,7 @@ button.bemvindo-secundario {
 .buscas-lista {
   list-style: none;
   margin: 0;
+  margin-top: 10px;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -8222,6 +8222,7 @@ button.bemvindo-secundario {
 .buscas-recebidos {
   list-style: none;
   margin: 0;
+  margin-top: 10px;
   padding: 0;
   display: flex;
   flex-direction: column;

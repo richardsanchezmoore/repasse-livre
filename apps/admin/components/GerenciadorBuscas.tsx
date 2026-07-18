@@ -319,7 +319,7 @@ export function GerenciadorBuscas({
           (buscas.length === 0 ? (
             <p className="buscas-vazio buscas-accordion-corpo">Você ainda não tem alertas. Crie o primeiro acima. 👆</p>
           ) : (
-            <ul className="buscas-lista buscas-accordion-corpo">
+            <ul className="buscas-lista">
               {buscas.map((b) => (
                 <ItemBusca key={b.id} busca={b} reais={reais} />
               ))}
@@ -347,7 +347,7 @@ export function GerenciadorBuscas({
               Nenhum aviso ainda. Quando um carro bater com um dos seus alertas, ele aparece aqui — e no seu e-mail.
             </p>
           ) : (
-            <ul className="buscas-recebidos buscas-accordion-corpo">
+            <ul className="buscas-recebidos">
               {recebidos.map((r) => (
                 <ItemRecebido key={`${r.id}-${r.recebidoEm}`} rec={r} reais={reais} />
               ))}
