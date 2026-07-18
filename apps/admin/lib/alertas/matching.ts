@@ -1,5 +1,6 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
+import { enviarAlertasNaHora } from "./entrega";
 
 /**
  * MATCHING de alertas: dado um anúncio recém-APROVADO, acha as buscas salvas ativas
@@ -117,6 +118,12 @@ export async function registrarAlertasParaAprovados(ids: string[]): Promise<numb
       console.error("[alertas] falha ao registrar pendentes:", error.message);
       return 0;
     }
+
+    // Registrados os pendentes, os de frequência 'na_hora' saem imediatamente
+    // (o timing É o produto). Os 'diario' ficam na fila pro cron do resumo.
+    // Best-effort: um par só vira enviado quando o Resend confirma.
+    await enviarAlertasNaHora(ids);
+
     return pendentes.length;
   } catch (e) {
     console.error("[alertas] matching falhou (ignorado):", e instanceof Error ? e.message : e);

@@ -104,10 +104,12 @@ async function atualizarStatusEmMassa(ids: string[], status: StatusOportunidade)
     throw new Error(`Falha ao atualizar status: ${error.message}`);
   }
   // ★ Alerta PRO: ao APROVAR (não na captação — descoberta é 404 pro público), casa os
-  // anúncios contra as buscas salvas e registra os pendentes. Best-effort: nunca derruba
-  // a aprovação. A entrega (e-mail/resumo) é passo separado. Ver lib/alertas/matching.
+  // anúncios contra as buscas salvas, registra os pendentes E dispara o e-mail 'na_hora'.
+  // AWAIT (não fire-and-forget): em serverless a lambda é reciclada após a resposta, o que
+  // mataria o envio de e-mail pendente. O matching é best-effort internamente (try/catch,
+  // nunca lança), então aguardar não arrisca derrubar a aprovação. Ver lib/alertas/matching.
   if (status === "aprovada") {
-    void registrarAlertasParaAprovados(ids);
+    await registrarAlertasParaAprovados(ids);
   }
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
