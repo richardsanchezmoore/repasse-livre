@@ -588,7 +588,11 @@ body {
 .usuarios-pagina {
   flex: 1;
   padding: 24px 32px 64px;
-  max-width: 720px;
+  /* Largura pra as 7 colunas da tabela (e-mail…ações) caberem no desktop. Com 720px
+     a tabela estourava e o container rolava na horizontal (scroll desnecessário no
+     desktop, com a tela sobrando ao lado). Alargando, o overflow-x:auto do container
+     só mostra scrollbar quando NÃO cabe — ou seja, no mobile, onde ele é útil. */
+  max-width: 1120px;
 }
 
 .usuarios-titulo {
