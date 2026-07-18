@@ -123,7 +123,7 @@ export default async function ContaPage() {
                     <p className="conta-plano-headline">Quem chega primeiro compra melhor.</p>
                     <p className="conta-muted">
                       Desbloqueie as oportunidades com maior potencial de lucro. Receba alertas inteligentes e
-                      análises exclusivas para comprar melhor, aumentar sua margem e chegar antes da concorrência.
+                      análises exclusivas para <strong>comprar melhor</strong>, <strong>aumentar sua margem</strong> e chegar antes da concorrência.
                     </p>
                     <div className="conta-plano-acoes">
                       <Link href="/planos" className="conta-cta">
