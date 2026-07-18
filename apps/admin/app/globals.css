@@ -8444,3 +8444,15 @@ button.bemvindo-secundario {
   .blog-titulo-pagina, .post-titulo { font-size: 27px; }
   .post-corpo { font-size: 17px; }
 }
+
+/* Prévia do post (barra admin no topo) + links do editor */
+.cms-btn-sec { text-decoration: none; }
+.cms-ver-publicado { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: #16a34a; text-decoration: none; }
+.cms-ver-publicado:hover { text-decoration: underline; }
+.previa-barra { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 20px; background: #0f172a; color: #e2e8f0; font-size: 13px; }
+.previa-barra-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.previa-barra-status { padding: 2px 10px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+.previa-status-rascunho { background: #78350f; color: #fde68a; }
+.previa-status-publicado { background: #14532d; color: #bbf7d0; }
+.previa-barra-voltar { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; color: #93c5fd; text-decoration: none; font-weight: 600; }
+.previa-barra-voltar:hover { text-decoration: underline; }

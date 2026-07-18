@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogShell } from "@/components/BlogShell";
+import { ArtigoPost } from "@/components/ArtigoPost";
 import { buscarPostPublicadoPorSlug, listarSlugsPostsPublicados } from "@/lib/cms";
 import { URL_BASE_SITE } from "@/lib/site";
 
@@ -67,16 +68,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
   return (
     <BlogShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <article className="post">
-        {post.capaUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.capaUrl} alt={post.capaAlt ?? ""} className="post-capa" />
-        )}
-        <h1 className="post-titulo">{post.titulo}</h1>
-        {post.publicadoEm && <p className="post-data">{FMT.format(new Date(post.publicadoEm))}</p>}
-        {/* conteudoHtml já é gerado e SANITIZADO no servidor ao salvar (lib/tiptapHtml). */}
-        <div className="post-corpo" dangerouslySetInnerHTML={{ __html: post.conteudoHtml }} />
-      </article>
+      <ArtigoPost
+        titulo={post.titulo}
+        capaUrl={post.capaUrl}
+        capaAlt={post.capaAlt}
+        dataLabel={post.publicadoEm ? FMT.format(new Date(post.publicadoEm)) : null}
+        conteudoHtml={post.conteudoHtml}
+      />
     </BlogShell>
   );
 }

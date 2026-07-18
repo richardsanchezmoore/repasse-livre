@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Loader2, ImagePlus, Trash2 } from "lucide-react";
+import { Loader2, ImagePlus, Trash2, Eye, ExternalLink } from "lucide-react";
 import { EditorTiptap } from "@/components/EditorTiptap";
 import { salvarPost, apagarPost, type ResultadoPost } from "@/lib/cmsActions";
 import { slugify } from "@/lib/slug";
@@ -111,6 +111,18 @@ export function FormularioPost({ post }: { post?: PostEditor | null }) {
               </label>
             </div>
             <BotaoSalvar />
+            {/* Prévia: só depois de salvo (precisa do post no banco). Renderiza em
+                qualquer status na rota admin — pro rascunho, que dá 404 no /blog. */}
+            {post?.id && (
+              <a href={`/conteudo/${post.id}/previa`} target="_blank" rel="noopener noreferrer" className="cms-btn-sec">
+                <Eye size={14} /> Prévia
+              </a>
+            )}
+            {post?.status === "publicado" && (
+              <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" className="cms-ver-publicado">
+                <ExternalLink size={13} /> Ver no blog
+              </a>
+            )}
             {post?.id && (
               <button
                 type="button"

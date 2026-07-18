@@ -178,6 +178,12 @@ export interface PostEditorData {
   status: "rascunho" | "publicado";
 }
 
+/** Post por id em QUALQUER status (rascunho incluso) — pra prévia admin. */
+export async function buscarPostPorIdAdmin(id: string): Promise<PostCms | null> {
+  const { data } = await supabaseAdmin.from("posts").select(CAMPOS_POST).eq("id", id).maybeSingle();
+  return data ? mapearPost(data as PostRow) : null;
+}
+
 /** Post completo (com conteudo_json) pro editor. null se não existe. */
 export async function buscarPostParaEditor(id: string): Promise<PostEditorData | null> {
   const { data } = await supabaseAdmin
