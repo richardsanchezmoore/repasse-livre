@@ -168,24 +168,24 @@ export default async function ContaPage() {
                     )}
                   </Link>
 
-                  {/* Reserva o lugar do módulo de alertas (buscas salvas → aviso
-                      no WhatsApp/push quando entra anúncio na faixa/modelo). Ainda
-                      não navega — ver project_repasse_livre_notificacoes_predefinicoes. */}
-                  <div className="conta-atalho conta-atalho-embreve" aria-disabled="true">
+                  {/* Módulo de alertas (buscas salvas → aviso por e-mail quando entra
+                      anúncio na faixa/modelo). PRO: vai pra /buscas; free clica e o
+                      gate de app/(pro) redireciona pro /planos-slim (upsell). Ver
+                      project_repasse_livre_notificacoes_predefinicoes. */}
+                  <Link href={podeAbrirBia ? "/buscas" : "/planos-slim"} className="conta-atalho">
                     <BellRing size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
                       <span className="conta-atalho-titulo">Buscas salvas</span>
                       <span className="conta-atalho-sub">Avisos automáticos do carro que você procura</span>
                     </span>
-                    <span className="conta-atalho-badges">
-                      {!ehPro && (
-                        <span className="conta-atalho-pro">
-                          <Lock size={12} strokeWidth={2.5} /> PRO
-                        </span>
-                      )}
-                      <span className="conta-atalho-soon">Em breve</span>
-                    </span>
-                  </div>
+                    {podeAbrirBia ? (
+                      <ChevronRight size={18} className="conta-atalho-seta" />
+                    ) : (
+                      <span className="conta-atalho-pro">
+                        <Lock size={12} strokeWidth={2.5} /> PRO
+                      </span>
+                    )}
+                  </Link>
 
                   <Link href="/?aba=favoritos" className="conta-atalho">
                     <Heart size={20} strokeWidth={1.9} className="conta-atalho-icone" />

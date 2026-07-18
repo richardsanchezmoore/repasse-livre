@@ -23,11 +23,15 @@ interface DestinatarioPro {
   nome: string | null;
 }
 
-/** E-mail + nome do dono, SOMENTE se ele ainda é PRO (não vaza alerta pra quem virou free). */
+/**
+ * E-mail + nome do dono, SOMENTE se ele ainda tem direito ao PRO (não vaza alerta
+ * pra quem virou free). Mesmo gate da criação (lib/buscasSalvas): premium OU admin
+ * — senão o admin criaria buscas mas nunca receberia o e-mail.
+ */
 async function destinatarioSeAindaPro(userId: string): Promise<DestinatarioPro | null> {
   const { data: perfil } = await supabaseAdmin
     .from("perfis")
-    .select("nome, premium, assinatura_status, premium_expira_em")
+    .select("nome, role, premium, assinatura_status, premium_expira_em")
     .eq("user_id", userId)
     .single();
   if (!perfil) return null;
@@ -36,7 +40,7 @@ async function destinatarioSeAindaPro(userId: string): Promise<DestinatarioPro |
   const dentroValidade = perfil.premium_expira_em
     ? new Date(perfil.premium_expira_em).getTime() > Date.now()
     : false;
-  const ehPro = perfil.premium === true || (statusAtivo && dentroValidade);
+  const ehPro = perfil.role === "admin" || perfil.premium === true || (statusAtivo && dentroValidade);
   if (!ehPro) return null;
 
   // O e-mail vive em auth.users, não em perfis.

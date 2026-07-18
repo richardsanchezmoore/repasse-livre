@@ -7850,3 +7850,334 @@ button.bemvindo-secundario {
   color: #8696a0;
   font-size: 14px;
 }
+
+/* ══ BUSCAS SALVAS (alertas PRO) ══════════════════════════════════════════ */
+.buscas {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 8px 0 48px;
+}
+.buscas-cabecalho {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 4px 0 20px;
+}
+.buscas-icone {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eafaf0;
+  color: #16a34a;
+}
+.buscas-titulo {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #111b21;
+}
+.buscas-sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #667781;
+  max-width: 60ch;
+}
+.buscas-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px 22px;
+  background: #fff;
+  margin-bottom: 16px;
+}
+.buscas-card-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8696a0;
+}
+.buscas-contador {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eafaf0;
+  color: #16a34a;
+  font-size: 12px;
+}
+.buscas-erro {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+.buscas-ok {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 14px;
+}
+.buscas-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.buscas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+.buscas-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.buscas-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+.buscas-obrig {
+  color: #16a34a;
+  font-style: normal;
+}
+.buscas-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #d7dde3;
+  border-radius: 9px;
+  font-size: 15px;
+  color: #111b21;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.buscas-input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+.buscas-prefixo,
+.buscas-sufixo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.buscas-prefixo > span,
+.buscas-sufixo > span {
+  font-size: 14px;
+  color: #667781;
+  white-space: nowrap;
+}
+.buscas-dupla {
+  display: flex;
+  gap: 8px;
+}
+.buscas-freq {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.buscas-freq-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.buscas-freq-op {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px 15px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.buscas-freq-op input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.buscas-freq-op-sel {
+  border-color: #16a34a;
+  background: #f7fdf9;
+}
+.buscas-freq-topo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111b21;
+}
+.buscas-freq-op-sel .buscas-freq-topo {
+  color: #0a5d2c;
+}
+.buscas-freq-desc {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #667781;
+}
+.buscas-criar-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 26px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.buscas-criar-btn:hover {
+  background: #128a3e;
+}
+.buscas-criar-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.buscas-spinner {
+  animation: girar 0.8s linear infinite;
+}
+.buscas-vazio {
+  margin: 0;
+  padding: 14px 0;
+  color: #667781;
+  font-size: 14px;
+}
+.buscas-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.buscas-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+.buscas-item-off {
+  opacity: 0.55;
+}
+.buscas-item-info {
+  flex: 1;
+  min-width: 0;
+}
+.buscas-item-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #111b21;
+}
+.buscas-freq-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2f5;
+  color: #667781;
+}
+.buscas-freq-tag-hora {
+  background: #eafaf0;
+  color: #16a34a;
+}
+.buscas-item-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.buscas-chip {
+  font-size: 12.5px;
+  color: #54656f;
+  background: #f6f9f7;
+  border: 1px solid #eef2f5;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+.buscas-item-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.buscas-toggle {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.15s;
+  padding: 0;
+}
+.buscas-toggle-on {
+  background: #16a34a;
+}
+.buscas-toggle:disabled {
+  cursor: default;
+}
+.buscas-toggle-bolinha {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.buscas-toggle-on .buscas-toggle-bolinha {
+  transform: translateX(18px);
+}
+.buscas-apagar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #fff;
+  color: #98a5ad;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.buscas-apagar:hover {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+@media (max-width: 620px) {
+  .buscas-grid,
+  .buscas-freq-opcoes {
+    grid-template-columns: 1fr;
+  }
+}
