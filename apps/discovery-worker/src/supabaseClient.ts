@@ -393,6 +393,48 @@ export async function finalizarRegistroVarreduraComErro(id: string, erroMensagem
 }
 
 /**
+ * Registra um REINÍCIO DE ROTEADOR como uma linha própria em discovery_runs, pra
+ * ele aparecer na TIMELINE do painel de varredura (aba ML) na ordem cronológica,
+ * entre os runs bloqueados que o motivaram. Assim o admin distingue "internet caiu
+ * porque NÓS reiniciamos o roteador" de uma queda real de internet. Ver
+ * project_repasse_livre_ml_fichamento_ip_visibilidade e a memória do auto-reboot.
+ *
+ * - categoria_url casa `%mercadoli%` (o painel filtra a aba ML por esse padrão) e
+ *   modo="reinicio-roteador" (o PainelWorker renderiza a linha destacada).
+ * - status sucesso/erro conforme o reboot; a mensagem NÃO contém "BLOQUEADO" de
+ *   propósito, pra não ser contada como bloqueio de ML pelo gatilho de auto-reboot.
+ * - iniciado_em = finalizado_em = agora (evento instantâneo, não uma varredura).
+ * Best-effort no chamador: registrar isto nunca pode derrubar o worker.
+ */
+export async function registrarEventoReinicioRoteador(
+  sucesso: boolean,
+  bloqueios: number,
+  detalhe: string,
+  ipAntes?: string | null,
+): Promise<void> {
+  const agora = new Date().toISOString();
+  const contexto = `${bloqueios} bloqueio(s) seguido(s) do ML${ipAntes ? ` · IP anterior ${ipAntes}` : ""}`;
+  const mensagem = sucesso
+    ? `🔄 Roteador reiniciado automaticamente (${contexto}). A internet caiu ~1-5 min — NÃO foi queda real. O IP deve ter trocado.`
+    : `🔄 Tentativa de reinício do roteador FALHOU: ${detalhe} (${contexto}).`;
+
+  const { error } = await supabase.from("discovery_runs").insert({
+    categoria_url: "mercadolivre :: reinicio-roteador",
+    modo: "reinicio-roteador",
+    status: sucesso ? "sucesso" : "erro",
+    iniciado_em: agora,
+    finalizado_em: agora,
+    // Sucesso vai em `observacao` (o painel mostra); falha em `erro_mensagem`.
+    observacao: sucesso ? mensagem : null,
+    erro_mensagem: sucesso ? null : mensagem,
+  });
+  if (error) {
+    // Só loga — é um registro de visibilidade, não pode quebrar nada.
+    console.error("[auto-roteador] falha ao registrar evento de reinício:", error.message);
+  }
+}
+
+/**
  * Grava o snapshot_id do Bright Data no run — chamado assim que o snapshot é
  * DISPARADO (antes do download), pra sobreviver a falha de download/processo
  * morto e permitir a recuperação em 1 clique. Não derruba o run se falhar

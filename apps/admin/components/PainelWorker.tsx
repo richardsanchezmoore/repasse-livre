@@ -164,7 +164,24 @@ export function PainelWorker({
   const ufFbAtiva = ufFbSel && ufsFacebook.includes(ufFbSel) ? ufFbSel : ufsFacebook[0] ?? null;
   const runsUfFb = gruposFacebook.find(([uf]) => uf === ufFbAtiva)?.[1] ?? [];
 
-  const linhaRun = (run: RunWorker, celulaEstado: string) => (
+  const linhaRun = (run: RunWorker, celulaEstado: string) => {
+    // Evento de reinício do roteador: NÃO é uma varredura — é um marcador na timeline
+    // pra distinguir "a internet caiu porque reiniciamos" de queda real. Renderiza uma
+    // linha destacada, ocupando as colunas de resultado com a mensagem. Ver
+    // registrarEventoReinicioRoteador no worker.
+    if (run.modo === "reinicio-roteador") {
+      const falhou = run.status === "erro";
+      const msg = falhou ? run.erro_mensagem : run.observacao;
+      return (
+        <tr key={run.id} className="worker-reinicio" style={{ background: falhou ? "#fef2f2" : "#eef6ff" }}>
+          <td>{formatarData(run.iniciado_em)}</td>
+          <td colSpan={5} style={{ fontSize: "0.88em", fontWeight: 600, color: falhou ? "#b91c1c" : "#1e5fa8" }}>
+            {msg ?? "🔄 Roteador reiniciado"}
+          </td>
+        </tr>
+      );
+    }
+    return (
     <tr key={run.id} className="usuarios-linha">
       <td>{formatarData(run.iniciado_em)}</td>
       <td>{celulaEstado}</td>
@@ -193,7 +210,8 @@ export function PainelWorker({
         )}
       </td>
     </tr>
-  );
+    );
+  };
 
   const valorAtual = (chave: string): string => configs.find((c) => c.chave === chave)?.valor ?? "";
   const [valores, setValores] = useState<Record<string, string>>(

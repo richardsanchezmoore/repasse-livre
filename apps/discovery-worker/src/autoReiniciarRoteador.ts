@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js";
+import { supabase, registrarEventoReinicioRoteador } from "./supabaseClient.js";
 import { reiniciarRoteador } from "./reiniciarRoteador.js";
 
 /**
@@ -73,6 +73,26 @@ async function marcarReboot(): Promise<void> {
 }
 
 /**
+ * IP público ANTES do reboot (o que está fichado). Best-effort: sem proxy (é o IP
+ * residencial real), timeout curto; se falhar, retorna null e o registro segue sem
+ * o IP. O IP DEPOIS não dá pra capturar aqui — a internet cai no reboot e só volta
+ * minutos depois; o próximo ciclo do ML é que prova a troca.
+ */
+async function capturarIpPublico(): Promise<string | null> {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 5000);
+    const resp = await fetch("https://api.ipify.org?format=text", { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!resp.ok) return null;
+    const ip = (await resp.text()).trim();
+    return /^\d{1,3}(\.\d{1,3}){3}$/.test(ip) ? ip : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Decide e executa. Chamado pelo ML após registrar a run como bloqueada.
  * Best-effort: qualquer erro aqui é logado e engolido — NUNCA derruba o worker.
  * `agora` é injetável só pra teste; em produção usa o relógio.
@@ -108,12 +128,20 @@ export async function autoReiniciarRoteador(agora: number = Date.now()): Promise
     }
 
     console.log(`${P} janela livre. Reiniciando o roteador…`);
+    // Captura o IP fichado ANTES de derrubar a internet (best-effort, não bloqueia).
+    const ipAntes = await capturarIpPublico();
     // Marca ANTES de reiniciar: a internet vai cair no meio do reboot; se marcasse depois,
     // a queda poderia impedir o registro e a trava anti-loop não pegaria.
     await marcarReboot();
     const r = await reiniciarRoteador(true);
     if (r.ok) console.log(`${P} ✅ roteador reiniciado. IP novo no ar em ~1-5 min; o próximo ciclo do ML deve passar.`);
     else console.error(`${P} ❌ reboot falhou: ${r.erro}. (timestamp já registrado; investigar manualmente)`);
+
+    // Registra o evento na timeline do painel (aba ML) — sucesso OU falha. Best-effort:
+    // roda logo após o POST de reboot, antes de a internet cair de fato (o Supabase é
+    // externo; se a conexão já tiver caído, o erro é engolido lá dentro). Assim o admin
+    // vê "aqui reiniciamos" e não confunde com queda real de internet.
+    await registrarEventoReinicioRoteador(r.ok, bloqueios, r.erro ?? "", ipAntes);
   } catch (e) {
     // Best-effort: falha aqui não pode quebrar a run do ML (que já terminou de qualquer jeito).
     console.error(`${P} falha inesperada (ignorada):`, e instanceof Error ? e.message : e);
