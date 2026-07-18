@@ -8,6 +8,7 @@ import {
   BarChart3,
   Bell,
   CheckCircle2,
+  Files,
   Globe,
   Heart,
   Home,
@@ -206,9 +207,19 @@ export function Sidebar({
             </button>
             <button
               type="button"
+              onClick={() => navegar("/conteudo/paginas")}
+              className={`sidebar-item ${pathname.startsWith("/conteudo/paginas") ? "sidebar-item-ativo" : ""}`}
+              title="Conteúdo · Páginas"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Files size={18} strokeWidth={1.75} />
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => navegar("/conteudo")}
-              className={`sidebar-item ${pathname.startsWith("/conteudo") ? "sidebar-item-ativo" : ""}`}
-              title="Conteúdo"
+              className={`sidebar-item ${pathname.startsWith("/conteudo") && !pathname.startsWith("/conteudo/paginas") ? "sidebar-item-ativo" : ""}`}
+              title="Conteúdo · Blog"
             >
               <span className="sidebar-icone" aria-hidden="true">
                 <Newspaper size={18} strokeWidth={1.75} />
@@ -361,15 +372,31 @@ export function Sidebar({
               </span>
               <span className="sidebar-rotulo">Configurações</span>
             </button>
+          </div>
+        )}
+
+        {role === "admin" && (
+          <div className="sidebar-rodape">
+            <p className="sidebar-grupo-titulo">Conteúdo</p>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/conteudo/paginas")}
+              className={`sidebar-item ${pathname.startsWith("/conteudo/paginas") ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Files size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Páginas</span>
+            </button>
             <button
               type="button"
               onClick={() => navegarEFechar("/conteudo")}
-              className={`sidebar-item ${pathname.startsWith("/conteudo") ? "sidebar-item-ativo" : ""}`}
+              className={`sidebar-item ${pathname.startsWith("/conteudo") && !pathname.startsWith("/conteudo/paginas") ? "sidebar-item-ativo" : ""}`}
             >
               <span className="sidebar-icone" aria-hidden="true">
                 <Newspaper size={18} strokeWidth={1.75} />
               </span>
-              <span className="sidebar-rotulo">Conteúdo</span>
+              <span className="sidebar-rotulo">Blog</span>
             </button>
           </div>
         )}

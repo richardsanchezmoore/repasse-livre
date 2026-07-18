@@ -8456,3 +8456,19 @@ button.bemvindo-secundario {
 .previa-status-publicado { background: #14532d; color: #bbf7d0; }
 .previa-barra-voltar { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; color: #93c5fd; text-decoration: none; font-weight: 600; }
 .previa-barra-voltar:hover { text-decoration: underline; }
+
+/* Scrollbar do Sidebar: some por padrão, aparece só ao interagir (hover). Largura
+   fixa (webkit) + thumb transparente = sem deslocar o conteúdo quando aparece. */
+.sidebar { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.sidebar:hover { scrollbar-color: rgba(15, 23, 42, 0.28) transparent; }
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+.sidebar:hover::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.22); }
+
+/* Abas Páginas | Blog no topo do /conteudo */
+.cms-tabs { display: inline-flex; gap: 4px; padding: 4px; background: #eef2f5; border-radius: 10px; margin: 4px 0 20px; }
+.cms-tab { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #54656f; text-decoration: none; }
+.cms-tab:hover { color: #16a34a; }
+.cms-tab-ativa { background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgba(15,23,42,0.08); }
+.cms-tab-ativa:hover { color: #0f172a; }
