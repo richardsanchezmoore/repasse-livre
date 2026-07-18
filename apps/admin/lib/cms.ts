@@ -141,3 +141,58 @@ export async function listarSlugsPostsPublicados(): Promise<string[]> {
   const { data } = await supabaseAdmin.from("posts").select("slug").eq("status", "publicado");
   return (data ?? []).map((r) => (r as { slug: string }).slug);
 }
+
+// ── Leituras do ADMIN (incluem rascunhos + o conteudo_json pro editor) ──────────────
+
+export interface PostAdminItem {
+  id: string;
+  titulo: string;
+  slug: string;
+  status: "rascunho" | "publicado";
+  publicadoEm: string | null;
+  atualizadoEm: string;
+}
+
+/** Lista TODOS os posts (rascunho + publicado) pro painel, mais recentes primeiro. */
+export async function listarPostsAdmin(): Promise<PostAdminItem[]> {
+  const { data } = await supabaseAdmin
+    .from("posts")
+    .select("id, titulo, slug, status, publicado_em, atualizado_em")
+    .order("atualizado_em", { ascending: false });
+  return (data ?? []).map((r) => {
+    const row = r as { id: string; titulo: string; slug: string; status: "rascunho" | "publicado"; publicado_em: string | null; atualizado_em: string };
+    return { id: row.id, titulo: row.titulo, slug: row.slug, status: row.status, publicadoEm: row.publicado_em, atualizadoEm: row.atualizado_em };
+  });
+}
+
+export interface PostEditorData {
+  id: string;
+  titulo: string;
+  slug: string;
+  resumo: string | null;
+  conteudoJson: unknown;
+  capaUrl: string | null;
+  capaAlt: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  status: "rascunho" | "publicado";
+}
+
+/** Post completo (com conteudo_json) pro editor. null se não existe. */
+export async function buscarPostParaEditor(id: string): Promise<PostEditorData | null> {
+  const { data } = await supabaseAdmin
+    .from("posts")
+    .select("id, titulo, slug, resumo, conteudo_json, capa_url, capa_alt, seo_title, seo_description, status")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return null;
+  const r = data as {
+    id: string; titulo: string; slug: string; resumo: string | null; conteudo_json: unknown;
+    capa_url: string | null; capa_alt: string | null; seo_title: string | null; seo_description: string | null;
+    status: "rascunho" | "publicado";
+  };
+  return {
+    id: r.id, titulo: r.titulo, slug: r.slug, resumo: r.resumo, conteudoJson: r.conteudo_json,
+    capaUrl: r.capa_url, capaAlt: r.capa_alt, seoTitle: r.seo_title, seoDescription: r.seo_description, status: r.status,
+  };
+}
