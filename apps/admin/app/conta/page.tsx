@@ -126,7 +126,7 @@ export default async function ContaPage() {
                       análises exclusivas para <strong>comprar melhor</strong>, <strong>aumentar sua margem</strong> e chegar antes da concorrência.
                     </p>
                     <div className="conta-plano-acoes">
-                      <Link href="/planos" className="conta-cta">
+                      <Link href="/planos-slim" className="conta-cta">
                         <Gem size={16} strokeWidth={2} /> Desbloquear o PRO
                       </Link>
                       <Link href="/" className="conta-cta-secundario">
@@ -153,7 +153,7 @@ export default async function ContaPage() {
                     )}
                   </Link>
 
-                  <Link href={podeAbrirBia ? "/bia" : "/planos"} className="conta-atalho">
+                  <Link href={podeAbrirBia ? "/bia" : "/planos-slim"} className="conta-atalho">
                     <ScanSearch size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
                       <span className="conta-atalho-titulo">Inteligência de mercado (BIA)</span>

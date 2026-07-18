@@ -18,7 +18,7 @@ export default async function ProLayout({ children }: { children: React.ReactNod
   }
   // Não-PRO logado → manda pra vitrine do plano (upsell), não pra home.
   if (!usuario.premium && usuario.role !== "admin") {
-    redirect("/planos");
+    redirect("/planos-slim");
   }
   return children;
 }

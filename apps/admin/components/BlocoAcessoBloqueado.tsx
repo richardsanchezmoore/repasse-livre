@@ -9,13 +9,13 @@ import { registrarEvento } from "@/lib/eventosAnalytics";
  * ganho, ficha, análise — isca pro tráfego de Ads e SEO), e SÓ o acesso ao
  * anúncio original (link + WhatsApp do vendedor) é trocado por este convite a
  * assinar. É o ativo que a plataforma vende: chegar ao carro/vendedor. Leva pra
- * /planos e registra o clique com origem "pagina". Ver
+ * /planos-slim e registra o clique com origem "pagina". Ver
  * project_repasse_livre_premium_monetizacao.
  */
 export function BlocoAcessoBloqueado({ oportunidadeId }: { oportunidadeId: string }) {
   return (
     <Link
-      href={`/planos?de=${oportunidadeId}`}
+      href={`/planos-slim?de=${oportunidadeId}`}
       className="acesso-bloqueado"
       onClick={() => registrarEvento("clique_overlay_premium", { origem: "pagina" }, oportunidadeId)}
     >
