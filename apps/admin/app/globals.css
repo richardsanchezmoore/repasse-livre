@@ -7926,6 +7926,7 @@ button.bemvindo-secundario {
   display: flex;
   align-items: center;
   gap: 9px;
+  margin-bottom: 10px;
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -8244,9 +8245,13 @@ button.bemvindo-secundario {
   flex: none;
   width: 84px;
   height: 64px;
-  object-fit: cover;
   border-radius: 8px;
   background: #f0f2f5;
+}
+.buscas-rec-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .buscas-rec-foto-vazia {
   display: block;

@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
 import { BellRing, Loader2, Plus, Trash2, Zap, CalendarClock, ChevronDown, BellPlus, ListChecks, Inbox, Clock } from "lucide-react";
+import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 import {
   criarBuscaSalva,
   alternarBuscaSalva,
@@ -98,10 +99,10 @@ export function GerenciadorBuscas({
   const [kmMax, setKmMax] = useState("");
   const [frequencia, setFrequencia] = useState("na_hora");
   const [formKey, setFormKey] = useState(0);
-  // Accordions: os boxes recolhem pra organizar a visão (produto premium).
-  const [criarAberto, setCriarAberto] = useState(true);
-  const [listaAberta, setListaAberta] = useState(true);
-  const [recebidosAberto, setRecebidosAberto] = useState(true);
+  // Accordions: os boxes nascem FECHADOS (visão limpa; o usuário abre o que quer).
+  const [criarAberto, setCriarAberto] = useState(false);
+  const [listaAberta, setListaAberta] = useState(false);
+  const [recebidosAberto, setRecebidosAberto] = useState(false);
 
   // Só no SUCESSO limpamos tudo: zera os campos controlados e remonta o form (key++)
   // pra também limpar os não-controlados (marca, modelo, ano…). Em caso de erro de
@@ -124,7 +125,7 @@ export function GerenciadorBuscas({
           <BellRing size={22} strokeWidth={1.9} />
         </span>
         <div>
-          <h1 className="buscas-titulo">Buscas salvas</h1>
+          <h1 className="buscas-titulo">Alertas de Mercado</h1>
           <p className="buscas-sub">
             Diga o carro que você procura. Quando um anúncio novo bater com a busca, avisamos por e-mail —
             antes da concorrência.
@@ -363,8 +364,7 @@ function ItemRecebido({ rec, reais }: { rec: AlertaRecebidoRow; reais: (n: numbe
     <li className="buscas-rec">
       <Link href={rec.href} className="buscas-rec-link">
         {rec.foto ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={rec.foto} alt="" className="buscas-rec-foto" loading="lazy" />
+          <ImagemThumbnail url={rec.foto} alt={rec.veiculo} className="buscas-rec-foto" />
         ) : (
           <span className="buscas-rec-foto buscas-rec-foto-vazia" />
         )}
