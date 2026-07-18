@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
-import { BellRing, Loader2, Plus, Trash2, Zap, CalendarClock, ChevronDown, BellPlus, ListChecks } from "lucide-react";
+import { BellRing, Loader2, Plus, Trash2, Zap, CalendarClock, ChevronDown, BellPlus, ListChecks, Inbox, Clock } from "lucide-react";
 import {
   criarBuscaSalva,
   alternarBuscaSalva,
@@ -25,6 +26,21 @@ export interface BuscaSalvaRow {
   frequencia: string;
   ativo: boolean;
   criado_em: string;
+}
+
+/** Um alerta que já foi ENVIADO ao usuário (card na aba "Alertas Recebidos"). */
+export interface AlertaRecebidoRow {
+  id: string;
+  veiculo: string;
+  ano: string | null;
+  cidade: string | null;
+  estado: string | null;
+  preco: number;
+  fipeValor: number | null;
+  margem: number | null;
+  foto: string | null;
+  href: string;
+  recebidoEm: string;
 }
 
 const ESTADO_INICIAL: ResultadoBusca = { erro: null, sucesso: false };
@@ -69,10 +85,12 @@ export function GerenciadorBuscas({
   buscas,
   marcas,
   estados,
+  recebidos,
 }: {
   buscas: BuscaSalvaRow[];
   marcas: string[];
   estados: string[];
+  recebidos: AlertaRecebidoRow[];
 }) {
   const [estado, acao] = useFormState(criarBuscaSalva, ESTADO_INICIAL);
   const [precoMax, setPrecoMax] = useState("");
@@ -80,9 +98,10 @@ export function GerenciadorBuscas({
   const [kmMax, setKmMax] = useState("");
   const [frequencia, setFrequencia] = useState("na_hora");
   const [formKey, setFormKey] = useState(0);
-  // Accordions: os dois boxes recolhem pra organizar a visão (produto premium).
+  // Accordions: os boxes recolhem pra organizar a visão (produto premium).
   const [criarAberto, setCriarAberto] = useState(true);
   const [listaAberta, setListaAberta] = useState(true);
+  const [recebidosAberto, setRecebidosAberto] = useState(true);
 
   // Só no SUCESSO limpamos tudo: zera os campos controlados e remonta o form (key++)
   // pra também limpar os não-controlados (marca, modelo, ano…). Em caso de erro de
@@ -290,7 +309,7 @@ export function GerenciadorBuscas({
           onClick={() => setListaAberta((v) => !v)}
         >
           <span className="buscas-accordion-titulo">
-            <ListChecks size={17} strokeWidth={2.2} /> Seus Alertas
+            <ListChecks size={17} strokeWidth={2.2} /> Alertas Criados
             {buscas.length > 0 && <span className="buscas-contador">{buscas.length}</span>}
           </span>
           <ChevronDown size={20} className={`buscas-accordion-seta ${listaAberta ? "aberto" : ""}`} />
@@ -306,7 +325,69 @@ export function GerenciadorBuscas({
             </ul>
           ))}
       </section>
+
+      {/* ── RECEBIDOS (accordion) ── */}
+      <section className="buscas-card">
+        <button
+          type="button"
+          className="buscas-accordion"
+          aria-expanded={recebidosAberto}
+          onClick={() => setRecebidosAberto((v) => !v)}
+        >
+          <span className="buscas-accordion-titulo">
+            <Inbox size={17} strokeWidth={2.2} /> Alertas Recebidos
+            {recebidos.length > 0 && <span className="buscas-contador">{recebidos.length}</span>}
+          </span>
+          <ChevronDown size={20} className={`buscas-accordion-seta ${recebidosAberto ? "aberto" : ""}`} />
+        </button>
+        {recebidosAberto &&
+          (recebidos.length === 0 ? (
+            <p className="buscas-vazio buscas-accordion-corpo">
+              Nenhum aviso ainda. Quando um carro bater com um dos seus alertas, ele aparece aqui — e no seu e-mail.
+            </p>
+          ) : (
+            <ul className="buscas-recebidos buscas-accordion-corpo">
+              {recebidos.map((r) => (
+                <ItemRecebido key={`${r.id}-${r.recebidoEm}`} rec={r} reais={reais} />
+              ))}
+            </ul>
+          ))}
+      </section>
     </div>
+  );
+}
+
+function ItemRecebido({ rec, reais }: { rec: AlertaRecebidoRow; reais: (n: number | null) => string }) {
+  const local = [rec.cidade, rec.estado].filter(Boolean).join(" - ");
+  return (
+    <li className="buscas-rec">
+      <Link href={rec.href} className="buscas-rec-link">
+        {rec.foto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={rec.foto} alt="" className="buscas-rec-foto" loading="lazy" />
+        ) : (
+          <span className="buscas-rec-foto buscas-rec-foto-vazia" />
+        )}
+        <span className="buscas-rec-info">
+          <span className="buscas-rec-titulo">{rec.veiculo}</span>
+          <span className="buscas-rec-sub">
+            {rec.ano ? `${rec.ano}` : ""}
+            {rec.ano && local ? " · " : ""}
+            {local}
+          </span>
+          <span className="buscas-rec-precos">
+            <strong>{reais(rec.preco)}</strong>
+            {rec.fipeValor != null && <span className="buscas-rec-fipe">FIPE {reais(rec.fipeValor)}</span>}
+            {rec.margem != null && (
+              <span className="buscas-rec-margem">{rec.margem.toFixed(1)}% abaixo</span>
+            )}
+          </span>
+          <span className="buscas-rec-quando">
+            <Clock size={12} strokeWidth={2} /> recebido em {rec.recebidoEm}
+          </span>
+        </span>
+      </Link>
+    </li>
   );
 }
 
