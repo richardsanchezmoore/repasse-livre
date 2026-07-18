@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { BellRing, Loader2, Plus, Trash2, Zap, CalendarClock } from "lucide-react";
+import { BellRing, Loader2, Plus, Trash2, Zap, CalendarClock, ChevronDown, BellPlus, ListChecks } from "lucide-react";
 import {
   criarBuscaSalva,
   alternarBuscaSalva,
@@ -37,6 +37,16 @@ function mascararMilhar(digitos: string): string {
 function reais(n: number | null): string {
   return n != null ? `R$ ${FMT_MILHAR.format(n)}` : "";
 }
+/**
+ * "Adiciona os zeros" pro usuário cru: num campo de PREÇO DE CARRO, um valor abaixo
+ * de 1.000 nunca é literal (ninguém alerta por um carro de R$ 80) — então quem digita
+ * "80" quis dizer 80 mil. No blur, multiplicamos por 1.000. Quem digita o valor cheio
+ * ("80.000") já cai em >= 1.000 e não é tocado. Escopo: só preço (KM/margem ficam como estão).
+ */
+function assumirMilhares(valor: string): string {
+  const n = Number(valor.replace(/\D/g, ""));
+  return n > 0 && n < 1000 ? String(n * 1000) : valor;
+}
 
 function BotaoCriar() {
   const { pending } = useFormStatus();
@@ -70,6 +80,9 @@ export function GerenciadorBuscas({
   const [kmMax, setKmMax] = useState("");
   const [frequencia, setFrequencia] = useState("na_hora");
   const [formKey, setFormKey] = useState(0);
+  // Accordions: os dois boxes recolhem pra organizar a visão (produto premium).
+  const [criarAberto, setCriarAberto] = useState(true);
+  const [listaAberta, setListaAberta] = useState(true);
 
   // Só no SUCESSO limpamos tudo: zera os campos controlados e remonta o form (key++)
   // pra também limpar os não-controlados (marca, modelo, ano…). Em caso de erro de
@@ -100,10 +113,21 @@ export function GerenciadorBuscas({
         </div>
       </header>
 
-      {/* ── FORMULÁRIO ── */}
+      {/* ── FORMULÁRIO (accordion) ── */}
       <section className="buscas-card">
-        <h2 className="buscas-card-titulo">Novo alerta</h2>
-        <form key={formKey} action={acao} className="buscas-form">
+        <button
+          type="button"
+          className="buscas-accordion"
+          aria-expanded={criarAberto}
+          onClick={() => setCriarAberto((v) => !v)}
+        >
+          <span className="buscas-accordion-titulo">
+            <BellPlus size={17} strokeWidth={2.2} /> Criar Novo Alerta
+          </span>
+          <ChevronDown size={20} className={`buscas-accordion-seta ${criarAberto ? "aberto" : ""}`} />
+        </button>
+        {criarAberto && (
+        <form key={formKey} action={acao} className="buscas-form buscas-accordion-corpo">
           {estado.erro && <p className="buscas-erro">{estado.erro}</p>}
           {estado.sucesso && <p className="buscas-ok">Alerta criado! Você será avisado quando entrar um carro assim.</p>}
 
@@ -146,6 +170,7 @@ export function GerenciadorBuscas({
                   required
                   value={mascararMilhar(precoMax)}
                   onChange={(e) => setPrecoMax(e.target.value)}
+                  onBlur={() => setPrecoMax(assumirMilhares(precoMax))}
                   placeholder="80.000"
                   className="buscas-input"
                 />
@@ -162,6 +187,7 @@ export function GerenciadorBuscas({
                   inputMode="numeric"
                   value={mascararMilhar(precoMin)}
                   onChange={(e) => setPrecoMin(e.target.value)}
+                  onBlur={() => setPrecoMin(assumirMilhares(precoMin))}
                   placeholder="opcional"
                   className="buscas-input"
                 />
@@ -252,22 +278,33 @@ export function GerenciadorBuscas({
 
           <BotaoCriar />
         </form>
+        )}
       </section>
 
-      {/* ── LISTA ── */}
+      {/* ── LISTA (accordion) ── */}
       <section className="buscas-card">
-        <h2 className="buscas-card-titulo">
-          Seus alertas {buscas.length > 0 && <span className="buscas-contador">{buscas.length}</span>}
-        </h2>
-        {buscas.length === 0 ? (
-          <p className="buscas-vazio">Você ainda não tem alertas. Crie o primeiro acima. 👆</p>
-        ) : (
-          <ul className="buscas-lista">
-            {buscas.map((b) => (
-              <ItemBusca key={b.id} busca={b} reais={reais} />
-            ))}
-          </ul>
-        )}
+        <button
+          type="button"
+          className="buscas-accordion"
+          aria-expanded={listaAberta}
+          onClick={() => setListaAberta((v) => !v)}
+        >
+          <span className="buscas-accordion-titulo">
+            <ListChecks size={17} strokeWidth={2.2} /> Seus Alertas
+            {buscas.length > 0 && <span className="buscas-contador">{buscas.length}</span>}
+          </span>
+          <ChevronDown size={20} className={`buscas-accordion-seta ${listaAberta ? "aberto" : ""}`} />
+        </button>
+        {listaAberta &&
+          (buscas.length === 0 ? (
+            <p className="buscas-vazio buscas-accordion-corpo">Você ainda não tem alertas. Crie o primeiro acima. 👆</p>
+          ) : (
+            <ul className="buscas-lista buscas-accordion-corpo">
+              {buscas.map((b) => (
+                <ItemBusca key={b.id} busca={b} reais={reais} />
+              ))}
+            </ul>
+          ))}
       </section>
     </div>
   );

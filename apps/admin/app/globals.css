@@ -7909,6 +7909,43 @@ button.bemvindo-secundario {
   letter-spacing: 0.5px;
   color: #8696a0;
 }
+/* Cabeçalho-accordion dos boxes (Criar Novo Alerta / Seus Alertas). */
+.buscas-accordion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.buscas-accordion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #54656f;
+}
+.buscas-accordion-titulo svg {
+  color: #16a34a;
+}
+.buscas-accordion-seta {
+  flex: none;
+  color: #98a5ad;
+  transition: transform 0.18s ease;
+}
+.buscas-accordion-seta.aberto {
+  transform: rotate(180deg);
+}
+.buscas-accordion-corpo {
+  margin-top: 16px;
+}
 .buscas-contador {
   display: inline-grid;
   place-items: center;
