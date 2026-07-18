@@ -37,8 +37,18 @@ export function jsonParaHtmlSeguro(doc: unknown): string {
     allowedSchemes: ["https", "mailto"],
     allowedSchemesByTag: { img: ["https"] },
     transformTags: {
-      // Link externo seguro (sem vazar referrer, sem passar SEO).
-      a: sanitizeHtml.simpleTransform("a", { rel: "noopener noreferrer nofollow", target: "_blank" }),
+      // Link EXTERNO abre em nova aba, sem vazar referrer e sem passar SEO. Link INTERNO
+      // (href começa com "/") e mailto ficam limpos — nada de target/nofollow.
+      a: (tagName, attribs) => {
+        const href = attribs.href ?? "";
+        const externo = /^https?:\/\//i.test(href);
+        return {
+          tagName,
+          attribs: externo
+            ? { ...attribs, rel: "noopener noreferrer nofollow", target: "_blank" }
+            : attribs,
+        };
+      },
     },
   });
 }

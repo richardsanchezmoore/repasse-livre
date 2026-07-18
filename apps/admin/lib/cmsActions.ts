@@ -104,3 +104,43 @@ function mensagemErro(msg: string): string {
   if (/duplicate key|unique/i.test(msg)) return "Já existe um post com esse endereço (slug). Mude o título ou o slug.";
   return "Não foi possível salvar. Tente de novo.";
 }
+
+/**
+ * Edita uma PÁGINA institucional (termos/privacidade/exclusao-de-dados). Conjunto fixo
+ * (não cria/apaga pelo painel) — só atualiza por slug. Gera o HTML sanitizado no servidor
+ * e revalida a rota pública correspondente (/{slug}). atualizado_em vira a "última
+ * atualização" mostrada na página (faz sentido pra texto legal).
+ */
+export async function salvarPagina(_prev: ResultadoPost, formData: FormData): Promise<ResultadoPost> {
+  await exigirAdmin();
+
+  const slug = texto(formData.get("slug"));
+  if (!slug) return { erro: "Página inválida.", sucesso: false };
+  const titulo = texto(formData.get("titulo"));
+  if (!titulo) return { erro: "Informe o título.", sucesso: false };
+
+  let doc: unknown;
+  try {
+    doc = JSON.parse(texto(formData.get("conteudo_json")) || "null");
+  } catch {
+    return { erro: "Conteúdo do editor inválido.", sucesso: false };
+  }
+  const html = jsonParaHtmlSeguro(doc);
+
+  const { error } = await supabaseAdmin
+    .from("paginas")
+    .update({
+      titulo,
+      conteudo_json: doc as never,
+      conteudo_html: html,
+      seo_title: texto(formData.get("seo_title")) || null,
+      seo_description: texto(formData.get("seo_description")) || null,
+      atualizado_em: new Date().toISOString(),
+    })
+    .eq("slug", slug);
+  if (error) return { erro: "Não foi possível salvar. Tente de novo.", sucesso: false };
+
+  revalidatePath(`/${slug}`);
+  revalidatePath("/conteudo");
+  return { erro: null, sucesso: true };
+}

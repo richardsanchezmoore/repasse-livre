@@ -16,9 +16,12 @@ import { extensoesTiptap } from "@/lib/tiptapExtensions";
  */
 export function EditorTiptap({
   jsonInicial,
+  htmlInicial,
   onChange,
 }: {
   jsonInicial: unknown;
+  /** Fallback quando não há JSON (ex.: páginas migradas do hardcode só têm HTML). */
+  htmlInicial?: string | null;
   onChange: (json: unknown) => void;
 }) {
   const [enviandoImg, setEnviandoImg] = useState(false);
@@ -26,7 +29,8 @@ export function EditorTiptap({
 
   const editor = useEditor({
     extensions: [...extensoesTiptap, Placeholder.configure({ placeholder: "Escreva o conteúdo aqui…" })],
-    content: (jsonInicial as Record<string, unknown>) ?? "",
+    // Tiptap aceita tanto o doc JSON quanto uma string HTML como conteúdo inicial.
+    content: (jsonInicial as Record<string, unknown>) ?? htmlInicial ?? "",
     immediatelyRender: false,
     editorProps: { attributes: { class: "editor-conteudo" } },
     onUpdate: ({ editor }) => onChange(editor.getJSON()),

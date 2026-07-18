@@ -142,6 +142,45 @@ export async function listarSlugsPostsPublicados(): Promise<string[]> {
   return (data ?? []).map((r) => (r as { slug: string }).slug);
 }
 
+export interface PaginaAdminItem {
+  slug: string;
+  titulo: string;
+  atualizadoEm: string;
+}
+
+/** Lista as páginas institucionais pro painel (Páginas), por slug. */
+export async function listarPaginas(): Promise<PaginaAdminItem[]> {
+  const { data } = await supabaseAdmin.from("paginas").select("slug, titulo, atualizado_em").order("slug");
+  return (data ?? []).map((r) => {
+    const row = r as { slug: string; titulo: string; atualizado_em: string };
+    return { slug: row.slug, titulo: row.titulo, atualizadoEm: row.atualizado_em };
+  });
+}
+
+export interface PaginaEditorData {
+  slug: string;
+  titulo: string;
+  conteudoJson: unknown;
+  conteudoHtml: string;
+  seoTitle: string | null;
+  seoDescription: string | null;
+}
+
+/** Página por slug pro editor (json + html — o editor bootstrapa do html se json null). */
+export async function buscarPaginaParaEditor(slug: string): Promise<PaginaEditorData | null> {
+  const { data } = await supabaseAdmin
+    .from("paginas")
+    .select("slug, titulo, conteudo_json, conteudo_html, seo_title, seo_description")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!data) return null;
+  const r = data as { slug: string; titulo: string; conteudo_json: unknown; conteudo_html: string; seo_title: string | null; seo_description: string | null };
+  return {
+    slug: r.slug, titulo: r.titulo, conteudoJson: r.conteudo_json, conteudoHtml: r.conteudo_html,
+    seoTitle: r.seo_title, seoDescription: r.seo_description,
+  };
+}
+
 // ── Leituras do ADMIN (incluem rascunhos + o conteudo_json pro editor) ──────────────
 
 export interface PostAdminItem {
