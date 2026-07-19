@@ -18,7 +18,7 @@ export type CapturaHoje = Record<ChaveMotor, CapturaMotor>;
 
 export interface CapturaMotores {
   hoje: CapturaHoje;
-  ontem: { novos: number; elegiveis: number };
+  ontem: CapturaHoje; // por motor também (comparativo em cada card)
 }
 
 /** ISO do início do dia (offsetDias atrás) em America/Sao_Paulo (-03:00). BR não tem mais DST. */
@@ -55,22 +55,15 @@ export async function buscarCapturaMotores(): Promise<CapturaMotores> {
 
   const vazio = (): CapturaMotor => ({ novos: 0, elegiveis: 0, runs: 0 });
   const hoje: CapturaHoje = { olx: vazio(), webmotors: vazio(), ml: vazio(), facebook: vazio() };
-  const ontem = { novos: 0, elegiveis: 0 };
+  const ontem: CapturaHoje = { olx: vazio(), webmotors: vazio(), ml: vazio(), facebook: vazio() };
 
   for (const linha of (data ?? []) as Array<{ categoria_url: string; novos: number | null; elegiveis: number | null; iniciado_em: string }>) {
     const k = motorDaUrl(linha.categoria_url ?? "");
     if (!k) continue;
-    const n = linha.novos ?? 0;
-    const e = linha.elegiveis ?? 0;
-    if (new Date(linha.iniciado_em).getTime() >= inicioHoje) {
-      hoje[k].novos += n;
-      hoje[k].elegiveis += e;
-      hoje[k].runs += 1;
-    } else {
-      // ontem: só o total (o comparativo é de bater o olho, não por motor)
-      ontem.novos += n;
-      ontem.elegiveis += e;
-    }
+    const alvo = new Date(linha.iniciado_em).getTime() >= inicioHoje ? hoje : ontem;
+    alvo[k].novos += linha.novos ?? 0;
+    alvo[k].elegiveis += linha.elegiveis ?? 0;
+    alvo[k].runs += 1;
   }
   return { hoje, ontem };
 }

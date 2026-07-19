@@ -8489,9 +8489,11 @@ button.bemvindo-secundario {
   .worker-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Accordion da Configuração (painel Motor de Descoberta) + comparativo "ontem" no KPI */
+/* Accordion da Configuração (painel Motor de Descoberta) — visual de card, como /buscas */
+.worker-secao-card { border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px 18px; background: #fff; }
 .worker-accordion { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; background: none; border: none; cursor: pointer; text-align: left; }
-.worker-accordion .worker-secao-titulo { margin: 0; }
+.worker-accordion-titulo { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 700; color: #111b21; }
+.worker-accordion-titulo svg { color: #16a34a; flex: none; }
 .worker-accordion-seta { color: #98a5ad; flex: none; transition: transform 0.18s ease; }
 .worker-accordion-seta.aberto { transform: rotate(180deg); }
 .worker-accordion-corpo { margin-top: 16px; }

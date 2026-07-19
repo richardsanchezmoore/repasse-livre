@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Loader2, Play, ChevronDown } from "lucide-react";
+import { Loader2, Play, ChevronDown, Settings } from "lucide-react";
 import { dispararVarreduraManual, salvarConfigWorker } from "@/app/actions";
 import type { CapturaMotores, ChaveMotor } from "@/lib/kpiMotores";
 
@@ -263,8 +263,8 @@ export function PainelWorker({
 
   const hoje = captura?.hoje;
   const ontem = captura?.ontem;
-  const totalElegiveisHoje = hoje ? MOTORES_KPI.reduce((s, m) => s + hoje[m.chave].elegiveis, 0) : 0;
-  const totalNovosHoje = hoje ? MOTORES_KPI.reduce((s, m) => s + hoje[m.chave].novos, 0) : 0;
+  const totalHoje = hoje ? MOTORES_KPI.reduce((s, m) => s + hoje[m.chave].elegiveis, 0) : 0;
+  const totalOntem = ontem ? MOTORES_KPI.reduce((s, m) => s + ontem[m.chave].elegiveis, 0) : 0;
 
   return (
     <div className="worker-painel">
@@ -276,21 +276,20 @@ export function PainelWorker({
           <div className="worker-secao-cabecalho">
             <h2 className="worker-secao-titulo">Captado hoje</h2>
             <span className="worker-kpi-total">
-              {ontem && (
-                <span className="worker-kpi-ontem">ontem: {ontem.elegiveis} · {ontem.novos} · </span>
-              )}
-              {totalElegiveisHoje} oportunidades · {totalNovosHoje} descobertos
+              <span className="worker-kpi-ontem">ontem: {totalOntem} · </span>
+              {totalHoje} oportunidades
             </span>
           </div>
           <div className="worker-kpi-grid">
             {MOTORES_KPI.map((m) => {
               const c = hoje[m.chave];
+              const o = ontem ? ontem[m.chave].elegiveis : 0;
               return (
                 <div key={m.chave} className={`worker-kpi-card worker-kpi-${m.chave}`}>
                   <span className="worker-kpi-motor">{m.rotulo}</span>
                   <span className="worker-kpi-num">{c.elegiveis}</span>
                   <span className="worker-kpi-legenda">oportunidades</span>
-                  <span className="worker-kpi-sub">{c.novos} descobertos · {c.runs} {c.runs === 1 ? "run" : "runs"}</span>
+                  <span className="worker-kpi-sub">ontem: {o} · {c.runs} {c.runs === 1 ? "run" : "runs"}</span>
                 </div>
               );
             })}
@@ -298,9 +297,9 @@ export function PainelWorker({
         </section>
       )}
 
-      <section className="worker-secao">
+      <section className="worker-secao worker-secao-card">
         <button type="button" className="worker-accordion" aria-expanded={configAberta} onClick={() => setConfigAberta((v) => !v)}>
-          <h2 className="worker-secao-titulo">Configuração e disparo manual</h2>
+          <span className="worker-accordion-titulo"><Settings size={17} strokeWidth={2} /> Configuração e disparo manual</span>
           <ChevronDown size={20} className={`worker-accordion-seta ${configAberta ? "aberto" : ""}`} />
         </button>
         {configAberta && (
