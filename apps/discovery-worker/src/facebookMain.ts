@@ -103,6 +103,27 @@ interface Regiao {
   raio?: string; // km (80/100/250/500); campo do painel. Default 250.
   uf?: string; // estado; entra no slug (cidade-uf) pra ser único entre estados. Ver PainelMotorBusca.
   precoMax?: string; // teto de preço PRÓPRIO da região; vazio → usa o Geral (FACEBOOK_FILTRO_MAX_PRECO).
+  paginar?: boolean; // ON → varre em FAIXAS de preço (mais volume, mais fetches leves NA MESMA run).
+}
+
+/** Faixa de preço pra "paginação" do FB (fatia a busca; cada faixa = 1 fetch leve). */
+interface FaixaPreco {
+  min: string;
+  max: string; // "" = aberto pra cima (usa o teto da região/Geral)
+}
+
+/** Faixas globais de FACEBOOK_FAIXAS_PRECO: "15000-30000,30000-60000,60000-100000,100000-". */
+function parseFaixasPreco(raw: string | null | undefined): FaixaPreco[] {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(",")
+    .map((seg) => seg.trim())
+    .filter(Boolean)
+    .map((seg) => {
+      const [min, max] = seg.split("-").map((x) => x.trim());
+      return { min: min ?? "", max: max ?? "" };
+    })
+    .filter((f) => f.min || f.max);
 }
 /** FACEBOOK_REGIAO = slug da cidade + UF (Santa Maria RS ≠ Santa Maria SC). Compatível com o painel. */
 const slugRegiao = (r: Regiao): string => [slug(r.nome), r.uf ? r.uf.toLowerCase() : ""].filter(Boolean).join("-");
@@ -110,6 +131,7 @@ interface ConfigFb {
   ativo: boolean;
   regioes: Regiao[];
   filtros: FiltrosFacebook;
+  faixas: FaixaPreco[]; // faixas de preço globais; aplicadas só nas regiões com paginar=true
   maxItens: number;
   pacingMs: number;
   margemMinima: number;
@@ -117,7 +139,7 @@ interface ConfigFb {
 }
 
 async function carregarConfig(): Promise<ConfigFb> {
-  const [ativo, regioesRaw, minPreco, maxPreco, minAno, sort, maxItens, pacing, margem, margemMax] = await Promise.all([
+  const [ativo, regioesRaw, minPreco, maxPreco, minAno, sort, maxItens, pacing, margem, margemMax, faixasRaw] = await Promise.all([
     lerConfig("FACEBOOK_ATIVO"),
     lerConfig("FACEBOOK_REGIOES"),
     lerConfig("FACEBOOK_FILTRO_MIN_PRECO"),
@@ -128,6 +150,7 @@ async function carregarConfig(): Promise<ConfigFb> {
     lerConfig("FACEBOOK_PACING_MS"),
     lerConfig("MARGEM_MINIMA_PERCENTUAL"),
     lerConfig("FACEBOOK_MARGEM_MAX_SUSPEITA"),
+    lerConfig("FACEBOOK_FAIXAS_PRECO"),
   ]);
   let regioes: Regiao[] = [];
   try {
@@ -145,6 +168,7 @@ async function carregarConfig(): Promise<ConfigFb> {
       minAno: minAno ?? "1995",
       sort: sort ?? "creation_time_descend",
     },
+    faixas: parseFaixasPreco(faixasRaw),
     maxItens: Number(maxItens ?? 40),
     pacingMs: Number(pacing ?? 1500),
     margemMinima: Number(margem ?? MARGEM_MINIMA_PADRAO),
@@ -219,207 +243,225 @@ function montarOportunidade(a: AnuncioFacebook, ref: ReferenciaFipe, margem: num
 }
 
 async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
+  const AMOSTRA_MINIMA = 5; // com menos cards que isso não dá pra julgar geografia sem falso positivo
+  const baseMin = Number(cfg.filtros.minPreco || 0);
   // Teto de preço próprio da região sobrescreve o Geral (vazio → Geral). Praças de
   // alto valor (Balneário Camboriú) pedem régua maior; o resto barra preço-isca.
-  const filtros = { ...cfg.filtros, maxPreco: regiao.precoMax?.trim() || cfg.filtros.maxPreco };
-  const urlBusca = montarUrlBuscaFacebook(regiao.url, filtros, regiao.raio ?? "250"); // contém "facebook" → board mostra fonte FACEBOOK
-  const registroId = await iniciarRegistroVarredura(urlBusca, "facebook");
+  const regMax = Number(regiao.precoMax?.trim() || cfg.filtros.maxPreco);
+
+  // ★ PAGINAÇÃO POR FAIXA: só se a região está com `paginar` ligado E há faixas globais.
+  // Senão, 1 busca única (comportamento de sempre). As faixas respeitam o piso base
+  // (anti preço-isca) e o teto da região. Rodam NA MESMA run — não são crons separados.
+  const faixas: Array<{ min: number; max: number }> =
+    regiao.paginar && cfg.faixas.length
+      ? cfg.faixas
+          .map((f) => ({ min: Math.max(Number(f.min || 0), baseMin), max: f.max ? Number(f.max) : regMax }))
+          .filter((f) => f.max > f.min)
+      : [{ min: baseMin, max: regMax }];
+
+  const urlPrimeira = montarUrlBuscaFacebook(
+    regiao.url,
+    { ...cfg.filtros, minPreco: String(faixas[0].min), maxPreco: String(faixas[0].max) },
+    regiao.raio ?? "250"
+  );
+  const registroId = await iniciarRegistroVarredura(urlPrimeira, "facebook"); // contém "facebook" → board mostra FACEBOOK
   try {
-    const htmlBusca = await pega(urlBusca);
-    const idsBusca = extrairIdsDaBusca(htmlBusca);
-    // Busca vazia (0 IDs) apesar do 200 = provável bloqueio "mole" do datacenter (login-wall/
-    // consent/página degradada). Captura o HTML pra diagnosticar DAQUI o que a Railway recebeu.
-    if (idsBusca.length === 0) {
+    const c = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, processados: 0 };
+    let atingiuLimite = false;
+    let alcancouConhecido = false;
+    let idsBuscaTotal = 0;
+    let geoChecada = false;
+    let centroAusente = false;
+    let primeiroHtml = "";
+    const vistosNaRun = new Set<string>(); // dedup de id ENTRE as faixas da mesma run
+
+    for (const faixa of faixas) {
+      const filtros = { ...cfg.filtros, minPreco: String(faixa.min), maxPreco: String(faixa.max) };
+      const urlBusca = montarUrlBuscaFacebook(regiao.url, filtros, regiao.raio ?? "250");
+      const htmlBusca = await pega(urlBusca);
+      if (!primeiroHtml) primeiroHtml = htmlBusca;
+      const idsBusca = extrairIdsDaBusca(htmlBusca);
+      idsBuscaTotal += idsBusca.length;
+
+      // ★★ GUARDA DE GEOGRAFIA — uma vez, na 1ª faixa com amostra suficiente, ANTES de gastar
+      // fetches de item. A URL de região MENTE CALADA: slug que o FB não conhece devolve HTTP
+      // 200 com anúncios do local PADRÃO dele (San Francisco). Sem a guarda, uma URL torta no
+      // painel ingere carro da Califórnia como se fosse Paraná. Ver a memória do motor do FB.
+      if (!geoChecada) {
+        const geo = geografiaDaBusca(htmlBusca);
+        const uf = regiao.uf?.trim().toUpperCase();
+        if (uf && geo.estados.length >= AMOSTRA_MINIMA) {
+          geoChecada = true;
+          if (!geo.estados.includes(uf)) {
+            const vistosEstados = [...new Set(geo.estados)].slice(0, 6).join(", ");
+            throw new Error(
+              `geografia errada: região "${regiao.nome}" é ${uf}, mas a busca voltou ${geo.estados.length} anúncios e NENHUM é de ${uf} (veio: ${vistosEstados}). ` +
+                `Quase certo URL errada no painel. Nada foi ingerido.`
+            );
+          }
+          // Aviso (NÃO derruba a run): a cidade-centro não aparece no próprio feed. Casa por
+          // PREFIXO ("sao-paulo-40km" começa com "sao-paulo-") — o user rotula com sufixo.
+          const nomeSlug = slug(regiao.nome);
+          const ehCentro = (cidade: string) => {
+            const cc = slug(cidade);
+            return nomeSlug === cc || nomeSlug.startsWith(`${cc}-`);
+          };
+          if (geo.cidades.length >= AMOSTRA_MINIMA && !geo.cidades.some(ehCentro)) {
+            centroAusente = true;
+            console.warn(
+              `[fb:${regiao.nome}] ⚠ a cidade "${regiao.nome}" não aparece em nenhum dos ${geo.cidades.length} anúncios da busca ` +
+                `(veio: ${[...new Set(geo.cidades)].slice(0, 5).join(", ")}). Conferir a URL da região no painel.`
+            );
+          }
+        }
+      }
+
+      const vistos = await buscarIdsVistosFacebook(idsBusca);
+      const novosIds = idsBusca.filter((id) => !vistos.has(id) && !vistosNaRun.has(id));
+      if (novosIds.length < idsBusca.length) alcancouConhecido = true; // havia id conhecido nesta faixa
+
+      let procNaFaixa = 0; // o freio maxItens é POR FAIXA (cada faixa é uma "página")
+      for (const id of novosIds) {
+        if (procNaFaixa >= cfg.maxItens) {
+          atingiuLimite = true;
+          break;
+        }
+        procNaFaixa++;
+        vistosNaRun.add(id);
+        c.processados++;
+        c.novos++;
+        let html: string;
+        try {
+          html = await pega(itemUrl(id));
+        } catch (erro) {
+          console.warn(`[fb:${regiao.nome}] item ${id} falhou: ${erro instanceof Error ? erro.message : erro}`);
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        const res = extrairAnuncioFacebook(html, id);
+        if (res.descartar || !res.anuncio) {
+          c.descartados++;
+          await registrarVistoFacebook(id, res.motivoDescarte ?? "descartado");
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        const a = res.anuncio;
+        if (await linkOrigemJaExiste(linkPublico(id))) {
+          await registrarVistoFacebook(id, "salvo");
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        // Documentação de risco (procedência insegura) → descarta sempre.
+        if (riscoDocumentacao(a.descricao)) {
+          c.descartados++;
+          await registrarVistoFacebook(id, "documentacao_risco");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado documentação de risco: ${a.marca} ${a.modelo} ${a.ano}`);
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        // VÁLVULA DE ESCAPE: se a descrição disclosa um valor "à vista" > preço anunciado,
+        // o preço-campo era a ENTRADA → corrige pro valor total e NÃO descarta como isca.
+        const avista = precoAvista(a.descricao, a.precoCampo ?? null);
+        if (avista) {
+          console.log(`[fb:${regiao.nome}] ✎ preço corrigido p/ à vista R$${avista} (campo era entrada R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
+          a.precoCampo = avista;
+        } else {
+          // Sem à vista salvando → descarta preço-isca ("de entrada" / "assumir financiamento").
+          if (precoEhEntrada(a.descricao, a.precoCampo ?? null)) {
+            c.descartados++;
+            await registrarVistoFacebook(id, "preco_entrada");
+            console.log(`[fb:${regiao.nome}] ⚠ descartado preço=entrada (R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
+            await dormir(cfg.pacingMs);
+            continue;
+          }
+          if (financiamentoAssumido(a.descricao)) {
+            c.descartados++;
+            await registrarVistoFacebook(id, "financiamento_assumido");
+            console.log(`[fb:${regiao.nome}] ⚠ descartado assumir financiamento (preço só a dívida): ${a.marca} ${a.modelo} ${a.ano}`);
+            await dormir(cfg.pacingMs);
+            continue;
+          }
+        }
+        const ref = await resolverFipe(a);
+        if (!ref) {
+          c.semFipe++;
+          await registrarVistoFacebook(id, "sem_fipe");
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        const margem = calcularMargemPercentual(a.precoCampo ?? 0, ref.valor);
+        // ★ REGRA SÓ-FB: margem alta demais = quase certo FALSO ALARME (FIPE em versão errada
+        // ou preço que esconde parte do valor). Margem ILUSÓRIA → descarta. Teto config (40%).
+        if (margem > cfg.margemMaxSuspeita) {
+          c.descartados++;
+          await registrarVistoFacebook(id, "margem_suspeita");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado margem ${margem.toFixed(0)}% > ${cfg.margemMaxSuspeita}% (provável FIPE errada/preço oculto): ${a.marca} ${a.modelo} ${a.ano}`);
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        const classificacao = ehElegivel(margem, cfg.margemMinima) ? classificar(margem, cfg.margemMinima) : null;
+        if (!classificacao) {
+          c.descartados++;
+          await registrarVistoFacebook(id, "acima_fipe");
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        // Anti-duplicata do FB: a mesma loja republica o MESMO carro em vários perfis, na MESMA
+        // cidade. Chave veículo+preço+CIDADE (sem KM). Preserva o que já está. Ver buscarDuplicataFacebook.
+        const op = montarOportunidade(a, ref, margem, classificacao);
+        if (op.cidade) {
+          const dup = await buscarDuplicataFacebook(op.veiculo, op.preco, op.cidade);
+          if (dup && dup.link_origem !== op.link_origem) {
+            console.log(`[fb:${regiao.nome}] ⧉ duplicata de "${op.veiculo}" R$${op.preco} em ${op.cidade} (já na plataforma via ${dup.link_origem}) — descartado.`);
+            await registrarVistoFacebook(id, "duplicado");
+            await dormir(cfg.pacingMs);
+            continue;
+          }
+        }
+        await salvarOportunidade(op);
+        c.elegiveis++;
+        await registrarVistoFacebook(id, "salvo");
+        await garantirHistoricoFipe(ref.codigoFipe, ref.anoModelo);
+        if (a.cidade && a.estado) await garantirCoordenadasCidade(a.cidade, a.estado);
+        console.log(`[fb:${regiao.nome}] ✓ ${a.marca} ${a.modelo} ${a.ano} R$${a.precoCampo} (+${margem.toFixed(0)}% FIPE, ${a.fotos.length} fotos)`);
+        await dormir(cfg.pacingMs);
+      }
+    }
+
+    // Busca vazia em TODAS as faixas (0 IDs) apesar do 200 = provável bloqueio "mole" do
+    // datacenter (login-wall/consent). Captura o 1º HTML pra diagnosticar o que a Railway recebeu.
+    if (idsBuscaTotal === 0) {
       await registrarDebugVarredura(
         "FB_DEBUG_BUSCA_VAZIA",
         JSON.stringify({
           em: new Date().toISOString(),
           regiao: regiao.nome,
-          url: urlBusca,
-          tamanho: htmlBusca.length,
-          loginWall: /você precisa fazer login|entrar no facebook|log in to continue|iniciar sessão|entre para ver/i.test(htmlBusca),
-          temListing: htmlBusca.includes("GroupCommerceProductItem"),
-          temMarketplace: htmlBusca.includes("marketplace"),
-          inicio: htmlBusca.slice(0, 1600),
-          fim: htmlBusca.slice(-1600),
+          url: urlPrimeira,
+          tamanho: primeiroHtml.length,
+          loginWall: /você precisa fazer login|entrar no facebook|log in to continue|iniciar sessão|entre para ver/i.test(primeiroHtml),
+          temListing: primeiroHtml.includes("GroupCommerceProductItem"),
+          temMarketplace: primeiroHtml.includes("marketplace"),
+          inicio: primeiroHtml.slice(0, 1600),
+          fim: primeiroHtml.slice(-1600),
         })
       );
-    }
-    // ★★ GUARDA DE GEOGRAFIA — roda ANTES de gastar 24 fetches de item.
-    //
-    // A URL de região MENTE CALADA: slug que o FB não conhece NÃO dá erro — devolve HTTP 200
-    // com anúncios do local PADRÃO dele (San Francisco/Bay Area; provado ao vivo com o slug
-    // `cascavel`). Sem esta guarda, uma URL torta no painel ingere carro da Califórnia como
-    // se fosse Paraná: preço em dólar lido como real, FIPE do modelo errado. Hoje o que nos
-    // salvaria seria o teto de margem de 40% — que existe pra outra coisa. Isso é sorte, não
-    // engenharia. Ver a memória do motor do FB (armadilha da URL de região).
-    const geo = geografiaDaBusca(htmlBusca);
-    const uf = regiao.uf?.trim().toUpperCase();
-    const AMOSTRA_MINIMA = 5; // com menos cards que isso não dá pra julgar sem falso positivo
-    if (uf && geo.estados.length >= AMOSTRA_MINIMA && !geo.estados.includes(uf)) {
-      const vistosEstados = [...new Set(geo.estados)].slice(0, 6).join(", ");
-      throw new Error(
-        `geografia errada: região "${regiao.nome}" é ${uf}, mas a busca voltou ${geo.estados.length} anúncios e NENHUM é de ${uf} (veio: ${vistosEstados}). ` +
-          `Quase certo URL errada no painel. Nada foi ingerido.`
-      );
-    }
-    // Aviso (NÃO derruba a run): a cidade-centro não aparece no próprio feed. Foi o sintoma do
-    // caso real — Cascavel cadastrada com o location id de MARINGÁ: a UF batia (PR), então a
-    // guarda acima não pegaria; o que denuncia é o centro ausente. Não é erro fatal porque uma
-    // praça pequena pode passar um ciclo sem anúncio novo no centro → só sinaliza no board.
-    //
-    // ★ O nome da região NÃO é o nome da cidade: o user rotula com sufixo ("Sao Paulo 40km",
-    // "Bauru 80km") pra se achar no painel. Comparar slug puro dava falso positivo nas 9 de SP.
-    // Então casa por PREFIXO: "sao-paulo-40km" começa com "sao-paulo-" → é o centro. Continua
-    // pegando o caso real (nome "cascavel" NÃO começa com "maringa-").
-    const nomeSlug = slug(regiao.nome);
-    const ehCentro = (cidade: string) => {
-      const c = slug(cidade);
-      return nomeSlug === c || nomeSlug.startsWith(`${c}-`);
-    };
-    const centroAusente = geo.cidades.length >= AMOSTRA_MINIMA && !geo.cidades.some(ehCentro);
-    if (centroAusente) {
-      console.warn(
-        `[fb:${regiao.nome}] ⚠ a cidade "${regiao.nome}" não aparece em nenhum dos ${geo.cidades.length} anúncios da busca ` +
-          `(veio: ${[...new Set(geo.cidades)].slice(0, 5).join(", ")}). Conferir a URL da região no painel.`
-      );
-    }
-
-    const vistos = await buscarIdsVistosFacebook(idsBusca);
-    const novosIds = idsBusca.filter((id) => !vistos.has(id));
-    const alcancouConhecido = novosIds.length < idsBusca.length; // já havia id conhecido na página
-
-    let novos = 0;
-    let elegiveis = 0;
-    let descartados = 0;
-    let semFipe = 0;
-    let processados = 0;
-    let atingiuLimite = false;
-
-    for (const id of novosIds) {
-      if (processados >= cfg.maxItens) {
-        atingiuLimite = true;
-        break;
-      }
-      processados++;
-      novos++;
-      let html: string;
-      try {
-        html = await pega(itemUrl(id));
-      } catch (erro) {
-        console.warn(`[fb:${regiao.nome}] item ${id} falhou: ${erro instanceof Error ? erro.message : erro}`);
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      const res = extrairAnuncioFacebook(html, id);
-      if (res.descartar || !res.anuncio) {
-        descartados++;
-        await registrarVistoFacebook(id, res.motivoDescarte ?? "descartado");
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      const a = res.anuncio;
-      if (await linkOrigemJaExiste(linkPublico(id))) {
-        await registrarVistoFacebook(id, "salvo");
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      // Documentação de risco (procedência insegura) → descarta sempre.
-      if (riscoDocumentacao(a.descricao)) {
-        descartados++;
-        await registrarVistoFacebook(id, "documentacao_risco");
-        console.log(`[fb:${regiao.nome}] ⚠ descartado documentação de risco: ${a.marca} ${a.modelo} ${a.ano}`);
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      // VÁLVULA DE ESCAPE: se a descrição disclosa um valor "à vista" > preço anunciado,
-      // o preço-campo era a ENTRADA → corrige pro valor total e NÃO descarta como isca.
-      const avista = precoAvista(a.descricao, a.precoCampo ?? null);
-      if (avista) {
-        console.log(`[fb:${regiao.nome}] ✎ preço corrigido p/ à vista R$${avista} (campo era entrada R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
-        a.precoCampo = avista;
-      } else {
-        // Sem à vista salvando → descarta preço-isca ("de entrada" / "assumir financiamento").
-        if (precoEhEntrada(a.descricao, a.precoCampo ?? null)) {
-          descartados++;
-          await registrarVistoFacebook(id, "preco_entrada");
-          console.log(`[fb:${regiao.nome}] ⚠ descartado preço=entrada (R$${a.precoCampo}): ${a.marca} ${a.modelo} ${a.ano}`);
-          await dormir(cfg.pacingMs);
-          continue;
-        }
-        if (financiamentoAssumido(a.descricao)) {
-          descartados++;
-          await registrarVistoFacebook(id, "financiamento_assumido");
-          console.log(`[fb:${regiao.nome}] ⚠ descartado assumir financiamento (preço só a dívida): ${a.marca} ${a.modelo} ${a.ano}`);
-          await dormir(cfg.pacingMs);
-          continue;
-        }
-      }
-      const ref = await resolverFipe(a);
-      if (!ref) {
-        semFipe++;
-        await registrarVistoFacebook(id, "sem_fipe");
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      const margem = calcularMargemPercentual(a.precoCampo ?? 0, ref.valor);
-      // ★ REGRA SÓ-FB: margem alta demais = quase certo FALSO ALARME. No FB o preço
-      // é texto livre do vendedor (não estruturado como OLX/ML) → margem acima do
-      // teto quer dizer, na prática, ou (a) FIPE que resolvemos na versão errada
-      // (ex.: casou 1.6 num 1.0), ou (b) o anúncio esconde parte do valor (entrada
-      // baixa / "financiamento complementar" no privado). Nos dois casos a margem é
-      // ILUSÓRIA → descarta antes de virar oferta. Teto configurável (default 40%).
-      if (margem > cfg.margemMaxSuspeita) {
-        descartados++;
-        await registrarVistoFacebook(id, "margem_suspeita");
-        console.log(`[fb:${regiao.nome}] ⚠ descartado margem ${margem.toFixed(0)}% > ${cfg.margemMaxSuspeita}% (provável FIPE errada/preço oculto): ${a.marca} ${a.modelo} ${a.ano}`);
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      const classificacao = ehElegivel(margem, cfg.margemMinima) ? classificar(margem, cfg.margemMinima) : null;
-      if (!classificacao) {
-        descartados++;
-        await registrarVistoFacebook(id, "acima_fipe");
-        await dormir(cfg.pacingMs);
-        continue;
-      }
-      // Anti-duplicata do FB: a mesma loja republica o MESMO carro em vários perfis, na
-      // MESMA cidade (visto: 4× o mesmo C3, links diferentes, preço e cidade idênticos).
-      // Chave veículo+preço+CIDADE (sem KM — no FB o KM é lixo e varia por digitação):
-      // preserva o que já está e descarta o novo. Sem cidade → não aplica (não funde às
-      // cegas). Ver buscarDuplicataFacebook.
-      const op = montarOportunidade(a, ref, margem, classificacao);
-      if (op.cidade) {
-        const dup = await buscarDuplicataFacebook(op.veiculo, op.preco, op.cidade);
-        if (dup && dup.link_origem !== op.link_origem) {
-          console.log(`[fb:${regiao.nome}] ⧉ duplicata de "${op.veiculo}" R$${op.preco} em ${op.cidade} (já na plataforma via ${dup.link_origem}) — descartado.`);
-          await registrarVistoFacebook(id, "duplicado");
-          await dormir(cfg.pacingMs);
-          continue;
-        }
-      }
-      await salvarOportunidade(op);
-      elegiveis++;
-      await registrarVistoFacebook(id, "salvo");
-      await garantirHistoricoFipe(ref.codigoFipe, ref.anoModelo);
-      if (a.cidade && a.estado) await garantirCoordenadasCidade(a.cidade, a.estado);
-      console.log(`[fb:${regiao.nome}] ✓ ${a.marca} ${a.modelo} ${a.ano} R$${a.precoCampo} (+${margem.toFixed(0)}% FIPE, ${a.fotos.length} fotos)`);
-      await dormir(cfg.pacingMs);
     }
 
     // Cobertura do radar (a métrica que o user quer): em dia vs gap.
     const cobertura = atingiuLimite
-      ? `GAP — limite ${cfg.maxItens} atingido, ${novosIds.length - processados} novos não cobertos (radar atrasado)`
+      ? `GAP — limite ${cfg.maxItens}/faixa atingido (radar atrasado)`
       : alcancouConhecido
         ? "em dia (alcançou já-visto)"
-        : novosIds.length === 0
-          ? "nada novo desde o último run"
-          : "página toda nova (sem já-visto — provável 1ª run/feed rápido)";
-    // O aviso entra na observação (e não só no log) porque é no board que o user olha.
+        : idsBuscaTotal === 0
+          ? "busca vazia (conferir bloqueio/URL)"
+          : c.processados === 0
+            ? "nada novo desde o último run"
+            : "tudo novo (provável 1ª run/feed rápido)";
+    const faixasLabel = faixas.length > 1 ? `${faixas.length} faixas · ` : "";
     const alertaCentro = centroAusente ? ` · ⚠ "${regiao.nome}" não apareceu no próprio feed — conferir a URL da região` : "";
-    const observacao = `${regiao.nome} · ${processados}/${idsBusca.length} processados · ${cobertura}${alertaCentro}`;
-    await finalizarRegistroVarreduraComSucesso(registroId, { novos, elegiveis, descartados, semFipe }, observacao);
-    console.log(`[fb:${regiao.nome}] ${observacao} | ${elegiveis} oportunidades salvas`);
+    const observacao = `${regiao.nome} · ${faixasLabel}${c.processados}/${idsBuscaTotal} processados · ${cobertura}${alertaCentro}`;
+    await finalizarRegistroVarreduraComSucesso(registroId, { novos: c.novos, elegiveis: c.elegiveis, descartados: c.descartados, semFipe: c.semFipe }, observacao);
+    console.log(`[fb:${regiao.nome}] ${observacao} | ${c.elegiveis} oportunidades salvas`);
   } catch (erro) {
     const msg = erro instanceof Error ? erro.message : String(erro);
     await finalizarRegistroVarreduraComErro(registroId, msg);

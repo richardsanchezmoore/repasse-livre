@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Check, Loader2, Plus, Trash2, MapPin, Car, Copy } from "lucide-react";
+import { Check, Loader2, Plus, Trash2, MapPin, Car, Copy, Layers } from "lucide-react";
 import { salvarConfigWorker } from "@/app/actions";
 
 /**
@@ -19,6 +19,7 @@ interface Regiao {
   uf: string; // estado — organiza o painel em abas e entra no slug (cidade-uf)
   precoMax: string; // teto de preço PRÓPRIO da região; "" = usa o "Geral". Praças como
   // Balneário Camboriú têm muito carro na casa dos milhões → régua maior pra não perdê-los.
+  paginar: boolean; // ON → varre em FAIXAS de preço (mais volume, na MESMA run; sem cron novo).
 }
 
 /**
@@ -59,7 +60,7 @@ function lerRegioes(bruto: string | undefined): Regiao[] {
           uf = m[1].toUpperCase();
           nome = nome.slice(0, m.index).trim();
         }
-        return { nome, url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250"), uf, precoMax: String(r.precoMax ?? "") };
+        return { nome, url: r.url, raio: String(r.raio ?? r.url.match(/radius=(\d+)/i)?.[1] ?? "250"), uf, precoMax: String(r.precoMax ?? ""), paginar: r.paginar === true };
       });
   } catch {
     return [];
@@ -90,6 +91,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
   const [minAno, setMinAno] = useState(configs["FACEBOOK_FILTRO_MIN_ANO"] ?? "1995");
   const [sort, setSort] = useState(configs["FACEBOOK_FILTRO_SORT"] ?? "creation_time_descend");
   const [margemMax, setMargemMax] = useState(configs["FACEBOOK_MARGEM_MAX_SUSPEITA"] ?? "40");
+  const [faixasPreco, setFaixasPreco] = useState(configs["FACEBOOK_FAIXAS_PRECO"] ?? "");
   const [regioes, setRegioes] = useState<Regiao[]>(() => lerRegioes(configs["FACEBOOK_REGIOES"]));
   const [salvando, iniciar] = useTransition();
   const [salvo, setSalvo] = useState(false);
@@ -113,6 +115,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         salvarConfigWorker("FACEBOOK_FILTRO_MIN_ANO", minAno.trim()),
         salvarConfigWorker("FACEBOOK_FILTRO_SORT", sort),
         salvarConfigWorker("FACEBOOK_MARGEM_MAX_SUSPEITA", margemMax.trim()),
+        salvarConfigWorker("FACEBOOK_FAIXAS_PRECO", faixasPreco.trim()),
         salvarConfigWorker("FACEBOOK_REGIOES", JSON.stringify(limpas)),
       ]);
       setRegioes(limpas);
@@ -195,6 +198,21 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         </p>
       </div>
 
+      {/* Paginação por faixa de preço (aumenta volume sem cron novo). */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 14px", marginBottom: 20, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10 }}>
+        <div style={{ flex: "0 0 260px" }}>
+          <label style={rotuloCampo}><Layers size={13} /> Faixas de preço (paginação)</label>
+          <input style={inputEstilo} value={faixasPreco} onChange={(e) => { setFaixasPreco(e.target.value); marcarSujo(); }} placeholder="15000-40000,40000-80000,80000-" />
+        </div>
+        <p style={{ margin: 0, fontSize: 12, color: "#166534", lineHeight: 1.55, flex: 1 }}>
+          <strong>Mais volume no Facebook.</strong> O FB só entrega o 1º lote de resultados por busca. Fatiando por
+          faixa de preço, cada faixa traz o próprio lote dos mais recentes — ~Nx a cobertura, com os mesmos fetches
+          leves, <strong>na mesma run</strong> (nenhum cron novo). Formato: <code>min-max</code> separadas por vírgula
+          (a última pode ser aberta: <code>80000-</code>). Ligue por região no botão <strong>“Paginar”</strong> de cada
+          linha — só as ligadas usam as faixas. Vazio = ninguém pagina.
+        </p>
+      </div>
+
       {/* Regiões — em ABAS por estado (UF) pra não virar tripa longa com muitas regiões. */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: "flex", alignItems: "center", gap: 7 }}>
@@ -202,7 +220,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         </h3>
         <button
           type="button"
-          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250", uf: ufAtiva, precoMax: "" }]); marcarSujo(); }}
+          onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250", uf: ufAtiva, precoMax: "", paginar: false }]); marcarSujo(); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#059669", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 8, cursor: "pointer" }}
         >
           <Plus size={14} /> Adicionar {ufAtiva ? `em ${ufAtiva}` : "região"}
@@ -289,6 +307,15 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
                 placeholder={`máx: ${maxPreco || "—"}`}
                 onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], precoMax: e.target.value }; setRegioes(n); marcarSujo(); }}
               />
+              <button
+                type="button"
+                aria-label={r.paginar ? "Paginação por faixa ATIVA" : "Paginação por faixa inativa"}
+                title={`Paginar por faixas de preço nesta região — mais volume, na MESMA run (sem cron novo). Precisa das faixas globais preenchidas.${r.paginar ? " ATIVO." : " Inativo."}`}
+                onClick={() => { const n = [...regioes]; n[i] = { ...n[i], paginar: !n[i].paginar }; setRegioes(n); marcarSujo(); }}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "9px 11px", borderRadius: 9, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", fontSize: 12, fontWeight: 600, border: "1px solid", ...(r.paginar ? { background: "#ecfdf5", borderColor: "#16a34a", color: "#0a5d2c" } : { background: "#f3f4f6", borderColor: "#d1d5db", color: "#6b7280" }) }}
+              >
+                <Layers size={14} /> {r.paginar ? "Paginar: ON" : "Paginar: OFF"}
+              </button>
               <button
                 type="button"
                 aria-label="Remover"
