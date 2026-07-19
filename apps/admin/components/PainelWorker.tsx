@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Loader2, Play, ChevronDown, Settings } from "lucide-react";
+import { Loader2, Play, ChevronDown, Settings, Radar } from "lucide-react";
 import { dispararVarreduraManual, salvarConfigWorker } from "@/app/actions";
+import { PainelMotorBusca } from "@/components/PainelMotorBusca";
 import type { CapturaMotores, ChaveMotor } from "@/lib/kpiMotores";
 
 export interface RunWorker {
@@ -129,6 +130,9 @@ export function PainelWorker({
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [ufFbSel, setUfFbSel] = useState<string | null>(null); // sub-aba de estado (aba Facebook)
   const [configAberta, setConfigAberta] = useState(false); // accordion da config/disparo (fechado por padrão)
+  const [facebookAberto, setFacebookAberto] = useState(false); // accordion de config do Facebook (fechado)
+  // O PainelMotorBusca (Facebook) espera Record<chave,valor>; o worker carrega tudo em ConfigWorker[].
+  const configsRecord = useMemo(() => Object.fromEntries(configs.map((c) => [c.chave, c.valor])), [configs]);
 
   useEffect(() => {
     if (!disparando) return;
@@ -345,6 +349,18 @@ export function PainelWorker({
           ))}
         </div>
         </div>
+        )}
+      </section>
+
+      <section className="worker-secao worker-secao-card">
+        <button type="button" className="worker-accordion" aria-expanded={facebookAberto} onClick={() => setFacebookAberto((v) => !v)}>
+          <span className="worker-accordion-titulo"><Radar size={17} strokeWidth={2} /> Configurações Motor Facebook</span>
+          <ChevronDown size={20} className={`worker-accordion-seta ${facebookAberto ? "aberto" : ""}`} />
+        </button>
+        {facebookAberto && (
+          <div className="worker-accordion-corpo">
+            <PainelMotorBusca configs={configsRecord} />
+          </div>
         )}
       </section>
 

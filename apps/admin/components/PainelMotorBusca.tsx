@@ -184,21 +184,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         (ex.: Balneário Camboriú) pedem régua maior.
       </p>
 
-      {/* Regra de DESCARTE (não vai na URL — aplicada DEPOIS de resolver a FIPE). */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 14px", marginBottom: 20, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10 }}>
-        <div style={{ flex: "0 0 130px" }}>
-          <label style={rotuloCampo}>Margem máx. (%)</label>
-          <input style={inputEstilo} inputMode="numeric" value={margemMax} onChange={(e) => { setMargemMax(e.target.value); marcarSujo(); }} placeholder="40" />
-        </div>
-        <p style={{ margin: 0, fontSize: 12, color: "#92722a", lineHeight: 1.55, flex: 1 }}>
-          <strong>Descarte automático (só Facebook).</strong> Margem acima disso quase sempre é <em>falso alarme</em>:
-          ou a FIPE casou a versão errada (ex.: um 1.0 pegando o valor de um 1.6), ou o anúncio esconde parte do
-          preço (entrada baixa / financiamento no privado). Melhor descartar que dar oferta ilusória e queimar a
-          confiança. Vale só pro FB (OLX/ML/Webmotors vêm com preço estruturado).
-        </p>
-      </div>
-
-      {/* Paginação por faixa de preço (aumenta volume sem cron novo). */}
+      {/* Paginação por faixa de preço — família PREÇO, logo abaixo do mín/máx. */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 14px", marginBottom: 20, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10 }}>
         <div style={{ flex: "0 0 260px" }}>
           <label style={rotuloCampo}><Layers size={13} /> Faixas de preço (paginação)</label>
@@ -210,6 +196,20 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
           leves, <strong>na mesma run</strong> (nenhum cron novo). Formato: <code>min-max</code> separadas por vírgula
           (a última pode ser aberta: <code>80000-</code>). Ligue por região no botão <strong>“Paginar”</strong> de cada
           linha — só as ligadas usam as faixas. Vazio = ninguém pagina.
+        </p>
+      </div>
+
+      {/* Regra de DESCARTE (não vai na URL — aplicada DEPOIS de resolver a FIPE). */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 14px", marginBottom: 20, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10 }}>
+        <div style={{ flex: "0 0 130px" }}>
+          <label style={rotuloCampo}>Margem máx. (%)</label>
+          <input style={inputEstilo} inputMode="numeric" value={margemMax} onChange={(e) => { setMargemMax(e.target.value); marcarSujo(); }} placeholder="40" />
+        </div>
+        <p style={{ margin: 0, fontSize: 12, color: "#92722a", lineHeight: 1.55, flex: 1 }}>
+          <strong>Descarte automático (só Facebook).</strong> Margem acima disso quase sempre é <em>falso alarme</em>:
+          ou a FIPE casou a versão errada (ex.: um 1.0 pegando o valor de um 1.6), ou o anúncio esconde parte do
+          preço (entrada baixa / financiamento no privado). Melhor descartar que dar oferta ilusória e queimar a
+          confiança. Vale só pro FB (OLX/ML/Webmotors vêm com preço estruturado).
         </p>
       </div>
 

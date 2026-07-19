@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Settings, CreditCard, Radar, type LucideIcon } from "lucide-react";
+import { Settings, CreditCard, type LucideIcon } from "lucide-react";
 import { CampoConfig } from "./CampoConfig";
 import { PainelPagamentos } from "./PainelPagamentos";
-import { PainelMotorBusca } from "./PainelMotorBusca";
 import { PainelAnunciosAds } from "./PainelAnunciosAds";
 
 /**
@@ -50,7 +49,7 @@ function BotaoAba({
 }
 
 export function PainelConfiguracoes({ configs }: { configs: Record<string, string> }) {
-  const [aba, setAba] = useState<"geral" | "motorbusca" | "pagamentos">("geral");
+  const [aba, setAba] = useState<"geral" | "pagamentos">("geral");
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "28px 20px" }}>
@@ -58,15 +57,10 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         <BotaoAba ativo={aba === "geral"} onClick={() => setAba("geral")} Icone={Settings}>
           Geral
         </BotaoAba>
-        <BotaoAba ativo={aba === "motorbusca"} onClick={() => setAba("motorbusca")} Icone={Radar}>
-          Motor de Busca
-        </BotaoAba>
         <BotaoAba ativo={aba === "pagamentos"} onClick={() => setAba("pagamentos")} Icone={CreditCard}>
           Pagamentos
         </BotaoAba>
       </div>
-
-      {aba === "motorbusca" && <PainelMotorBusca configs={configs} />}
 
       {aba === "geral" && (
         <>
