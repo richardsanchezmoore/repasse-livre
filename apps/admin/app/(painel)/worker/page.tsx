@@ -4,7 +4,7 @@ import { PainelWorker, type ConfigWorker, type RunWorker } from "@/components/Pa
 import { Sidebar } from "@/components/Sidebar";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
-import { buscarCapturaHojePorMotor } from "@/lib/kpiMotores";
+import { buscarCapturaMotores } from "@/lib/kpiMotores";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -45,13 +45,13 @@ export default async function WorkerPage() {
       .order("iniciado_em", { ascending: false })
       .limit(limite);
 
-  const [olx, webmotors, mercadoLivre, facebook, { data: configs, error: erroConfigs }, capturaHoje] = await Promise.all([
+  const [olx, webmotors, mercadoLivre, facebook, { data: configs, error: erroConfigs }, captura] = await Promise.all([
     historicoPorFonte("%olx%"),
     historicoPorFonte("%webmotors%"),
     historicoPorFonte("%mercadoli%"), // pega mercadolivre.com.br e mercadolibre
     historicoPorFonte("%facebook%", LIMITE_FACEBOOK),
     supabaseAdmin.from("worker_config").select("chave, valor"),
-    buscarCapturaHojePorMotor(),
+    buscarCapturaMotores(),
   ]);
 
   const erroRuns = olx.error ?? webmotors.error ?? mercadoLivre.error ?? facebook.error;
@@ -84,7 +84,7 @@ export default async function WorkerPage() {
             runs={(runs ?? []) as RunWorker[]}
             configs={(configs ?? []) as ConfigWorker[]}
             regioesFacebook={regioesFacebook}
-            capturaHoje={capturaHoje}
+            captura={captura}
           />
         </main>
       </div>

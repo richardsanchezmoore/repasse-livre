@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Loader2, Play } from "lucide-react";
+import { Loader2, Play, ChevronDown } from "lucide-react";
 import { dispararVarreduraManual, salvarConfigWorker } from "@/app/actions";
-import type { CapturaHoje, ChaveMotor } from "@/lib/kpiMotores";
+import type { CapturaMotores, ChaveMotor } from "@/lib/kpiMotores";
 
 export interface RunWorker {
   id: string;
@@ -114,12 +114,12 @@ export function PainelWorker({
   runs,
   configs,
   regioesFacebook = [],
-  capturaHoje,
+  captura,
 }: {
   runs: RunWorker[];
   configs: ConfigWorker[];
   regioesFacebook?: RegiaoFacebook[];
-  capturaHoje?: CapturaHoje;
+  captura?: CapturaMotores;
 }) {
   const [pendente, iniciarTransicao] = useTransition();
   const [disparando, setDisparando] = useState(false);
@@ -128,6 +128,7 @@ export function PainelWorker({
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [ufFbSel, setUfFbSel] = useState<string | null>(null); // sub-aba de estado (aba Facebook)
+  const [configAberta, setConfigAberta] = useState(false); // accordion da config/disparo (fechado por padrão)
 
   useEffect(() => {
     if (!disparando) return;
@@ -260,25 +261,30 @@ export function PainelWorker({
     });
   }
 
-  const totalElegiveisHoje = capturaHoje ? MOTORES_KPI.reduce((s, m) => s + capturaHoje[m.chave].elegiveis, 0) : 0;
-  const totalNovosHoje = capturaHoje ? MOTORES_KPI.reduce((s, m) => s + capturaHoje[m.chave].novos, 0) : 0;
+  const hoje = captura?.hoje;
+  const ontem = captura?.ontem;
+  const totalElegiveisHoje = hoje ? MOTORES_KPI.reduce((s, m) => s + hoje[m.chave].elegiveis, 0) : 0;
+  const totalNovosHoje = hoje ? MOTORES_KPI.reduce((s, m) => s + hoje[m.chave].novos, 0) : 0;
 
   return (
     <div className="worker-painel">
       {erro && <p className="campo-erro">{erro}</p>}
       {mensagem && <p className="worker-mensagem">{mensagem}</p>}
 
-      {capturaHoje && (
+      {hoje && (
         <section className="worker-secao">
           <div className="worker-secao-cabecalho">
             <h2 className="worker-secao-titulo">Captado hoje</h2>
             <span className="worker-kpi-total">
+              {ontem && (
+                <span className="worker-kpi-ontem">ontem: {ontem.elegiveis} · {ontem.novos} · </span>
+              )}
               {totalElegiveisHoje} oportunidades · {totalNovosHoje} descobertos
             </span>
           </div>
           <div className="worker-kpi-grid">
             {MOTORES_KPI.map((m) => {
-              const c = capturaHoje[m.chave];
+              const c = hoje[m.chave];
               return (
                 <div key={m.chave} className={`worker-kpi-card worker-kpi-${m.chave}`}>
                   <span className="worker-kpi-motor">{m.rotulo}</span>
@@ -293,8 +299,14 @@ export function PainelWorker({
       )}
 
       <section className="worker-secao">
+        <button type="button" className="worker-accordion" aria-expanded={configAberta} onClick={() => setConfigAberta((v) => !v)}>
+          <h2 className="worker-secao-titulo">Configuração e disparo manual</h2>
+          <ChevronDown size={20} className={`worker-accordion-seta ${configAberta ? "aberto" : ""}`} />
+        </button>
+        {configAberta && (
+        <div className="worker-accordion-corpo">
         <div className="worker-secao-cabecalho">
-          <h2 className="worker-secao-titulo">Disparo manual</h2>
+          <h3 className="worker-config-subtitulo">Disparo manual</h3>
           <button type="button" className="worker-botao-disparar" disabled={disparando} onClick={dispararAgora}>
             {disparando ? (
               <Loader2 size={16} strokeWidth={1.75} className="worker-spinner" />
@@ -304,10 +316,6 @@ export function PainelWorker({
             {disparando ? `Disparando… (${segundosDecorridos}s)` : "Disparar varredura agora"}
           </button>
         </div>
-      </section>
-
-      <section className="worker-secao">
-        <h2 className="worker-secao-titulo">Configuração</h2>
         <div className="worker-config-grade">
           {CAMPOS_CONFIG.map((campo) => (
             <div key={campo.chave} className="worker-config-campo">
@@ -337,6 +345,8 @@ export function PainelWorker({
             </div>
           ))}
         </div>
+        </div>
+        )}
       </section>
 
       <section className="worker-secao">

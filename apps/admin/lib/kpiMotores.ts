@@ -2,10 +2,10 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
 
 /**
- * KPI "captado HOJE" por motor pro painel Motor de Descoberta — soma os `novos`
- * (descobertos) e `elegiveis` (oportunidades salvas) de todas as runs do dia (fuso
- * de Brasília), por fonte. A página é force-dynamic, então cada recarga reflete o
- * estado após o último cron. Exclui as linhas de reinício-roteador (não são captação).
+ * KPI "captado" por motor pro painel Motor de Descoberta — soma `novos` (descobertos)
+ * e `elegiveis` (oportunidades) das runs, por fonte. Traz HOJE (por motor) + o total de
+ * ONTEM (comparativo rápido). Fuso de Brasília. Página force-dynamic → cada recarga
+ * reflete o último cron. Exclui as linhas de reinício-roteador (não são captação).
  */
 
 export interface CapturaMotor {
@@ -16,15 +16,20 @@ export interface CapturaMotor {
 export type ChaveMotor = "olx" | "webmotors" | "ml" | "facebook";
 export type CapturaHoje = Record<ChaveMotor, CapturaMotor>;
 
-/** ISO do início do dia corrente em America/Sao_Paulo (-03:00). */
-function inicioDoDiaBRT(): string {
-  // en-CA formata como YYYY-MM-DD; monta a meia-noite de Brasília.
+export interface CapturaMotores {
+  hoje: CapturaHoje;
+  ontem: { novos: number; elegiveis: number };
+}
+
+/** ISO do início do dia (offsetDias atrás) em America/Sao_Paulo (-03:00). BR não tem mais DST. */
+function inicioDoDiaBRT(offsetDias = 0): string {
+  const base = new Date(Date.now() + offsetDias * 86_400_000);
   const dataBRT = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Sao_Paulo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).format(base);
   return `${dataBRT}T00:00:00-03:00`;
 }
 
@@ -38,21 +43,34 @@ function motorDaUrl(url: string): ChaveMotor | null {
   return null;
 }
 
-export async function buscarCapturaHojePorMotor(): Promise<CapturaHoje> {
+export async function buscarCapturaMotores(): Promise<CapturaMotores> {
+  const inicioHoje = new Date(inicioDoDiaBRT(0)).getTime();
+  const inicioOntem = inicioDoDiaBRT(-1);
+
+  // Uma leitura só cobrindo ontem + hoje; separamos por timestamp.
   const { data } = await supabaseAdmin
     .from("discovery_runs")
-    .select("categoria_url, novos, elegiveis")
-    .gte("iniciado_em", inicioDoDiaBRT());
+    .select("categoria_url, novos, elegiveis, iniciado_em")
+    .gte("iniciado_em", inicioOntem);
 
   const vazio = (): CapturaMotor => ({ novos: 0, elegiveis: 0, runs: 0 });
-  const r: CapturaHoje = { olx: vazio(), webmotors: vazio(), ml: vazio(), facebook: vazio() };
+  const hoje: CapturaHoje = { olx: vazio(), webmotors: vazio(), ml: vazio(), facebook: vazio() };
+  const ontem = { novos: 0, elegiveis: 0 };
 
-  for (const linha of (data ?? []) as Array<{ categoria_url: string; novos: number | null; elegiveis: number | null }>) {
+  for (const linha of (data ?? []) as Array<{ categoria_url: string; novos: number | null; elegiveis: number | null; iniciado_em: string }>) {
     const k = motorDaUrl(linha.categoria_url ?? "");
     if (!k) continue;
-    r[k].novos += linha.novos ?? 0;
-    r[k].elegiveis += linha.elegiveis ?? 0;
-    r[k].runs += 1;
+    const n = linha.novos ?? 0;
+    const e = linha.elegiveis ?? 0;
+    if (new Date(linha.iniciado_em).getTime() >= inicioHoje) {
+      hoje[k].novos += n;
+      hoje[k].elegiveis += e;
+      hoje[k].runs += 1;
+    } else {
+      // ontem: só o total (o comparativo é de bater o olho, não por motor)
+      ontem.novos += n;
+      ontem.elegiveis += e;
+    }
   }
-  return r;
+  return { hoje, ontem };
 }
