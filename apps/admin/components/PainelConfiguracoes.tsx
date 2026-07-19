@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Settings, CreditCard, type LucideIcon } from "lucide-react";
+import { Settings, CreditCard, Tag, type LucideIcon } from "lucide-react";
 import { CampoConfig } from "./CampoConfig";
 import { PainelPagamentos } from "./PainelPagamentos";
 import { PainelAnunciosAds } from "./PainelAnunciosAds";
 
 /**
- * Painel de Configurações em ABAS (antes era uma tripa só):
+ * Painel de Configurações em ABAS:
  *  - Geral: ajustes básicos da plataforma (margens + janelas dos KPIs).
- *  - Pagamentos: gateways (Sistemas de Pagamento) + extras da página de vendas
- *    (âncora, anúncio-vitrine, WhatsApp).
+ *  - Pagamentos: só os GATEWAYS (Cakto/Ticto/… — a "máquina" que cobra).
+ *  - Vendas: config da PÁGINA DE VENDAS (preço exibido, âncora, WhatsApp, ADS).
+ * (O "Motor de Busca"/Facebook saiu daqui — vive no Motor de Descoberta.)
  */
 function BotaoAba({
   ativo,
@@ -49,7 +50,7 @@ function BotaoAba({
 }
 
 export function PainelConfiguracoes({ configs }: { configs: Record<string, string> }) {
-  const [aba, setAba] = useState<"geral" | "pagamentos">("geral");
+  const [aba, setAba] = useState<"geral" | "pagamentos" | "vendas">("geral");
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "28px 20px" }}>
@@ -59,6 +60,9 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         </BotaoAba>
         <BotaoAba ativo={aba === "pagamentos"} onClick={() => setAba("pagamentos")} Icone={CreditCard}>
           Pagamentos
+        </BotaoAba>
+        <BotaoAba ativo={aba === "vendas"} onClick={() => setAba("vendas")} Icone={Tag}>
+          Vendas
         </BotaoAba>
       </div>
 
@@ -109,10 +113,10 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         </>
       )}
 
-      {aba === "pagamentos" && (
-        <>
-          <PainelPagamentos configs={configs} />
+      {aba === "pagamentos" && <PainelPagamentos configs={configs} />}
 
+      {aba === "vendas" && (
+        <>
           <CampoConfig
             chave="PRECO_MENSAL"
             valorInicial={configs["PRECO_MENSAL"] ?? "97"}
