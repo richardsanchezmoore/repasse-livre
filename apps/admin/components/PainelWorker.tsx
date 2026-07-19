@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Loader2, Play } from "lucide-react";
 import { dispararVarreduraManual, salvarConfigWorker } from "@/app/actions";
+import type { CapturaHoje, ChaveMotor } from "@/lib/kpiMotores";
 
 export interface RunWorker {
   id: string;
@@ -59,6 +60,13 @@ const CAMPOS_CONFIG: Array<{ chave: string; rotulo: string; ajuda: string }> = [
   },
 ];
 
+const MOTORES_KPI: Array<{ chave: ChaveMotor; rotulo: string }> = [
+  { chave: "olx", rotulo: "OLX" },
+  { chave: "webmotors", rotulo: "Webmotors" },
+  { chave: "ml", rotulo: "Mercado Livre" },
+  { chave: "facebook", rotulo: "Facebook" },
+];
+
 type Fonte = "OLX" | "WEBMOTORS" | "MERCADO_LIVRE" | "FACEBOOK";
 
 /** discovery_runs não tem coluna `fonte` — derivamos da categoria_url. */
@@ -106,10 +114,12 @@ export function PainelWorker({
   runs,
   configs,
   regioesFacebook = [],
+  capturaHoje,
 }: {
   runs: RunWorker[];
   configs: ConfigWorker[];
   regioesFacebook?: RegiaoFacebook[];
+  capturaHoje?: CapturaHoje;
 }) {
   const [pendente, iniciarTransicao] = useTransition();
   const [disparando, setDisparando] = useState(false);
@@ -250,10 +260,37 @@ export function PainelWorker({
     });
   }
 
+  const totalElegiveisHoje = capturaHoje ? MOTORES_KPI.reduce((s, m) => s + capturaHoje[m.chave].elegiveis, 0) : 0;
+  const totalNovosHoje = capturaHoje ? MOTORES_KPI.reduce((s, m) => s + capturaHoje[m.chave].novos, 0) : 0;
+
   return (
     <div className="worker-painel">
       {erro && <p className="campo-erro">{erro}</p>}
       {mensagem && <p className="worker-mensagem">{mensagem}</p>}
+
+      {capturaHoje && (
+        <section className="worker-secao">
+          <div className="worker-secao-cabecalho">
+            <h2 className="worker-secao-titulo">Captado hoje</h2>
+            <span className="worker-kpi-total">
+              {totalElegiveisHoje} oportunidades · {totalNovosHoje} descobertos
+            </span>
+          </div>
+          <div className="worker-kpi-grid">
+            {MOTORES_KPI.map((m) => {
+              const c = capturaHoje[m.chave];
+              return (
+                <div key={m.chave} className={`worker-kpi-card worker-kpi-${m.chave}`}>
+                  <span className="worker-kpi-motor">{m.rotulo}</span>
+                  <span className="worker-kpi-num">{c.elegiveis}</span>
+                  <span className="worker-kpi-legenda">oportunidades</span>
+                  <span className="worker-kpi-sub">{c.novos} descobertos · {c.runs} {c.runs === 1 ? "run" : "runs"}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="worker-secao">
         <div className="worker-secao-cabecalho">
