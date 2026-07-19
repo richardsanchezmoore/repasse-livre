@@ -8474,8 +8474,10 @@ button.bemvindo-secundario {
 .cms-tab-ativa:hover { color: #0f172a; }
 
 /* ══ KPI "Captado hoje" por motor (painel Motor de Descoberta) ═════════════ */
-.worker-kpi-total { font-size: 13px; color: #667781; font-weight: 600; }
-.worker-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.worker-kpi-titulo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.worker-kpi-hoje { font-size: 13px; font-weight: 700; color: #16a34a; background: #eafaf0; padding: 3px 11px; border-radius: 999px; }
+.worker-kpi-total { font-size: 13px; color: #98a5ad; font-weight: 500; }
+.worker-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
 .worker-kpi-card { display: flex; flex-direction: column; gap: 1px; padding: 14px 16px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; border-top: 3px solid #cbd5e1; }
 .worker-kpi-olx { border-top-color: #7c3aed; }
 .worker-kpi-webmotors { border-top-color: #2563eb; }

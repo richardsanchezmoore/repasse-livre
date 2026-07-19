@@ -278,11 +278,10 @@ export function PainelWorker({
       {hoje && (
         <section className="worker-secao">
           <div className="worker-secao-cabecalho">
-            <h2 className="worker-secao-titulo">Captado hoje</h2>
-            <span className="worker-kpi-total">
-              <span className="worker-kpi-ontem">ontem: {totalOntem} · </span>
-              {totalHoje} oportunidades
-            </span>
+            <h2 className="worker-secao-titulo worker-kpi-titulo">
+              Captado hoje <span className="worker-kpi-hoje">{totalHoje} oportunidades</span>
+            </h2>
+            <span className="worker-kpi-total">ontem: {totalOntem}</span>
           </div>
           <div className="worker-kpi-grid">
             {MOTORES_KPI.map((m) => {
@@ -293,7 +292,7 @@ export function PainelWorker({
                   <span className="worker-kpi-motor">{m.rotulo}</span>
                   <span className="worker-kpi-num">{c.elegiveis}</span>
                   <span className="worker-kpi-legenda">oportunidades</span>
-                  <span className="worker-kpi-sub">ontem: {o} · {c.runs} {c.runs === 1 ? "run" : "runs"}</span>
+                  <span className="worker-kpi-sub">{c.runs} {c.runs === 1 ? "run" : "runs"} hoje · ontem: {o}</span>
                 </div>
               );
             })}
