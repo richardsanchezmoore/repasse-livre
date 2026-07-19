@@ -292,7 +292,10 @@ export function PainelWorker({
                   <span className="worker-kpi-motor">{m.rotulo}</span>
                   <span className="worker-kpi-num">{c.elegiveis}</span>
                   <span className="worker-kpi-legenda">oportunidades</span>
-                  <span className="worker-kpi-sub">{c.runs} {c.runs === 1 ? "run" : "runs"} hoje · ontem: {o}</span>
+                  <span className="worker-kpi-sub">
+                    ontem: {o} oportunidades<br />
+                    {c.runs} {c.runs === 1 ? "varredura" : "varreduras"} hoje
+                  </span>
                 </div>
               );
             })}
