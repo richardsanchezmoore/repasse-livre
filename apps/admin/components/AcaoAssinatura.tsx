@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Gem, Settings } from "lucide-react";
 import { registrarEvento } from "@/lib/eventosAnalytics";
+import { pixelTrack } from "@/lib/metaPixel";
 import { criarSupabaseBrowser } from "@/lib/supabase-browser";
 
 /**
@@ -93,6 +94,7 @@ export function AcaoAssinatura({
     // login (a assinatura fica atrelada à conta via externalReference). 401 → login.
     if (efetivo === "assinar" && gateway === "asaas") {
       registrarEvento("clique_assinar", { origem: "planos", estado: efetivo, gateway: "asaas" });
+      pixelTrack("InitiateCheckout", { currency: "BRL" });
       setCarregando(true);
       try {
         const resposta = await fetch("/api/assinatura/asaas", {
@@ -120,6 +122,7 @@ export function AcaoAssinatura({
     // Cakto/Ticto: assinar → checkout hospedado.
     if (efetivo === "assinar" && checkoutUrl) {
       registrarEvento("clique_assinar", { origem: "planos", estado: efetivo, gateway: "cakto" });
+      pixelTrack("InitiateCheckout", { currency: "BRL" });
       let url = checkoutUrl;
       // Logado no modo "auto": a página é estática e não pôde anexar o sck no server,
       // então anexa aqui (match EXATO por user_id). Antes do bloco de claim de propósito:
@@ -154,6 +157,7 @@ export function AcaoAssinatura({
     try {
       const rota = efetivo === "gerenciar" ? "/api/assinatura/portal" : "/api/assinatura/checkout";
       registrarEvento("clique_assinar", { origem: "planos", estado: efetivo });
+      if (efetivo === "assinar") pixelTrack("InitiateCheckout", { currency: "BRL" });
       const resposta = await fetch(rota, { method: "POST" });
       if (resposta.status === 401) {
         router.push(`/login?redirect=${encodeURIComponent("/planos")}`);

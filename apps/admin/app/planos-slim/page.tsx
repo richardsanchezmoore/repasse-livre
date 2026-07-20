@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CapturaDestino } from "@/components/CapturaDestino";
+import { PixelViewContent } from "@/components/PixelViewContent";
 import { PaginaVendasCurta } from "@/components/PaginaVendasCurta";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
@@ -66,6 +67,7 @@ export default async function PlanosSlimPage() {
   return (
     <main className={`fv-raiz ${fonteTitulo.variable} ${fonteCorpo.variable}`}>
       <CapturaDestino />
+      <PixelViewContent nome="planos-slim" />
       <PaginaVendasCurta
         dados={{
           variante: "padrao",
