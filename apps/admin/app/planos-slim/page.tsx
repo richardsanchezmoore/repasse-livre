@@ -47,6 +47,21 @@ export default async function PlanosSlimPage() {
       ? Math.round((1 - preco.centavos / precoAncora.centavos) * 100)
       : null;
 
+  // "Nossos números" (faixa escura da slim) — os MESMOS KPIs do board, formatados aqui
+  // (milhar/economia são funções locais do KpisTopo.tsx, não exportadas).
+  const milhar = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
+  const economia =
+    kpis.economia >= 1_000_000 ? `R$ ${(kpis.economia / 1_000_000).toFixed(1).replace(".", ",")} mi`
+    : kpis.economia >= 10_000 ? `R$ ${Math.round(kpis.economia / 1000)} mil`
+    : `R$ ${milhar(Math.round(kpis.economia))}`;
+  const legNovos = kpis.novosHoras >= 168 ? `${Math.round(kpis.novosHoras / 24)} dias` : `${kpis.novosHoras}h`;
+  const numeros = [
+    { valor: milhar(kpis.mapeados), rotulo: `Ofertas mapeadas · ${kpis.mapeadasDias} dias` },
+    { valor: milhar(kpis.abaixoFipe), rotulo: "Abaixo da FIPE" },
+    { valor: milhar(kpis.novos), rotulo: `Novos · últimas ${legNovos}` },
+    { valor: economia, rotulo: `Economia de mercado · ${kpis.mapeadasDias} dias` },
+  ];
+
   return (
     <main className={`fv-raiz ${fonteTitulo.variable} ${fonteCorpo.variable}`}>
       <CapturaDestino />
@@ -58,6 +73,7 @@ export default async function PlanosSlimPage() {
           precoAncoraTexto: precoAncora?.texto ?? null,
           descontoPct,
           kpiAoVivo: abaixoFipeVivo,
+          numeros,
           ofertaDemo,
           checkoutUrl,
           gerenciarUrl,
