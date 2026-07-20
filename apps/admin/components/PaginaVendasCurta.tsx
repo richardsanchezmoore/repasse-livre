@@ -207,7 +207,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 13, flex: 1 }}>
-                {["Abrir OLX, Mercado Livre, Webmotors", "Pesquisar e comparar preços na mão", "Consultar a FIPE de cada um", "Analisar anúncio por anúncio"].map((x) => (
+                {["Abrir OLX, Mercado Livre, Webmotors", "Garimpar o Facebook bagunçado", "Consultar a FIPE de cada um", "Analisar anúncio por anúncio"].map((x) => (
                   <div key={x} style={{ display: "flex", gap: 11, alignItems: "center", font: `600 14px ${CORPO}`, color: "#8a5d59" }}>
                     <span style={{ flex: "none", width: 23, height: 23, borderRadius: "50%", background: "#F7D7D3", display: "flex", alignItems: "center", justifyContent: "center", color: "#D9463E" }}><X size={11} strokeWidth={3.2} /></span>
                     {x}
