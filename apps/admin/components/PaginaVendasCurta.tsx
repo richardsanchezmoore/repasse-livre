@@ -17,7 +17,7 @@ export interface DadosVendas {
   precoAncoraTexto: string | null; // "R$ 248"
   descontoPct: number | null;
   kpiAoVivo: number | null;
-  numeros?: { valor: string; rotulo: string }[]; // "Nossos números" — faixa escura
+  numeros?: { valor: string; rotulo: string; sufixo?: string }[]; // "Nossos números" — faixa escura
   ofertaDemo: OfertaDemo | null;
   /** Checkout hospedado SEM `sck` — a página é estática; o `sck` do logado entra no
    *  cliente, via AcaoAssinatura no modo "auto". */
@@ -233,7 +233,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <div style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: "clamp(24px,4vw,44px)", textAlign: "center" }}>
             {dados.numeros.map((n) => (
               <div key={n.rotulo}>
-                <div style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em" }}>{n.valor}</div>
+                <div style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em", whiteSpace: "nowrap" }}>{n.valor}{n.sufixo && <span style={{ fontSize: "0.42em", fontWeight: 800, marginLeft: 4 }}>{n.sufixo}</span>}</div>
                 <div style={{ font: `600 clamp(11px,1.4vw,13px) ${CORPO}`, color: "#9fc9ab", marginTop: 10, letterSpacing: ".03em" }}>{n.rotulo}</div>
               </div>
             ))}
