@@ -38,14 +38,12 @@ const COPY = {
   padrao: {
     h1a: "Enquanto outros procuram carros, você encontra ",
     h1b: "oportunidades.",
-    sub: "O Repasse Livre monitora continuamente os maiores marketplaces do Brasil e identifica oportunidades abaixo da FIPE antes que elas desapareçam — e você economiza tempo, compra melhor e aumenta sua margem.",
     timeline: "Quem compra primeiro normalmente encontrou primeiro.",
     finalSub: "Todos os dias milhares de anúncios entram no mercado. Poucos realmente representam uma oportunidade. O Repasse Livre foi criado para encontrar essas oportunidades antes da maioria.",
   },
   fomo: {
     h1a: "Enquanto o mercado inteiro procura, você já ",
     h1b: "encontrou.",
-    sub: "Cada minuto procurando na mão, outro comprador chega antes. O Repasse Livre vigia o mercado por você: o BIA organiza os anúncios, o Copiloto interpreta o contexto e você recebe a oportunidade pronta pra decidir.",
     timeline: "No fim, quem chega primeiro é quem lucra.",
     finalSub: "Todos os dias milhares de anúncios entram no mercado. Poucos realmente valem — e o Repasse Livre encontra esses antes da maioria.",
   },
@@ -151,9 +149,9 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,200,69,.12)", border: "1px solid rgba(0,200,69,.28)", color: "#00c845", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".16em", marginBottom: 20 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00c845", animation: "rl-blink 1.4s infinite" }} /> REPASSE LIVRE → A SOLUÇÃO
             </div>
-            <h2 style={{ font: `800 clamp(32px,4.4vw,48px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
+            <h1 style={{ font: `800 clamp(32px,4.4vw,48px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               {c.h1a}<span style={{ color: "#00c845" }}>{c.h1b}</span>
-            </h2>
+            </h1>
             <p style={{ font: `500 clamp(16px,1.7vw,17px)/1.6 ${CORPO}`, color: "#cacfd4", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade <b style={{ color: "#00c845" }}>abaixo da FIPE</b> aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
               {["Sem abrir vários sites", "Sem comparar dezenas de anúncios", "Sem perder tempo"].map((x) => (
@@ -250,7 +248,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
         <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
           <div style={{ textAlign: "center", marginBottom: 34 }}>
             <div style={{ font: `700 14px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>Como funciona</div>
-            <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h2>
+            <h3 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h3>
           </div>
           <div style={{ position: "relative", paddingLeft: 38 }}>
             <div style={{ position: "absolute", left: 12, top: 6, bottom: 6, width: 2, background: "linear-gradient(#00c845,#cbe8d5)" }} />
@@ -267,7 +265,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
               </div>
             ))}
           </div>
-          <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
+          <CTAInline rotulo="QUERO DECIDIR ANTES" />
         </div>
       </section>
 
@@ -408,7 +406,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", maxWidth: 460, margin: "0 0 24px" }}>Tudo o que você precisa para encontrar oportunidades antes da concorrência. Comece hoje pelas condições especiais da Semana do Comprador — antes de o valor voltar ao normal.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
               {[
-                <>Acesso total: <b style={{ color: "#fff" }}>BIA, Copiloto, Dashboard, Alertas, Comparativos e Score</b></>,
+                <>Acesso total: <b style={{ color: "#fff" }}>Nossa IA (BIA), Copiloto, Dashboard, Alertas, Comparativos e Score</b></>,
                 <>Todas as melhorias da plataforma <b style={{ color: "#fff" }}>incluídas</b></>,
                 <>Sem fidelidade — cancele quando quiser, direto no painel</>,
               ].map((n, i) => (
@@ -457,12 +455,12 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <h3 style={{ font: `800 clamp(24px,3.2vw,30px) ${TIT}`, color: "#0F1B2D", textAlign: "center", margin: "0 0 26px" }}>Perguntas frequentes</h3>
           {[
             { q: "O Repasse Livre vende veículos?", a: "Não. Monitoramos oportunidades publicadas nos principais marketplaces do Brasil — OLX, Webmotors, Mercado Livre e Facebook — e transformamos esses anúncios em inteligência de mercado." },
-            { q: "O que é o BIA?", a: "É o Banco de Inteligência Automotiva do Repasse Livre. Ele organiza, compara e interpreta milhares de anúncios para gerar inteligência que apoia a sua decisão." },
+            { q: "O que é a Nossa IA (BIA)?", a: "É o Banco de Inteligência Automotiva do Repasse Livre. Ele organiza, compara e interpreta milhares de anúncios para gerar inteligência que apoia a sua decisão." },
             { q: "O que é o Copiloto?", a: "É a tecnologia que analisa cada oportunidade usando os dados do BIA e apresenta uma recomendação baseada no contexto de mercado." },
             { q: "Os anúncios são do Repasse Livre?", a: "Não. Os anúncios são monitorados em diferentes marketplaces e enriquecidos com a inteligência exclusiva do Repasse Livre." },
             { q: "Quem pode utilizar?", a: "Qualquer pessoa que queira comprar melhor, economizar tempo e tomar decisões com mais informação." },
           ].map(({ q, a }) => (
-            <details key={q} style={{ background: "#F7FAFC", border: "1px solid #EAEEF3", borderRadius: 16, padding: "18px 22px", marginBottom: 12 }}>
+            <details key={q} className="fv-faq" style={{ background: "#F7FAFC", border: "1px solid #EAEEF3", borderRadius: 16, padding: "18px 22px", marginBottom: 12 }}>
               <summary style={{ cursor: "pointer", listStyle: "none", font: `700 clamp(14px,1.6vw,16px) ${CORPO}`, color: "#0F1B2D" }}>{q}</summary>
               <p style={{ font: `500 14px/1.6 ${CORPO}`, color: "#6A7686", margin: "12px 0 0" }}>{a}</p>
             </details>
@@ -477,7 +475,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <h3 style={{ font: `800 clamp(24px,3.6vw,34px)/1.16 ${TIT}`, color: "#fff", margin: "0 0 14px", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros ainda estão procurando, você pode estar <span style={{ color: "#00c845" }}>fechando o próximo negócio.</span></h3>
           <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", margin: "0 0 22px", maxWidth: 560, marginInline: "auto" }}>{c.finalSub}</p>
           <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#CDE9D6", margin: "0 0 28px", letterSpacing: "-.01em" }}>Encontre oportunidades. Compre melhor. Aumente sua margem.</div>
-          <AcaoAssinatura estado="auto" rotulo="QUERO TER VANTAGEM NO MERCADO" checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline rlv-cta--slim" />
+          <AcaoAssinatura estado="auto" rotulo={rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline rlv-cta--slim" />
           <div style={{ marginTop: 18, font: `500 12px ${CORPO}`, color: "#6f8598" }}>→ Enquanto você lia isto, mais carros entraram abaixo da FIPE.</div>
         </div>
       </section>

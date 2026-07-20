@@ -4833,6 +4833,18 @@ body {
   .fv-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; }
   .fv-numeros > div + div::before { display: none; } /* empilhado: o espaço já separa */
 }
+/* FAQ da slim — indicador de abrir/fechar (o <summary> tem list-style:none). */
+.fv-faq summary { position: relative; padding-right: 30px; }
+.fv-faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  font: 700 22px/1 var(--fv-titulo), Poppins, sans-serif;
+  color: #16A34A;
+}
+.fv-faq[open] summary::after { content: "\2212"; } /* − (minus) */
 .rlv-scroll::-webkit-scrollbar { height: 6px; }
 .rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
 /* Comparativo VS / equação: no mobile empilham em COLUNA com o selo (VS / =)
