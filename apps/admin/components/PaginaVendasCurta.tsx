@@ -325,7 +325,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 22px" }}>Tudo para comprar melhor.</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "16px 24px" }}>
               {[
-                { Ic: LayoutGrid, t: "BIA (nossa IA)", s: "Organiza milhares de anúncios em inteligência de mercado" },
+                { Ic: LayoutGrid, t: "Nossa IA", s: "Organiza milhares de anúncios em inteligência de mercado" },
                 { Ic: Compass, t: "Copiloto", s: "Analisa automaticamente cada oportunidade" },
                 { Ic: BarChart3, t: "Comparativos", s: "Cidade, estado e Brasil — onde o veículo se posiciona" },
                 { Ic: Bell, t: "Alertas", s: "Receba oportunidades antes da maioria" },
@@ -335,8 +335,8 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <span style={{ flex: "none", width: 36, height: 36, borderRadius: 10, background: "rgba(22,163,74,.12)", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic size={18} strokeWidth={2} /></span>
                   <div>
-                    <div style={{ font: `700 14px ${CORPO}`, color: "#0F1B2D" }}>{t}</div>
-                    <div style={{ font: `500 13px ${CORPO}`, color: "#8090a0" }}>{s}</div>
+                    <div style={{ font: `700 16px ${CORPO}`, color: "#0F1B2D" }}>{t}</div>
+                    <div style={{ font: `500 14px ${CORPO}`, color: "#59626b" }}>{s}</div>
                   </div>
                 </div>
               ))}
