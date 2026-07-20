@@ -162,20 +162,8 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 </div>
               ))}
             </div>
-            <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#00c845", letterSpacing: "-.01em" }}>O mercado inteiro chega até você.</div>
-            <div style={{ marginTop: 24 }}>
-              <a href="#oferta" className="rlv-cta rlv-cta--inline rlv-cta--slim"><Gem size={16} fill="#fff" strokeWidth={0} /> QUERO VER A OFERTA</a>
-            </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(0,200,69,.1)", border: "1px solid rgba(0,200,69,.24)", padding: "9px 16px", borderRadius: 999, marginTop: 22 }}>
-              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#00c845", animation: "rl-blink 1.4s infinite", flex: "none" }} />
-              {dados.kpiAoVivo ? (
-                <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>Mais de <b data-count-to={dados.kpiAoVivo} style={{ fontWeight: 800, color: "#fff" }}>0</b>+ oportunidades monitoradas agora</span>
-              ) : (
-                <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>Milhares de oportunidades monitoradas agora</span>
-              )}
-            </div>
-            <div style={{ marginTop: 22, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#5f8a72", textTransform: "uppercase" }}>
-              Sincronização 100% nativa <span style={{ color: "#00c845" }}>·</span> Únicos no Brasil
+            <div style={{ marginTop: 8 }}>
+              <a href="#oferta" className="rlv-cta rlv-cta--inline rlv-cta--slim"><Gem size={16} fill="#fff" strokeWidth={0} /> QUERO TER VANTAGEM NO MERCADO</a>
             </div>
           </div>
           <div style={{ flex: "1 1 360px", minWidth: 290, display: "flex", justifyContent: "center" }}>
