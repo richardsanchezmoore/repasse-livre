@@ -405,7 +405,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <h3 style={{ font: `800 clamp(22px,3vw,28px)/1.2 ${TIT}`, color: "#fff", margin: "0 0 6px" }}>Você não está comprando acesso a anúncios.</h3>
           <p style={{ font: `500 14px ${CORPO}`, color: "#9FB0C4", margin: "0 0 20px" }}>Você está investindo em:</p>
           <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#00c845", letterSpacing: "-.01em" }}>Tempo. Informação. Contexto. Inteligência. Velocidade. Margem. <span style={{ color: "#fff" }}>Decisões melhores.</span></div>
-          <div style={{ marginTop: 22, font: `700 clamp(15px,1.8vw,18px) ${TIT}`, color: "#CDE9D6" }}>Quanto melhor a decisão, maior a margem.</div>
         </div>
       </section>
 
