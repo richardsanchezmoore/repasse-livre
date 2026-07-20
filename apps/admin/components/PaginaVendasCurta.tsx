@@ -58,8 +58,8 @@ const RADAR_LOGOS = [
   { src: "/vendas/logo-facebook.png", alt: "Facebook Marketplace", h: "clamp(18px,3.8vw,22px)", delay: "-19.5s" },
 ];
 
-const eyebrow: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#16A34A", textTransform: "uppercase", marginBottom: 10 };
-const eyebrowEsc: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#00c845", textTransform: "uppercase", marginBottom: 14 };
+const eyebrow: CSSProperties = { font: `700 14px ${CORPO}`, letterSpacing: ".18em", color: "#16A34A", textTransform: "uppercase", marginBottom: 10 };
+const eyebrowEsc: CSSProperties = { font: `700 14px ${CORPO}`, letterSpacing: ".2em", color: "#00c845", textTransform: "uppercase", marginBottom: 14 };
 
 /** CTA intermediário — âncora pro card de oferta (#oferta), pra converter de qualquer altura da página. */
 function CTAInline({ rotulo, texto }: { rotulo: string; texto?: string }) {
@@ -205,7 +205,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
           <div style={{ textAlign: "center", marginBottom: 34 }}>
-            <div style={{ font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>Como funciona</div>
+            <div style={{ font: `700 14px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>Como funciona</div>
             <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h2>
           </div>
           <div style={{ position: "relative", paddingLeft: 38 }}>
