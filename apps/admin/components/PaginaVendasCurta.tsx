@@ -163,6 +163,9 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
               ))}
             </div>
             <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#00c845", letterSpacing: "-.01em" }}>O mercado inteiro chega até você.</div>
+            <div style={{ marginTop: 24 }}>
+              <a href="#oferta" className="rlv-cta rlv-cta--inline rlv-cta--slim"><Gem size={16} fill="#fff" strokeWidth={0} /> QUERO VER A OFERTA</a>
+            </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(0,200,69,.1)", border: "1px solid rgba(0,200,69,.24)", padding: "9px 16px", borderRadius: 999, marginTop: 22 }}>
               <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#00c845", animation: "rl-blink 1.4s infinite", flex: "none" }} />
               {dados.kpiAoVivo ? (
@@ -201,47 +204,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 4 ── timeline */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
-          <div style={{ textAlign: "center", marginBottom: 34 }}>
-            <div style={{ font: `700 14px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>Como funciona</div>
-            <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h2>
-          </div>
-          <div style={{ position: "relative", paddingLeft: 38 }}>
-            <div style={{ position: "absolute", left: 12, top: 6, bottom: 6, width: 2, background: "linear-gradient(#00c845,#cbe8d5)" }} />
-            {[
-              { n: "1", esc: false, t: "Uma oportunidade entra no mercado", s: "O anúncio é publicado abaixo da FIPE. A janela abre." },
-              { n: "2", esc: false, t: "O Repasse Livre identifica em segundos", s: "Preço, FIPE, versão, mercado, região e contexto — tudo analisado automaticamente." },
-              { n: "3", esc: false, t: "O Copiloto interpreta", s: "Você sabe imediatamente se aquela oportunidade merece sua atenção." },
-              { n: "4", esc: true, t: "Você decide antes da maioria", s: <>Enquanto outros ainda pesquisam, você já está negociando. <b style={{ color: "#16A34A" }}>O mercado recompensa quem chega primeiro.</b></> },
-            ].map((p, i, arr) => (
-              <div key={p.n} style={{ position: "relative", marginBottom: i < arr.length - 1 ? 26 : 0 }}>
-                <span style={{ position: "absolute", left: -38, top: 0, width: 26, height: 26, borderRadius: "50%", background: p.esc ? "#0F1B2D" : "#00c845", color: p.esc ? "#00c845" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 12px ${TIT}` }}>{p.n}</span>
-                <div style={{ font: `700 clamp(16px,2.2vw,19px) ${CORPO}`, color: "#0F1B2D" }}>{p.t}</div>
-                <div style={{ font: `500 clamp(15px,1.7vw,16px)/1.55 ${CORPO}`, color: "#6A7686" }}>{p.s}</div>
-              </div>
-            ))}
-          </div>
-          <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
-        </div>
-      </section>
-
-      {/* 4b ── Nossos números (faixa escura, verdes do topo — sem título) */}
-      {dados.numeros && dados.numeros.length > 0 && (
-        <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(720px 360px at 50% -10%,rgba(0,200,69,.16),transparent 60%),linear-gradient(160deg,#0C2417,#07120C)" }}>
-          <div className="fv-numeros" style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)", textAlign: "center" }}>
-            {dados.numeros.map((n) => (
-              <div key={n.rotulo}>
-                <div style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em", whiteSpace: "nowrap" }}>{n.valor}{n.sufixo && <span style={{ fontSize: "0.42em", fontWeight: 800, marginLeft: 4 }}>{n.sufixo}</span>}</div>
-                <div style={{ font: `600 clamp(11px,1.4vw,13px) ${CORPO}`, color: "#9fc9ab", marginTop: 10, letterSpacing: ".03em" }}>{n.rotulo}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 5 ── comparativo VS */}
+      {/* 5 ── comparativo VS (problema/agitação — logo após o hero) */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
         <div style={{ maxWidth: 960, margin: "0 auto", padding: PAD }}>
           <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -293,6 +256,46 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <CTAInline rotulo="QUERO CHEGAR PRIMEIRO" />
         </div>
       </section>
+
+      {/* 4 ── timeline */}
+      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: PAD }}>
+          <div style={{ textAlign: "center", marginBottom: 34 }}>
+            <div style={{ font: `700 14px ${CORPO}`, letterSpacing: ".2em", color: "#16A34A", textTransform: "uppercase", marginBottom: 12 }}>Como funciona</div>
+            <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h2>
+          </div>
+          <div style={{ position: "relative", paddingLeft: 38 }}>
+            <div style={{ position: "absolute", left: 12, top: 6, bottom: 6, width: 2, background: "linear-gradient(#00c845,#cbe8d5)" }} />
+            {[
+              { n: "1", esc: false, t: "Uma oportunidade entra no mercado", s: "O anúncio é publicado abaixo da FIPE. A janela abre." },
+              { n: "2", esc: false, t: "O Repasse Livre identifica em segundos", s: "Preço, FIPE, versão, mercado, região e contexto — tudo analisado automaticamente." },
+              { n: "3", esc: false, t: "O Copiloto interpreta", s: "Você sabe imediatamente se aquela oportunidade merece sua atenção." },
+              { n: "4", esc: true, t: "Você decide antes da maioria", s: <>Enquanto outros ainda pesquisam, você já está negociando. <b style={{ color: "#16A34A" }}>O mercado recompensa quem chega primeiro.</b></> },
+            ].map((p, i, arr) => (
+              <div key={p.n} style={{ position: "relative", marginBottom: i < arr.length - 1 ? 26 : 0 }}>
+                <span style={{ position: "absolute", left: -38, top: 0, width: 26, height: 26, borderRadius: "50%", background: p.esc ? "#0F1B2D" : "#00c845", color: p.esc ? "#00c845" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 12px ${TIT}` }}>{p.n}</span>
+                <div style={{ font: `700 clamp(16px,2.2vw,19px) ${CORPO}`, color: "#0F1B2D" }}>{p.t}</div>
+                <div style={{ font: `500 clamp(15px,1.7vw,16px)/1.55 ${CORPO}`, color: "#6A7686" }}>{p.s}</div>
+              </div>
+            ))}
+          </div>
+          <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
+        </div>
+      </section>
+
+      {/* 4b ── Nossos números (faixa escura, verdes do topo — sem título) */}
+      {dados.numeros && dados.numeros.length > 0 && (
+        <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(720px 360px at 50% -10%,rgba(0,200,69,.16),transparent 60%),linear-gradient(160deg,#0C2417,#07120C)" }}>
+          <div className="fv-numeros" style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)", textAlign: "center" }}>
+            {dados.numeros.map((n) => (
+              <div key={n.rotulo}>
+                <div style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em", whiteSpace: "nowrap" }}>{n.valor}{n.sufixo && <span style={{ fontSize: "0.42em", fontWeight: 800, marginLeft: 4 }}>{n.sufixo}</span>}</div>
+                <div style={{ font: `600 clamp(11px,1.4vw,13px) ${CORPO}`, color: "#9fc9ab", marginTop: 10, letterSpacing: ".03em" }}>{n.rotulo}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 6 ── demonstração (demo real) */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
