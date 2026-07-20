@@ -140,9 +140,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <div style={{ font: `600 10px ${CORPO}`, letterSpacing: ".04em", color: "#7f93a3" }}>Oferta por tempo limitado</div>
           </div>
           <ContadorRelogio />
-          <a href="#oferta" style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 7, background: "linear-gradient(180deg,#00d24e,#00a038)", color: "#fff", font: `800 12.5px ${CORPO}`, letterSpacing: ".01em", padding: "9px 18px", borderRadius: 999, textDecoration: "none", boxShadow: "0 6px 16px -6px rgba(0,200,69,.6)", whiteSpace: "nowrap" }}>
-            <Gem size={14} fill="#fff" strokeWidth={0} /> GARANTIR OFERTA
-          </a>
         </div>
       </div>
 
