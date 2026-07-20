@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CapturaDestino } from "@/components/CapturaDestino";
-import { PaginaVendasSlim } from "@/components/PaginaVendasSlim";
+import { PaginaVendasCurta } from "@/components/PaginaVendasCurta";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
 import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarTictoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
@@ -50,7 +50,7 @@ export default async function PlanosSlimPage() {
   return (
     <main className={`fv-raiz ${fonteTitulo.variable} ${fonteCorpo.variable}`}>
       <CapturaDestino />
-      <PaginaVendasSlim
+      <PaginaVendasCurta
         dados={{
           variante: "padrao",
           precoValor: preco.valor,
