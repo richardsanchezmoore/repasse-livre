@@ -16,8 +16,10 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(req: Request): Promise<Response> {
-  const segredo = process.env.CRON_SECRET;
-  if (!segredo || req.headers.get("authorization") !== `Bearer ${segredo}`) {
+  // .trim() dos dois lados: um \n colado no valor do CRON_SECRET faria `Bearer X` não
+  // bater com `Bearer X\n` e cairia em 401 (mesma pegadinha do cron de auto-publicar).
+  const segredo = process.env.CRON_SECRET?.trim();
+  if (!segredo || req.headers.get("authorization")?.trim() !== `Bearer ${segredo}`) {
     return NextResponse.json({ erro: "nao_autorizado" }, { status: 401 });
   }
 

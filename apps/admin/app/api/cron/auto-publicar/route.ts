@@ -24,8 +24,20 @@ export const maxDuration = 60;
 const UMA_HORA_MS = 60 * 60 * 1000;
 
 export async function GET(req: Request): Promise<Response> {
-  const segredo = process.env.CRON_SECRET;
-  if (!segredo || req.headers.get("authorization") !== `Bearer ${segredo}`) {
+  // .trim() dos dois lados: um \n colado no valor do CRON_SECRET no painel faria o
+  // header injetado (`Bearer X`) não bater com `Bearer X\n` e derrubaria tudo em 401.
+  const segredo = process.env.CRON_SECRET?.trim();
+  const auth = req.headers.get("authorization")?.trim();
+  if (!segredo || auth !== `Bearer ${segredo}`) {
+    // Diagnóstico mascarado (sem vazar o segredo) — sai no View Logs se ainda der 401.
+    console.warn("[auto-publicar] 401", {
+      ua: req.headers.get("user-agent"),
+      hasSecret: !!segredo,
+      secretLen: segredo?.length ?? 0,
+      authPresent: !!auth,
+      authLen: auth?.length ?? 0,
+      authIsBearer: auth?.startsWith("Bearer ") ?? false,
+    });
     return NextResponse.json({ erro: "nao_autorizado" }, { status: 401 });
   }
 
