@@ -4809,6 +4809,10 @@ body {
   width: auto;
   padding: 16px 30px;
 }
+/* Verde da /planos-slim (PaginaVendasCurta) — #00c845, sem afetar a /planos. */
+.rlv-cta--slim {
+  background: linear-gradient(180deg, #00d24e, #00a038);
+}
 .rlv-scroll::-webkit-scrollbar { height: 6px; }
 .rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
 /* Comparativo VS / equação: no mobile empilham em COLUNA com o selo (VS / =)

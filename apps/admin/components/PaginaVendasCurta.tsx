@@ -78,7 +78,7 @@ function CTAInline({ rotulo, texto }: { rotulo: string; texto?: string }) {
   return (
     <div style={{ textAlign: "center", marginTop: 36 }}>
       {texto && <div style={{ font: `700 clamp(15px,1.9vw,19px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.01em", margin: "0 auto 16px", maxWidth: 500, textWrap: "balance" }}>{texto}</div>}
-      <a href="#oferta" className="rlv-cta rlv-cta--inline"><Gem size={16} fill="#fff" strokeWidth={0} /> {rotulo}</a>
+      <a href="#oferta" className="rlv-cta rlv-cta--inline rlv-cta--slim"><Gem size={16} fill="#fff" strokeWidth={0} /> {rotulo}</a>
     </div>
   );
 }
@@ -163,13 +163,13 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,200,69,.12)", border: "1px solid rgba(0,200,69,.28)", color: "#00c845", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".16em", marginBottom: 20 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00c845", animation: "rl-blink 1.4s infinite" }} /> REPASSE LIVRE → A SOLUÇÃO
             </div>
-            <h2 style={{ font: `800 clamp(30px,4.4vw,39px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
+            <h2 style={{ font: `800 clamp(32px,4.4vw,48px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
               {c.h1a}<span style={{ color: "#00c845" }}>{c.h1b}</span>
             </h2>
-            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade <b style={{ color: "#00c845" }}>abaixo da FIPE</b> aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
+            <p style={{ font: `500 clamp(16px,1.7vw,17px)/1.6 ${CORPO}`, color: "#cacfd4", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade <b style={{ color: "#00c845" }}>abaixo da FIPE</b> aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
               {["Sem abrir vários sites", "Sem comparar dezenas de anúncios", "Sem perder tempo"].map((x) => (
-                <div key={x} style={{ display: "flex", gap: 10, alignItems: "center", font: `600 14px ${CORPO}`, color: "#D6E2EC" }}>
+                <div key={x} style={{ display: "flex", gap: 10, alignItems: "center", font: `600 clamp(14px,1.4vw,15px) ${CORPO}`, color: "#D6E2EC" }}>
                   <Check size={15} strokeWidth={3} color="#00c845" /> {x}
                 </div>
               ))}
@@ -570,7 +570,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(221,107,54,.16)", color: "#F0A868", padding: "10px 14px", borderRadius: 12, font: `700 13px ${CORPO}`, marginBottom: 22 }}>
                 <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <ContadorTexto />
               </div>
-              <AcaoAssinatura estado="auto" rotulo={rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta" />
+              <AcaoAssinatura estado="auto" rotulo={rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--slim" />
               <div style={{ textAlign: "center", marginTop: 14, font: `600 12px ${CORPO}`, color: "#8fa2b3", display: "flex", gap: 7, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}><ShieldCheck size={14} strokeWidth={2} color="#00c845" /> Sem fidelidade. Cancele quando quiser.</div>
               {dados.precoAncoraTexto && <div style={{ textAlign: "center", marginTop: 8, font: `500 12px ${CORPO}`, color: "#7f93a3" }}>Quando a oferta acabar, novos assinantes entram por <b style={{ color: "#A9BBCB" }}>{dados.precoAncoraTexto}/mês</b> — o seu fica travado.</div>}
               {dados.whatsappSuporte && (
@@ -609,7 +609,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <h3 style={{ font: `800 clamp(24px,3.6vw,34px)/1.16 ${TIT}`, color: "#fff", margin: "0 0 14px", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros ainda estão procurando, você pode estar <span style={{ color: "#00c845" }}>fechando o próximo negócio.</span></h3>
           <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", margin: "0 0 22px", maxWidth: 560, marginInline: "auto" }}>{c.finalSub}</p>
           <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#CDE9D6", margin: "0 0 28px", letterSpacing: "-.01em" }}>Encontre oportunidades. Compre melhor. Aumente sua margem.</div>
-          <AcaoAssinatura estado="auto" rotulo="QUERO TER VANTAGEM NO MERCADO" checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
+          <AcaoAssinatura estado="auto" rotulo="QUERO TER VANTAGEM NO MERCADO" checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline rlv-cta--slim" />
           <div style={{ marginTop: 18, font: `500 12px ${CORPO}`, color: "#6f8598" }}>→ Enquanto você lia isto, mais carros entraram abaixo da FIPE.</div>
         </div>
       </section>
