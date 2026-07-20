@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import type { Oportunidade, StatusOportunidade } from "@/lib/types";
-import { registrarAlertasParaAprovados } from "@/lib/alertas/matching";
+import { aprovarComAlertas } from "@/lib/publicacao";
 
 const MARCADOR_BUCKET_FOTOS = "/oportunidades-fotos/";
 
@@ -99,17 +99,16 @@ export async function apagarOportunidades(ids: string[]): Promise<void> {
 async function atualizarStatusEmMassa(ids: string[], status: StatusOportunidade): Promise<void> {
   await exigirAdmin();
   if (ids.length === 0) return;
+  // Aprovar tem efeitos colaterais (status + alertas "na hora" + revalidate) que o cron de
+  // publicação automática TAMBÉM precisa disparar — por isso moram no núcleo compartilhado
+  // `aprovarComAlertas` (lib/publicacao). Aqui só garantimos a guarda de admin antes.
+  if (status === "aprovada") {
+    await aprovarComAlertas(ids);
+    return;
+  }
   const { error } = await supabaseAdmin.from("opportunities").update({ status }).in("id", ids);
   if (error) {
     throw new Error(`Falha ao atualizar status: ${error.message}`);
-  }
-  // ★ Alerta PRO: ao APROVAR (não na captação — descoberta é 404 pro público), casa os
-  // anúncios contra as buscas salvas, registra os pendentes E dispara o e-mail 'na_hora'.
-  // AWAIT (não fire-and-forget): em serverless a lambda é reciclada após a resposta, o que
-  // mataria o envio de e-mail pendente. O matching é best-effort internamente (try/catch,
-  // nunca lança), então aguardar não arrisca derrubar a aprovação. Ver lib/alertas/matching.
-  if (status === "aprovada") {
-    await registrarAlertasParaAprovados(ids);
   }
   revalidatePath("/");
   revalidatePath("/sitemap.xml");

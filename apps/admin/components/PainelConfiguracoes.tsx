@@ -70,6 +70,22 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
         <>
           <p style={{ margin: "0 0 20px", color: "#6b7280", fontSize: 14 }}>Ajustes básicos da plataforma.</p>
 
+          <CampoConfig
+            chave="MODO_PUBLICACAO"
+            valorInicial={configs["MODO_PUBLICACAO"] ?? "manual"}
+            titulo="Publicação das descobertas"
+            tipo="select"
+            opcoes={[
+              { valor: "manual", rotulo: "Manual — aprovar no board" },
+              { valor: "automatico", rotulo: "Automático — publica sozinho (~15 min)" },
+              { valor: "horaria", rotulo: "A cada 1h — em lotes" },
+            ]}
+          >
+            Como os anúncios captados viram públicos. <strong>Manual</strong>: você aprova cada um no board (como hoje).
+            <strong> Automático</strong>: um cron aprova os pendentes a cada ~15 min. <strong>A cada 1h</strong>: aprova em
+            lotes, no máximo um por hora. Nos dois modos automáticos os alertas “na hora” das buscas salvas continuam saindo.
+          </CampoConfig>
+
           <CampoConfig chave="MARGEM_MINIMA_PERCENTUAL" valorInicial={configs["MARGEM_MINIMA_PERCENTUAL"] ?? "5"} titulo="Margem mínima de captação">
             Só captamos anúncios com pelo menos essa % <strong>abaixo da FIPE</strong>. Baixar (ex.: 3%) aumenta a base —
             a negociação costuma puxar o preço mais pra baixo, e um KM baixo já compensa a margem menor. Vale na próxima varredura.

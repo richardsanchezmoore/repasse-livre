@@ -49,6 +49,25 @@ export async function buscarStripePriceId(): Promise<string | null> {
   return doEnv || null;
 }
 
+export type ModoPublicacao = "manual" | "automatico" | "horaria";
+/**
+ * Modo de PUBLICAÇÃO das descobertas (`worker_config.MODO_PUBLICACAO`):
+ *  - "manual" (default): nada publica sozinho; o admin aprova no board (como hoje).
+ *  - "automatico": o cron aprova os pendentes em lotes curtos (~15 min).
+ *  - "horaria": o cron aprova 1 lote por hora.
+ * Lido pelo cron `/api/cron/auto-publicar`. Fallback fail-safe: "manual" (nunca publica
+ * sozinho por config ausente/inválida). Server-only.
+ */
+export async function buscarModoPublicacao(): Promise<ModoPublicacao> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "MODO_PUBLICACAO")
+    .maybeSingle();
+  const v = (data?.valor ?? "").trim().toLowerCase();
+  return v === "automatico" || v === "horaria" ? v : "manual";
+}
+
 /** UUID de qualquer coisa que o admin colar: a URL inteira do anúncio ou o ID cru. */
 const RX_UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 export function extrairIdOportunidade(bruto: string): string | null {
