@@ -58,7 +58,7 @@ const RADAR_LOGOS = [
 ];
 
 const eyebrow: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#16A34A", textTransform: "uppercase", marginBottom: 10 };
-const eyebrowEsc: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#35D07F", textTransform: "uppercase", marginBottom: 14 };
+const eyebrowEsc: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#00c845", textTransform: "uppercase", marginBottom: 14 };
 
 /** Moldura de celular com screenshot. */
 function Fone({ src, alt, largura, aspecto = "350 / 708", flutua = false }: { src: string; alt: string; largura: string; aspecto?: string; flutua?: boolean }) {
@@ -148,7 +148,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
       <div style={{ position: "sticky", top: 0, zIndex: 50, width: "100%", background: "#081410", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "10px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px 28px", flexWrap: "wrap" }}>
           <div style={{ lineHeight: 1.1, textAlign: "center" }}>
-            {dados.descontoPct != null && <div style={{ font: `800 clamp(18px,2.6vw,26px) ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>HOJE: {dados.descontoPct}% OFF</div>}
+            {dados.descontoPct != null && <div style={{ font: `800 clamp(18px,2.6vw,26px) ${TIT}`, color: "#00c845", letterSpacing: "-.01em" }}>HOJE: {dados.descontoPct}% OFF</div>}
             <div style={{ font: `600 10px ${CORPO}`, letterSpacing: ".04em", color: "#7f93a3" }}>Oferta por tempo limitado</div>
           </div>
           <ContadorRelogio />
@@ -160,23 +160,23 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
       <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(700px 500px at 78% 50%,rgba(34,197,94,.14),transparent 62%),linear-gradient(160deg,#0C2417,#07120C)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(32px,4vw,56px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 360px", minWidth: 280 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(53,208,127,.12)", border: "1px solid rgba(53,208,127,.28)", color: "#35D07F", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".16em", marginBottom: 20 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite" }} /> REPASSE LIVRE → A SOLUÇÃO
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,200,69,.12)", border: "1px solid rgba(0,200,69,.28)", color: "#00c845", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".16em", marginBottom: 20 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00c845", animation: "rl-blink 1.4s infinite" }} /> REPASSE LIVRE → A SOLUÇÃO
             </div>
             <h2 style={{ font: `800 clamp(30px,4.4vw,39px)/1.07 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 16px", textWrap: "balance" }}>
-              {c.h1a}<span style={{ color: "#35D07F" }}>{c.h1b}</span>
+              {c.h1a}<span style={{ color: "#00c845" }}>{c.h1b}</span>
             </h2>
-            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade <b style={{ color: "#35D07F" }}>abaixo da FIPE</b> aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
+            <p style={{ font: `500 clamp(15px,1.5vw,16px)/1.6 ${CORPO}`, color: "#A9BBCB", maxWidth: 460, margin: "0 0 20px" }}>OLX, Webmotors, Mercado Livre e Facebook monitorados 24 horas por dia. Quando uma oportunidade <b style={{ color: "#00c845" }}>abaixo da FIPE</b> aparece, nossa inteligência organiza os dados, o Copiloto interpreta e você decide antes da maioria.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 22 }}>
               {["Sem abrir vários sites", "Sem comparar dezenas de anúncios", "Sem perder tempo"].map((x) => (
                 <div key={x} style={{ display: "flex", gap: 10, alignItems: "center", font: `600 14px ${CORPO}`, color: "#D6E2EC" }}>
-                  <Check size={15} strokeWidth={3} color="#35D07F" /> {x}
+                  <Check size={15} strokeWidth={3} color="#00c845" /> {x}
                 </div>
               ))}
             </div>
-            <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>O mercado inteiro chega até você.</div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(53,208,127,.1)", border: "1px solid rgba(53,208,127,.24)", padding: "9px 16px", borderRadius: 999, marginTop: 22 }}>
-              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#35D07F", animation: "rl-blink 1.4s infinite", flex: "none" }} />
+            <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#00c845", letterSpacing: "-.01em" }}>O mercado inteiro chega até você.</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(0,200,69,.1)", border: "1px solid rgba(0,200,69,.24)", padding: "9px 16px", borderRadius: 999, marginTop: 22 }}>
+              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#00c845", animation: "rl-blink 1.4s infinite", flex: "none" }} />
               {dados.kpiAoVivo ? (
                 <span style={{ font: `600 13px ${CORPO}`, color: "#CDE9D6" }}>Mais de <b data-count-to={dados.kpiAoVivo} style={{ fontWeight: 800, color: "#fff" }}>0</b>+ oportunidades monitoradas agora</span>
               ) : (
@@ -184,16 +184,16 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
               )}
             </div>
             <div style={{ marginTop: 22, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#5f8a72", textTransform: "uppercase" }}>
-              Sincronização 100% nativa <span style={{ color: "#35D07F" }}>·</span> Únicos no Brasil
+              Sincronização 100% nativa <span style={{ color: "#00c845" }}>·</span> Únicos no Brasil
             </div>
           </div>
           <div style={{ flex: "1 1 360px", minWidth: 290, display: "flex", justifyContent: "center" }}>
             <div style={{ position: "relative", width: "min(440px,86vw)", aspectRatio: "1" }}>
-              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid rgba(53,208,127,.16)" }} />
-              <div style={{ position: "absolute", inset: "15%", borderRadius: "50%", border: "1px solid rgba(53,208,127,.12)" }} />
-              <div style={{ position: "absolute", inset: "32%", borderRadius: "50%", border: "1px dashed rgba(53,208,127,.14)" }} />
-              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "conic-gradient(from 0deg, rgba(53,208,127,.28), rgba(53,208,127,.04) 18%, transparent 34%)", animation: "rl-sweep 6s linear infinite", WebkitMask: "radial-gradient(circle, #000 66%, transparent 67%)", mask: "radial-gradient(circle, #000 66%, transparent 67%)" }} />
-              <div style={{ position: "absolute", top: "50%", left: "50%", width: "34%", height: "34%", borderRadius: "50%", border: "1px solid rgba(53,208,127,.4)", animation: "rl-ping 3s ease-out infinite" }} />
+              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid rgba(0,200,69,.16)" }} />
+              <div style={{ position: "absolute", inset: "15%", borderRadius: "50%", border: "1px solid rgba(0,200,69,.12)" }} />
+              <div style={{ position: "absolute", inset: "32%", borderRadius: "50%", border: "1px dashed rgba(0,200,69,.14)" }} />
+              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "conic-gradient(from 0deg, rgba(0,200,69,.28), rgba(0,200,69,.04) 18%, transparent 34%)", animation: "rl-sweep 6s linear infinite", WebkitMask: "radial-gradient(circle, #000 66%, transparent 67%)", mask: "radial-gradient(circle, #000 66%, transparent 67%)" }} />
+              <div style={{ position: "absolute", top: "50%", left: "50%", width: "34%", height: "34%", borderRadius: "50%", border: "1px solid rgba(0,200,69,.4)", animation: "rl-ping 3s ease-out infinite" }} />
               {RADAR_LOGOS.map((l) => (
                 <div key={l.alt} style={{ position: "absolute", inset: 0, animation: "rl-orbit 26s linear infinite", animationDelay: l.delay }}>
                   <div style={{ position: "absolute", top: 0, left: "50%", transform: "translate(-50%,-50%)", animation: "rl-orbit-rev 26s linear infinite", animationDelay: l.delay }}>
@@ -221,7 +221,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <h2 style={{ font: `800 clamp(24px,3.4vw,34px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>{c.timeline}</h2>
           </div>
           <div style={{ position: "relative", paddingLeft: 38 }}>
-            <div style={{ position: "absolute", left: 12, top: 6, bottom: 6, width: 2, background: "linear-gradient(#16A34A,#cbe8d5)" }} />
+            <div style={{ position: "absolute", left: 12, top: 6, bottom: 6, width: 2, background: "linear-gradient(#00c845,#cbe8d5)" }} />
             {[
               { n: "1", esc: false, t: "Uma oportunidade entra no mercado", s: "O anúncio é publicado abaixo da FIPE. A janela abre." },
               { n: "2", esc: false, t: "O Repasse Livre identifica em segundos", s: "Preço, FIPE, versão, mercado, região e contexto — tudo analisado automaticamente." },
@@ -229,9 +229,9 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
               { n: "4", esc: true, t: "Você decide antes da maioria", s: <>Enquanto outros ainda pesquisam, você já está negociando. <b style={{ color: "#16A34A" }}>O mercado recompensa quem chega primeiro.</b></> },
             ].map((p, i, arr) => (
               <div key={p.n} style={{ position: "relative", marginBottom: i < arr.length - 1 ? 26 : 0 }}>
-                <span style={{ position: "absolute", left: -38, top: 0, width: 26, height: 26, borderRadius: "50%", background: p.esc ? "#0F1B2D" : "#16A34A", color: p.esc ? "#35D07F" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 12px ${TIT}` }}>{p.n}</span>
-                <div style={{ font: `700 clamp(15px,1.7vw,17px) ${CORPO}`, color: "#0F1B2D" }}>{p.t}</div>
-                <div style={{ font: `500 14px/1.55 ${CORPO}`, color: "#6A7686" }}>{p.s}</div>
+                <span style={{ position: "absolute", left: -38, top: 0, width: 26, height: 26, borderRadius: "50%", background: p.esc ? "#0F1B2D" : "#00c845", color: p.esc ? "#00c845" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", font: `800 12px ${TIT}` }}>{p.n}</span>
+                <div style={{ font: `700 clamp(16px,2.2vw,19px) ${CORPO}`, color: "#0F1B2D" }}>{p.t}</div>
+                <div style={{ font: `500 clamp(15px,1.7vw,16px)/1.55 ${CORPO}`, color: "#6A7686" }}>{p.s}</div>
               </div>
             ))}
           </div>
@@ -509,7 +509,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
               { Ic: Lightbulb, t: "Quem entende que informação gera margem", dark: true },
             ].map(({ Ic, t, dark }) => (
               <div key={t} style={{ background: dark ? "#0F1B2D" : "#fff", border: `1px solid ${dark ? "#0F1B2D" : "#E4EAF0"}`, borderRadius: 16, padding: "20px 16px" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 11, background: dark ? "rgba(53,208,127,.18)" : "rgba(22,163,74,.12)", color: dark ? "#35D07F" : "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}><Ic size={20} strokeWidth={2} /></div>
+                <div style={{ width: 40, height: 40, borderRadius: 11, background: dark ? "rgba(0,200,69,.18)" : "rgba(22,163,74,.12)", color: dark ? "#00c845" : "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}><Ic size={20} strokeWidth={2} /></div>
                 <div style={{ font: `700 ${dark ? "13px" : "14px"} ${CORPO}`, color: dark ? "#fff" : "#0F1B2D" }}>{t}</div>
               </div>
             ))}
@@ -523,7 +523,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <div style={eyebrowEsc}>O que você está comprando</div>
           <h3 style={{ font: `800 clamp(22px,3vw,28px)/1.2 ${TIT}`, color: "#fff", margin: "0 0 6px" }}>Você não está comprando acesso a anúncios.</h3>
           <p style={{ font: `500 14px ${CORPO}`, color: "#9FB0C4", margin: "0 0 20px" }}>Você está investindo em:</p>
-          <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#35D07F", letterSpacing: "-.01em" }}>Tempo. Informação. Contexto. Inteligência. Velocidade. Margem. <span style={{ color: "#fff" }}>Decisões melhores.</span></div>
+          <div style={{ font: `800 clamp(22px,3.2vw,30px)/1.4 ${TIT}`, color: "#00c845", letterSpacing: "-.01em" }}>Tempo. Informação. Contexto. Inteligência. Velocidade. Margem. <span style={{ color: "#fff" }}>Decisões melhores.</span></div>
           <div style={{ marginTop: 22, font: `700 clamp(15px,1.8vw,18px) ${TIT}`, color: "#CDE9D6" }}>Quanto melhor a decisão, maior a margem.</div>
         </div>
       </section>
@@ -533,7 +533,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
         <div style={{ maxWidth: 1060, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(32px,4vw,56px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 380px", minWidth: 290 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(53,208,127,.14)", color: "#35D07F", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}><Gem size={11} fill="#35D07F" strokeWidth={0} /> REPASSE LIVRE PRO</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,200,69,.14)", color: "#00c845", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}><Gem size={11} fill="#00c845" strokeWidth={0} /> REPASSE LIVRE PRO</span>
               <span style={{ background: "rgba(217,119,46,.2)", color: "#F0A868", font: `800 10px ${CORPO}`, letterSpacing: ".1em", padding: "5px 11px", borderRadius: 999 }}>SEMANA DO COMPRADOR</span>
             </div>
             <h3 style={{ font: `800 clamp(26px,3.6vw,38px)/1.14 ${TIT}`, color: "#fff", letterSpacing: "-.025em", margin: "0 0 14px", textWrap: "balance" }}>Repasse Livre PRO</h3>
@@ -545,7 +545,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 <>Sem fidelidade — cancele quando quiser, direto no painel</>,
               ].map((n, i) => (
                 <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <span style={{ flex: "none", width: 24, height: 24, borderRadius: "50%", background: "rgba(53,208,127,.16)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}><Check size={13} strokeWidth={3} color="#35D07F" /></span>
+                  <span style={{ flex: "none", width: 24, height: 24, borderRadius: "50%", background: "rgba(0,200,69,.16)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}><Check size={13} strokeWidth={3} color="#00c845" /></span>
                   <span style={{ font: `600 14.5px/1.5 ${CORPO}`, color: "#D6E2EC" }}>{n}</span>
                 </div>
               ))}
@@ -571,11 +571,11 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 <Clock size={14} strokeWidth={2.2} /> Sua oferta expira em <ContadorTexto />
               </div>
               <AcaoAssinatura estado="auto" rotulo={rotuloAssinar} checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta" />
-              <div style={{ textAlign: "center", marginTop: 14, font: `600 12px ${CORPO}`, color: "#8fa2b3", display: "flex", gap: 7, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}><ShieldCheck size={14} strokeWidth={2} color="#35D07F" /> Sem fidelidade. Cancele quando quiser.</div>
+              <div style={{ textAlign: "center", marginTop: 14, font: `600 12px ${CORPO}`, color: "#8fa2b3", display: "flex", gap: 7, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}><ShieldCheck size={14} strokeWidth={2} color="#00c845" /> Sem fidelidade. Cancele quando quiser.</div>
               {dados.precoAncoraTexto && <div style={{ textAlign: "center", marginTop: 8, font: `500 12px ${CORPO}`, color: "#7f93a3" }}>Quando a oferta acabar, novos assinantes entram por <b style={{ color: "#A9BBCB" }}>{dados.precoAncoraTexto}/mês</b> — o seu fica travado.</div>}
               {dados.whatsappSuporte && (
-                <a href={`https://wa.me/${dados.whatsappSuporte}?text=${encodeURIComponent("Olá! Fiquei com uma dúvida sobre o Repasse Livre PRO.")}`} target="_blank" rel="noreferrer" style={{ marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(53,208,127,.14)", color: "#35D07F", padding: 12, borderRadius: 12, font: `700 13px ${CORPO}` }}>
-                  <MessageCircle size={16} strokeWidth={2} fill="#35D07F" /> Ficou com dúvida? Chame no WhatsApp
+                <a href={`https://wa.me/${dados.whatsappSuporte}?text=${encodeURIComponent("Olá! Fiquei com uma dúvida sobre o Repasse Livre PRO.")}`} target="_blank" rel="noreferrer" style={{ marginTop: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(0,200,69,.14)", color: "#00c845", padding: 12, borderRadius: 12, font: `700 13px ${CORPO}` }}>
+                  <MessageCircle size={16} strokeWidth={2} fill="#00c845" /> Ficou com dúvida? Chame no WhatsApp
                 </a>
               )}
             </div>
@@ -606,7 +606,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
       <section style={{ width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(700px 320px at 50% 0,rgba(34,197,94,.22),transparent 70%),linear-gradient(180deg,#0E2A1A,#081410)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(48px,6vw,84px) clamp(20px,5vw,56px)", textAlign: "center" }}>
           <div style={eyebrowEsc}>Última chamada</div>
-          <h3 style={{ font: `800 clamp(24px,3.6vw,34px)/1.16 ${TIT}`, color: "#fff", margin: "0 0 14px", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros ainda estão procurando, você pode estar <span style={{ color: "#35D07F" }}>fechando o próximo negócio.</span></h3>
+          <h3 style={{ font: `800 clamp(24px,3.6vw,34px)/1.16 ${TIT}`, color: "#fff", margin: "0 0 14px", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros ainda estão procurando, você pode estar <span style={{ color: "#00c845" }}>fechando o próximo negócio.</span></h3>
           <p style={{ font: `500 clamp(14px,1.5vw,16px)/1.6 ${CORPO}`, color: "#9FB0C4", margin: "0 0 22px", maxWidth: 560, marginInline: "auto" }}>{c.finalSub}</p>
           <div style={{ font: `800 clamp(17px,2.2vw,21px) ${TIT}`, color: "#CDE9D6", margin: "0 0 28px", letterSpacing: "-.01em" }}>Encontre oportunidades. Compre melhor. Aumente sua margem.</div>
           <AcaoAssinatura estado="auto" rotulo="QUERO TER VANTAGEM NO MERCADO" checkoutUrl={dados.checkoutUrl} gerenciarUrl={dados.gerenciarUrl} gateway={dados.gateway} className="rlv-cta rlv-cta--inline" />
