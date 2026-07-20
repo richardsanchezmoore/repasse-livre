@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, type CSSProperties } from "react";
-import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, ArrowRight, Lock, Store, Code, User, Lightbulb, AlertTriangle } from "lucide-react";
+import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, Lock, AlertTriangle } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { AvisoAssinatura } from "@/components/AvisoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
@@ -354,86 +354,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 8 ── 08:12 */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "linear-gradient(160deg,#F4FBF6,#E7F5EC)" }}>
-        <div style={{ position: "absolute", top: -80, left: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(34,197,94,.2),transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", maxWidth: 1000, margin: "0 auto", padding: "clamp(44px,5.5vw,76px) clamp(20px,5vw,56px)", display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ flex: "0 1 240px", minWidth: 210, display: "flex", justifyContent: "center", position: "relative" }}>
-            <div style={{ position: "relative" }}>
-              <Fone src="/vendas/home.png" alt="Oportunidade abaixo da FIPE" largura="min(210px,60vw)" aspecto="350 / 712" flutua />
-              <div style={{ position: "absolute", top: 26, right: -18, zIndex: 5, display: "flex", alignItems: "center", gap: 9, background: "#fff", border: "1px solid #E4EAF0", borderRadius: 14, padding: "9px 12px", boxShadow: "0 16px 34px -12px rgba(15,27,45,.4)", animation: "rl-float 4.4s ease-in-out infinite" }}>
-                <span style={{ flex: "none", width: 30, height: 30, borderRadius: 9, background: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", color: "#fff" }}>
-                  <Bell size={15} strokeWidth={2} />
-                  <span style={{ position: "absolute", top: -3, right: -3, width: 9, height: 9, borderRadius: "50%", background: "#DD6B36", border: "2px solid #fff", animation: "rl-blink 1.4s infinite" }} />
-                </span>
-                <div style={{ lineHeight: 1.25 }}>
-                  <div style={{ font: `800 11px ${CORPO}`, color: "#0F1B2D" }}>Nova oportunidade</div>
-                  <div style={{ font: `700 10px ${CORPO}`, color: "#16A34A" }}>21% abaixo da FIPE</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style={{ flex: "1 1 340px", minWidth: 280 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(22,163,74,.1)", border: "1px solid rgba(22,163,74,.22)", padding: "5px 12px", borderRadius: 999, marginBottom: 14 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#16A34A", animation: "rl-blink 1.4s infinite" }} />
-              <span style={{ font: `800 10px ${CORPO}`, letterSpacing: ".14em", color: "#0F7A3D" }}>ALERTAS</span>
-            </div>
-            <h3 style={{ font: `800 clamp(23px,3vw,30px)/1.18 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Seu celular vibra antes da concorrência.</h3>
-            <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Enquanto milhares de compradores ainda estão pesquisando, você já recebeu o alerta, já viu a análise e já sabe se vale a pena comprar.</p>
-            <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: 0 }}>As melhores oportunidades aparecem primeiro <span style={{ color: "#16A34A" }}>para quem está preparado.</span></p>
-          </div>
-          <div style={{ flexBasis: "100%" }}>
-            <CTAInline rotulo="QUERO RECEBER OS ALERTAS" />
-          </div>
-        </div>
-      </section>
-
-      {/* SLIM: seção "dashboard showcase" (Inteligência de estoque) removida */}
-
-      {/* 10 ── tendências */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ flex: "1 1 360px", minWidth: 280 }}>
-            <div style={eyebrow}>Inteligência de mercado</div>
-            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 12px" }}>Pare de analisar anúncios. Comece a analisar o mercado.</h3>
-            <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 20px" }}>Veja quais modelos estão mais disputados, quais regiões oferecem melhores oportunidades, a margem média por modelo e quais veículos estão abaixo do comportamento normal do mercado. Tudo baseado em dados reais monitorados diariamente.</p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <div style={{ flex: "1 1 160px", background: "#F7FAFC", border: "1px solid #EAEEF3", borderRadius: 14, padding: "14px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#16A34A" }} />
-                  <span style={{ font: `800 13px ${TIT}`, color: "#0F1B2D" }}>Compass</span>
-                  <span style={{ font: `600 10px ${CORPO}`, color: "#9AA6B4" }}>Jeep</span>
-                </div>
-                <div style={{ font: `700 10px ${CORPO}`, letterSpacing: ".08em", color: "#9AA6B4", textTransform: "uppercase", marginBottom: 3 }}>Margem média</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-                  <span style={{ font: `800 16px ${TIT}`, color: "#0F1B2D" }}>9.3%→10.6%</span>
-                  <span style={{ font: `800 11px ${CORPO}`, color: "#16A34A" }}>▲ 1.3pp</span>
-                </div>
-              </div>
-              <div style={{ flex: "1 1 160px", background: "#F7FAFC", border: "1px solid #EAEEF3", borderRadius: 14, padding: "14px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#E0A800" }} />
-                  <span style={{ font: `800 13px ${TIT}`, color: "#0F1B2D" }}>Onix</span>
-                  <span style={{ font: `600 10px ${CORPO}`, color: "#9AA6B4" }}>Chevrolet</span>
-                </div>
-                <div style={{ font: `700 10px ${CORPO}`, letterSpacing: ".08em", color: "#9AA6B4", textTransform: "uppercase", marginBottom: 3 }}>Oferta média</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-                  <span style={{ font: `800 16px ${TIT}`, color: "#0F1B2D" }}>98→79 un.</span>
-                  <span style={{ font: `800 11px ${CORPO}`, color: "#DD6B36" }}>▼ 19%</span>
-                </div>
-              </div>
-            </div>
-            <p style={{ font: `600 13px/1.5 ${CORPO}`, color: "#7A8698", margin: "16px 0 0" }}>↳ Quem entende o mercado compra melhor: quando a oportunidade aparece, o desconto está mais gordo — <b style={{ color: "#16A34A" }}>vale agir rápido.</b></p>
-          </div>
-          <div style={{ flex: "0 1 240px", minWidth: 210, display: "flex", justifyContent: "center" }}>
-            <Fone src="/vendas/bia-parte6-tendencias.png" alt="Tendências do mês" largura="min(220px,62vw)" flutua />
-          </div>
-          <div style={{ flexBasis: "100%" }}>
-            <CTAInline rotulo="QUERO TER VANTAGEM NO MERCADO" />
-          </div>
-        </div>
-      </section>
-
       {/* 11 ── "Veja por dentro" slider */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: PAD }}>
@@ -486,34 +406,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           </div>
           <div style={{ marginTop: 32, font: `800 clamp(22px,3.4vw,32px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>Um bom negócio pode pagar anos de Repasse Livre PRO.</div>
           <CTAInline rotulo="QUERO ACESSAR O REPASSE LIVRE PRO" />
-        </div>
-      </section>
-
-      {/* 13b ── para quem é */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: PAD, textAlign: "center" }}>
-          <div style={eyebrow}>Para quem é</div>
-          <h3 style={{ font: `800 clamp(24px,3.4vw,32px)/1.16 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px", textWrap: "balance" }}>
-            Feito para quem compra veículos de forma estratégica.
-          </h3>
-          <p style={{ font: `500 clamp(15px,1.6vw,17px)/1.6 ${CORPO}`, color: "#6A7686", maxWidth: 560, margin: "0 auto 34px" }}>
-            Se a sua margem depende de comprar bem e na hora certa, o Repasse Livre PRO foi desenhado para você.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14, maxWidth: 720, margin: "0 auto 26px" }}>
-            {[
-              { Ic: Store, t: "Lojistas", dark: false },
-              { Ic: Code, t: "Intermediadores", dark: false },
-              { Ic: BarChart3, t: "Investidores", dark: false },
-              { Ic: ArrowRight, t: "Repassadores", dark: false },
-              { Ic: User, t: "Compradores profissionais", dark: false },
-              { Ic: Lightbulb, t: "Quem entende que informação gera margem", dark: true },
-            ].map(({ Ic, t, dark }) => (
-              <div key={t} style={{ background: dark ? "#0F1B2D" : "#fff", border: `1px solid ${dark ? "#0F1B2D" : "#E4EAF0"}`, borderRadius: 16, padding: "20px 16px" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 11, background: dark ? "rgba(0,200,69,.18)" : "rgba(22,163,74,.12)", color: dark ? "#00c845" : "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}><Ic size={20} strokeWidth={2} /></div>
-                <div style={{ font: `700 ${dark ? "13px" : "14px"} ${CORPO}`, color: dark ? "#fff" : "#0F1B2D" }}>{t}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
