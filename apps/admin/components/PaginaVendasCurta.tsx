@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, type CSSProperties } from "react";
-import { Gem, Clock, Zap, Bell, Check, X, TrendingDown, BarChart3, LayoutGrid, Compass, Star, ShieldCheck, MessageCircle, Lock, AlertTriangle } from "lucide-react";
+import { Gem, Clock, Zap, Bell, Check, X, BarChart3, LayoutGrid, Compass, ShieldCheck, MessageCircle, Lock, AlertTriangle } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { AvisoAssinatura } from "@/components/AvisoAssinatura";
 import { ExperimenteDemo } from "@/components/ExperimenteDemo";
@@ -329,8 +329,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 { Ic: Compass, t: "Copiloto", s: "Analisa automaticamente cada oportunidade" },
                 { Ic: BarChart3, t: "Comparativos", s: "Cidade, estado e Brasil — onde o veículo se posiciona" },
                 { Ic: Bell, t: "Alertas", s: "Receba oportunidades antes da maioria" },
-                { Ic: Star, t: "Score Repasse Livre", s: "Saiba rapidamente quais anúncios merecem atenção" },
-                { Ic: TrendingDown, t: "Dashboard", s: "Entenda o mercado antes da concorrência" },
               ].map(({ Ic, t, s }) => (
                 <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <span style={{ flex: "none", width: 36, height: 36, borderRadius: 10, background: "rgba(22,163,74,.12)", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic size={18} strokeWidth={2} /></span>
