@@ -287,7 +287,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 18, display: "flex", gap: 9, alignItems: "center", background: "#16A34A", borderRadius: 12, padding: "11px 14px", font: `800 12.5px ${CORPO}`, color: "#fff" }}><Zap size={15} fill="#fff" strokeWidth={0} style={{ flex: "none" }} /> Você chega primeiro e compra melhor.</div>
             </div>
           </div>
           <div style={{ textAlign: "center", marginTop: 28, maxWidth: 600, marginInline: "auto", font: `800 clamp(18px,2.4vw,24px)/1.3 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", textWrap: "balance" }}>Enquanto outros procuram informações, <span style={{ color: "#16A34A" }}>você toma decisões.</span></div>
