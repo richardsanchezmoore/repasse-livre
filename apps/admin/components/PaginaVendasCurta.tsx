@@ -330,9 +330,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 24, padding: "16px 20px", background: "#fff", border: "1px solid #E4EAF0", borderRadius: 14, font: `800 clamp(15px,1.8vw,18px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.01em" }}>
-              Você deixa de analisar anúncios. <span style={{ color: "#16A34A" }}>Passa a analisar o mercado.</span>
-            </div>
           </div>
           <div style={{ flex: "1 1 260px", minWidth: 240, display: "flex", justifyContent: "center" }}>
             <div style={{ width: "min(260px,72vw)" }}>
