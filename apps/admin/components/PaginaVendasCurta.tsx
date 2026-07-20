@@ -60,19 +60,6 @@ const RADAR_LOGOS = [
 const eyebrow: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".18em", color: "#16A34A", textTransform: "uppercase", marginBottom: 10 };
 const eyebrowEsc: CSSProperties = { font: `700 11px ${CORPO}`, letterSpacing: ".2em", color: "#00c845", textTransform: "uppercase", marginBottom: 14 };
 
-/** Moldura de celular com screenshot. */
-function Fone({ src, alt, largura, aspecto = "350 / 708", flutua = false }: { src: string; alt: string; largura: string; aspecto?: string; flutua?: boolean }) {
-  return (
-    <div style={{ width: largura, padding: 8, background: "linear-gradient(160deg,#22354f,#0F1B2D)", borderRadius: 36, boxShadow: "0 30px 56px -18px rgba(15,27,45,.5)", animation: flutua ? "rl-float 5.6s ease-in-out infinite" : undefined }}>
-      <div style={{ position: "relative", borderRadius: 29, overflow: "hidden", background: "#EEF1F4", aspectRatio: aspecto }}>
-        <div style={{ position: "absolute", top: 9, left: "50%", transform: "translateX(-50%)", width: 54, height: 5, borderRadius: 5, background: "#0F1B2D", zIndex: 3 }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", display: "block" }} />
-      </div>
-    </div>
-  );
-}
-
 /** CTA intermediário — âncora pro card de oferta (#oferta), pra converter de qualquer altura da página. */
 function CTAInline({ rotulo, texto }: { rotulo: string; texto?: string }) {
   return (
@@ -346,7 +333,25 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             </div>
           </div>
           <div style={{ flex: "1 1 260px", minWidth: 240, display: "flex", justifyContent: "center" }}>
-            <Fone src="/vendas/anuncio-copiloto.png" alt="Análise do Copiloto" largura="min(230px,64vw)" />
+            <div style={{ width: "min(260px,72vw)" }}>
+              <CarrosselVendas
+                largura={220}
+                imagens={[
+                  { src: "/vendas/home.png", alt: "Painel Repasse Livre" },
+                  { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço do anúncio" },
+                  { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE" },
+                  { src: "/vendas/anuncio-copiloto.png", alt: "Análise do Copiloto" },
+                  { src: "/vendas/bia-parte1-estados.png", alt: "Oportunidades por estado" },
+                  { src: "/vendas/bia-parte2-margem-media-top12.png", alt: "Margem média — top 12 modelos" },
+                  { src: "/vendas/bia-parte3-cidades-mais-ativas.png", alt: "Cidades mais ativas" },
+                  { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
+                  { src: "/vendas/bia-parte4-modelos-mais-disputados-por-volume.png", alt: "Mais disputados por volume" },
+                  { src: "/vendas/bia-parte4-modelos-mais-disputados-por-marca-volks.png", alt: "Mais disputados por marca" },
+                  { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão — marcas de luxo" },
+                  { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências do mês" },
+                ]}
+              />
+            </div>
           </div>
           <div style={{ flexBasis: "100%" }}>
             <CTAInline rotulo="QUERO ACESSAR AGORA" />
@@ -354,33 +359,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 11 ── "Veja por dentro" slider */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: PAD }}>
-          <div style={{ marginBottom: 24 }}>
-            <div style={eyebrow}>Na palma da mão</div>
-            <h3 style={{ font: `800 clamp(24px,3.2vw,32px) ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: 0 }}>Veja por dentro.</h3>
-          </div>
-          <CarrosselVendas
-            largura={190}
-            imagens={[
-              { src: "/vendas/home.png", alt: "Painel Repasse Livre" },
-              { src: "/vendas/anuncio-referencia-preco.png", alt: "Referência de preço do anúncio" },
-              { src: "/vendas/anuncio-historico-fipe.png", alt: "Histórico da FIPE" },
-              { src: "/vendas/anuncio-copiloto.png", alt: "Análise do Copiloto" },
-              { src: "/vendas/bia-parte1-estados.png", alt: "Oportunidades por estado" },
-              { src: "/vendas/bia-parte2-margem-media-top12.png", alt: "Margem média — top 12 modelos" },
-              { src: "/vendas/bia-parte3-cidades-mais-ativas.png", alt: "Cidades mais ativas" },
-              { src: "/vendas/bia-parte4-modelos-mais-disputados.png", alt: "Modelos mais disputados" },
-              { src: "/vendas/bia-parte4-modelos-mais-disputados-por-volume.png", alt: "Mais disputados por volume" },
-              { src: "/vendas/bia-parte4-modelos-mais-disputados-por-marca-volks.png", alt: "Mais disputados por marca" },
-              { src: "/vendas/bia-parte5-alto-padrao-marcas-de-luxo.png", alt: "Alto padrão — marcas de luxo" },
-              { src: "/vendas/bia-parte6-tendencias.png", alt: "Tendências do mês" },
-            ]}
-          />
-          <CTAInline texto="Tudo isso na palma da sua mão, todo dia." rotulo="QUERO ACESSAR AGORA" />
-        </div>
-      </section>
 
       {/* 13 ── quanto vale (equação) */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
