@@ -4813,6 +4813,26 @@ body {
 .rlv-cta--slim {
   background: linear-gradient(180deg, #00d24e, #00a038);
 }
+/* "Nossos números" (faixa escura da slim) — divisor vertical suave entre as colunas. */
+.fv-numeros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(24px, 4vw, 44px);
+}
+.fv-numeros > div { position: relative; }
+.fv-numeros > div + div::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * clamp(12px, 2vw, 22px));
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  background: linear-gradient(transparent, rgba(0, 200, 69, 0.32), transparent);
+}
+@media (max-width: 680px) {
+  .fv-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; }
+  .fv-numeros > div + div::before { display: none; } /* empilhado: o espaço já separa */
+}
 .rlv-scroll::-webkit-scrollbar { height: 6px; }
 .rlv-scroll::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 6px; }
 /* Comparativo VS / equação: no mobile empilham em COLUNA com o selo (VS / =)

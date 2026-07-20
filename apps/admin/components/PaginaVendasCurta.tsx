@@ -230,7 +230,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
       {/* 4b ── Nossos números (faixa escura, verdes do topo — sem título) */}
       {dados.numeros && dados.numeros.length > 0 && (
         <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(720px 360px at 50% -10%,rgba(0,200,69,.16),transparent 60%),linear-gradient(160deg,#0C2417,#07120C)" }}>
-          <div style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: "clamp(24px,4vw,44px)", textAlign: "center" }}>
+          <div className="fv-numeros" style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)", textAlign: "center" }}>
             {dados.numeros.map((n) => (
               <div key={n.rotulo}>
                 <div style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em", whiteSpace: "nowrap" }}>{n.valor}{n.sufixo && <span style={{ fontSize: "0.42em", fontWeight: 800, marginLeft: 4 }}>{n.sufixo}</span>}</div>
