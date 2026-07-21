@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     template: "%s — Repasse Livre",
   },
   description: DESCRICAO_PADRAO,
+  // Verificação de domínio da Meta (Business → Domains): renderiza
+  // <meta name="facebook-domain-verification" ...> na home. Sem CNPJ; habilita
+  // priorizar eventos de conversão e proteger a atribuição do domínio.
+  other: { "facebook-domain-verification": "0doqej8v7fv7obztet61o2dzboyttj" },
   openGraph: {
     type: "website",
     locale: "pt_BR",
