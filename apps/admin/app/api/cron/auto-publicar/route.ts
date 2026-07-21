@@ -35,7 +35,13 @@ export async function GET(req: Request): Promise<Response> {
   const auth = req.headers.get("authorization")?.trim();
   const ua = req.headers.get("user-agent") ?? "";
   const porSegredo = Boolean(segredo) && auth === `Bearer ${segredo}`;
-  const porVercelCron = !segredo && ua.startsWith("vercel-cron");
+  // UA fallback INCONDICIONAL: aceita qualquer requisição do Vercel Cron (user-agent
+  // `vercel-cron`), mesmo com o segredo presente. Cobre os DOIS modos de falha vistos/
+  // previstos: (1) a env some do runtime (gremlin → hasSecret:false) e (2) o header
+  // Authorization ser removido no caminho (CDN/proxy do domínio custom → authPresent:false
+  // com hasSecret:true). Risco baixo: UA é falsificável, mas o endpoint só publica o que o
+  // modo automático publicaria de qualquer jeito.
+  const porVercelCron = ua.startsWith("vercel-cron");
   if (!porSegredo && !porVercelCron) {
     console.warn("[auto-publicar] 401", { ua, hasSecret: !!segredo, authPresent: !!auth });
     return NextResponse.json({ erro: "nao_autorizado" }, { status: 401 });

@@ -23,7 +23,9 @@ export async function GET(req: Request): Promise<Response> {
   const auth = req.headers.get("authorization")?.trim();
   const ua = req.headers.get("user-agent") ?? "";
   const porSegredo = Boolean(segredo) && auth === `Bearer ${segredo}`;
-  const porVercelCron = !segredo && ua.startsWith("vercel-cron");
+  // UA fallback incondicional — mesmo motivo do auto-publicar: cobre env-some-do-runtime
+  // E header-Authorization-removido-pelo-CDN. Risco baixo (só dispara o resumo diário).
+  const porVercelCron = ua.startsWith("vercel-cron");
   if (!porSegredo && !porVercelCron) {
     return NextResponse.json({ erro: "nao_autorizado" }, { status: 401 });
   }
