@@ -16,10 +16,15 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(req: Request): Promise<Response> {
-  // .trim() dos dois lados: um \n colado no valor do CRON_SECRET faria `Bearer X` não
-  // bater com `Bearer X\n` e cairia em 401 (mesma pegadinha do cron de auto-publicar).
+  // Auth resiliente igual ao cron de auto-publicar: exige CRON_SECRET (trim dos 2 lados),
+  // mas cai pro fallback do user-agent vercel-cron quando o env some do runtime (o gremlin
+  // intermitente da Vercel) — senão o resumo diário morre em silêncio pelo mesmo motivo.
   const segredo = process.env.CRON_SECRET?.trim();
-  if (!segredo || req.headers.get("authorization")?.trim() !== `Bearer ${segredo}`) {
+  const auth = req.headers.get("authorization")?.trim();
+  const ua = req.headers.get("user-agent") ?? "";
+  const porSegredo = Boolean(segredo) && auth === `Bearer ${segredo}`;
+  const porVercelCron = !segredo && ua.startsWith("vercel-cron");
+  if (!porSegredo && !porVercelCron) {
     return NextResponse.json({ erro: "nao_autorizado" }, { status: 401 });
   }
 

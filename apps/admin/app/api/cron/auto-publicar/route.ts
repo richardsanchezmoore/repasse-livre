@@ -24,20 +24,20 @@ export const maxDuration = 60;
 const UMA_HORA_MS = 60 * 60 * 1000;
 
 export async function GET(req: Request): Promise<Response> {
-  // .trim() dos dois lados: um \n colado no valor do CRON_SECRET no painel faria o
-  // header injetado (`Bearer X`) não bater com `Bearer X\n` e derrubaria tudo em 401.
+  // Auth RESILIENTE. O caminho normal exige o CRON_SECRET (com .trim() dos dois lados,
+  // contra \n colado). MAS o valor do env some do runtime na Vercel de forma intermitente
+  // (visto 2x: hasSecret:false) → o Vercel Cron tomava 401 e a publicação morria em
+  // silêncio por HORAS. Fallback: quando o segredo NÃO está no runtime (exatamente o bug),
+  // aceita a chamada vinda do próprio Vercel Cron (user-agent `vercel-cron`). Risco baixo —
+  // o endpoint só aprova descobertas que o modo automático publicaria de qualquer jeito, e
+  // quando o segredo ESTÁ presente a checagem volta a ser estrita (spoof de UA é barrado).
   const segredo = process.env.CRON_SECRET?.trim();
   const auth = req.headers.get("authorization")?.trim();
-  if (!segredo || auth !== `Bearer ${segredo}`) {
-    // Diagnóstico mascarado (sem vazar o segredo) — sai no View Logs se ainda der 401.
-    console.warn("[auto-publicar] 401", {
-      ua: req.headers.get("user-agent"),
-      hasSecret: !!segredo,
-      secretLen: segredo?.length ?? 0,
-      authPresent: !!auth,
-      authLen: auth?.length ?? 0,
-      authIsBearer: auth?.startsWith("Bearer ") ?? false,
-    });
+  const ua = req.headers.get("user-agent") ?? "";
+  const porSegredo = Boolean(segredo) && auth === `Bearer ${segredo}`;
+  const porVercelCron = !segredo && ua.startsWith("vercel-cron");
+  if (!porSegredo && !porVercelCron) {
+    console.warn("[auto-publicar] 401", { ua, hasSecret: !!segredo, authPresent: !!auth });
     return NextResponse.json({ erro: "nao_autorizado" }, { status: 401 });
   }
 
