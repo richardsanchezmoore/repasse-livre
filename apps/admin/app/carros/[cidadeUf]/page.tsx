@@ -43,7 +43,7 @@ async function resolverContexto(cidadeUf: string): Promise<ContextoPagina | null
   const localidade = await resolverLocalidade(cidadeUf);
   if (localidade) {
     return {
-      titulo: `Oportunidades em ${localidade.nome}`,
+      titulo: `Carros em ${localidade.nome}`,
       caminho: localidade.caminho,
       url: localidade.url,
       filtroEstado: localidade.filtroEstado,
