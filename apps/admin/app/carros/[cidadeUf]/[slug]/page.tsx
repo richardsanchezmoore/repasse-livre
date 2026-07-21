@@ -15,6 +15,7 @@ import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { OfertasRelacionadas } from "@/components/OfertasRelacionadas";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
+import { PonteAssinatura } from "@/components/PonteAssinatura";
 import { RegistradorVisualizacao } from "@/components/RegistradorVisualizacao";
 import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -429,6 +430,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               copilotoResumo={copilotoResumo}
               ehPremium={ehPremiumEfetivo}
             />
+            {!ehAdminPagina && !usuario?.premium && <PonteAssinatura />}
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
           </main>
         </div>
