@@ -1,5 +1,9 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { enviarEventoCapi } from "@/lib/metaCapi";
+import { buscarPrecoExibicao } from "@/lib/assinatura";
+import { URL_BASE_SITE } from "@/lib/site";
 
 /**
  * Webhook da Ticto (v2.0) — libera/corta o acesso ao Repasse Livre PRO (fonte da
@@ -153,6 +157,20 @@ export async function POST(req: Request): Promise<Response> {
   }
   const { userId, novo } = resolvido;
 
+  // 1ª ativação vs renovação: só a 1ª é a conversão que a campanha atribui (Purchase no
+  // CAPI). Conta nova (guest) já é nova por definição; usuário existente → lê o status
+  // anterior. Isso também blinda contra reenvio do MESMO evento (na 2ª vez já está active).
+  let jaEraAtivo = false;
+  if (!novo && ehGrant) {
+    const { data: antes } = await supabaseAdmin
+      .from("perfis")
+      .select("assinatura_status")
+      .eq("user_id", userId)
+      .maybeSingle();
+    jaEraAtivo = antes?.assinatura_status === "active" || antes?.assinatura_status === "trialing";
+  }
+  const conversaoNova = ehGrant && !jaEraAtivo;
+
   const patch: Record<string, unknown> = ehGrant
     ? { assinatura_status: "active", premium_expira_em: calcularExpira(evento!) }
     : { assinatura_status: "canceled", premium_expira_em: new Date().toISOString() };
@@ -171,6 +189,26 @@ export async function POST(req: Request): Promise<Response> {
       { onConflict: "token" }
     );
     if (eClaim) console.error(`[ticto webhook] falha ao gravar claim ${claimToken}: ${eClaim.message}`);
+  }
+
+  // Purchase no CAPI — só na 1ª ativação. Best-effort: NUNCA derruba o webhook (pagamento
+  // já foi processado acima). Dormante até META_PIXEL_ID + META_CAPI_TOKEN existirem.
+  if (conversaoNova) {
+    try {
+      const preco = await buscarPrecoExibicao();
+      await enviarEventoCapi({
+        evento: "Purchase",
+        eventId: randomUUID(),
+        email: evento?.customer?.email,
+        phone: telefoneDe(evento?.customer),
+        externalId: userId,
+        value: preco.centavos / 100,
+        currency: "BRL",
+        eventSourceUrl: `${URL_BASE_SITE}/planos`,
+      });
+    } catch (e) {
+      console.error(`[ticto webhook] CAPI Purchase falhou: ${e instanceof Error ? e.message : e}`);
+    }
   }
 
   console.log(`[ticto webhook] ${tipo} → premium ${ehGrant ? "ON" : "OFF"} p/ ${userId}${novo ? " (conta NOVA)" : ""}${claimToken ? " [claim]" : ""}.`);
