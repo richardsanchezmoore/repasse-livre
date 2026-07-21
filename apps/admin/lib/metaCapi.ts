@@ -41,16 +41,26 @@ export interface EventoCapi {
   value?: number;
   currency?: string;
   eventSourceUrl?: string;
+  /** Sobrescreve o test_event_code do env — manda o evento pra "Eventos de teste". */
+  testEventCode?: string;
+}
+
+export interface ResultadoCapi {
+  ok: boolean;
+  /** true = envs META_PIXEL_ID/META_CAPI_TOKEN ausentes (não enviou nada). */
+  skipped?: boolean;
+  status?: number;
+  body?: string;
 }
 
 /**
  * Envia UM evento pro CAPI. Best-effort: nunca lança (o chamador — ex.: webhook de
  * pagamento — não pode quebrar por causa de tracking). Loga falha e segue.
  */
-export async function enviarEventoCapi(ev: EventoCapi): Promise<void> {
+export async function enviarEventoCapi(ev: EventoCapi): Promise<ResultadoCapi> {
   const pixelId = process.env.META_PIXEL_ID?.trim();
   const token = process.env.META_CAPI_TOKEN?.trim();
-  if (!pixelId || !token) return; // dormante até configurar
+  if (!pixelId || !token) return { ok: false, skipped: true }; // dormante até configurar
 
   const user_data: Record<string, unknown> = {};
   const em = hashEmail(ev.email);
@@ -59,7 +69,7 @@ export async function enviarEventoCapi(ev: EventoCapi): Promise<void> {
   if (ph) user_data.ph = [ph];
   if (ev.externalId) user_data.external_id = [sha256(String(ev.externalId))];
 
-  const testCode = process.env.META_CAPI_TEST_CODE?.trim();
+  const testCode = ev.testEventCode?.trim() || process.env.META_CAPI_TEST_CODE?.trim();
   const corpo = {
     data: [
       {
@@ -81,11 +91,11 @@ export async function enviarEventoCapi(ev: EventoCapi): Promise<void> {
       `https://graph.facebook.com/${GRAPH_VERSION}/${pixelId}/events?access_token=${encodeURIComponent(token)}`,
       { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(corpo) }
     );
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error("[capi] falha:", res.status, txt.slice(0, 300));
-    }
+    const txt = await res.text();
+    if (!res.ok) console.error("[capi] falha:", res.status, txt.slice(0, 300));
+    return { ok: res.ok, status: res.status, body: txt.slice(0, 500) };
   } catch (e) {
     console.error("[capi] erro de rede:", e instanceof Error ? e.message : e);
+    return { ok: false, body: e instanceof Error ? e.message : String(e) };
   }
 }
