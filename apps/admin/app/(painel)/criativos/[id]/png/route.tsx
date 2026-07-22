@@ -106,7 +106,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
               </div>
             )}
             {/* nome do veículo (marca-d'água) — clipa no máximo da largura útil */}
-            <div style={{ position: "absolute", left: 32, bottom: 24, maxWidth: 760, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 42, fontWeight: 700, color: "rgba(255,255,255,.62)" }}>{nome}</div>
+            <div style={{ position: "absolute", left: 32, bottom: 24, maxWidth: 850, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 42, fontWeight: 700, color: "rgba(255,255,255,.62)" }}>{nome}</div>
             {/* contador de fotos: ícone câmera + total */}
             <div style={{ position: "absolute", right: 26, bottom: 26, display: "flex", alignItems: "center", paddingLeft: 15, paddingRight: 17, paddingTop: 10, paddingBottom: 10, borderRadius: 999, backgroundColor: "rgba(6,14,10,.7)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
