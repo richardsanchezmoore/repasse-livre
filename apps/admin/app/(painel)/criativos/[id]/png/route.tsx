@@ -93,24 +93,27 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     (
       <div style={{ display: "flex", flexDirection: "column", width: 1080, height: 1350, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
         {/* ===== Mosaico de fotos ===== */}
-        <div style={{ display: "flex", width: 1080, height: 616 }}>
+        <div style={{ display: "flex", width: 1080, height: 704 }}>
           {/* foto grande */}
-          <div style={celulaFoto(fotoGrande, { position: "relative", width: 690, height: 616 })}>
+          <div style={celulaFoto(fotoGrande, { position: "relative", width: 690, height: 704 })}>
             {/* pastilha de margem */}
             {temFipe && (
               <div style={{ position: "absolute", top: 26, left: 26, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
-                <div style={{ display: "flex", fontSize: 52, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{margemInt}%</div>
+                <div style={{ display: "flex", alignItems: "baseline", color: "#fff", lineHeight: 1 }}>
+                  <span style={{ fontSize: 56, fontWeight: 900 }}>{margemInt}</span>
+                  <span style={{ fontSize: 30, fontWeight: 900, marginLeft: 1 }}>%</span>
+                </div>
                 <div style={{ display: "flex", fontSize: 18, fontWeight: 700, color: "#EAFBEE", letterSpacing: 1, marginTop: 2 }}>ABAIXO FIPE</div>
               </div>
             )}
-            {/* nome do veículo (marca-d'água) */}
-            <div style={{ position: "absolute", left: 30, bottom: 20, display: "flex", fontSize: 40, fontWeight: 700, color: "rgba(255,255,255,.58)" }}>{nome}</div>
+            {/* nome do veículo (marca-d'água) — clipa no máximo da largura da foto */}
+            <div style={{ position: "absolute", left: 30, bottom: 20, maxWidth: 624, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 40, fontWeight: 700, color: "rgba(255,255,255,.6)" }}>{nome}</div>
           </div>
 
           {/* coluna direita: 2 fotos */}
-          <div style={{ display: "flex", flexDirection: "column", width: 384, height: 616, marginLeft: 6 }}>
-            <div style={celulaFoto(fotoP1, { width: 384, height: 305 })} />
-            <div style={celulaFoto(fotoP2, { position: "relative", width: 384, height: 305, marginTop: 6 })}>
+          <div style={{ display: "flex", flexDirection: "column", width: 384, height: 704, marginLeft: 6 }}>
+            <div style={celulaFoto(fotoP1, { width: 384, height: 349 })} />
+            <div style={celulaFoto(fotoP2, { position: "relative", width: 384, height: 349, marginTop: 6 })}>
               {restantes > 0 && (
                 <div style={{ position: "absolute", right: 12, bottom: 12, display: "flex", alignItems: "center", justifyContent: "center", paddingLeft: 14, paddingRight: 14, paddingTop: 7, paddingBottom: 7, borderRadius: 999, backgroundColor: "rgba(6,14,10,.72)", color: "#fff", fontSize: 26, fontWeight: 700 }}>+{restantes}</div>
               )}
@@ -124,7 +127,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
           <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: VERDE, lineHeight: 1, marginTop: 8 }}>{ganho != null ? formatarMoeda(ganho) : "—"}</div>
           <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
             <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
-            <span style={{ color: VERDE, fontWeight: 700, marginLeft: 12, marginRight: 12 }}>{margemTexto}%</span>
+            <div style={{ display: "flex", alignItems: "baseline", marginLeft: 12, marginRight: 12 }}>
+              <span style={{ color: VERDE, fontWeight: 700 }}>{margemTexto}</span>
+              <span style={{ color: VERDE, fontWeight: 700, fontSize: 24, marginLeft: 1 }}>%</span>
+            </div>
             <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
           </div>
 
