@@ -100,7 +100,7 @@ export async function OfertasRelacionadas({
             border: "1px solid #E4EAF0",
             borderRadius: 14,
             padding: "13px 16px",
-            margin: "-2px 0 16px",
+            margin: "14px 0 16px",
             boxShadow: "0 8px 22px -12px rgba(15,27,45,.28)",
             textDecoration: "none",
           }}
