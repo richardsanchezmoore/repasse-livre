@@ -4,11 +4,9 @@ import { Suspense, useEffect, type CSSProperties } from "react";
 import { Gem, Clock, Zap, Bell, Check, X, BarChart3, LayoutGrid, Compass, ShieldCheck, MessageCircle, Lock, AlertTriangle } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { AvisoAssinatura } from "@/components/AvisoAssinatura";
-import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import { CarrosselVendas } from "@/components/CarrosselVendas";
 import { PixIcon } from "@/components/PixIcon";
-import type { OfertaDemo } from "@/lib/ofertaDemo";
 
 export interface DadosVendas {
   variante: "padrao" | "fomo";
@@ -18,7 +16,6 @@ export interface DadosVendas {
   descontoPct: number | null;
   kpiAoVivo: number | null;
   numeros?: { valor: string; rotulo: string; sufixo?: string }[]; // "Nossos números" — faixa escura
-  ofertaDemo: OfertaDemo | null;
   /** Checkout hospedado SEM `sck` — a página é estática; o `sck` do logado entra no
    *  cliente, via AcaoAssinatura no modo "auto". */
   checkoutUrl: string | null;
@@ -282,29 +279,6 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           </div>
         </section>
       )}
-
-      {/* 6 ── demonstração (demo real) */}
-      <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ flex: "1 1 360px", minWidth: 280 }}>
-            <div style={eyebrow}>Demonstração</div>
-            <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Abra uma oportunidade real e veja o Copiloto trabalhar.</h3>
-            <p style={{ font: `500 17px/1.6 ${CORPO}`, color: "#606975", margin: "0 0 18px" }}>Esta é uma oportunidade verdadeira. Veja como um anúncio comum ganha contexto quando passa pelo Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos, Score e análise.</b> Tudo pronto para você decidir.</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
-                <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "7px 13px", font: `700 12px ${CORPO}`, color: "#2f6446" }}>
-                  <Check size={12} strokeWidth={3} color="#16A34A" /> {x}
-                </span>
-              ))}
-            </div>
-          </div>
-          {dados.ofertaDemo && (
-            <div style={{ flex: "0 1 320px", minWidth: 280, width: "100%", maxWidth: 340 }}>
-              <ExperimenteDemo oferta={dados.ofertaDemo} />
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* 7 ── features + celular */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#EEF1F4" }}>

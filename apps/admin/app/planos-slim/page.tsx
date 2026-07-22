@@ -5,7 +5,6 @@ import { PaginaVendasCurta } from "@/components/PaginaVendasCurta";
 import { fonteTitulo, fonteCorpo } from "@/components/fontesVendas";
 import { buscarPrecoExibicao } from "@/lib/assinatura";
 import { buscarPrecoAncora, buscarWhatsappSuporte, buscarCaktoCheckoutUrl, buscarTictoCheckoutUrl, buscarGatewayAtivo } from "@/lib/configWorker";
-import { buscarOfertaDemo } from "@/lib/ofertaDemo";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
 export const metadata: Metadata = {
@@ -22,11 +21,10 @@ export const metadata: Metadata = {
 export const revalidate = 900;
 
 export default async function PlanosSlimPage() {
-  const [preco, precoAncora, whatsappSuporte, ofertaDemo, kpis, caktoUrl, tictoUrl, gatewayAtivo] = await Promise.all([
+  const [preco, precoAncora, whatsappSuporte, kpis, caktoUrl, tictoUrl, gatewayAtivo] = await Promise.all([
     buscarPrecoExibicao(),
     buscarPrecoAncora(),
     buscarWhatsappSuporte(),
-    buscarOfertaDemo(),
     buscarKpisTopo(),
     buscarCaktoCheckoutUrl(),
     buscarTictoCheckoutUrl(),
@@ -77,7 +75,6 @@ export default async function PlanosSlimPage() {
           descontoPct,
           kpiAoVivo: abaixoFipeVivo,
           numeros,
-          ofertaDemo,
           checkoutUrl,
           gerenciarUrl,
           whatsappSuporte,
