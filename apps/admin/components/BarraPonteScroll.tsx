@@ -47,49 +47,63 @@ export function BarraPonteScroll() {
         pointerEvents: "none",
       }}
     >
-      <div
-        style={{
-          pointerEvents: "auto",
-          width: "min(680px, 100%)",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          background: "linear-gradient(160deg,#0E2A1A,#081410)",
-          border: "1px solid rgba(0,200,69,.3)",
-          borderRadius: 14,
-          padding: "12px 14px",
-          boxShadow: "0 16px 40px -12px rgba(0,0,0,.6)",
-          color: "#fff",
-        }}
-      >
-        <Gem size={18} fill="#00c845" strokeWidth={0} style={{ flex: "none" }} />
-        <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.35, color: "#d6e2ec" }}>
-          <b style={{ color: "#fff" }}>Dezenas de carros abaixo da FIPE</b> todo dia — no seu estado, com alerta na hora.
-        </span>
+      {/* Wrapper relativo: o box inteiro é o Link (todo clicável — cor antagônica
+          convida o clique no todo); o X é IRMÃO sobreposto no canto (não pode ficar
+          dentro do <a>), então clicar nele fecha sem navegar. */}
+      <div style={{ pointerEvents: "auto", position: "relative", width: "min(680px, 100%)" }}>
         <Link
           href="/planos-slim"
           style={{
-            flex: "none",
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: 6,
-            background: "linear-gradient(180deg,#00d24e,#00a038)",
+            gap: 12,
+            background: "linear-gradient(160deg,#0E2A1A,#081410)",
+            border: "1px solid rgba(0,200,69,.3)",
+            borderRadius: 14,
+            padding: "12px 44px 12px 14px",
+            boxShadow: "0 16px 40px -12px rgba(0,0,0,.6)",
             color: "#fff",
-            fontWeight: 800,
-            fontSize: 13,
-            padding: "9px 15px",
-            borderRadius: 999,
             textDecoration: "none",
-            whiteSpace: "nowrap",
           }}
         >
-          Ver todas <ArrowRight size={15} strokeWidth={2.4} />
+          <Gem size={18} fill="#00c845" strokeWidth={0} style={{ flex: "none" }} />
+          <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.35, color: "#d6e2ec" }}>
+            <b style={{ color: "#fff" }}>Dezenas de carros abaixo da FIPE</b> todo dia — no seu estado, com alerta na hora.
+          </span>
+          <span
+            style={{
+              flex: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "linear-gradient(180deg,#00d24e,#00a038)",
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: 13,
+              padding: "9px 15px",
+              borderRadius: 999,
+              whiteSpace: "nowrap",
+            }}
+          >
+            Ver todas <ArrowRight size={15} strokeWidth={2.4} />
+          </span>
         </Link>
         <button
           type="button"
           onClick={() => setFechado(true)}
           aria-label="Fechar"
-          style={{ flex: "none", background: "none", border: "none", color: "#6f8598", cursor: "pointer", padding: 4, lineHeight: 0 }}
+          style={{
+            position: "absolute",
+            top: "50%",
+            right: 8,
+            transform: "translateY(-50%)",
+            background: "none",
+            border: "none",
+            color: "#6f8598",
+            cursor: "pointer",
+            padding: 4,
+            lineHeight: 0,
+          }}
         >
           <X size={16} />
         </button>
