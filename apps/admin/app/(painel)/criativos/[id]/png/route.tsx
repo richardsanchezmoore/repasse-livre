@@ -20,6 +20,12 @@ const CINZA_FIPE = "#7C877F";
 const LINHA = "#E9EDEA";
 const FUNDO_FOTO = "#0E1A14";
 
+// Ícone de câmera (contorno) embutido como data-URI — Satori renderiza <img>
+// com SVG data-URI de forma confiável (sem depender de fonte de emoji).
+const CAMERA_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.2"/></svg>';
+const CAMERA_URI = `data:image/svg+xml;utf8,${encodeURIComponent(CAMERA_SVG)}`;
+
 async function carregarFontes() {
   const base = "https://github.com/google/fonts/raw/main/ofl/poppins";
   const pesos: { arquivo: string; weight: 500 | 600 | 700 | 900 }[] = [
@@ -73,13 +79,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const op = await buscarOportunidadePorId(params.id, true);
   if (!op) return new Response("nao_encontrado", { status: 404 });
 
-  const [fontes, fotoGrande, fotoP1, fotoP2, fotoP3] = await Promise.all([
-    carregarFontes(),
-    paraDataUri(op.foto_principal),
-    paraDataUri(op.fotos_secundarias?.[0]),
-    paraDataUri(op.fotos_secundarias?.[1]),
-    paraDataUri(op.fotos_secundarias?.[2]),
-  ]);
+  const [fontes, fotoGrande] = await Promise.all([carregarFontes(), paraDataUri(op.foto_principal)]);
 
   const temFipe = op.fipe_valor != null && op.fipe_valor > op.preco;
   const ganho = temFipe ? op.fipe_valor! - op.preco : null;
@@ -87,19 +87,17 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const margemInt = Math.round(margem);
   const margemTexto = margem.toFixed(1).replace(".", ",");
   const totalFotos = 1 + (op.fotos_secundarias?.length ?? 0);
-  const restantes = Math.max(0, totalFotos - 4);
   const nome = op.veiculo;
 
   return new ImageResponse(
     (
       <div style={{ display: "flex", flexDirection: "column", width: 1080, height: 1350, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
-        {/* ===== Mosaico de fotos ===== */}
+        {/* ===== Foto principal em tela cheia (sem miniaturas — foco total no carro) ===== */}
         <div style={{ display: "flex", width: 1080, height: 704 }}>
-          {/* foto grande */}
-          <div style={celulaFoto(fotoGrande, { position: "relative", width: 724, height: 704 })}>
+          <div style={celulaFoto(fotoGrande, { position: "relative", width: 1080, height: 704 })}>
             {/* pastilha de margem */}
             {temFipe && (
-              <div style={{ position: "absolute", top: 26, left: 26, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
+              <div style={{ position: "absolute", top: 28, left: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", color: "#fff", lineHeight: 1 }}>
                   <span style={{ fontSize: 68, fontWeight: 900 }}>{margemInt}</span>
                   <span style={{ fontSize: 26, fontWeight: 900, marginTop: 9, marginLeft: 2 }}>%</span>
@@ -107,18 +105,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
                 <div style={{ display: "flex", fontSize: 18, fontWeight: 700, color: "#EAFBEE", letterSpacing: 1, marginTop: 2 }}>ABAIXO FIPE</div>
               </div>
             )}
-            {/* nome do veículo (marca-d'água) — clipa no máximo da largura da foto */}
-            <div style={{ position: "absolute", left: 30, bottom: 20, maxWidth: 660, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 40, fontWeight: 700, color: "rgba(255,255,255,.6)" }}>{nome}</div>
-          </div>
-
-          {/* coluna direita: 3 miniaturas em paisagem (350x230 ~ igual à página, sem zoom-crop) */}
-          <div style={{ display: "flex", flexDirection: "column", width: 350, height: 704, marginLeft: 6 }}>
-            <div style={celulaFoto(fotoP1, { width: 350, height: 230 })} />
-            <div style={celulaFoto(fotoP2, { width: 350, height: 230, marginTop: 7 })} />
-            <div style={celulaFoto(fotoP3, { position: "relative", width: 350, height: 230, marginTop: 7 })}>
-              {restantes > 0 && (
-                <div style={{ position: "absolute", right: 12, bottom: 12, display: "flex", alignItems: "center", justifyContent: "center", paddingLeft: 14, paddingRight: 14, paddingTop: 7, paddingBottom: 7, borderRadius: 999, backgroundColor: "rgba(6,14,10,.72)", color: "#fff", fontSize: 26, fontWeight: 700 }}>+{restantes}</div>
-              )}
+            {/* nome do veículo (marca-d'água) — clipa no máximo da largura útil */}
+            <div style={{ position: "absolute", left: 32, bottom: 24, maxWidth: 760, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 42, fontWeight: 700, color: "rgba(255,255,255,.62)" }}>{nome}</div>
+            {/* contador de fotos: ícone câmera + total */}
+            <div style={{ position: "absolute", right: 26, bottom: 26, display: "flex", alignItems: "center", paddingLeft: 15, paddingRight: 17, paddingTop: 10, paddingBottom: 10, borderRadius: 999, backgroundColor: "rgba(6,14,10,.7)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={CAMERA_URI} width={26} height={26} alt="" />
+              <span style={{ color: "#fff", fontSize: 27, fontWeight: 700, marginLeft: 9 }}>{totalFotos} fotos</span>
             </div>
           </div>
         </div>
