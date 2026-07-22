@@ -92,11 +92,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
           {/* pastilha de margem */}
           {temFipe && (
               <div style={{ position: "absolute", top: 28, left: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", color: "#fff", lineHeight: 1 }}>
-                  <span style={{ fontSize: 68, fontWeight: 900 }}>{margemInt}</span>
-                  <span style={{ fontSize: 26, fontWeight: 900, marginTop: 9, marginLeft: 2 }}>%</span>
+                {/* balanceador transparente à esquerda = mesma largura do % visível à direita
+                    → os dígitos ficam centrados no círculo (senão o % puxa o número pra esquerda) */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", color: "#fff", lineHeight: 1 }}>
+                  <span style={{ fontSize: 24, fontWeight: 900, marginRight: 2, color: "transparent" }}>%</span>
+                  <span style={{ fontSize: 64, fontWeight: 900 }}>{margemInt}</span>
+                  <span style={{ fontSize: 24, fontWeight: 900, marginTop: 6, marginLeft: 2 }}>%</span>
                 </div>
-                <div style={{ display: "flex", fontSize: 18, fontWeight: 700, color: "#EAFBEE", letterSpacing: 1, marginTop: 2 }}>ABAIXO FIPE</div>
+                <div style={{ display: "flex", fontSize: 15, fontWeight: 700, color: "#EAFBEE", letterSpacing: 0, marginTop: 2 }}>ABAIXO FIPE</div>
               </div>
             )}
             {/* nome do veículo (marca-d'água) — clipa no máximo da largura útil */}
