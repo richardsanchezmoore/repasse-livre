@@ -26,6 +26,24 @@ const CAMERA_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.2"/></svg>';
 const CAMERA_URI = `data:image/svg+xml;utf8,${encodeURIComponent(CAMERA_SVG)}`;
 
+// Pin de localização (verde) — mesmo esquema de data-URI do ícone de câmera.
+const PIN_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1FA83A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+const PIN_URI = `data:image/svg+xml;utf8,${encodeURIComponent(PIN_SVG)}`;
+
+// UF → frase com preposição correta ("no Paraná", "em Santa Catarina") — rapport
+// regional: o nome do estado por extenso conecta mais que a sigla, e casa 100% com
+// o público geo-segmentado ("é o MEU estado"). Cidade limitaria demais.
+const ESTADOS: Record<string, string> = {
+  AC: "no Acre", AL: "em Alagoas", AP: "no Amapá", AM: "no Amazonas", BA: "na Bahia",
+  CE: "no Ceará", DF: "no Distrito Federal", ES: "no Espírito Santo", GO: "em Goiás",
+  MA: "no Maranhão", MT: "em Mato Grosso", MS: "em Mato Grosso do Sul", MG: "em Minas Gerais",
+  PA: "no Pará", PB: "na Paraíba", PR: "no Paraná", PE: "em Pernambuco", PI: "no Piauí",
+  RJ: "no Rio de Janeiro", RN: "no Rio Grande do Norte", RS: "no Rio Grande do Sul",
+  RO: "em Rondônia", RR: "em Roraima", SC: "em Santa Catarina", SP: "em São Paulo",
+  SE: "em Sergipe", TO: "no Tocantins",
+};
+
 async function carregarFontes() {
   const base = "https://github.com/google/fonts/raw/main/ofl/poppins";
   const pesos: { arquivo: string; weight: 500 | 600 | 700 | 900 }[] = [
@@ -77,6 +95,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const margemTexto = margem.toFixed(1).replace(".", ",");
   const totalFotos = 1 + (op.fotos_secundarias?.length ?? 0);
   const nome = op.veiculo;
+  const localFrase = op.estado ? (ESTADOS[op.estado] ?? `em ${op.estado}`) : null;
 
   return new ImageResponse(
     (
@@ -114,6 +133,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
         {/* ===== Bloco de informação ===== */}
         <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 56, paddingRight: 56, paddingTop: 20 }}>
+          {/* rapport regional — localização por extenso logo abaixo da foto */}
+          {localFrase && (
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={PIN_URI} width={22} height={22} alt="" />
+              <span style={{ color: CINZA_ROTULO, fontWeight: 600, fontSize: 26, marginLeft: 7 }}>Anunciado {localFrase}</span>
+            </div>
+          )}
           <div style={{ display: "flex", fontSize: 30, fontWeight: 600, letterSpacing: 8, color: CINZA_ROTULO }}>GANHO</div>
           <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: VERDE, lineHeight: 1, marginTop: 8 }}>{ganho != null ? formatarMoeda(ganho) : "—"}</div>
           <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
