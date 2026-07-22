@@ -18,7 +18,8 @@ export function BarraPonteScroll() {
     const aoRolar = () => {
       const total = document.documentElement.scrollHeight - window.innerHeight;
       const pct = total > 0 ? window.scrollY / total : 0;
-      setVisivel(pct > 0.5);
+      // 15% (não 50%): anúncios curtos morrem antes dos 50%, e a barra é suave/dispensável.
+      setVisivel(pct > 0.15);
     };
     window.addEventListener("scroll", aoRolar, { passive: true });
     aoRolar();

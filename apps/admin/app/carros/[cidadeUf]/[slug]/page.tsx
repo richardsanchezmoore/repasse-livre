@@ -365,6 +365,9 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     ehAdminPagina || usuario?.premium || ehDemo ? Infinity : await buscarMargemPremium();
   const bloqueado = (oportunidade.margem_percentual ?? 0) > margemPremiumPagina;
   const ehPremiumEfetivo = ehAdminPagina || Boolean(usuario?.premium) || ehDemo;
+  // Assinante REAL — sem ehDemo de propósito: o visitante de Ads (destino liberado)
+  // NÃO recebe o link externo; ganha o CTA travado → /planos-slim (não vazar pra origem).
+  const ehAssinante = ehAdminPagina || Boolean(usuario?.premium);
 
   // Modo embed (iframe do modal "Experimente" na /planos): a MESMA página, sem o
   // menu/sidebar/relacionadas — só o anúncio, limpo, dentro do modal de vendas.
@@ -386,6 +389,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               copilotoBloqueado={copilotoBloqueado}
               copilotoResumo={copilotoResumo}
               ehPremium={ehPremiumEfetivo}
+              ehAssinante={ehAssinante}
             />
           </div>
         </SelecaoMultiplaProvider>
@@ -435,6 +439,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               copilotoBloqueado={copilotoBloqueado}
               copilotoResumo={copilotoResumo}
               ehPremium={ehPremiumEfetivo}
+              ehAssinante={ehAssinante}
             />
             {!ehAdminPagina && !usuario?.premium && <PonteAssinatura />}
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />

@@ -1,4 +1,5 @@
-import { Calendar, Check, Gauge, MapPin, ExternalLink, Tag, ShieldAlert, Settings2 } from "lucide-react";
+import Link from "next/link";
+import { Calendar, Check, Gauge, MapPin, ExternalLink, Tag, ShieldAlert, Settings2, Lock } from "lucide-react";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
 import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
@@ -49,6 +50,7 @@ export async function PaginaOportunidade({
   copilotoBloqueado = false,
   copilotoResumo = null,
   ehPremium = false,
+  ehAssinante = false,
 }: {
   oportunidade: Oportunidade;
   /** FactSheet da BIA (só computado p/ premium/admin) — vira a aba "Copiloto"
@@ -68,6 +70,12 @@ export async function PaginaOportunidade({
   /** Premium/admin → o "Abrir anúncio original" vira CTA claro (benefício do
    * plano); não-PRO (em oferta Bronze liberada) vê o mesmo acesso discreto. */
   ehPremium?: boolean;
+  /** Assinante REAL (admin || premium) — diferente de ehPremium, que inclui o
+   * ehDemo (destino de Ads, premium liberado só p/ exibição). Só o assinante
+   * clica no anúncio original externo; todo não-assinante (inclusive o visitante
+   * de Ads) recebe o CTA travado → /planos-slim, pra não vazar pra plataforma
+   * de origem ("clica e não volta"). Ver bridge refinement #3. */
+  ehAssinante?: boolean;
 }) {
   const [historicoFipe, referenciaPreco, piso] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
@@ -342,20 +350,31 @@ export async function PaginaOportunidade({
               />
             )}
 
-            {!oportunidade.link_origem.startsWith("insercao-direta:") && (
-              <a
-                href={oportunidade.link_origem}
-                target="_blank"
-                rel="noreferrer"
-                className={`link-origem ${ehPremium ? "link-origem-pro" : "link-origem-discreto"}`}
-              >
-                <span className="link-origem-texto">
-                  <ExternalLink size={ehPremium ? 16 : 13} strokeWidth={1.75} className="icone-inline" /> Abrir
-                  anúncio original
-                </span>
-                <span aria-hidden="true">›</span>
-              </a>
-            )}
+            {!oportunidade.link_origem.startsWith("insercao-direta:") &&
+              (ehAssinante ? (
+                <a
+                  href={oportunidade.link_origem}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="link-origem link-origem-pro"
+                >
+                  <span className="link-origem-texto">
+                    <ExternalLink size={16} strokeWidth={1.75} className="icone-inline" /> Abrir anúncio
+                    original
+                  </span>
+                  <span aria-hidden="true">›</span>
+                </a>
+              ) : (
+                // Não-assinante (inclui visitante de Ads): nunca entregamos o link externo —
+                // vira CTA travado pro plano, senão "clica e não volta" pra plataforma de origem.
+                <Link href="/planos-slim" className="link-origem link-origem-pro">
+                  <span className="link-origem-texto">
+                    <Lock size={15} strokeWidth={2} className="icone-inline" /> Acesse o anúncio · Repasse
+                    Livre PRO
+                  </span>
+                  <span aria-hidden="true">›</span>
+                </Link>
+              ))}
           </>
         )}
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { buscarIdsFavoritados } from "./DiscoveriesBoard";
 import { OpportunityCard } from "./OpportunityCard";
 import { buscarMargemPremium } from "@/lib/configWorker";
@@ -90,15 +90,43 @@ export async function OfertasRelacionadas({
     <section className="ofertas-relacionadas">
       <h2 className="ofertas-relacionadas-titulo">Ofertas relacionadas</h2>
       {podeBloquear && (
-        <p style={{ margin: "-4px 0 14px", fontSize: 14, lineHeight: 1.5, color: "#5a6570" }}>
-          Mais oportunidades abaixo da FIPE — a maioria some antes de você ver.{" "}
-          <Link
-            href="/planos-slim"
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16A34A", fontWeight: 700, textDecoration: "none" }}
+        <Link
+          href="/planos-slim"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            background: "#fff",
+            border: "1px solid #E4EAF0",
+            borderRadius: 14,
+            padding: "13px 16px",
+            margin: "-2px 0 16px",
+            boxShadow: "0 8px 22px -12px rgba(15,27,45,.28)",
+            textDecoration: "none",
+          }}
+        >
+          <span
+            style={{
+              flex: "none",
+              width: 38,
+              height: 38,
+              borderRadius: 10,
+              background: "rgba(22,163,74,.12)",
+              color: "#16A34A",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            Desbloqueie todas <ArrowRight size={14} strokeWidth={2.4} />
-          </Link>
-        </p>
+            <Lock size={18} strokeWidth={2} />
+          </span>
+          <span style={{ flex: 1, fontSize: 14, lineHeight: 1.45, color: "#3a4652" }}>
+            Mais oportunidades abaixo da FIPE — a maioria some antes de você ver.{" "}
+            <b style={{ color: "#16A34A", whiteSpace: "nowrap" }}>
+              Desbloqueie todas <ArrowRight size={13} strokeWidth={2.6} style={{ display: "inline", verticalAlign: "-2px" }} />
+            </b>
+          </span>
+        </Link>
       )}
       <div className="board-lista">
         {relacionadas.map((relacionada) => (
