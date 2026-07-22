@@ -227,7 +227,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 13, flex: 1 }}>
-                {["Mercado monitorado automaticamente", "Copiloto analisa cada anúncio", "Inteligência compara com o mercado", "Você recebe só o que merece atenção"].map((x) => (
+                {["Mercado monitorado 24h", "Copiloto analisa cada anúncio", "Inteligência compara com o mercado", "Você recebe só o que merece atenção"].map((x) => (
                   <div key={x} style={{ display: "flex", gap: 11, alignItems: "center", font: `600 14px ${CORPO}`, color: "#2f6446" }}>
                     <span style={{ flex: "none", width: 23, height: 23, borderRadius: "50%", background: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><Check size={12} strokeWidth={3.2} /></span>
                     {x}
