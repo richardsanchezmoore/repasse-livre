@@ -73,11 +73,12 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const op = await buscarOportunidadePorId(params.id, true);
   if (!op) return new Response("nao_encontrado", { status: 404 });
 
-  const [fontes, fotoGrande, fotoP1, fotoP2] = await Promise.all([
+  const [fontes, fotoGrande, fotoP1, fotoP2, fotoP3] = await Promise.all([
     carregarFontes(),
     paraDataUri(op.foto_principal),
     paraDataUri(op.fotos_secundarias?.[0]),
     paraDataUri(op.fotos_secundarias?.[1]),
+    paraDataUri(op.fotos_secundarias?.[2]),
   ]);
 
   const temFipe = op.fipe_valor != null && op.fipe_valor > op.preco;
@@ -86,7 +87,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const margemInt = Math.round(margem);
   const margemTexto = margem.toFixed(1).replace(".", ",");
   const totalFotos = 1 + (op.fotos_secundarias?.length ?? 0);
-  const restantes = Math.max(0, totalFotos - 3);
+  const restantes = Math.max(0, totalFotos - 4);
   const nome = op.veiculo;
 
   return new ImageResponse(
@@ -100,8 +101,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
             {temFipe && (
               <div style={{ position: "absolute", top: 26, left: 26, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", color: "#fff", lineHeight: 1 }}>
-                  <span style={{ fontSize: 58, fontWeight: 900 }}>{margemInt}</span>
-                  <span style={{ fontSize: 26, fontWeight: 900, marginTop: 7, marginLeft: 2 }}>%</span>
+                  <span style={{ fontSize: 68, fontWeight: 900 }}>{margemInt}</span>
+                  <span style={{ fontSize: 26, fontWeight: 900, marginTop: 9, marginLeft: 2 }}>%</span>
                 </div>
                 <div style={{ display: "flex", fontSize: 18, fontWeight: 700, color: "#EAFBEE", letterSpacing: 1, marginTop: 2 }}>ABAIXO FIPE</div>
               </div>
@@ -110,10 +111,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
             <div style={{ position: "absolute", left: 30, bottom: 20, maxWidth: 660, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 40, fontWeight: 700, color: "rgba(255,255,255,.6)" }}>{nome}</div>
           </div>
 
-          {/* coluna direita: 2 fotos (50/50 exato) */}
+          {/* coluna direita: 3 miniaturas em paisagem (350x230 ~ igual à página, sem zoom-crop) */}
           <div style={{ display: "flex", flexDirection: "column", width: 350, height: 704, marginLeft: 6 }}>
-            <div style={celulaFoto(fotoP1, { width: 350, height: 349 })} />
-            <div style={celulaFoto(fotoP2, { position: "relative", width: 350, height: 349, marginTop: 6 })}>
+            <div style={celulaFoto(fotoP1, { width: 350, height: 230 })} />
+            <div style={celulaFoto(fotoP2, { width: 350, height: 230, marginTop: 7 })} />
+            <div style={celulaFoto(fotoP3, { position: "relative", width: 350, height: 230, marginTop: 7 })}>
               {restantes > 0 && (
                 <div style={{ position: "absolute", right: 12, bottom: 12, display: "flex", alignItems: "center", justifyContent: "center", paddingLeft: 14, paddingRight: 14, paddingTop: 7, paddingBottom: 7, borderRadius: 999, backgroundColor: "rgba(6,14,10,.72)", color: "#fff", fontSize: 26, fontWeight: 700 }}>+{restantes}</div>
               )}
@@ -128,8 +130,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
           <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
             <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
             <div style={{ display: "flex", alignItems: "flex-start", marginLeft: 12, marginRight: 12 }}>
-              <span style={{ color: VERDE, fontWeight: 700, fontSize: 34 }}>{margemTexto}</span>
-              <span style={{ color: VERDE, fontWeight: 700, fontSize: 20, marginTop: 4, marginLeft: 1 }}>%</span>
+              <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemTexto}</span>
+              <span style={{ color: VERDE, fontWeight: 700, fontSize: 22, marginTop: 5, marginLeft: 1 }}>%</span>
             </div>
             <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
           </div>
