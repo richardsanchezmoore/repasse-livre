@@ -17,6 +17,7 @@ import { OpportunityCard } from "@/components/OpportunityCard";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
 import { PonteAssinatura } from "@/components/PonteAssinatura";
 import { BarraPonteScroll } from "@/components/BarraPonteScroll";
+import { RastreioEvento } from "@/components/RastreioEvento";
 import { RegistradorVisualizacao } from "@/components/RegistradorVisualizacao";
 import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -423,6 +424,10 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               veiculo={oportunidade.veiculo}
               estado={oportunidade.estado}
             />
+            {/* ViewContent (dataLayer→GTM) — mede o POUSO do anúncio: a pessoa chegou na
+                página do carro (destino do criativo/ADS_OPORTUNIDADES). Envia o veículo como
+                content_name pra o GTM poder repassar ao Pixel/CAPI. */}
+            <RastreioEvento evento="ver_oferta" params={{ pagina: "carro", veiculo: oportunidade.veiculo }} />
             <PaginaOportunidade
               oportunidade={oportunidade}
               bloqueado={bloqueado}
