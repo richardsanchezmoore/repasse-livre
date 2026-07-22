@@ -7,6 +7,7 @@ import { AvisoAssinatura } from "@/components/AvisoAssinatura";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import { CarrosselVendas } from "@/components/CarrosselVendas";
 import { PixIcon } from "@/components/PixIcon";
+import { ContadorNumeroAoVivo } from "@/components/ContadorNumeroAoVivo";
 
 export interface DadosVendas {
   variante: "padrao" | "fomo";
@@ -266,16 +267,30 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
         </div>
       </section>
 
-      {/* 4b ── Nossos números (faixa escura, verdes do topo — sem título) */}
+      {/* 4b ── Nossos números (faixa escura, verdes do topo) — pastilha "Ao vivo" + count-up */}
       {dados.numeros && dados.numeros.length > 0 && (
         <section data-reveal style={{ ...REVEAL, width: "100%", position: "relative", overflow: "hidden", background: "radial-gradient(720px 360px at 50% -10%,rgba(0,200,69,.16),transparent 60%),linear-gradient(160deg,#0C2417,#07120C)" }}>
-          <div className="fv-numeros" style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)", textAlign: "center" }}>
-            {dados.numeros.map((n) => (
-              <div key={n.rotulo}>
-                <div style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em", whiteSpace: "nowrap" }}>{n.valor}{n.sufixo && <span style={{ fontSize: "0.42em", fontWeight: 800, marginLeft: 4 }}>{n.sufixo}</span>}</div>
-                <div style={{ font: `600 clamp(11px,1.4vw,13px) ${CORPO}`, color: "#9fc9ab", marginTop: 10, letterSpacing: ".03em" }}>{n.rotulo}</div>
+          <style>{`@keyframes fvPulso{0%{box-shadow:0 0 0 0 rgba(0,232,79,.55)}70%{box-shadow:0 0 0 7px rgba(0,232,79,0)}100%{box-shadow:0 0 0 0 rgba(0,232,79,0)}}`}</style>
+          <div style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(40px,5vw,64px) clamp(20px,5vw,56px)" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "clamp(26px,3.4vw,40px)" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "7px 15px", borderRadius: 999, border: "1px solid rgba(0,200,69,.35)", background: "rgba(0,200,69,.08)", font: `800 12px ${CORPO}`, letterSpacing: ".14em", textTransform: "uppercase", color: "#7fe0a0" }}>
+                <span style={{ width: 8, height: 8, borderRadius: 999, background: "#00e84f", animation: "fvPulso 1.8s ease-out infinite" }} />
+                Ao vivo · Nossos números
               </div>
-            ))}
+            </div>
+            <div className="fv-numeros" style={{ textAlign: "center" }}>
+              {dados.numeros.map((n) => (
+                <div key={n.rotulo}>
+                  <ContadorNumeroAoVivo
+                    valor={n.valor}
+                    sufixo={n.sufixo}
+                    style={{ font: `900 clamp(34px,5.2vw,54px)/1 ${TIT}`, color: "#00c845", letterSpacing: "-.03em", whiteSpace: "nowrap" }}
+                    sufixoStyle={{ fontSize: "0.42em", fontWeight: 800, marginLeft: 4 }}
+                  />
+                  <div style={{ font: `600 clamp(11px,1.4vw,13px) ${CORPO}`, color: "#9fc9ab", marginTop: 10, letterSpacing: ".03em" }}>{n.rotulo}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
