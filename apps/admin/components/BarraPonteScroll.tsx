@@ -58,7 +58,7 @@ export function BarraPonteScroll() {
       >
         <Gem size={18} fill="#00c845" strokeWidth={0} style={{ flex: "none" }} />
         <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.35, color: "#d6e2ec" }}>
-          <b style={{ color: "#fff" }}>Dezenas de carros abaixo da FIPE</b> toda semana — no seu estado, com alerta na hora.
+          <b style={{ color: "#fff" }}>Dezenas de carros abaixo da FIPE</b> todo dia — no seu estado, com alerta na hora.
         </span>
         <Link
           href="/planos-slim"

@@ -42,11 +42,11 @@ export function PonteAssinatura() {
           <Gem size={14} fill="#00c845" strokeWidth={0} /> Repasse Livre PRO
         </div>
         <h2 style={{ fontWeight: 800, fontSize: "clamp(19px,2.6vw,25px)", lineHeight: 1.2, letterSpacing: "-.01em", margin: "0 0 10px" }}>
-          Você viu a análise completa desta oportunidade — de graça.
+          Descubra dezenas de carros abaixo da FIPE todo dia.
         </h2>
         <p style={{ fontSize: "clamp(14px,1.6vw,16px)", lineHeight: 1.55, color: "#b9c6cf", margin: 0 }}>
-          O Repasse Livre acha <b style={{ color: "#fff" }}>dezenas de carros abaixo da FIPE toda semana</b> — com essa
-          análise pronta, no seu estado, na sua busca, com alerta na hora.
+          O Repasse Livre entrega <b style={{ color: "#fff" }}>a análise pronta</b> — no seu estado, na sua busca, com
+          alerta na hora.
         </p>
       </div>
       <Link
