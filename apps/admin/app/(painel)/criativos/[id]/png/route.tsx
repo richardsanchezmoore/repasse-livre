@@ -174,7 +174,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       {pastilha(300, 44)}
       <div style={{ position: "absolute", top: 312, right: 44, display: "flex" }}>{contadorFotos}</div>
       <div style={{ position: "absolute", top: 269, left: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", width: LARGURA, height: 969, paddingLeft: 48, paddingRight: 48 }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", backgroundColor: "#fff", borderRadius: 28, paddingTop: 34, paddingBottom: 40, paddingLeft: 44, paddingRight: 44 }}>
+        {/* card translúcido: deixa a foto "vazar" por trás (Satori não faz blur, mas a
+            translucidez plana já dá o efeito) — texto em negrito/escuro segue legível */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", backgroundColor: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.45)", borderRadius: 28, paddingTop: 34, paddingBottom: 40, paddingLeft: 44, paddingRight: 44 }}>
           {localLinha}
           <div style={{ display: "flex", maxWidth: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 34, fontWeight: 800, color: PRETO_OFERTA, marginTop: 4, marginBottom: 6 }}>{nome}</div>
           {blocoValores}
