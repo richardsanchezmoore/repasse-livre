@@ -86,6 +86,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const op = await buscarOportunidadePorId(params.id, true);
   if (!op) return new Response("nao_encontrado", { status: 404 });
 
+  // Formato: feed 4:5 (1080x1350, padrão) ou stories 9:16 (1080x1920). No stories a
+  // foto ocupa mais altura e o bloco branco ganha ar (o conteúdo centraliza no resto).
+  const stories = new URL(_req.url).searchParams.get("formato") === "stories";
+  const LARGURA = 1080;
+  const ALTURA = stories ? 1920 : 1350;
+  const FOTO_H = stories ? 1080 : 704;
+
   const [fontes, fotoGrande] = await Promise.all([carregarFontes(), paraDataUri(op.foto_principal)]);
 
   const temFipe = op.fipe_valor != null && op.fipe_valor > op.preco;
@@ -99,14 +106,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
   return new ImageResponse(
     (
-      <div style={{ display: "flex", flexDirection: "column", width: 1080, height: 1350, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
+      <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
         {/* ===== Foto principal em tela cheia (sem miniaturas — foco total no carro) ===== */}
-        <div style={{ position: "relative", display: "flex", width: 1080, height: 704, overflow: "hidden", backgroundColor: FUNDO_FOTO }}>
+        <div style={{ position: "relative", display: "flex", width: LARGURA, height: FOTO_H, overflow: "hidden", backgroundColor: FUNDO_FOTO }}>
           {/* <img> + object-fit cover: o background-image do Satori estava REPETINDO a foto
               (background-repeat) em vez de cobrir; o <img> cobre e corta certo, sem tile. */}
           {fotoGrande && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fotoGrande} width={1080} height={704} alt="" style={{ width: 1080, height: 704, objectFit: "cover" }} />
+            <img src={fotoGrande} width={LARGURA} height={FOTO_H} alt="" style={{ width: LARGURA, height: FOTO_H, objectFit: "cover" }} />
           )}
           {/* pastilha de margem */}
           {temFipe && (
@@ -172,8 +179,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       </div>
     ),
     {
-      width: 1080,
-      height: 1350,
+      width: LARGURA,
+      height: ALTURA,
       fonts: fontes,
       // Sem cache: o criativo muda quando a oportunidade/código muda; senão o
       // browser/CDN serve o PNG antigo pela mesma URL ("trancado" no já gerado).
