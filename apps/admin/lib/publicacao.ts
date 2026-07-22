@@ -15,15 +15,22 @@ import { registrarAlertasParaAprovados } from "@/lib/alertas/matching";
  * reciclada após a resposta e mataria o e-mail pendente. O matching é best-effort interno
  * (try/catch, nunca lança), então aguardar não arrisca derrubar a aprovação.
  */
-export async function aprovarComAlertas(ids: string[]): Promise<void> {
-  if (ids.length === 0) return;
-  const { error } = await supabaseAdmin.from("opportunities").update({ status: "aprovada" }).in("id", ids);
+export async function aprovarComAlertas(ids: string[]): Promise<number> {
+  if (ids.length === 0) return 0;
+  // .select("id") pra saber quantas linhas o UPDATE de fato afetou (diagnóstico: no
+  // endpoint da Vercel o update não estava persistindo apesar de não dar erro).
+  const { data, error } = await supabaseAdmin
+    .from("opportunities")
+    .update({ status: "aprovada" })
+    .in("id", ids)
+    .select("id");
   if (error) {
     throw new Error(`Falha ao aprovar oportunidades: ${error.message}`);
   }
   await registrarAlertasParaAprovados(ids);
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
+  return data?.length ?? 0;
 }
 
 /**
@@ -32,7 +39,7 @@ export async function aprovarComAlertas(ids: string[]): Promise<void> {
  * de e-mail. Backlog maior que o limite dreno nos runs seguintes (cron a cada 15 min).
  * Devolve quantos aprovou.
  */
-export async function publicarDescobertasPendentes(limite = 300): Promise<number> {
+export async function publicarDescobertasPendentes(limite = 300): Promise<{ selecionados: number; aprovados: number }> {
   const { data, error } = await supabaseAdmin
     .from("opportunities")
     .select("id")
@@ -43,8 +50,8 @@ export async function publicarDescobertasPendentes(limite = 300): Promise<number
     throw new Error(`Falha ao listar descobertas pendentes: ${error.message}`);
   }
   const ids = (data ?? []).map((o) => o.id as string);
-  await aprovarComAlertas(ids);
-  return ids.length;
+  const aprovados = await aprovarComAlertas(ids);
+  return { selecionados: ids.length, aprovados };
 }
 
 // ── Throttle do modo "horária" (1 lote por hora), guardado em worker_config ────────────

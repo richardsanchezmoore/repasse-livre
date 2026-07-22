@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
 import { buscarModoPublicacao } from "@/lib/configWorker";
 import { publicarDescobertasPendentes, buscarUltimaPublicacaoMs, marcarUltimaPublicacao } from "@/lib/publicacao";
 
@@ -61,14 +62,19 @@ export async function GET(req: Request): Promise<Response> {
       }
     }
 
-    const aprovados = await publicarDescobertasPendentes();
+    const contarDescoberta = async () =>
+      (await supabaseAdmin.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "descoberta")).count ?? 0;
+
+    const antes = await contarDescoberta();
+    const r = await publicarDescobertasPendentes();
+    const depois = await contarDescoberta();
 
     // Fecha a janela de 1h só quando de fato publicou algo (não atrasa o 1º da janela).
-    if (modo === "horaria" && aprovados > 0) {
+    if (modo === "horaria" && r.aprovados > 0) {
       await marcarUltimaPublicacao();
     }
 
-    return NextResponse.json({ ok: true, modo, aprovados });
+    return NextResponse.json({ ok: true, modo, antes, selecionados: r.selecionados, aprovados: r.aprovados, depois });
   } catch (e) {
     console.error("[publicacao] auto-publicar falhou:", e instanceof Error ? e.message : e);
     return NextResponse.json({ erro: "falha" }, { status: 500 });
