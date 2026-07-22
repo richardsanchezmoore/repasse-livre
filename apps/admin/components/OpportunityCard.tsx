@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Clock, Gem, Heart, Lock, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
+import { Check, Clock, Gem, Heart, Image as ImageIcon, Lock, MapPin, MessageCircle, Share2, Tag } from "lucide-react";
 import {
   alternarFavoritoUsuario,
   apagarOportunidade,
@@ -293,6 +293,17 @@ export function OpportunityCard({
         <button onClick={aoCompartilhar} className="acao acao-compartilhar">
           <Share2 size={14} strokeWidth={2} className="icone-inline" /> Compartilhar
         </button>
+        {isAdmin && (
+          <Link
+            href={`/criativos/${oportunidade.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="acao acao-compartilhar"
+            onClick={(evento) => evento.stopPropagation()}
+          >
+            <ImageIcon size={14} strokeWidth={2} className="icone-inline" /> Criativo
+          </Link>
+        )}
       </div>
       )}
 
