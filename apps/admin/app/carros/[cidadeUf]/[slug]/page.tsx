@@ -16,6 +16,7 @@ import { OfertasRelacionadas } from "@/components/OfertasRelacionadas";
 import { OpportunityCard } from "@/components/OpportunityCard";
 import { PaginaOportunidade } from "@/components/PaginaOportunidade";
 import { PonteAssinatura } from "@/components/PonteAssinatura";
+import { BarraPonteScroll } from "@/components/BarraPonteScroll";
 import { RegistradorVisualizacao } from "@/components/RegistradorVisualizacao";
 import { gerarFactSheet } from "@/lib/bia/dados";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -432,6 +433,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
             />
             {!ehAdminPagina && !usuario?.premium && <PonteAssinatura />}
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
+            {!ehAdminPagina && !usuario?.premium && <BarraPonteScroll />}
           </main>
         </div>
       </SelecaoMultiplaProvider>

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { buscarIdsFavoritados } from "./DiscoveriesBoard";
 import { OpportunityCard } from "./OpportunityCard";
 import { buscarMargemPremium } from "@/lib/configWorker";
@@ -87,6 +89,17 @@ export async function OfertasRelacionadas({
   return (
     <section className="ofertas-relacionadas">
       <h2 className="ofertas-relacionadas-titulo">Ofertas relacionadas</h2>
+      {podeBloquear && (
+        <p style={{ margin: "-4px 0 14px", fontSize: 14, lineHeight: 1.5, color: "#5a6570" }}>
+          Mais oportunidades abaixo da FIPE — a maioria some antes de você ver.{" "}
+          <Link
+            href="/planos-slim"
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16A34A", fontWeight: 700, textDecoration: "none" }}
+          >
+            Desbloqueie todas <ArrowRight size={14} strokeWidth={2.4} />
+          </Link>
+        </p>
+      )}
       <div className="board-lista">
         {relacionadas.map((relacionada) => (
           <OpportunityCard
