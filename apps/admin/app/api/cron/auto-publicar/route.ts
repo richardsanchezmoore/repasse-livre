@@ -20,6 +20,10 @@ import { publicarDescobertasPendentes, buscarUltimaPublicacaoMs, marcarUltimaPub
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// ★ force-no-store: sem isto o Next CACHEIA os SELECTs do Supabase (que usam fetch por
+// baixo) e o cron lia um snapshot VELHO de `descoberta` — re-aprovava ids já aprovados
+// (aprovados:81 fixo) sem nunca drenar o backlog real. Foi a 2ª causa (a 1ª era o header).
+export const fetchCache = "force-no-store";
 export const maxDuration = 60;
 
 const UMA_HORA_MS = 60 * 60 * 1000;

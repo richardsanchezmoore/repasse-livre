@@ -13,6 +13,8 @@ import { enviarResumoDiario } from "@/lib/alertas/entrega";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// force-no-store: lê a fila de alertas fresca (senão o Next cacheia os SELECTs do Supabase).
+export const fetchCache = "force-no-store";
 export const maxDuration = 60;
 
 export async function GET(req: Request): Promise<Response> {
