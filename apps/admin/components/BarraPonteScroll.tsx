@@ -18,10 +18,10 @@ export function BarraPonteScroll() {
     const aoRolar = () => {
       const total = document.documentElement.scrollHeight - window.innerHeight;
       const pct = total > 0 ? window.scrollY / total : 0;
-      // 7% (não 50%/15%): anúncios curtos morrem cedo, e a barra é suave/dispensável.
+      // 4% (não 50%/15%/7%): anúncios curtos morrem cedo, e a barra é suave/dispensável.
       // LATCH — uma vez visível, NÃO some mais ao rolar pra cima: é o único gatilho que
       // sobra quando o usuário volta pro topo reler fotos. Só o X (fechado) a remove.
-      if (pct > 0.07) {
+      if (pct > 0.04) {
         setVisivel(true);
         window.removeEventListener("scroll", aoRolar);
       }
