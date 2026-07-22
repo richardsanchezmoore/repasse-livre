@@ -59,17 +59,6 @@ async function paraDataUri(url: string | null | undefined): Promise<string | nul
   }
 }
 
-function celulaFoto(uri: string | null, extras: React.CSSProperties = {}): React.CSSProperties {
-  return {
-    display: "flex",
-    backgroundColor: FUNDO_FOTO,
-    backgroundImage: uri ? `url(${uri})` : undefined,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    ...extras,
-  };
-}
-
 export async function GET(_req: Request, { params }: { params: { id: string } }): Promise<Response> {
   const usuario = await obterUsuarioAtual();
   if (usuario?.role !== "admin") {
@@ -93,10 +82,15 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     (
       <div style={{ display: "flex", flexDirection: "column", width: 1080, height: 1350, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
         {/* ===== Foto principal em tela cheia (sem miniaturas — foco total no carro) ===== */}
-        <div style={{ display: "flex", width: 1080, height: 704 }}>
-          <div style={celulaFoto(fotoGrande, { position: "relative", width: 1080, height: 704 })}>
-            {/* pastilha de margem */}
-            {temFipe && (
+        <div style={{ position: "relative", display: "flex", width: 1080, height: 704, overflow: "hidden", backgroundColor: FUNDO_FOTO }}>
+          {/* <img> + object-fit cover: o background-image do Satori estava REPETINDO a foto
+              (background-repeat) em vez de cobrir; o <img> cobre e corta certo, sem tile. */}
+          {fotoGrande && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={fotoGrande} width={1080} height={704} alt="" style={{ width: 1080, height: 704, objectFit: "cover" }} />
+          )}
+          {/* pastilha de margem */}
+          {temFipe && (
               <div style={{ position: "absolute", top: 28, left: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", color: "#fff", lineHeight: 1 }}>
                   <span style={{ fontSize: 68, fontWeight: 900 }}>{margemInt}</span>
@@ -113,7 +107,6 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
               <img src={CAMERA_URI} width={26} height={26} alt="" />
               <span style={{ color: "#fff", fontSize: 27, fontWeight: 700, marginLeft: 9 }}>{totalFotos} fotos</span>
             </div>
-          </div>
         </div>
 
         {/* ===== Bloco de informação ===== */}
