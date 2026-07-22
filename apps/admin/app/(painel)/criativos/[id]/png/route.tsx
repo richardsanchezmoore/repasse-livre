@@ -132,37 +132,40 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         </div>
 
         {/* ===== Bloco de informação ===== */}
-        <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 56, paddingRight: 56, paddingTop: 20 }}>
-          {/* rapport regional — localização por extenso logo abaixo da foto */}
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingLeft: 56, paddingRight: 56, paddingTop: 22, paddingBottom: 22 }}>
+          {/* rapport regional — FIXO no topo, colado na foto (fora do grupo centralizado) */}
           {localFrase && (
-            <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={PIN_URI} width={22} height={22} alt="" />
-              <span style={{ color: CINZA_ROTULO, fontWeight: 600, fontSize: 26, marginLeft: 7 }}>Anunciado {localFrase}</span>
+              <span style={{ color: CINZA_ROTULO, fontWeight: 600, fontSize: 26, marginLeft: 7 }}>Oportunidade {localFrase}</span>
             </div>
           )}
-          <div style={{ display: "flex", fontSize: 30, fontWeight: 600, letterSpacing: 8, color: CINZA_ROTULO }}>GANHO</div>
-          <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: VERDE, lineHeight: 1, marginTop: 8 }}>{ganho != null ? formatarMoeda(ganho) : "—"}</div>
-          <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
-            <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
-            <div style={{ display: "flex", alignItems: "flex-start", marginLeft: 12, marginRight: 12 }}>
-              <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemTexto}</span>
-              <span style={{ color: VERDE, fontWeight: 700, fontSize: 22, marginTop: 5, marginLeft: 1 }}>%</span>
+          {/* GANHO + valores centralizados no espaço restante — separados da localização */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, justifyContent: "center", width: "100%" }}>
+            <div style={{ display: "flex", fontSize: 30, fontWeight: 600, letterSpacing: 8, color: CINZA_ROTULO }}>GANHO</div>
+            <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: VERDE, lineHeight: 1, marginTop: 8 }}>{ganho != null ? formatarMoeda(ganho) : "—"}</div>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
+              <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
+              <div style={{ display: "flex", alignItems: "flex-start", marginLeft: 12, marginRight: 12 }}>
+                <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemTexto}</span>
+                <span style={{ color: VERDE, fontWeight: 700, fontSize: 22, marginTop: 5, marginLeft: 1 }}>%</span>
+              </div>
+              <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
             </div>
-            <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
-          </div>
 
-          <div style={{ display: "flex", width: "100%", height: 2, backgroundColor: LINHA, marginTop: 40 }} />
+            <div style={{ display: "flex", width: "100%", height: 2, backgroundColor: LINHA, marginTop: 40 }} />
 
-          <div style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "stretch" }}>
-            <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
-              <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>OFERTA</div>
-              <div style={{ display: "flex", fontSize: 60, fontWeight: 800, color: PRETO_OFERTA, marginTop: 8 }}>{formatarMoeda(op.preco)}</div>
-            </div>
-            <div style={{ display: "flex", width: 2, backgroundColor: LINHA }} />
-            <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
-              <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>FIPE</div>
-              <div style={{ display: "flex", fontSize: 60, fontWeight: 600, color: CINZA_FIPE, marginTop: 8 }}>{formatarMoeda(op.fipe_valor)}</div>
+            <div style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "stretch" }}>
+              <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
+                <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>OFERTA</div>
+                <div style={{ display: "flex", fontSize: 60, fontWeight: 800, color: PRETO_OFERTA, marginTop: 8 }}>{formatarMoeda(op.preco)}</div>
+              </div>
+              <div style={{ display: "flex", width: 2, backgroundColor: LINHA }} />
+              <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
+                <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>FIPE</div>
+                <div style={{ display: "flex", fontSize: 60, fontWeight: 600, color: CINZA_FIPE, marginTop: 8 }}>{formatarMoeda(op.fipe_valor)}</div>
+              </div>
             </div>
           </div>
         </div>
