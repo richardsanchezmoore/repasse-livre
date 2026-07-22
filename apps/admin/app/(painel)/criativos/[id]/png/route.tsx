@@ -104,87 +104,108 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const nome = op.veiculo;
   const localFrase = op.estado ? (ESTADOS[op.estado] ?? `em ${op.estado}`) : null;
 
-  return new ImageResponse(
-    (
-      <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
-        {/* ===== Foto principal em tela cheia (sem miniaturas — foco total no carro) ===== */}
-        <div style={{ position: "relative", display: "flex", width: LARGURA, height: FOTO_H, overflow: "hidden", backgroundColor: FUNDO_FOTO }}>
-          {/* <img> + object-fit cover: o background-image do Satori estava REPETINDO a foto
-              (background-repeat) em vez de cobrir; o <img> cobre e corta certo, sem tile. */}
-          {fotoGrande && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={fotoGrande} width={LARGURA} height={FOTO_H} alt="" style={{ width: LARGURA, height: FOTO_H, objectFit: "cover" }} />
-          )}
-          {/* pastilha de margem */}
-          {temFipe && (
-              <div style={{ position: "absolute", top: 28, left: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE, boxShadow: "0 8px 20px rgba(0,0,0,.28)" }}>
-                {/* balanceador transparente à esquerda = mesma largura do % visível à direita
-                    → os dígitos ficam centrados no círculo (senão o % puxa o número pra esquerda) */}
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", color: "#fff", lineHeight: 1 }}>
-                  <span style={{ fontSize: 24, fontWeight: 900, marginRight: 2, color: "transparent" }}>%</span>
-                  <span style={{ fontSize: 64, fontWeight: 900 }}>{margemInt}</span>
-                  <span style={{ fontSize: 24, fontWeight: 900, marginTop: 6, marginLeft: 2 }}>%</span>
-                </div>
-                <div style={{ display: "flex", fontSize: 15, fontWeight: 700, color: "#EAFBEE", letterSpacing: 0, marginTop: 2 }}>ABAIXO FIPE</div>
-              </div>
-            )}
-            {/* nome do veículo (marca-d'água) — clipa no máximo da largura útil */}
-            <div style={{ position: "absolute", left: 32, bottom: 24, maxWidth: 850, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 42, fontWeight: 700, color: "rgba(255,255,255,.62)" }}>{nome}</div>
-            {/* contador de fotos: ícone câmera + total */}
-            <div style={{ position: "absolute", right: 26, bottom: 26, display: "flex", alignItems: "center", paddingLeft: 15, paddingRight: 17, paddingTop: 10, paddingBottom: 10, borderRadius: 999, backgroundColor: "rgba(6,14,10,.7)" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={CAMERA_URI} width={26} height={26} alt="" />
-              <span style={{ color: "#fff", fontSize: 27, fontWeight: 700, marginLeft: 9 }}>{totalFotos} fotos</span>
-            </div>
+  // ---- Peças reaproveitadas nos dois formatos ----
+  const pastilha = (top: number, left: number) =>
+    temFipe ? (
+      <div style={{ position: "absolute", top, left, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 152, height: 152, borderRadius: 152, backgroundColor: VERDE }}>
+        {/* balanceador transparente à esquerda = largura do % visível → dígitos centrados */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", color: "#fff", lineHeight: 1 }}>
+          <span style={{ fontSize: 24, fontWeight: 900, marginRight: 2, color: "transparent" }}>%</span>
+          <span style={{ fontSize: 64, fontWeight: 900 }}>{margemInt}</span>
+          <span style={{ fontSize: 24, fontWeight: 900, marginTop: 6, marginLeft: 2 }}>%</span>
         </div>
+        <div style={{ display: "flex", fontSize: 15, fontWeight: 700, color: "#EAFBEE", letterSpacing: 0, marginTop: 2 }}>ABAIXO FIPE</div>
+      </div>
+    ) : null;
 
-        {/* ===== Bloco de informação ===== */}
-        <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingLeft: 56, paddingRight: 56, paddingTop: 22, paddingBottom: 22 }}>
-          {/* rapport regional — FIXO no topo, colado na foto (fora do grupo centralizado) */}
-          {localFrase && (
-            <div style={{ display: "flex", alignItems: "center" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={PIN_URI} width={22} height={22} alt="" />
-              <span style={{ color: CINZA_ROTULO, fontWeight: 600, fontSize: 26, marginLeft: 7 }}>Oportunidade {localFrase}</span>
-            </div>
-          )}
-          {/* GANHO + valores centralizados no espaço restante — separados da localização */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, justifyContent: "center", width: "100%" }}>
-            <div style={{ display: "flex", fontSize: 30, fontWeight: 600, letterSpacing: 8, color: CINZA_ROTULO }}>GANHO</div>
-            <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: VERDE, lineHeight: 1, marginTop: 8 }}>{ganho != null ? formatarMoeda(ganho) : "—"}</div>
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
-              <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
-              <div style={{ display: "flex", alignItems: "flex-start", marginLeft: 12, marginRight: 12 }}>
-                <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemTexto}</span>
-                <span style={{ color: VERDE, fontWeight: 700, fontSize: 22, marginTop: 5, marginLeft: 1 }}>%</span>
-              </div>
-              <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
-            </div>
+  const localLinha = localFrase ? (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={PIN_URI} width={22} height={22} alt="" />
+      <span style={{ color: CINZA_ROTULO, fontWeight: 600, fontSize: 26, marginLeft: 7 }}>Oportunidade {localFrase}</span>
+    </div>
+  ) : null;
 
-            <div style={{ display: "flex", width: "100%", height: 2, backgroundColor: LINHA, marginTop: 40 }} />
+  const contadorFotos = (
+    <div style={{ display: "flex", alignItems: "center", paddingLeft: 15, paddingRight: 17, paddingTop: 10, paddingBottom: 10, borderRadius: 999, backgroundColor: "rgba(6,14,10,.7)" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={CAMERA_URI} width={26} height={26} alt="" />
+      <span style={{ color: "#fff", fontSize: 27, fontWeight: 700, marginLeft: 9 }}>{totalFotos} fotos</span>
+    </div>
+  );
 
-            <div style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "stretch" }}>
-              <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
-                <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>OFERTA</div>
-                <div style={{ display: "flex", fontSize: 60, fontWeight: 800, color: PRETO_OFERTA, marginTop: 8 }}>{formatarMoeda(op.preco)}</div>
-              </div>
-              <div style={{ display: "flex", width: 2, backgroundColor: LINHA }} />
-              <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
-                <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>FIPE</div>
-                <div style={{ display: "flex", fontSize: 60, fontWeight: 600, color: CINZA_FIPE, marginTop: 8 }}>{formatarMoeda(op.fipe_valor)}</div>
-              </div>
-            </div>
-          </div>
+  const blocoValores = (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+      <div style={{ display: "flex", fontSize: 30, fontWeight: 600, letterSpacing: 8, color: CINZA_ROTULO }}>GANHO</div>
+      <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: VERDE, lineHeight: 1, marginTop: 8 }}>{ganho != null ? formatarMoeda(ganho) : "—"}</div>
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
+        <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
+        <div style={{ display: "flex", alignItems: "flex-start", marginLeft: 12, marginRight: 12 }}>
+          <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemTexto}</span>
+          <span style={{ color: VERDE, fontWeight: 700, fontSize: 22, marginTop: 5, marginLeft: 1 }}>%</span>
+        </div>
+        <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
+      </div>
+      <div style={{ display: "flex", width: "100%", height: 2, backgroundColor: LINHA, marginTop: 40 }} />
+      <div style={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "stretch" }}>
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
+          <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>OFERTA</div>
+          <div style={{ display: "flex", fontSize: 60, fontWeight: 800, color: PRETO_OFERTA, marginTop: 8 }}>{formatarMoeda(op.preco)}</div>
+        </div>
+        <div style={{ display: "flex", width: 2, backgroundColor: LINHA }} />
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingTop: 30, paddingBottom: 10 }}>
+          <div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: 5, color: CINZA_ROTULO }}>FIPE</div>
+          <div style={{ display: "flex", fontSize: 60, fontWeight: 600, color: CINZA_FIPE, marginTop: 8 }}>{formatarMoeda(op.fipe_valor)}</div>
         </div>
       </div>
-    ),
-    {
-      width: LARGURA,
-      height: ALTURA,
-      fonts: fontes,
-      // Sem cache: o criativo muda quando a oportunidade/código muda; senão o
-      // browser/CDN serve o PNG antigo pela mesma URL ("trancado" no já gerado).
-      headers: { "cache-control": "no-store, max-age=0, must-revalidate" },
-    },
+    </div>
   );
+
+  const conteudo = stories ? (
+    // ===== STORIES 9:16 — texto SÓ na zona segura (fora do topo 14% e da base 35%) =====
+    // Foto full-bleed (imagem pode ir às bordas; o que não pode é TEXTO). Pastilha
+    // abaixo do topo 14% (>269px). Card branco ancorado na base da zona segura (topo
+    // 269 → 1238), acima da base 35% onde ficam nome do perfil e botões.
+    <div style={{ position: "relative", display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, backgroundColor: FUNDO_FOTO, fontFamily: "Poppins" }}>
+      {fotoGrande && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={fotoGrande} width={LARGURA} height={ALTURA} alt="" style={{ position: "absolute", top: 0, left: 0, width: LARGURA, height: ALTURA, objectFit: "cover" }} />
+      )}
+      {pastilha(300, 44)}
+      <div style={{ position: "absolute", top: 312, right: 44, display: "flex" }}>{contadorFotos}</div>
+      <div style={{ position: "absolute", top: 269, left: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", width: LARGURA, height: 969, paddingLeft: 48, paddingRight: 48 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", backgroundColor: "#fff", borderRadius: 28, paddingTop: 34, paddingBottom: 40, paddingLeft: 44, paddingRight: 44 }}>
+          {localLinha}
+          <div style={{ display: "flex", maxWidth: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 34, fontWeight: 800, color: PRETO_OFERTA, marginTop: 4, marginBottom: 6 }}>{nome}</div>
+          {blocoValores}
+        </div>
+      </div>
+    </div>
+  ) : (
+    // ===== FEED 4:5 =====
+    <div style={{ display: "flex", flexDirection: "column", width: LARGURA, height: ALTURA, backgroundColor: "#FFFFFF", fontFamily: "Poppins" }}>
+      <div style={{ position: "relative", display: "flex", width: LARGURA, height: FOTO_H, overflow: "hidden", backgroundColor: FUNDO_FOTO }}>
+        {fotoGrande && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={fotoGrande} width={LARGURA} height={FOTO_H} alt="" style={{ width: LARGURA, height: FOTO_H, objectFit: "cover" }} />
+        )}
+        {pastilha(28, 28)}
+        <div style={{ position: "absolute", left: 32, bottom: 24, maxWidth: 850, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 42, fontWeight: 700, color: "rgba(255,255,255,.62)" }}>{nome}</div>
+        <div style={{ position: "absolute", right: 26, bottom: 26, display: "flex" }}>{contadorFotos}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, alignItems: "center", paddingLeft: 56, paddingRight: 56, paddingTop: 22, paddingBottom: 22 }}>
+        {localLinha}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, justifyContent: "center", width: "100%" }}>{blocoValores}</div>
+      </div>
+    </div>
+  );
+
+  return new ImageResponse(conteudo, {
+    width: LARGURA,
+    height: ALTURA,
+    fonts: fontes,
+    // Sem cache: o criativo muda quando a oportunidade/código muda; senão o
+    // browser/CDN serve o PNG antigo pela mesma URL ("trancado" no já gerado).
+    headers: { "cache-control": "no-store, max-age=0, must-revalidate" },
+  });
 }
