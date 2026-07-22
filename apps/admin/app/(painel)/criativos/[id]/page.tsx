@@ -10,7 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default async function PreviaCriativoPage({ params }: { params: { id: string } }) {
   const op = await buscarOportunidadePorId(params.id, true);
-  const pngUrl = `/criativos/${params.id}/png`;
+  // ?v anti-cache: cada abertura da prévia busca um PNG fresco (senão o browser
+  // reusa a imagem já baixada pra essa URL e parece "trancado" no criativo antigo).
+  const pngUrl = `/criativos/${params.id}/png?v=${Date.now()}`;
 
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px 64px", fontFamily: "system-ui, sans-serif", color: "#0F1B2D" }}>

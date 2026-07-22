@@ -145,6 +145,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         </div>
       </div>
     ),
-    { width: 1080, height: 1350, fonts: fontes },
+    {
+      width: 1080,
+      height: 1350,
+      fonts: fontes,
+      // Sem cache: o criativo muda quando a oportunidade/código muda; senão o
+      // browser/CDN serve o PNG antigo pela mesma URL ("trancado" no já gerado).
+      headers: { "cache-control": "no-store, max-age=0, must-revalidate" },
+    },
   );
 }
