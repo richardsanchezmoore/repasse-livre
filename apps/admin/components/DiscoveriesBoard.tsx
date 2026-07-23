@@ -16,6 +16,7 @@ import { FiltroClassificacao } from "./FiltroClassificacao";
 import { Paginacao } from "./Paginacao";
 import { RegistradorIdsVisiveis } from "./RegistradorIdsVisiveis";
 import { SeletorEstadoBreadcrumb } from "./SeletorEstadoBreadcrumb";
+import { SeletorLocal } from "./SeletorLocal";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
 export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor" | "proximidade";
@@ -475,12 +476,41 @@ export async function contarOportunidades(usuario: Usuario | null = null): Promi
   return Object.fromEntries(abas.map((aba, i) => [aba, resultados[i]])) as Record<Aba, number>;
 }
 
+/** Cidades distintas de um estado (aba pública), ordenadas por volume. Dedup por caixa
+ *  (une "São José dos Pinhais" e "...Dos...", mostra a forma dominante). Alimenta o SeletorLocal. */
+export async function buscarCidadesDoEstado(uf: string): Promise<string[]> {
+  const { data } = await supabaseAdmin
+    .from("opportunities")
+    .select("cidade")
+    .eq("status", "aprovada")
+    .eq("estado", uf)
+    .not("cidade", "is", null);
+  const formas = new Map<string, Map<string, number>>();
+  for (const linha of data ?? []) {
+    const c = ((linha.cidade as string) ?? "").trim();
+    if (!c) continue;
+    const chave = c.toLowerCase();
+    if (!formas.has(chave)) formas.set(chave, new Map());
+    const m = formas.get(chave)!;
+    m.set(c, (m.get(c) ?? 0) + 1);
+  }
+  return [...formas.values()]
+    .map((m) => {
+      const total = [...m.values()].reduce((a, b) => a + b, 0);
+      const forma = [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      return { forma, total };
+    })
+    .sort((a, b) => b.total - a.total)
+    .map((x) => x.forma);
+}
+
 export async function Board({
   aba,
   filtros = {},
   usuario = null,
   pagina = 1,
   estadosDisponiveis = [],
+  cidadesDoEstado = [],
   marcasDisponiveis = [],
   pisoMargem = MARGEM_MINIMA_PADRAO,
   proximidadeDisponivel = false,
@@ -490,6 +520,7 @@ export async function Board({
   usuario?: Usuario | null;
   pagina?: number;
   estadosDisponiveis?: string[];
+  cidadesDoEstado?: string[];
   marcasDisponiveis?: MarcaContagem[];
   pisoMargem?: number;
   proximidadeDisponivel?: boolean;
@@ -520,6 +551,15 @@ export async function Board({
             estadoAtivo={filtros.estado}
             estadosDisponiveis={estadosDisponiveis}
           />
+          {filtros.estado && (
+            <SeletorLocal
+              aba={aba}
+              estadoAtivo={filtros.estado}
+              regiaoAtiva={filtros.regiao}
+              cidadeAtiva={filtros.cidade}
+              cidadesDoEstado={cidadesDoEstado}
+            />
+          )}
           {aba === "rejeitadas" && total > 0 && <BotaoApagarTudo />}
         </div>
         {total > 0 && (

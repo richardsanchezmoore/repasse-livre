@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   Board,
+  buscarCidadesDoEstado,
   buscarEstadosDisponiveis,
   contarOportunidades,
   podeAcessarAba,
@@ -70,10 +71,12 @@ export default async function CentralDeOportunidadesPage({
     anunciante?: string;
     fonte?: string;
     marca?: string;
+    regiao?: string;
+    cidade?: string;
     pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, marca, pagina } =
+  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, marca, regiao, cidade, pagina } =
     await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
@@ -127,16 +130,21 @@ export default async function CentralDeOportunidadesPage({
     anunciante: anuncianteAtivo,
     fonte: fonteAtiva,
     marca: marcaAtiva,
+    // Região/cidade só valem dentro de um estado (o SeletorLocal só aparece com estado ativo).
+    // Cidade tem precedência (mais específica); ambas via ilike no board (case-insensitive).
+    regiao: estadoAtivo ? regiao?.trim() || undefined : undefined,
+    cidade: estadoAtivo ? cidade?.trim() || undefined : undefined,
     ordem: ordemAtiva,
     lat: ordemAtiva === "proximidade" ? coordsUsuario?.lat : undefined,
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,
   };
 
-  const [contagens, estadosDisponiveis, marcasDisponiveis, pisoMargem] = await Promise.all([
+  const [contagens, estadosDisponiveis, marcasDisponiveis, pisoMargem, cidadesDoEstado] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(abaAtiva, usuario),
     buscarMarcasComContagem(),
     buscarPisoMargem(),
+    estadoAtivo ? buscarCidadesDoEstado(estadoAtivo) : Promise.resolve([] as string[]),
   ]);
 
   return (
@@ -166,6 +174,7 @@ export default async function CentralDeOportunidadesPage({
                 usuario={usuario}
                 pagina={paginaAtiva}
                 estadosDisponiveis={estadosDisponiveis}
+                cidadesDoEstado={cidadesDoEstado}
                 marcasDisponiveis={marcasDisponiveis}
                 pisoMargem={pisoMargem}
                 proximidadeDisponivel={proximidadeDisponivel}
