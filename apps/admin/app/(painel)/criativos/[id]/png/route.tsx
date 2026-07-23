@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarOportunidadePorId } from "@/components/DiscoveriesBoard";
 import { formatarMoeda } from "@/lib/formatadores";
@@ -62,16 +63,26 @@ async function carregarFontes() {
   );
 }
 
-// Baixa a imagem no servidor e devolve como data-URI (base64). Retorna null em
-// qualquer falha (URL relativa, 404, bloqueio) → o chamador cai no placeholder.
+// Baixa a imagem no servidor e devolve como data-URI JPEG. Retorna null em qualquer
+// falha (URL relativa, 404, bloqueio, timeout) → o chamador cai no placeholder.
+// SEMPRE converte pra JPEG com sharp: o Satori (next/og) NÃO decodifica WebP/AVIF (o
+// Mercado Livre serve .webp → quebrava o PNG inteiro). Resize enxuga o data-URI/acelera.
 async function paraDataUri(url: string | null | undefined): Promise<string | null> {
   if (!url || !url.startsWith("http")) return null;
   try {
-    const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0" }, cache: "force-cache" });
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10_000);
+    const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0" }, cache: "force-cache", signal: ctrl.signal }).finally(() =>
+      clearTimeout(t),
+    );
     if (!r.ok) return null;
-    const tipo = r.headers.get("content-type") || "image/jpeg";
-    const b64 = Buffer.from(await r.arrayBuffer()).toString("base64");
-    return `data:${tipo};base64,${b64}`;
+    const entrada = Buffer.from(await r.arrayBuffer());
+    const jpeg = await sharp(entrada)
+      .rotate()
+      .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 82 })
+      .toBuffer();
+    return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
   } catch {
     return null;
   }
