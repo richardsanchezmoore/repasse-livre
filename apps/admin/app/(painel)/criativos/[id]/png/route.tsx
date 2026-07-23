@@ -174,9 +174,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       {pastilha(300, 44)}
       <div style={{ position: "absolute", top: 312, right: 44, display: "flex" }}>{contadorFotos}</div>
       <div style={{ position: "absolute", top: 269, left: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: LARGURA, height: 969, paddingLeft: 48, paddingRight: 48 }}>
-        {/* card sólido e compacto, CENTRADO na zona segura: a foto aparece cheia acima e
-            abaixo dele (carro visível), e o texto fica cristalino (sem enfraquecer nada) */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", backgroundColor: "#fff", borderRadius: 28, paddingTop: 30, paddingBottom: 34, paddingLeft: 44, paddingRight: 44 }}>
+        {/* card quase sólido (95%), CENTRADO na zona segura: a foto aparece cheia acima e
+            abaixo dele, e uma leve "quebra" deixa perceber a foto por trás sem enfraquecer o texto */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", backgroundColor: "rgba(255,255,255,0.95)", borderRadius: 28, paddingTop: 30, paddingBottom: 34, paddingLeft: 44, paddingRight: 44 }}>
           {localLinha}
           <div style={{ display: "flex", maxWidth: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 34, fontWeight: 800, color: PRETO_OFERTA, marginTop: 4, marginBottom: 6 }}>{nome}</div>
           {blocoValores}
