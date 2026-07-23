@@ -112,3 +112,35 @@ export function fbcdnExpirado(url: string): boolean {
   const expira = parseInt(oe, 16);
   return Number.isFinite(expira) && expira * 1000 < Date.now();
 }
+
+/**
+ * Remove das `fotos_secundarias` os links CRUS do fbcdn já EXPIRADOS (os "extras" que
+ * guardamos pros primeiros dias). Deixa foto_principal em paz (essa é sempre re-hospedada;
+ * as ainda-cruas pendentes são caso do backfill, não daqui). Roda em cron (diário basta).
+ */
+export async function limparFbExpiradas(): Promise<{ ajustados: number; removidas: number }> {
+  let ajustados = 0;
+  let removidas = 0;
+  const PAGINA = 1000;
+  for (let inicio = 0; ; inicio += PAGINA) {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("id, fotos_secundarias")
+      .eq("fonte", "FACEBOOK")
+      .neq("status", "rejeitada")
+      .range(inicio, inicio + PAGINA - 1);
+    if (error || !data || data.length === 0) break;
+    for (const o of data) {
+      const sec = ((o.fotos_secundarias as string[] | null) ?? []).filter(Boolean);
+      if (!sec.some((u) => u.includes("fbcdn"))) continue;
+      const limpa = sec.filter((u) => !fbcdnExpirado(u));
+      if (limpa.length !== sec.length) {
+        await supabase.from("opportunities").update({ fotos_secundarias: limpa }).eq("id", o.id);
+        ajustados++;
+        removidas += sec.length - limpa.length;
+      }
+    }
+    if (data.length < PAGINA) break;
+  }
+  return { ajustados, removidas };
+}

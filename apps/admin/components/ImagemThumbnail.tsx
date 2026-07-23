@@ -35,20 +35,26 @@ export function ImagemThumbnail({
 }) {
   const [src, setSrc] = useState(() => urlThumbnailOlx(url));
   const [carregada, setCarregada] = useState(false);
+  // Quando até o ORIGINAL falha (ex.: foto crua do fbcdn que expirou — ver
+  // fotosFacebook no worker), a miniatura SOME em vez de mostrar ícone quebrado.
+  const [erroFinal, setErroFinal] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const img = imgRef.current;
     if (!img || !img.complete) return;
     if (img.naturalWidth === 0) {
-      setSrc(url);
+      if (src === url) setErroFinal(true);
+      else setSrc(url);
     } else {
       // Mesma race: a foto pode já estar carregada (de verdade) antes do
       // React conectar o onLoad — sem isso o spinner ficava preso pra
       // sempre com a imagem por baixo já pronta.
       setCarregada(true);
     }
-  }, [url]);
+  }, [url, src]);
+
+  if (erroFinal) return null;
 
   return (
     <span className={`imagem-carregamento-wrapper ${className ?? ""}`}>
@@ -67,7 +73,7 @@ export function ImagemThumbnail({
         decoding="async"
         className={carregada ? "imagem-carregamento-visivel" : "imagem-carregamento-oculta"}
         onLoad={() => setCarregada(true)}
-        onError={() => setSrc(url)}
+        onError={() => (src === url ? setErroFinal(true) : setSrc(url))}
         onClick={onClick}
       />
     </span>
