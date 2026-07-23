@@ -11,8 +11,15 @@ function construirHref(aba: Aba, filtros: FiltrosBoard, pagina: number): string 
   if (filtros.busca) params.set("busca", filtros.busca);
   if (filtros.estado) params.set("estado", filtros.estado);
   else if (filtros.estadoBR) params.set("estado", "BR");
+  if (filtros.regiao) params.set("regiao", filtros.regiao);
+  if (filtros.cidade) params.set("cidade", filtros.cidade);
   if (filtros.precoMin !== undefined) params.set("precoMin", String(filtros.precoMin));
   if (filtros.precoMax !== undefined) params.set("precoMax", String(filtros.precoMax));
+  if (filtros.anoMin) params.set("anoMin", filtros.anoMin);
+  if (filtros.anoMax) params.set("anoMax", filtros.anoMax);
+  if (filtros.anunciante) params.set("anunciante", filtros.anunciante);
+  if (filtros.fonte) params.set("fonte", filtros.fonte);
+  if (filtros.marca) params.set("marca", filtros.marca);
   if (filtros.ordem && filtros.ordem !== "recente") params.set("ordem", filtros.ordem);
   if (pagina > 1) params.set("pagina", String(pagina));
   return `/?${params.toString()}`;
