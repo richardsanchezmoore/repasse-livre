@@ -392,7 +392,7 @@ export function modeloEhGenerico(m: string | null | undefined): boolean {
 // (o modelo nunca é a própria marca). Casos reais que viraram lixo: "Com", "Valor", "Gm",
 // "Troco", "Vende-se", "Da". Ver nota "FB é aplicação separada" na memória.
 const RUIDO_MODELO =
-  /^(vendo|venda|vende|vendese|troco|troca|carro|ve[íi]culo|oportunidade|excelente|[óo]tim[oa]|lind[oa]|top|repasse|urgente|abaixo|acima|fipe|valor|preco|preço|promo\w*|imperd\w*|barat[oa]|nov[oa]|semi\s*nov[oa]|seminovo|zero|okm|0km|apenas|s[óo]|somente|particular|estado|impec\w*|conservad\w*|oferta|leia|obs|ol[áa]|com|sem|de|do|da|dos|das|no|na|nos|nas|para|pra|por|e|ou|gm|vw|fiat|ford|chevrolet|renault|volkswagen|hyundai|nissan|toyota|honda|jeep|peugeot|citro[eê]n|mercedes|benz|land|rover)$/i;
+  /^(vendo|venda|vende|vendese|troco|troca|carro|ve[íi]culo|oportunidade|excelente|[óo]tim[oa]|lind[oa]|top|repasse|urgente|abaixo|acima|fipe|valor|preco|preço|promo\w*|imperd\w*|barat[oa]|nov[oa]|semi\s*nov[oa]|seminovo|zero|okm|0km|apenas|s[óo]|somente|particular|estado|impec\w*|conservad\w*|oferta|leia|obs|ol[áa]|com|sem|de|do|da|dos|das|no|na|nos|nas|em|ao|aos|num|numa|pelo|pela|para|pra|por|e|ou|maior|menor|melhor|todo|toda|muito|mesmo|meu|minha|esse|essa|este|esta|aceito|aceita|aceita\w*|financi\w*|parcel\w*|entrada|troca-troco|gm|vw|fiat|ford|chevrolet|renault|volkswagen|hyundai|nissan|toyota|honda|jeep|peugeot|citro[eê]n|mercedes|benz|land|rover)$/i;
 
 /** Acha o modelo REAL no texto livre (descrição/título) quando o estruturado veio "Outro":
  *  1º termo alfabético útil (pula emoji, número, marca, ruído). Ex.: "Duster 1.6 Flex..." → "Duster",
@@ -404,10 +404,13 @@ export function modeloDoTextoLivre(texto: string | null, marca: string | null): 
     .replace(/\s+/g, " ")
     .trim();
   for (const p of limpo.split(" ")) {
-    const t = p.trim();
+    // Tira pontuação das bordas ("Fipe.." → "Fipe") e pega a base antes do hífen
+    // ("Vende-se" → "Vende") — senão a pontuação faz o token escapar do descarte.
+    const t = p.trim().replace(/^[.\-]+|[.\-]+$/g, "");
+    const base = t.split("-")[0];
     if (t.length < 2 || /^\d/.test(t) || !/[a-zà-ú]/i.test(t)) continue;
     if (marca && t.toLowerCase() === marca.toLowerCase()) continue;
-    if (RUIDO_MODELO.test(t)) continue;
+    if (RUIDO_MODELO.test(t) || RUIDO_MODELO.test(base)) continue;
     return titlecase(t);
   }
   return null;
