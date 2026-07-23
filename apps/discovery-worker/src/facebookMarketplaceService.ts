@@ -387,9 +387,12 @@ export function modeloEhGenerico(m: string | null | undefined): boolean {
   return !m || /^(outro|outros|other)s?$/i.test(m.trim());
 }
 
-// Palavras que NÃO são modelo (ruído de marketing/venda que às vezes abre a descrição).
+// Palavras que NÃO são modelo → DESCARTA SEMPRE (regra do usuário: qualquer termo
+// desconexo de marca/modelo). Marketing/venda, conectores/preposições, e aliases de MARCA
+// (o modelo nunca é a própria marca). Casos reais que viraram lixo: "Com", "Valor", "Gm",
+// "Troco", "Vende-se", "Da". Ver nota "FB é aplicação separada" na memória.
 const RUIDO_MODELO =
-  /^(vendo|venda|carro|ve[íi]culo|oportunidade|excelente|lindo|linda|top|repasse|urgente|abaixo|acima|fipe|promo\w*|imperd\w*|barato|barata|novo|nova|semi\s*novo|seminovo|zero|okm|0km|apenas|s[óo]|particular|estado|impec\w*|conservad\w*|oferta|leia|obs|ola|olá)$/i;
+  /^(vendo|venda|vende|vendese|troco|troca|carro|ve[íi]culo|oportunidade|excelente|[óo]tim[oa]|lind[oa]|top|repasse|urgente|abaixo|acima|fipe|valor|preco|preço|promo\w*|imperd\w*|barat[oa]|nov[oa]|semi\s*nov[oa]|seminovo|zero|okm|0km|apenas|s[óo]|somente|particular|estado|impec\w*|conservad\w*|oferta|leia|obs|ol[áa]|com|sem|de|do|da|dos|das|no|na|nos|nas|para|pra|por|e|ou|gm|vw|fiat|ford|chevrolet|renault|volkswagen|hyundai|nissan|toyota|honda|jeep|peugeot|citro[eê]n|mercedes|benz|land|rover)$/i;
 
 /** Acha o modelo REAL no texto livre (descrição/título) quando o estruturado veio "Outro":
  *  1º termo alfabético útil (pula emoji, número, marca, ruído). Ex.: "Duster 1.6 Flex..." → "Duster",

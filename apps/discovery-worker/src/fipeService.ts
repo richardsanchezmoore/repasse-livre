@@ -50,7 +50,7 @@ function normalizar(texto: string): string {
  * modelo="Rover" — e "Rover" casa "Range Rover", NUNCA "Discovery". Reconhecê-las
  * primeiro conserta a classe inteira (Land Rover, Alfa Romeo, Aston Martin…).
  */
-const MARCAS_COMPOSTAS = ["Land Rover", "Alfa Romeo", "Aston Martin", "Great Wall"];
+export const MARCAS_COMPOSTAS = ["Land Rover", "Alfa Romeo", "Aston Martin", "Great Wall"];
 
 /**
  * Extrai (marca, modelo) do texto livre do veículo. Reconhece as marcas

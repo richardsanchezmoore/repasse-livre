@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { supabase } from "./supabaseClient.js";
-import { resolverReferenciaFipeEntrada } from "./fipeService.js";
+import { resolverReferenciaFipeEntrada, MARCAS_COMPOSTAS } from "./fipeService.js";
 import { modeloDoTextoLivre, modeloEhGenerico, combustivelDoTexto } from "./facebookMarketplaceService.js";
 
 /**
@@ -37,7 +37,10 @@ async function main() {
   let iguais = 0;
   let semRef = 0;
   for (const o of lista) {
-    const marca = (o.veiculo ?? "").split(" ")[0];
+    // Marca de 2 palavras (Land Rover, Alfa Romeo...) — o split ingênuo pegava "Land" e o
+    // modelo virava "Rover" (perdia "Discovery"). Detecta a composta antes.
+    const veic = o.veiculo ?? "";
+    const marca = MARCAS_COMPOSTAS.find((m) => veic.toLowerCase().startsWith(m.toLowerCase())) ?? veic.split(" ")[0];
     if (!marca || !o.ano) continue;
     const ehOutro = /\bOutro\b/i.test(o.veiculo ?? "");
     const modelo = ehOutro
@@ -47,7 +50,9 @@ async function main() {
     const combustivel = combustivelDoTexto(`${o.veiculo} ${o.descricao ?? ""}`);
     const motor = motorDe(o.versao ?? "") || motorDe(o.veiculo ?? "");
 
-    const ref = await resolverReferenciaFipeEntrada(marca, modelo, String(o.ano), `${motor} ${combustivel ?? ""}`.trim()).catch(() => null);
+    // Inclui o TRIM (versao) no discriminador — consistente com a captura nova (facebookMain):
+    // o fuzzy escolhe o trim certo e sobrevive ao corte top-30. Neutro pros guards.
+    const ref = await resolverReferenciaFipeEntrada(marca, modelo, String(o.ano), `${o.versao ?? ""} ${motor} ${combustivel ?? ""}`.trim()).catch(() => null);
     await dormir(400);
     if (!ref) {
       semRef++;
