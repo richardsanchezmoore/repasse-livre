@@ -346,8 +346,16 @@ function SecaoEstados({ estados }: { estados: ItemEstadoAtivo[] }) {
 
 function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
   const [metrica, setMetrica] = useState<MetricaEstado>("margem");
+  const [uf, setUf] = useState<string>("BR");
   const meta = META_METRICA[metrica];
   const hue = meta.hue;
+
+  // Estados presentes no pool, ordenados por estoque — alimenta o seletor.
+  const ufsDisponiveis = useMemo(() => {
+    const soma = new Map<string, number>();
+    for (const c of cidades) soma.set(c.estado, (soma.get(c.estado) ?? 0) + c.quantidade);
+    return [...soma.entries()].sort((a, b) => b[1] - a[1]).map(([u]) => u);
+  }, [cidades]);
 
   const valorDe = (c: ItemCidadeAtiva) =>
     metrica === "estoque" ? c.quantidade : metrica === "preco" ? c.precoMedio : c.margemMedia ?? 0;
@@ -358,10 +366,11 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
         ? formatarMoedaArredondada(v)
         : formatarPercentual1(v);
 
-  // Na métrica de margem, tira cidades de amostra minúscula (ruído).
+  // Filtra pelo estado escolhido (ou Brasil), tira amostra minúscula na margem, e corta o top.
+  const escopo = uf === "BR" ? cidades : cidades.filter((c) => c.estado === uf);
   const base =
-    metrica === "margem" ? cidades.filter((c) => c.quantidade >= MIN_AMOSTRA_MARGEM_CIDADE) : cidades;
-  const ordenadas = [...base].sort((a, b) => valorDe(b) - valorDe(a));
+    metrica === "margem" ? escopo.filter((c) => c.quantidade >= MIN_AMOSTRA_MARGEM_CIDADE) : escopo;
+  const ordenadas = [...base].sort((a, b) => valorDe(b) - valorDe(a)).slice(0, 15);
   const max = Math.max(...ordenadas.map(valorDe), 1);
   const min = Math.min(...ordenadas.map(valorDe));
   // Intensidade da cor espalhada no range REAL (min–max) — os valores são
@@ -375,7 +384,22 @@ function SecaoCidades({ cidades }: { cidades: ItemCidadeAtiva[] }) {
           <Eyebrow numero="02" texto="Praças" />
           <h2 className="bia2-titulo-secao">Cidades mais ativas</h2>
         </div>
-        <Toggle opcoes={OPCOES_METRICA} ativo={metrica} onSelecionar={setMetrica} />
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <select
+            value={uf}
+            onChange={(e) => setUf(e.target.value)}
+            aria-label="Filtrar cidades por estado"
+            style={{ padding: "8px 12px", borderRadius: 999, border: "1px solid #D5DCE4", background: "#fff", color: "#0F1B2D", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+          >
+            <option value="BR">Brasil</option>
+            {ufsDisponiveis.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+          <Toggle opcoes={OPCOES_METRICA} ativo={metrica} onSelecionar={setMetrica} />
+        </div>
       </div>
 
       <div className="bia2-card bia2-cidades-lista">

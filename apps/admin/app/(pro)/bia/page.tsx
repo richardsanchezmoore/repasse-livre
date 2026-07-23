@@ -44,7 +44,7 @@ export default async function BiaPage() {
     buscarMaisDisputados(500), // pool completo (~400 modelos); o painel corta o top por seleção
     buscarMarcasLuxoPorEstado(),
     buscarEstadosMaisAtivos(),
-    buscarCidadesMaisAtivas(20),
+    buscarCidadesMaisAtivas(250), // pool amplo → o painel filtra por estado e corta o top na exibição
     buscarTendenciaPrincipais(6),
     buscarEstadosDisponiveis(),
   ]);
