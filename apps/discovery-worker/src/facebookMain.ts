@@ -442,16 +442,19 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         }
         // Re-hospeda as fotos ANTES de salvar (fbcdn expira em dias → 403). foto_principal
         // SEMPRE permanente; extras cruas ficam nas secundárias (somem ao expirar, via limpeza).
+        // REGRA: veículo SEM FOTO não entra. Sem foto ou re-hospedagem falhou → DESCARTA
+        // (não salva foto crua que vai quebrar). Não marca "salvo" — se foi blip, re-tenta depois.
         const itemId = itemIdDoLink(op.link_origem);
-        if (itemId && op.foto_principal) {
-          const reh = await rehospedarFotosFacebook(itemId, [op.foto_principal, ...op.fotos_secundarias]);
-          if (reh) {
-            op.foto_principal = reh.foto_principal;
-            op.fotos_secundarias = reh.fotos_secundarias;
-          } else {
-            console.log(`[fb:${regiao.nome}] ⚠ re-hospedagem de fotos falhou (mantém cruas): ${a.marca} ${a.modelo} ${a.ano}`);
-          }
+        const reh = itemId && op.foto_principal ? await rehospedarFotosFacebook(itemId, [op.foto_principal, ...op.fotos_secundarias]) : null;
+        if (!reh) {
+          c.descartados++;
+          await registrarVistoFacebook(id, "sem_foto");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado SEM FOTO (re-hospedagem falhou): ${a.marca} ${a.modelo} ${a.ano}`);
+          await dormir(cfg.pacingMs);
+          continue;
         }
+        op.foto_principal = reh.foto_principal;
+        op.fotos_secundarias = reh.fotos_secundarias;
         await salvarOportunidade(op);
         c.elegiveis++;
         await registrarVistoFacebook(id, "salvo");
