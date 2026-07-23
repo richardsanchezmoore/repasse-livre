@@ -381,6 +381,35 @@ function parsearTitulo(titulo: string): { marca: string | null; modelo: string |
   return { marca, modelo, ano };
 }
 
+/** Modelo estruturado "genérico" do FB — o vendedor marcou "Outro" no campo modelo
+ *  (em vez de Duster/Voyage/etc). Aí NÃO dá pra confiar e caçamos o modelo real no texto. */
+export function modeloEhGenerico(m: string | null | undefined): boolean {
+  return !m || /^(outro|outros|other)s?$/i.test(m.trim());
+}
+
+// Palavras que NÃO são modelo (ruído de marketing/venda que às vezes abre a descrição).
+const RUIDO_MODELO =
+  /^(vendo|venda|carro|ve[íi]culo|oportunidade|excelente|lindo|linda|top|repasse|urgente|abaixo|acima|fipe|promo\w*|imperd\w*|barato|barata|novo|nova|semi\s*novo|seminovo|zero|okm|0km|apenas|s[óo]|particular|estado|impec\w*|conservad\w*|oferta|leia|obs|ola|olá)$/i;
+
+/** Acha o modelo REAL no texto livre (descrição/título) quando o estruturado veio "Outro":
+ *  1º termo alfabético útil (pula emoji, número, marca, ruído). Ex.: "Duster 1.6 Flex..." → "Duster",
+ *  "Voyage 20/21 completo" → "Voyage", "🚗 HB20 Sense" → "Hb20". Conservador: só usado p/ modelo genérico. */
+export function modeloDoTextoLivre(texto: string | null, marca: string | null): string | null {
+  if (!texto) return null;
+  const limpo = texto
+    .replace(/[^\p{L}\p{N}\s.-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  for (const p of limpo.split(" ")) {
+    const t = p.trim();
+    if (t.length < 2 || /^\d/.test(t) || !/[a-zà-ú]/i.test(t)) continue;
+    if (marca && t.toLowerCase() === marca.toLowerCase()) continue;
+    if (RUIDO_MODELO.test(t)) continue;
+    return titlecase(t);
+  }
+  return null;
+}
+
 /**
  * Parseia o HTML de um anúncio do FB Marketplace. `itemId` = id da URL.
  * Retorna {anuncio, descartar}. Descarta se não achar motor/versão (regra do usuário).
@@ -409,7 +438,13 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   // Se não tem NENHUM sinal de veículo (sem marca estruturada e título sem cara de carro), não é veículo.
   const pTit = parsearTitulo(titulo);
   const marca = marcaEstr ?? pTit.marca;
-  const modelo = modeloEstr ?? pTit.modelo;
+  // Modelo: estruturado > título. MAS se o vendedor marcou "Outro" (genérico), caça o modelo
+  // REAL no texto livre (descrição > título) — senão vira "Renault Outro"/"VW Outro" e a FIPE
+  // casa errado. Ex.: FB diz "Outro", descrição diz "Duster 1.6 Flex" → modelo = Duster.
+  let modelo = modeloEstr ?? pTit.modelo;
+  if (modeloEhGenerico(modelo)) {
+    modelo = modeloDoTextoLivre(descricao, marca) ?? modeloDoTextoLivre(titulo, marca) ?? modelo;
+  }
   const ano = pTit.ano ?? (descricao ? extrairAno(descricao) : null);
 
   // ★ NÃO HÁ PADRÃO: cada vendedor põe a versão num lugar (título, descrição, campo modelo,
