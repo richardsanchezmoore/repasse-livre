@@ -21,10 +21,12 @@ import {
   extrairIdsDaBusca,
   geografiaDaBusca,
   financiamentoAssumido,
+  fipeInformada,
   montarUrlBuscaFacebook,
   montarVeiculoPadrao,
   precoAvista,
   precoEhEntrada,
+  quitacaoFutura,
   riscoDocumentacao,
   type AnuncioFacebook,
   type FiltrosFacebook,
@@ -359,6 +361,13 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
           await dormir(cfg.pacingMs);
           continue;
         }
+        if (quitacaoFutura(a.descricao)) {
+          c.descartados++;
+          await registrarVistoFacebook(id, "quitacao_futura");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado FUTURA QUITAÇÃO/QF (preço é só entrada + assume financiamento): ${a.marca} ${a.modelo} ${a.ano}`);
+          await dormir(cfg.pacingMs);
+          continue;
+        }
         // VÁLVULA DE ESCAPE: se a descrição disclosa um valor "à vista" > preço anunciado,
         // o preço-campo era a ENTRADA → corrige pro valor total e NÃO descarta como isca.
         const avista = precoAvista(a.descricao, a.precoCampo ?? null);
@@ -386,6 +395,18 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
         if (!ref) {
           c.semFipe++;
           await registrarVistoFacebook(id, "sem_fipe");
+          await dormir(cfg.pacingMs);
+          continue;
+        }
+        // Âncora de sanidade: a FIPE que casamos MUITO acima da que o anunciante declara na
+        // descrição = casamos versão/modelo errado (margem inflada — pecado capital pra a
+        // credibilidade). Melhor pular que mostrar ganho falso. Só corta quando INFLA (casar
+        // abaixo é conservador). Caso Sandero: declara 41.300, casamos 52.854 (+28%).
+        const fipeDecl = fipeInformada(a.descricao);
+        if (fipeDecl && ref.valor > fipeDecl * 1.12) {
+          c.descartados++;
+          await registrarVistoFacebook(id, "fipe_divergente");
+          console.log(`[fb:${regiao.nome}] ⚠ descartado FIPE divergente: casamos R$${ref.valor} vs R$${fipeDecl} declarada (+${(((ref.valor / fipeDecl) - 1) * 100).toFixed(0)}%): ${a.marca} ${a.modelo} ${a.ano}`);
           await dormir(cfg.pacingMs);
           continue;
         }

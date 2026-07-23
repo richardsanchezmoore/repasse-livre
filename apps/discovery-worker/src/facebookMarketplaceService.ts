@@ -145,6 +145,56 @@ export function precoAvista(descricao: string | null, preco: number | null): num
   return melhor > 0 ? melhor : null;
 }
 
+/**
+ * "FUTURA QUITAÇÃO" / "QF para N meses": modalidade FB onde o valor anunciado é só a
+ * ENTRADA pra ASSUMIR o financiamento (quita-se o resto depois) — o comprador ainda paga
+ * N parcelas. Estruturalmente igual a "assumir financiamento": o preço NÃO é o do carro →
+ * margem ilusória → descarta. CUIDADO: "QUITADO/QUITADA" (documento pago) é BOM e NÃO cai
+ * aqui; o gatilho é "futura quitação"/"quitação futura"/"QF para|em|de N meses".
+ * Caso Onix Plus Premier 2020: "FUTURA QUITACAO ... Valor: 36.500 + QF para 12/15 meses".
+ */
+const QUITACAO_FUTURA_RE = /\b(?:futura\s+quitacao|quitacao\s+futura)\b|\bqf\s+(?:para|p\/|pra|em|de)\b/;
+export function quitacaoFutura(texto: string | null): boolean {
+  return texto ? QUITACAO_FUTURA_RE.test(semAcento(texto)) : false;
+}
+
+/**
+ * Parser robusto de valor em BRL escrito por vendedor: "41.300", "41,300", "72.350,00",
+ * "72350" → número. Trata os dois estilos de milhar (ponto e vírgula) e o decimal.
+ */
+export function parseValorBR(raw: string): number | null {
+  let s = raw.replace(/[^\d.,]/g, "");
+  if (!s) return null;
+  if (s.includes(".") && s.includes(",")) {
+    // o último separador é o decimal
+    s = s.lastIndexOf(",") > s.lastIndexOf(".") ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+  } else if (s.includes(",")) {
+    s = (s.split(",")[1] ?? "").length === 3 ? s.replace(/,/g, "") : s.replace(",", ".");
+  } else if (s.includes(".")) {
+    if ((s.split(".").pop() ?? "").length === 3) s = s.replace(/\./g, "");
+  }
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * FIPE que o PRÓPRIO anunciante declara na descrição ("FIPE: R$ 41.300"). Âncora de
+ * SANIDADE: se a FIPE que casamos ficar muito ACIMA desta, casamos a versão/modelo errado
+ * (inflando a margem — o pecado capital pra credibilidade). Retorna o 1º valor plausível
+ * após a palavra "fipe". Caso Sandero Stepway 2015: declara 41.300, casamos 52.854 (errada).
+ */
+export function fipeInformada(descricao: string | null): number | null {
+  if (!descricao) return null;
+  const t = semAcento(descricao);
+  const re = /fipe\D{0,12}(\d[\d.,\s]{2,}\d)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(t)) !== null) {
+    const v = parseValorBR(m[1]);
+    if (v && v >= 3000) return v; // FIPE de carro é dezenas de milhar — corta ruído
+  }
+  return null;
+}
+
 function titlecase(s: string): string {
   return s.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
