@@ -8,6 +8,7 @@ import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarca } from "@/lib/marca";
 import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
+import { cidadesDaRegiao } from "@/lib/regioes";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
@@ -56,6 +57,10 @@ export interface FiltrosBoard {
   fonte?: string;
   /** Marca (1ª palavra do veiculo) — filtra por prefixo. undefined = todas. */
   marca?: string;
+  /** Cidade exata (case-insensitive via ilike). Tem precedência sobre `regiao`. */
+  cidade?: string;
+  /** Região/metrópole (ver lib/regioes.ts) — resolve p/ o conjunto de cidades. Precisa de `estado`. */
+  regiao?: string;
 }
 
 const TITULO_POR_ABA: Record<Aba, string> = {
@@ -158,6 +163,12 @@ async function buscarOportunidades(
     if (filtros.classificacao) consultaFavoritos = consultaFavoritos.eq("classificacao", filtros.classificacao);
     if (filtros.busca) consultaFavoritos = consultaFavoritos.ilike("veiculo", `%${escaparTermoIlike(filtros.busca)}%`);
     if (filtros.estado) consultaFavoritos = consultaFavoritos.eq("estado", filtros.estado);
+    if (filtros.cidade) {
+      consultaFavoritos = consultaFavoritos.ilike("cidade", filtros.cidade);
+    } else if (filtros.regiao && filtros.estado) {
+      const cidades = cidadesDaRegiao(filtros.regiao, filtros.estado);
+      if (cidades && cidades.length > 0) consultaFavoritos = consultaFavoritos.or(cidades.map((c) => `cidade.ilike.${c}`).join(","));
+    }
     if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
     if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
     if (filtros.anoMin) consultaFavoritos = consultaFavoritos.gte("ano", filtros.anoMin);
@@ -191,6 +202,14 @@ async function buscarOportunidades(
   }
   if (filtros.estado) {
     consulta = consulta.eq("estado", filtros.estado);
+  }
+  // Cidade exata tem precedência; senão, região resolve p/ o conjunto de cidades (ilike =
+  // case-insensitive, cobre variações "do"/"Do" no banco). Ver lib/regioes.ts.
+  if (filtros.cidade) {
+    consulta = consulta.ilike("cidade", filtros.cidade);
+  } else if (filtros.regiao && filtros.estado) {
+    const cidades = cidadesDaRegiao(filtros.regiao, filtros.estado);
+    if (cidades && cidades.length > 0) consulta = consulta.or(cidades.map((c) => `cidade.ilike.${c}`).join(","));
   }
   if (filtros.precoMin !== undefined) {
     consulta = consulta.gte("preco", filtros.precoMin);
