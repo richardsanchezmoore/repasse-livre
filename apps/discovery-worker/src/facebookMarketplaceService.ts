@@ -410,6 +410,23 @@ export function modeloDoTextoLivre(texto: string | null, marca: string | null): 
   return null;
 }
 
+// Combustível a partir do texto livre (título/descrição). Ordem = prioridade: as variantes
+// DISTINTAS (diesel/elétrico/híbrido) primeiro, porque mudam MUITO a FIPE e o vendedor as
+// descreve explícito. O resolvedor (classeCombustivel/fuelAlvo) usa isso pra filtrar a variante.
+const COMB_TEXTO: Array<[RegExp, string]> = [
+  [/\bdiesel\b|\btdi?\b|\bcrd\b|\bhdi\b|\bdci\b|\bbtdi\b/i, "DIESEL"],
+  [/\b(100%\s*)?el[ée]tric[oa]?\b|\bev\b/i, "ELETRICO"],
+  [/\bh[íi]brid[oa]?\b|\bhybrid\b/i, "HIBRIDO"],
+  [/\bflex\b/i, "FLEX"],
+  [/\bgasolina\b/i, "GASOLINE"],
+  [/\b(etanol|[áa]lcool)\b/i, "ETANOL"],
+];
+export function combustivelDoTexto(texto: string | null): string | null {
+  if (!texto) return null;
+  for (const [re, val] of COMB_TEXTO) if (re.test(texto)) return val;
+  return null;
+}
+
 /**
  * Parseia o HTML de um anúncio do FB Marketplace. `itemId` = id da URL.
  * Retorna {anuncio, descartar}. Descarta se não achar motor/versão (regra do usuário).
@@ -426,7 +443,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   // Estruturados (únicos do principal; podem faltar → título cobre).
   const marcaEstr = campoUnico(html, "vehicle_make_display_name");
   const modeloEstr = campoUnico(html, "vehicle_model_display_name");
-  const combustivel = campoUnico(html, "vehicle_fuel_type");
+  const combustivelEstr = campoUnico(html, "vehicle_fuel_type");
   const cambio = normalizarCambio(campoUnico(html, "vehicle_transmission_type"));
   const sellerType = campoUnico(html, "vehicle_seller_type");
   const odo = html.match(/"vehicle_odometer_data":\{"unit":"\w+","value":(\d+)/);
@@ -445,6 +462,13 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
   if (modeloEhGenerico(modelo)) {
     modelo = modeloDoTextoLivre(descricao, marca) ?? modeloDoTextoLivre(titulo, marca) ?? modelo;
   }
+  // Combustível: o estruturado do FB (vehicle_fuel_type) VEM VAZIO em muitos anúncios, e a
+  // descrição diz explícito ("2.0 TURBO DIESEL"). Regra de conflito: DIESEL/ELÉTRICO/HÍBRIDO da
+  // descrição VENCEM o estruturado (mudam muito a FIPE; o dropdown do FB fica default/errado);
+  // nos demais, usa o estruturado, senão a descrição. Feed p/ o resolverFipe (filtra a variante).
+  const combustivelTxt = combustivelDoTexto(`${titulo} ${descricao ?? ""}`);
+  const combustivel =
+    combustivelTxt && /^(DIESEL|ELETRICO|HIBRIDO)$/.test(combustivelTxt) ? combustivelTxt : combustivelEstr ?? combustivelTxt;
   const ano = pTit.ano ?? (descricao ? extrairAno(descricao) : null);
 
   // ★ NÃO HÁ PADRÃO: cada vendedor põe a versão num lugar (título, descrição, campo modelo,
