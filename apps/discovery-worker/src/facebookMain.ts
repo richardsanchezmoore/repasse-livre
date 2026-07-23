@@ -200,7 +200,12 @@ async function resolverFipe(a: AnuncioFacebook): Promise<ReferenciaFipe | null> 
   const modelo = modeloLimpo(a) || a.modelo || "";
   const motores = [...new Set(a.motorCandidatos.map((c) => c.motor))];
   for (const motor of motores.length ? motores : [""]) {
-    const ref = await resolverReferenciaFipeEntrada(a.marca, modelo, a.ano, `${motor} ${a.combustivel ?? ""}`.trim()).catch(() => null);
+    // Inclui o TRIM no discriminador: a.versaoTexto + o TÍTULO (onde "Sense"/"Comfort"/"XEI"
+    // quase sempre está). Faz o fuzzy escolher o trim certo e SOBREVIVER ao corte top-30 — era
+    // o que cortava o HB20 Sense Plus (R$68.537) e deixava o Comfort Plus mais caro (R$74.085).
+    // Título é NEUTRO pros guards (cilindrada/combustível extraem por padrão específico) — só ajuda.
+    const disc = `${a.versaoTexto ?? ""} ${a.titulo ?? ""} ${motor} ${a.combustivel ?? ""}`.trim();
+    const ref = await resolverReferenciaFipeEntrada(a.marca, modelo, a.ano, disc).catch(() => null);
     if (ref) return ref;
   }
   return null;
