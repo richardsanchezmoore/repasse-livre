@@ -31,6 +31,7 @@ import {
   type AnuncioFacebook,
   type FiltrosFacebook,
 } from "./facebookMarketplaceService.js";
+import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { resolverReferenciaFipeEntrada } from "./fipeService.js";
 import { garantirHistoricoFipe } from "./historicoFipe.js";
 import { calcularMargemPercentual, classificar, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
@@ -437,6 +438,18 @@ async function processarRegiao(regiao: Regiao, cfg: ConfigFb): Promise<void> {
             await registrarVistoFacebook(id, "duplicado");
             await dormir(cfg.pacingMs);
             continue;
+          }
+        }
+        // Re-hospeda as fotos ANTES de salvar (fbcdn expira em dias → 403). foto_principal
+        // SEMPRE permanente; extras cruas ficam nas secundárias (somem ao expirar, via limpeza).
+        const itemId = itemIdDoLink(op.link_origem);
+        if (itemId && op.foto_principal) {
+          const reh = await rehospedarFotosFacebook(itemId, [op.foto_principal, ...op.fotos_secundarias]);
+          if (reh) {
+            op.foto_principal = reh.foto_principal;
+            op.fotos_secundarias = reh.fotos_secundarias;
+          } else {
+            console.log(`[fb:${regiao.nome}] ⚠ re-hospedagem de fotos falhou (mantém cruas): ${a.marca} ${a.modelo} ${a.ano}`);
           }
         }
         await salvarOportunidade(op);
