@@ -98,8 +98,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const temFipe = op.fipe_valor != null && op.fipe_valor > op.preco;
   const ganho = temFipe ? op.fipe_valor! - op.preco : null;
   const margem = op.margem_percentual ?? 0;
-  const margemInt = Math.round(margem);
-  const margemTexto = margem.toFixed(1).replace(".", ",");
+  // Sem arredondar (a marca é PRECISÃO/IA): o badge mostrava 8% enquanto a margem real
+  // era 7,5% — contradição. Valor exato; sem casas quando é inteiro ("13", não "13,0").
+  const margemFmt = Number.isInteger(margem) ? String(margem) : margem.toFixed(1).replace(".", ",");
+  const margemNumFonte = margemFmt.includes(",") ? 50 : 64; // decimal é mais largo → fonte menor no círculo
   const totalFotos = 1 + (op.fotos_secundarias?.length ?? 0);
   const nome = op.veiculo;
   const localFrase = op.estado ? (ESTADOS[op.estado] ?? `em ${op.estado}`) : null;
@@ -111,7 +113,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         {/* balanceador transparente à esquerda = largura do % visível → dígitos centrados */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", color: "#fff", lineHeight: 1 }}>
           <span style={{ fontSize: 24, fontWeight: 900, marginRight: 2, color: "transparent" }}>%</span>
-          <span style={{ fontSize: 64, fontWeight: 900 }}>{margemInt}</span>
+          <span style={{ fontSize: margemNumFonte, fontWeight: 900 }}>{margemFmt}</span>
           <span style={{ fontSize: 24, fontWeight: 900, marginTop: 6, marginLeft: 2 }}>%</span>
         </div>
         <div style={{ display: "flex", fontSize: 15, fontWeight: 700, color: "#EAFBEE", letterSpacing: 0, marginTop: 2 }}>ABAIXO FIPE</div>
@@ -141,7 +143,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       <div style={{ display: "flex", flexDirection: "row", alignItems: "baseline", marginTop: 14, fontSize: 34 }}>
         <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>Margem de</span>
         <div style={{ display: "flex", alignItems: "flex-start", marginLeft: 12, marginRight: 12 }}>
-          <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemTexto}</span>
+          <span style={{ color: VERDE, fontWeight: 700, fontSize: 44 }}>{margemFmt}</span>
           <span style={{ color: VERDE, fontWeight: 700, fontSize: 22, marginTop: 5, marginLeft: 1 }}>%</span>
         </div>
         <span style={{ color: CINZA_ROTULO, fontWeight: 500 }}>da FIPE</span>
