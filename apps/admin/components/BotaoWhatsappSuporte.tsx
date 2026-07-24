@@ -11,20 +11,32 @@ function IconeWhatsapp({ size = 18 }: { size?: number }) {
   );
 }
 
+/**
+ * Botão flutuante DISCRETO de WhatsApp na página de vendas — resgate do visitante
+ * indeciso. Fica fixo no canto e segue no scroll. A mensagem é "open-loop": o
+ * visitante já se rotula como quase-comprador ("tô quase assinando") e a frase
+ * termina puxando a objeção real — o dado mais valioso na fase de validação (é
+ * preço? confiança? funcionalidade?). Rastreia o clique (origem `flutuante_planos`)
+ * pra dar pra medir uso e correlacionar com conversão.
+ *
+ * Só renderiza quando há número (`WHATSAPP_SUPORTE` no painel). Ver
+ * project_repasse_livre_landing_planos_slim_ab.
+ */
 export function BotaoWhatsappSuporte({ numero }: { numero: string }) {
   const mensagem = encodeURIComponent(
-    "Olá! Tenho uma dúvida sobre o plano premium do Repasse Livre."
+    "Oi! Tô quase assinando o Repasse Livre PRO, mas fiquei com uma dúvida: "
   );
   return (
     <a
       href={`https://wa.me/${numero}?text=${mensagem}`}
       target="_blank"
       rel="noreferrer"
-      className="planos-whatsapp"
-      onClick={() => registrarEvento("clique_whatsapp", { origem: "planos" })}
+      className="wpp-flutuante"
+      aria-label="Tirar dúvida no WhatsApp"
+      onClick={() => registrarEvento("clique_whatsapp", { origem: "flutuante_planos" })}
     >
-      <IconeWhatsapp size={18} />
-      Ficou com dúvida? Chame no WhatsApp
+      <IconeWhatsapp size={22} />
+      <span className="wpp-flutuante-texto">Dúvida? Chame no WhatsApp</span>
     </a>
   );
 }

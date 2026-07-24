@@ -3454,24 +3454,41 @@ body {
   color: #9aa2b1;
   margin: 12px 0 0;
 }
-.planos-whatsapp {
+/* Botão flutuante discreto de WhatsApp na página de vendas (BotaoWhatsappSuporte).
+   Fixo no canto inferior direito, segue no scroll. z-index 45 = abaixo da barra
+   sticky de urgência (50) pra não competir com o CTA no topo. Em telas pequenas
+   vira só o ícone (some o texto) pra não cobrir o conteúdo/CTA. */
+.wpp-flutuante {
+  position: fixed;
+  right: clamp(14px, 3vw, 26px);
+  bottom: clamp(14px, 3vw, 26px);
+  z-index: 45;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 9px 16px;
+  gap: 9px;
+  padding: 12px 18px;
   font-size: 14px;
-  font-weight: 600;
-  color: #0a5d2c;
-  background: #eafaf0;
-  border: 1px solid #b7e6c9;
+  font-weight: 700;
+  color: #fff;
+  background: #25d366;
   border-radius: 999px;
   text-decoration: none;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 10px 26px -8px rgba(37, 211, 102, 0.55), 0 3px 10px -4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.planos-whatsapp:hover {
-  background: #d8f5e4;
-  border-color: #25d366;
+.wpp-flutuante:hover {
+  background: #1fbe5a;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -8px rgba(37, 211, 102, 0.6), 0 4px 12px -4px rgba(0, 0, 0, 0.4);
+}
+@media (max-width: 560px) {
+  .wpp-flutuante {
+    padding: 13px;
+    gap: 0;
+  }
+  .wpp-flutuante-texto {
+    display: none;
+  }
 }
 .planos-preco {
   display: flex;
