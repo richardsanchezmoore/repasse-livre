@@ -2899,16 +2899,42 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 11px;
   padding: 18px 14px;
   text-align: center;
   text-decoration: none;
   color: #fff;
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(17, 22, 32, 0.85), rgba(17, 22, 32, 0.95));
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  /* A FOTO do carro fica VISÍVEL no topo (isca pra clicar); só a faixa de baixo
+     escurece pra legibilidade do Ganho/margem + CTA. Sem blur. Ver print do usuário. */
+  background: linear-gradient(
+    180deg,
+    rgba(17, 22, 32, 0) 0%,
+    rgba(17, 22, 32, 0) 30%,
+    rgba(17, 22, 32, 0.72) 52%,
+    rgba(17, 22, 32, 0.96) 100%
+  );
+}
+
+/* Selo de cadeado sobre a foto (card premium travado) — indica que há mais atrás
+   sem esconder a foto. pointer-events:none pra o clique cair no overlay (→ /planos). */
+.foto-cadeado {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
 }
 .card-overlay-tease-titulo {
   margin: 0;

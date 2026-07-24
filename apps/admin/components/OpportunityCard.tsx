@@ -118,6 +118,11 @@ export function OpportunityCard({
         ) : (
           <div className="foto-capa foto-capa-vazia" title={titulo} />
         )}
+        {bloqueado && (
+          <span className="foto-cadeado" aria-hidden="true">
+            <Lock size={24} strokeWidth={2.5} />
+          </span>
+        )}
         {isAdmin && modoSelecao && (
           <button
             type="button"
@@ -332,13 +337,6 @@ export function OpportunityCard({
           <p className="card-overlay-desbloqueie">
             <Lock size={15} strokeWidth={2.25} /> Desbloqueie
           </p>
-          <ul className="card-overlay-beneficios">
-            <li><Check size={14} strokeWidth={2.75} /> Acesso ao anúncio</li>
-            <li><Check size={14} strokeWidth={2.75} /> Análise do Copiloto</li>
-            <li><Check size={14} strokeWidth={2.75} /> Radar do Investidor</li>
-            <li><Check size={14} strokeWidth={2.75} /> Tendências de mercado</li>
-            <li><Check size={14} strokeWidth={2.75} /> Alertas instantâneos</li>
-          </ul>
         </Link>
       )}
     </div>
