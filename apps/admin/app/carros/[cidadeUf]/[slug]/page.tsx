@@ -32,6 +32,7 @@ import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/l
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade } from "@/lib/site";
+import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { extrairIdDaSlug } from "@/lib/slug";
 import type { Oportunidade } from "@/lib/types";
 
@@ -204,6 +205,10 @@ async function PaginaMarca({
     { cidade: localidade.filtroCidade ?? null, estado: localidade.filtroEstado },
     marcaResolvida.marca
   );
+  // Parágrafo de SEO (prosa única gerada em batch; template como fallback).
+  const ctxSeo = { tipo: "marca" as const, localidade: localidade.nome, marca: marcaResolvida.marca, total };
+  const textoSeo =
+    (await buscarSeoTexto("marca", `${cidadeUf}:${marcaSlug}`)) ?? textoSeoFallback(ctxSeo);
 
   return (
     <NavegacaoProvider>
@@ -225,6 +230,9 @@ async function PaginaMarca({
                     {marcaResolvida.marca} em {localidade.nome}
                   </h1>
                 </div>
+                <p className="board-seo-texto" style={{ margin: "8px 0 0", fontSize: 14, lineHeight: 1.6, color: "#5A6572", maxWidth: 780 }}>
+                  {textoSeo}
+                </p>
               </header>
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}

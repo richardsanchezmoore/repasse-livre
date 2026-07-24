@@ -22,6 +22,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarTagsMarcas } from "@/lib/tags";
 import { caminhoMarca, urlMarca } from "@/lib/site";
+import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
+import type { ContextoSeo, TipoSeo } from "@/lib/seoTextoLLM";
 import type { Oportunidade } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -175,6 +177,27 @@ export default async function PaginaLocalidade({
   const total = count ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
 
+  // Parágrafo de SEO (prosa única gerada em batch; template como fallback). Cobre
+  // cidade, estado e marca-nacional — a chave espelha o batch (gerar:seo-textos).
+  const nomeLocal = contexto.variaveis.cidade ?? contexto.variaveis.estado ?? "Brasil";
+  let seoTipo: TipoSeo;
+  let seoChave: string;
+  let ctxSeo: ContextoSeo;
+  if (contexto.chaveSeo === "cidade") {
+    seoTipo = "cidade";
+    seoChave = cidadeUf;
+    ctxSeo = { tipo: "cidade", localidade: nomeLocal, total };
+  } else if (contexto.chaveSeo === "estado") {
+    seoTipo = "estado";
+    seoChave = (contexto.filtroEstado ?? cidadeUf).toLowerCase();
+    ctxSeo = { tipo: "estado", localidade: nomeLocal, total };
+  } else {
+    seoTipo = "marca";
+    seoChave = `br:${cidadeUf}`;
+    ctxSeo = { tipo: "marca", localidade: "Brasil", marca: contexto.filtroMarca ?? null, total };
+  }
+  const textoSeo = (await buscarSeoTexto(seoTipo, seoChave)) ?? textoSeoFallback(ctxSeo);
+
   return (
     <NavegacaoProvider>
       <SelecaoMultiplaProvider>
@@ -198,6 +221,9 @@ export default async function PaginaLocalidade({
                   <span className="contador">{total}</span>
                   <h1>{contexto.titulo}</h1>
                 </div>
+                <p className="board-seo-texto" style={{ margin: "8px 0 0", fontSize: 14, lineHeight: 1.6, color: "#5A6572", maxWidth: 780 }}>
+                  {textoSeo}
+                </p>
               </header>
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}

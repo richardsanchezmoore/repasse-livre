@@ -20,6 +20,7 @@ import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/l
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { caminhoModelo, urlModelo } from "@/lib/site";
+import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import type { Oportunidade } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -144,6 +145,16 @@ export default async function PaginaModeloRoute({
     resolvido.marca,
     resolvido.modelo,
   );
+  // Parágrafo de SEO (prosa única gerada em batch; template como fallback).
+  const ctxSeo = {
+    tipo: "modelo" as const,
+    localidade: localidade.nome,
+    marca: resolvido.marca,
+    modelo: resolvido.modelo,
+    total,
+  };
+  const textoSeo =
+    (await buscarSeoTexto("modelo", `${cidadeUf}:${slug}:${modelo}`)) ?? textoSeoFallback(ctxSeo);
 
   return (
     <NavegacaoProvider>
@@ -165,6 +176,9 @@ export default async function PaginaModeloRoute({
                     {resolvido.marca} {resolvido.modelo} em {localidade.nome}
                   </h1>
                 </div>
+                <p className="board-seo-texto" style={{ margin: "8px 0 0", fontSize: 14, lineHeight: 1.6, color: "#5A6572", maxWidth: 780 }}>
+                  {textoSeo}
+                </p>
               </header>
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
