@@ -2909,7 +2909,9 @@ body {
   text-decoration: none;
   color: #fff;
   border-radius: 0 0 10px 10px;
-  background: linear-gradient(180deg, rgba(17, 22, 32, 0.9), rgba(17, 22, 32, 0.97));
+  background: linear-gradient(180deg, rgba(17, 22, 32, 0.96), rgba(17, 22, 32, 0.99));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 /* Selo de cadeado verde sobre a foto (card premium travado) — sinaliza o bloqueio
