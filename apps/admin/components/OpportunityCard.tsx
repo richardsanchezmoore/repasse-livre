@@ -48,6 +48,12 @@ export function OpportunityCard({
       alternarSelecionado(oportunidade.id);
       return;
     }
+    // Card travado: a foto agora fica pra fora do overlay (clicável) — mas o
+    // destino é o plano, nunca a página do carro (não vaza o acesso).
+    if (bloqueado) {
+      router.push(`/planos-slim?de=${oportunidade.id}`);
+      return;
+    }
     router.push(caminhoOportunidade(oportunidade));
   }
 
@@ -191,7 +197,7 @@ export function OpportunityCard({
 
       <div className="card-corpo">
         <Link
-          href={caminhoOportunidade(oportunidade)}
+          href={bloqueado ? `/planos-slim?de=${oportunidade.id}` : caminhoOportunidade(oportunidade)}
           title={titulo}
           className="card-corpo-link"
           onClick={(evento) => {
@@ -236,7 +242,7 @@ export function OpportunityCard({
           </p>
         </Link>
 
-        {oportunidade.whatsapp && (
+        {!bloqueado && oportunidade.whatsapp && (
           <p className="info-remetente">
             <MessageCircle size={14} strokeWidth={1.75} className="icone-inline" />{" "}
             <a
@@ -266,7 +272,7 @@ export function OpportunityCard({
 
       {feedback && <p className="card-feedback">{feedback}</p>}
 
-      {!(isAdmin && modoSelecao) && (
+      {!(isAdmin && modoSelecao) && !bloqueado && (
       <div className="acoes" onClick={(evento) => evento.stopPropagation()}>
         {isAdmin && (
           <button

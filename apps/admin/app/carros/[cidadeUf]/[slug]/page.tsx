@@ -34,6 +34,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
+import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
 import { extrairIdDaSlug } from "@/lib/slug";
 import type { Oportunidade } from "@/lib/types";
 
@@ -238,7 +239,7 @@ async function PaginaMarca({
                 {oportunidades.map((oportunidade) => (
                   <OpportunityCard
                     key={oportunidade.id}
-                    oportunidade={oportunidade}
+                    oportunidade={(oportunidade.margem_percentual ?? 0) > margemPremium ? sanitizarCardBloqueado(oportunidade) : oportunidade}
                     favoritado={idsFavoritados.has(oportunidade.id)}
                     isAdmin={ehAdmin}
                     usuarioLogado={Boolean(usuario)}

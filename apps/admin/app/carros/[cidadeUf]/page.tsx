@@ -24,6 +24,7 @@ import { buscarTagsMarcas } from "@/lib/tags";
 import { caminhoMarca, urlMarca } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
+import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
 import type { ContextoSeo, TipoSeo } from "@/lib/seoTextoLLM";
 import type { Oportunidade } from "@/lib/types";
 
@@ -229,7 +230,7 @@ export default async function PaginaLocalidade({
                 {oportunidades.map((oportunidade) => (
                   <OpportunityCard
                     key={oportunidade.id}
-                    oportunidade={oportunidade}
+                    oportunidade={(oportunidade.margem_percentual ?? 0) > margemPremium ? sanitizarCardBloqueado(oportunidade) : oportunidade}
                     favoritado={idsFavoritados.has(oportunidade.id)}
                     isAdmin={ehAdmin}
                     usuarioLogado={Boolean(usuario)}

@@ -5,6 +5,7 @@ import { OpportunityCard } from "./OpportunityCard";
 import { buscarMargemPremium } from "@/lib/configWorker";
 import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarcaModelo } from "@/lib/marca";
+import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
 import type { Oportunidade } from "@/lib/types";
@@ -132,7 +133,7 @@ export async function OfertasRelacionadas({
         {relacionadas.map((relacionada) => (
           <OpportunityCard
             key={relacionada.id}
-            oportunidade={relacionada}
+            oportunidade={(relacionada.margem_percentual ?? 0) > margemPremium ? sanitizarCardBloqueado(relacionada) : relacionada}
             favoritado={idsFavoritados.has(relacionada.id)}
             isAdmin={ehAdmin}
             usuarioLogado={Boolean(usuario)}

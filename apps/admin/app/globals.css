@@ -2894,31 +2894,26 @@ body {
 }
 .card-overlay {
   position: absolute;
-  inset: 0;
+  /* Começa no FIM da foto (mesmo clamp da .foto-capa) — a foto do carro fica
+     VISÍVEL e limpa acima, e o overlay cobre só o CORPO, SÓLIDO (mesma intensidade
+     de antes, sem gradient), escondendo os dados. Ver print do usuário. */
+  inset: clamp(170px, 22vw, 210px) 0 0 0;
   z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 11px;
   padding: 18px 14px;
   text-align: center;
   text-decoration: none;
   color: #fff;
-  border-radius: 10px;
-  /* A FOTO do carro fica VISÍVEL no topo (isca pra clicar); só a faixa de baixo
-     escurece pra legibilidade do Ganho/margem + CTA. Sem blur. Ver print do usuário. */
-  background: linear-gradient(
-    180deg,
-    rgba(17, 22, 32, 0) 0%,
-    rgba(17, 22, 32, 0) 30%,
-    rgba(17, 22, 32, 0.72) 52%,
-    rgba(17, 22, 32, 0.96) 100%
-  );
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(180deg, rgba(17, 22, 32, 0.9), rgba(17, 22, 32, 0.97));
 }
 
-/* Selo de cadeado sobre a foto (card premium travado) — indica que há mais atrás
-   sem esconder a foto. pointer-events:none pra o clique cair no overlay (→ /planos). */
+/* Selo de cadeado verde sobre a foto (card premium travado) — sinaliza o bloqueio
+   sem esconder a foto. pointer-events:none pra o clique cair na foto (→ /planos). */
 .foto-cadeado {
   position: absolute;
   top: 46%;

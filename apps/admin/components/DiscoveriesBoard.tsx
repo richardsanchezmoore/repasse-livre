@@ -6,6 +6,7 @@ import { MARGEM_MINIMA_PADRAO } from "@/lib/margin";
 import { buscarMargemPremium } from "@/lib/configWorker";
 import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
+import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
 import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import { cidadesDaRegiao } from "@/lib/regioes";
@@ -659,7 +660,7 @@ export async function Board({
         {oportunidades.map((oportunidade) => (
           <OpportunityCard
             key={oportunidade.id}
-            oportunidade={oportunidade}
+            oportunidade={(oportunidade.margem_percentual ?? 0) > margemPremium ? sanitizarCardBloqueado(oportunidade) : oportunidade}
             favoritado={idsFavoritados.has(oportunidade.id)}
             isAdmin={ehAdmin}
             usuarioLogado={Boolean(usuario)}
