@@ -3460,8 +3460,8 @@ body {
    vira só o ícone (some o texto) pra não cobrir o conteúdo/CTA. */
 .wpp-flutuante {
   position: fixed;
-  right: clamp(14px, 3vw, 26px);
-  bottom: clamp(14px, 3vw, 26px);
+  right: clamp(18px, 3vw, 26px);
+  bottom: clamp(18px, 3vw, 26px);
   z-index: 45;
   display: inline-flex;
   align-items: center;
