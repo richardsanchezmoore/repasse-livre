@@ -186,9 +186,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       )}
       {pastilha(300, 44)}
       <div style={{ position: "absolute", top: 312, right: 44, display: "flex" }}>{contadorFotos}</div>
-      <div style={{ position: "absolute", top: 269, left: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: LARGURA, height: 969, paddingLeft: 48, paddingRight: 48 }}>
-        {/* card quase sólido (95%), CENTRADO na zona segura: a foto aparece cheia acima e
-            abaixo dele, e uma leve "quebra" deixa perceber a foto por trás sem enfraquecer o texto */}
+      <div style={{ position: "absolute", top: 269, left: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", width: LARGURA, height: 969, paddingLeft: 48, paddingRight: 48, paddingBottom: 20 }}>
+        {/* card quase sólido (95%), ANCORADO NA BASE da zona segura (não centrado): o carro
+            ocupa os ~60% de cima e "respira" (melhor ângulo/frente do veículo), e o card fica
+            logo acima da faixa de perfil/botões do Stories */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", backgroundColor: "rgba(255,255,255,0.95)", borderRadius: 28, paddingTop: 30, paddingBottom: 34, paddingLeft: 44, paddingRight: 44 }}>
           {localLinha}
           <div style={{ display: "flex", maxWidth: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: 34, fontWeight: 800, color: PRETO_OFERTA, marginTop: 4, marginBottom: 6 }}>{nome}</div>
