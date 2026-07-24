@@ -33,6 +33,7 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
+import { TextoSeo } from "@/components/TextoSeo";
 import { extrairIdDaSlug } from "@/lib/slug";
 import type { Oportunidade } from "@/lib/types";
 
@@ -230,8 +231,8 @@ async function PaginaMarca({
                     {marcaResolvida.marca} em {localidade.nome}
                   </h1>
                 </div>
-                <p className="board-seo-texto">{textoSeo}</p>
               </header>
+              <TextoSeo texto={textoSeo} />
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
                 {oportunidades.map((oportunidade) => (

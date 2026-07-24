@@ -30,16 +30,16 @@ export interface ContextoSeo {
   marcasTop?: string[];
 }
 
-const SYSTEM = `Você escreve o parágrafo de abertura (SEO) de páginas de categoria do Repasse Livre — uma plataforma que agrega anúncios de carros usados de OLX, Mercado Livre e Facebook Marketplace, destaca os que estão ABAIXO da tabela FIPE (com a margem de ganho já calculada) e entrega contexto de decisão: preço, margem, FIPE, comparativos, Score e análise, além de alertar o comprador antes dos outros.
+const SYSTEM = `Você escreve o parágrafo de abertura (SEO) de páginas de categoria do Repasse Livre — plataforma que agrega anúncios de carros usados de OLX, Mercado Livre e Facebook Marketplace e destaca os que estão ABAIXO da tabela FIPE, com a margem de ganho e a análise (preço, comparativos, Score) já prontas.
 
-IMPORTANTE: a marca é "Repasse Livre" e o gênero é MASCULINO — escreva sempre "o Repasse Livre" / "do Repasse Livre" (NUNCA "a Repasse Livre" / "da Repasse Livre").
+IMPORTANTE: a marca é "Repasse Livre", gênero MASCULINO — sempre "o Repasse Livre" / "do Repasse Livre" (NUNCA "a" / "da Repasse Livre").
 
-Sua tarefa: escrever UM parágrafo único e natural para a página descrita, em dois movimentos: (1) ABERTURA — o carro/marca e sua expressão no mercado brasileiro de usados + a cidade/estado + estar "abaixo da FIPE"; (2) FECHO-PONTE — reforce o valor do Repasse Livre (o anúncio comum vira decisão: preço, margem, FIPE, comparativos, Score e análise já prontos; e você recebe o alerta e vê a análise enquanto os outros ainda estão só pesquisando). O fecho puxa a pessoa pra dentro da plataforma.
+Tarefa: UM parágrafo CURTO e natural — abertura (o carro/marca + a cidade/estado + estar "abaixo da FIPE") e um fecho breve de valor (no Repasse Livre o anúncio comum já vem com contexto e análise, e você decide antes dos outros). O fecho puxa a pessoa pra dentro da plataforma.
 
 REGRAS:
-- 350 a 600 caracteres. Português do Brasil. Tom humano de especialista, direto e acolhedor.
+- MÁXIMO 300 caracteres — é uma página de anúncios, a LISTA é o principal (usabilidade > SEO). Português do Brasil, tom de especialista, direto.
 - Texto CORRIDO (sem listas, sem títulos, sem markdown, sem emoji, sem aspas).
-- Use as palavras-chave de forma NATURAL (o nome do carro/marca + a localidade + "abaixo da FIPE").
+- Use as palavras-chave de forma NATURAL (nome do carro/marca + a localidade + "abaixo da FIPE").
 - NUNCA invente número. Se um total de ofertas for informado, pode citá-lo; fora isso, nenhum número.
 - NÃO comece com "Bem-vindo", "Nesta página", "Confira" nem clichê de IA. Comece pelo assunto.
 - Responda APENAS com o parágrafo final — sem introdução, sem comentário, sem cabeçalho.`;
@@ -55,10 +55,14 @@ function montarMaterial(ctx: ContextoSeo) {
   };
 }
 
+// Versão do prompt/formato — BUMP quando o prompt ou o tamanho-alvo muda, pra
+// invalidar os fingerprints e forçar a regeneração de tudo no próximo batch.
+const PROMPT_VERSAO = "2";
+
 /** Hash dos fatos que dirigem a prosa — o batch só regera quando muda (total é arredondado
- *  em dezenas pra não regenerar a cada oferta nova). */
+ *  em dezenas pra não regenerar a cada oferta nova). Inclui PROMPT_VERSAO. */
 export function fingerprintSeo(ctx: ContextoSeo): string {
-  const material = { ...montarMaterial(ctx), total_de_ofertas: Math.round(ctx.total / 10) * 10 };
+  const material = { v: PROMPT_VERSAO, ...montarMaterial(ctx), total_de_ofertas: Math.round(ctx.total / 10) * 10 };
   return createHash("sha1").update(JSON.stringify(material)).digest("hex");
 }
 
@@ -78,8 +82,9 @@ export async function gerarSeoTextoLLM(ctx: ContextoSeo): Promise<string | null>
 
     const bloco = resposta.content.find((b) => b.type === "text");
     const texto = bloco?.type === "text" ? bloco.text.trim() : "";
-    // Guarda de sanidade: parágrafo de verdade (abertura + fecho-ponte), sem markdown/lista.
-    if (texto.length < 200 || texto.length > 1000) return null;
+    // Guarda de sanidade: parágrafo curto (~300), sem markdown/lista. Rejeita
+    // texto claramente longo demais pra uma página de anúncios.
+    if (texto.length < 120 || texto.length > 360) return null;
     if (/^[#\-*>]|\n[#\-*]/.test(texto)) return null;
     return texto;
   } catch {

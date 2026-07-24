@@ -26,10 +26,9 @@ export async function buscarSeoTexto(tipo: TipoSeo, chave: string): Promise<stri
  * a versão LLM (mais rica) o substitui assim que o batch roda.
  */
 export function textoSeoFallback(ctx: ContextoSeo): string {
-  // Fecho-ponte: reforça o VALOR (contexto/análise/alerta antecipado) e empurra pra
-  // decisão — vira ponte pra página de vendas, além do SEO. "O Repasse Livre" (masc.).
+  // Fecho-ponte CURTO (≤300 no total — a lista é o principal). "O Repasse Livre" (masc.).
   const ponte =
-    "O Repasse Livre garimpa OLX, Mercado Livre e Facebook e reúne aqui só os que valem a pena, com preço, margem, FIPE e o ganho já calculados. O anúncio comum vira decisão: enquanto muita gente ainda pesquisa, você já viu a análise e sabe se vale comprar.";
+    "O Repasse Livre reúne OLX, Mercado Livre e Facebook e mostra só os que valem a pena, com preço, margem e análise prontos pra você decidir antes dos outros.";
   switch (ctx.tipo) {
     case "modelo":
       return `${ctx.marca} ${ctx.modelo} abaixo da tabela FIPE em ${ctx.localidade}. ${ponte}`;

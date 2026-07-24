@@ -23,6 +23,7 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarTagsMarcas } from "@/lib/tags";
 import { caminhoMarca, urlMarca } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
+import { TextoSeo } from "@/components/TextoSeo";
 import type { ContextoSeo, TipoSeo } from "@/lib/seoTextoLLM";
 import type { Oportunidade } from "@/lib/types";
 
@@ -221,8 +222,8 @@ export default async function PaginaLocalidade({
                   <span className="contador">{total}</span>
                   <h1>{contexto.titulo}</h1>
                 </div>
-                <p className="board-seo-texto">{textoSeo}</p>
               </header>
+              <TextoSeo texto={textoSeo} />
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
                 {oportunidades.map((oportunidade) => (

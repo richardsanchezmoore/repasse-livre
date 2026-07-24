@@ -21,6 +21,7 @@ import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { caminhoModelo, urlModelo } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
+import { TextoSeo } from "@/components/TextoSeo";
 import type { Oportunidade } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -176,8 +177,8 @@ export default async function PaginaModeloRoute({
                     {resolvido.marca} {resolvido.modelo} em {localidade.nome}
                   </h1>
                 </div>
-                <p className="board-seo-texto">{textoSeo}</p>
               </header>
+              <TextoSeo texto={textoSeo} />
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
                 {oportunidades.map((oportunidade) => (
