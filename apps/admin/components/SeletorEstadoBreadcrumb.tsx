@@ -43,6 +43,12 @@ export function SeletorEstadoBreadcrumb({
     const params = new URLSearchParams(searchParams.toString());
     params.set("aba", aba);
     params.delete("pagina");
+    // Região/cidade pertencem a UM estado — ao trocar o estado, o recorte
+    // anterior vira lixo cross-state (ex.: "RS + Grande Curitiba"). Zera os
+    // dois pra não ficar "travado" no estado errado. Ver
+    // project_repasse_livre_filtro_regiao_cidade_front.
+    params.delete("regiao");
+    params.delete("cidade");
     // "BR" explícito (não ausência do param) ao escolher "Brasil" — sem
     // isso, a página detecta o estado por geolocalização de novo no
     // próximo carregamento (ver app/page.tsx), e "Brasil" nunca
