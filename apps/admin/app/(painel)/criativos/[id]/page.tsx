@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { buscarOportunidadePorId } from "@/components/DiscoveriesBoard";
+import { BotaoCopiar } from "@/components/BotaoCopiar";
 import { formatarMoeda } from "@/lib/formatadores";
+import { gerarConteudoSocial } from "@/lib/legendasSociais";
 
 // Preview do criativo (protegida pelo layout do grupo (painel) → só admin).
 // Mostra os DOIS formatos gerados pela rota /criativos/[id]/png: feed 4:5 e
@@ -16,6 +18,8 @@ export default async function PreviaCriativoPage({ params }: { params: { id: str
   const versao = Date.now();
   const feedUrl = `/criativos/${params.id}/png?v=${versao}`;
   const storiesUrl = `/criativos/${params.id}/png?formato=stories&v=${versao}`;
+  // Legendas + hashtags + link prontos pra colar nas redes (fluxo mobile copy-paste).
+  const social = op ? gerarConteudoSocial(op) : null;
 
   const botao = (cor: string, bg: string, borda?: string): React.CSSProperties => ({
     display: "inline-flex",
@@ -75,6 +79,49 @@ export default async function PreviaCriativoPage({ params }: { params: { id: str
             {formatarMoeda(op.preco)} · FIPE {formatarMoeda(op.fipe_valor)} · margem{" "}
             {op.margem_percentual != null ? `${op.margem_percentual.toFixed(1).replace(".", ",")}%` : "—"}
           </div>
+
+          {/* PARA REDES SOCIAIS — legenda/título/link prontos pra copiar (fluxo mobile). */}
+          {social ? (
+            <section style={{ marginTop: 40, borderTop: "1px solid #E4E9EF", paddingTop: 28 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 4px" }}>Para redes sociais</h2>
+              <p style={{ fontSize: 13, color: "#8A929C", margin: "0 0 20px" }}>
+                Abra no celular, toque em copiar e cole no Metricool. Cada peça tem seu botão.
+              </p>
+
+              {/* Peças separadas: título · link · hashtags */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+                {[
+                  { rot: "Título", val: social.titulo },
+                  { rot: "Link (bio/post)", val: social.url },
+                  { rot: "Hashtags", val: social.hashtags },
+                ].map((item) => (
+                  <div
+                    key={item.rot}
+                    style={{ display: "flex", alignItems: "center", gap: 12, background: "#F6F8FA", border: "1px solid #E4E9EF", borderRadius: 12, padding: "12px 14px" }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#8A929C", marginBottom: 3 }}>{item.rot}</div>
+                      <div style={{ fontSize: 14, color: "#0F1B2D", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.val}</div>
+                    </div>
+                    <BotaoCopiar texto={item.val} compacto />
+                  </div>
+                ))}
+              </div>
+
+              {/* 3 legendas (A/B/C) — copiar já traz as hashtags no fim */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {social.legendas.map((leg) => (
+                  <div key={leg.rotulo} style={{ background: "#fff", border: "1px solid #E4E9EF", borderRadius: 14, padding: 18 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: "#16A34A" }}>Legenda {leg.rotulo}</span>
+                      <BotaoCopiar texto={`${leg.texto}\n\n${social.hashtags}`} rotulo="Copiar legenda + hashtags" compacto />
+                    </div>
+                    <pre style={{ margin: 0, fontFamily: "inherit", fontSize: 14, lineHeight: 1.55, color: "#2B3542", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{leg.texto}</pre>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </>
       ) : (
         <p style={{ fontSize: 14, color: "#B4261F" }}>Não achei essa oportunidade. Confira o ID.</p>
