@@ -2903,8 +2903,9 @@ body {
 }
 .card-overlay {
   position: absolute;
-  /* Cobre EXATAMENTE o corpo (.card-conteudo); a foto fica fora/acima. */
-  inset: 0;
+  /* Cobre EXATAMENTE o corpo (.card-conteudo); a foto fica fora/acima. O -1px no
+     topo cobre a hairline (fresta sub-pixel do fundo do card na emenda foto/corpo). */
+  inset: -1px 0 0 0;
   z-index: 20;
   display: flex;
   flex-direction: column;
