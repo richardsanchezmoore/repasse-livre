@@ -4,6 +4,7 @@ import { Suspense, useEffect, type CSSProperties } from "react";
 import { Gem, Clock, Zap, Bell, Check, X, BarChart3, LayoutGrid, Compass, ShieldCheck, MessageCircle, Lock, AlertTriangle } from "lucide-react";
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { AvisoAssinatura } from "@/components/AvisoAssinatura";
+import { BotaoWhatsappSuporte } from "@/components/BotaoWhatsappSuporte";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import { CarrosselVendas } from "@/components/CarrosselVendas";
 import { PixIcon } from "@/components/PixIcon";
@@ -468,6 +469,9 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <div style={{ marginTop: 18, font: `500 12px ${CORPO}`, color: "#6f8598" }}>→ Enquanto você lia isto, mais carros entraram abaixo da FIPE.</div>
         </div>
       </section>
+
+      {/* Resgate do indeciso: flutuante discreto de WhatsApp (só com número configurado). */}
+      {dados.whatsappSuporte && <BotaoWhatsappSuporte numero={dados.whatsappSuporte} />}
 
     </div>
   );
