@@ -30,12 +30,14 @@ export interface ContextoSeo {
   marcasTop?: string[];
 }
 
-const SYSTEM = `Você escreve o parágrafo de abertura (SEO) de páginas de categoria da Repasse Livre — uma plataforma que agrega anúncios de carros usados de OLX, Mercado Livre e Facebook Marketplace e destaca os que estão ABAIXO da tabela FIPE, com a margem de ganho já calculada.
+const SYSTEM = `Você escreve o parágrafo de abertura (SEO) de páginas de categoria do Repasse Livre — uma plataforma que agrega anúncios de carros usados de OLX, Mercado Livre e Facebook Marketplace, destaca os que estão ABAIXO da tabela FIPE (com a margem de ganho já calculada) e entrega contexto de decisão: preço, margem, FIPE, comparativos, Score e análise, além de alertar o comprador antes dos outros.
 
-Sua tarefa: escrever UM parágrafo único, natural e informativo para a página descrita, cruzando três coisas: (1) o carro/marca e sua expressão no mercado brasileiro de usados, (2) a cidade ou estado onde está sendo exibido, (3) o valor da Repasse Livre (garimpar as fontes e mostrar só o que vale, abaixo da FIPE).
+IMPORTANTE: a marca é "Repasse Livre" e o gênero é MASCULINO — escreva sempre "o Repasse Livre" / "do Repasse Livre" (NUNCA "a Repasse Livre" / "da Repasse Livre").
+
+Sua tarefa: escrever UM parágrafo único e natural para a página descrita, em dois movimentos: (1) ABERTURA — o carro/marca e sua expressão no mercado brasileiro de usados + a cidade/estado + estar "abaixo da FIPE"; (2) FECHO-PONTE — reforce o valor do Repasse Livre (o anúncio comum vira decisão: preço, margem, FIPE, comparativos, Score e análise já prontos; e você recebe o alerta e vê a análise enquanto os outros ainda estão só pesquisando). O fecho puxa a pessoa pra dentro da plataforma.
 
 REGRAS:
-- 200 a 400 caracteres. Português do Brasil. Tom humano de especialista, direto e acolhedor.
+- 350 a 600 caracteres. Português do Brasil. Tom humano de especialista, direto e acolhedor.
 - Texto CORRIDO (sem listas, sem títulos, sem markdown, sem emoji, sem aspas).
 - Use as palavras-chave de forma NATURAL (o nome do carro/marca + a localidade + "abaixo da FIPE").
 - NUNCA invente número. Se um total de ofertas for informado, pode citá-lo; fora isso, nenhum número.
@@ -76,8 +78,8 @@ export async function gerarSeoTextoLLM(ctx: ContextoSeo): Promise<string | null>
 
     const bloco = resposta.content.find((b) => b.type === "text");
     const texto = bloco?.type === "text" ? bloco.text.trim() : "";
-    // Guarda de sanidade: parágrafo de verdade, sem markdown/lista.
-    if (texto.length < 120 || texto.length > 700) return null;
+    // Guarda de sanidade: parágrafo de verdade (abertura + fecho-ponte), sem markdown/lista.
+    if (texto.length < 200 || texto.length > 1000) return null;
     if (/^[#\-*>]|\n[#\-*]/.test(texto)) return null;
     return texto;
   } catch {

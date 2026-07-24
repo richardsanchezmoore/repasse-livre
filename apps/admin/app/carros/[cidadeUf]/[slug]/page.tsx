@@ -230,9 +230,7 @@ async function PaginaMarca({
                     {marcaResolvida.marca} em {localidade.nome}
                   </h1>
                 </div>
-                <p className="board-seo-texto" style={{ margin: "8px 0 0", fontSize: 14, lineHeight: 1.6, color: "#5A6572", maxWidth: 780 }}>
-                  {textoSeo}
-                </p>
+                <p className="board-seo-texto">{textoSeo}</p>
               </header>
               <div className="board-lista">
                 {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
