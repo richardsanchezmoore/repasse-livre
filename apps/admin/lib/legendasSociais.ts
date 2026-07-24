@@ -9,7 +9,21 @@ import type { Oportunidade } from "./types";
  * não foca no óbvio da imagem), variando só o nome do modelo + a margem no fim.
  * O operador escolhe A, B ou C e cola. Hashtags e link vêm separados (copiáveis
  * à parte) porque o WhatsApp/Metricool trata o link como campo próprio.
+ *
+ * Emojis são escritos como escapes ASCII \u{...} de propósito: emoji literal no
+ * fonte às vezes grava byte malformado (surrogate) e vaza como "\uD83D..." no
+ * runtime. O escape é decodificado pelo TS em tempo de compilação, sem risco.
  */
+
+const EMOJI = {
+  pensando: "\u{1F914}", // 🤔
+  apontaBaixo: "\u{1F447}", // 👇
+  link: "\u{1F517}", // 🔗
+  olhos: "\u{1F440}", // 👀
+  fogo: "\u{1F525}", // 🔥
+  oculos: "\u{1F60E}", // 😎
+  apontaDireita: "\u{1F449}", // 👉
+} as const;
 
 export interface LegendaSocial {
   rotulo: string; // "A" | "B" | "C"
@@ -34,7 +48,7 @@ export function nomeCurtoVeiculo(veiculo: string): string {
 function tag(valor: string): string {
   return valor
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // remove marcas de acento (combining diacritics)
+    .replace(/\p{Diacritic}/gu, "") // remove marcas de acento (ASCII-safe, sem char combinante literal)
     .replace(/[^a-zA-Z0-9]/g, "");
 }
 
@@ -55,34 +69,36 @@ export function gerarConteudoSocial(op: Oportunidade): ConteudoSocial {
     {
       rotulo: "A",
       texto: [
-        "Como tem carro abaixo da FIPE todo dia? 🤔",
+        `Como tem carro abaixo da FIPE todo dia? ${EMOJI.pensando}`,
         "",
         "Não é sorte, é garimpo. A gente vasculha OLX, Mercado Livre e Facebook e mostra só os que valem a pena.",
         "",
-        `Hoje tem esse ${modelo} — ${abaixo}. 👇`,
-        "Quer ver os outros? Link na bio. 🔗",
+        `Hoje tem esse ${modelo} — ${abaixo}. ${EMOJI.apontaBaixo}`,
+        `Quer ver os outros? Link na bio. ${EMOJI.link}`,
       ].join("\n"),
     },
     {
       rotulo: "B",
       texto: [
-        ganho ? `${ganho} de diferença pra tabela FIPE. E não, não é pegadinha. 👀` : `Muito abaixo da tabela FIPE. E não, não é pegadinha. 👀`,
+        ganho
+          ? `${ganho} de diferença pra tabela FIPE. E não, não é pegadinha. ${EMOJI.olhos}`
+          : `Muito abaixo da tabela FIPE. E não, não é pegadinha. ${EMOJI.olhos}`,
         "",
         "Todo dia entram dezenas de carros assim — a gente garimpa e mostra só os reais, com a margem na tela.",
         "",
         `Esse ${modelo} tá ${abaixo}. Bora?`,
-        "👉 Link na bio.",
+        `${EMOJI.apontaDireita} Link na bio.`,
       ].join("\n"),
     },
     {
       rotulo: "C",
       texto: [
-        "Tem quem pague FIPE cheia. E tem quem usa a Repasse Livre. 😎",
+        `Tem quem pague FIPE cheia. E tem quem usa a Repasse Livre. ${EMOJI.oculos}`,
         "",
         "Nossa plataforma varre o Brasil todo dia atrás de repasse de verdade — abaixo da FIPE, com o ganho já calculado pra você.",
         "",
-        `Achado de hoje: ${modelo}, ${abaixo}. 🔥`,
-        "👉 Link na bio pra ver mais.",
+        `Achado de hoje: ${modelo}, ${abaixo}. ${EMOJI.fogo}`,
+        `${EMOJI.apontaDireita} Link na bio pra ver mais.`,
       ].join("\n"),
     },
   ];
