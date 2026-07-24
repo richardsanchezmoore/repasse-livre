@@ -2909,9 +2909,11 @@ body {
   text-decoration: none;
   color: #fff;
   border-radius: 0 0 10px 10px;
-  background: linear-gradient(180deg, rgba(17, 22, 32, 0.96), rgba(17, 22, 32, 0.99));
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* Meio-termo: opacidade menor (dá pra SENTIR algo atrás) + blur leve (embaça o
+     bastante pra não LER o conteúdo). "sensação de tem algo por trás". */
+  background: linear-gradient(180deg, rgba(17, 22, 32, 0.86), rgba(17, 22, 32, 0.94));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* Selo de cadeado verde sobre a foto (card premium travado) — sinaliza o bloqueio
