@@ -186,6 +186,7 @@ export function OpportunityCard({
         </div>
       )}
 
+      <div className="card-conteudo">
       <div className="linha-fonte-classificacao">
         {classificacao && (
           <span className={`selo-classificacao ${classeClassificacao}`}>
@@ -345,6 +346,7 @@ export function OpportunityCard({
           </p>
         </Link>
       )}
+      </div>
     </div>
   );
 }

@@ -2892,12 +2892,19 @@ body {
 .card-bloqueado {
   position: relative;
 }
+/* Wrapper do CORPO do card (tudo abaixo da foto) — dá o contexto de posição pro
+   overlay premium cobrir SÓ o corpo com inset:0, sem depender da altura da foto
+   (que muda por breakpoint: no mobile vira aspect-ratio 4/3, bem mais alta). */
+.card-conteudo {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 .card-overlay {
   position: absolute;
-  /* Começa no FIM da foto (mesmo clamp da .foto-capa) — a foto do carro fica
-     VISÍVEL e limpa acima, e o overlay cobre só o CORPO, SÓLIDO (mesma intensidade
-     de antes, sem gradient), escondendo os dados. Ver print do usuário. */
-  inset: clamp(170px, 22vw, 210px) 0 0 0;
+  /* Cobre EXATAMENTE o corpo (.card-conteudo); a foto fica fora/acima. */
+  inset: 0;
   z-index: 20;
   display: flex;
   flex-direction: column;
