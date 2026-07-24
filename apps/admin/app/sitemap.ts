@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { supabaseAdmin } from "@/lib/supabase";
-import { URL_BASE_SITE, urlCidade, urlEstado, urlMarca, urlOportunidade } from "@/lib/site";
-import { extrairMarca } from "@/lib/marca";
+import { URL_BASE_SITE, urlCidade, urlEstado, urlMarca, urlModelo, urlOportunidade } from "@/lib/site";
+import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
+import { MIN_ANUNCIOS_MODELO } from "@/components/DiscoveriesBoard";
 import { gerarSlugCidade, slugify } from "@/lib/slug";
 import { listarPostsPublicados } from "@/lib/cms";
 import type { Oportunidade } from "@/lib/types";
@@ -60,6 +61,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const marcasEstado: MetadataRoute.Sitemap = [];
   const marcasCidadeVistas = new Set<string>();
   const marcasCidade: MetadataRoute.Sitemap = [];
+  // Modelo (nível abaixo de marca) — só entra no sitemap com VOLUME (>= gate),
+  // senão vira página fina. Conta por (estado|cidade):marca:modelo e emite depois.
+  const modeloEstado = new Map<string, { url: string; lastModified?: string; n: number }>();
+  const modeloCidade = new Map<string, { url: string; lastModified?: string; n: number }>();
 
   for (const oportunidade of data) {
     const slugCidade = gerarSlugCidade(oportunidade);
@@ -117,7 +122,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
     }
+
+    const modelo = extrairModeloSeo(oportunidade.veiculo);
+    if (modelo) {
+      const slugModelo = slugify(modelo);
+      if (oportunidade.estado) {
+        const chave = `${oportunidade.estado}:${slugMarca}:${slugModelo}`;
+        const reg = modeloEstado.get(chave);
+        if (reg) reg.n++;
+        else
+          modeloEstado.set(chave, {
+            url: urlModelo({ estado: oportunidade.estado }, marca, modelo),
+            lastModified: oportunidade.data_captura ?? undefined,
+            n: 1,
+          });
+      }
+      if (oportunidade.cidade && oportunidade.estado) {
+        const chave = `${slugCidade}:${slugMarca}:${slugModelo}`;
+        const reg = modeloCidade.get(chave);
+        if (reg) reg.n++;
+        else
+          modeloCidade.set(chave, {
+            url: urlModelo({ cidade: oportunidade.cidade, estado: oportunidade.estado }, marca, modelo),
+            lastModified: oportunidade.data_captura ?? undefined,
+            n: 1,
+          });
+      }
+    }
   }
+
+  // Só modelos com volume (>= gate) — evita encher o sitemap de página fina.
+  const modelos: MetadataRoute.Sitemap = [...modeloEstado.values(), ...modeloCidade.values()]
+    .filter((m) => m.n >= MIN_ANUNCIOS_MODELO)
+    .map((m) => ({ url: m.url, lastModified: m.lastModified, changeFrequency: "daily" as const }));
 
   // Blog: a listagem + cada post publicado.
   const posts = await listarPostsPublicados();
@@ -143,6 +180,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...marcasNacional,
     ...marcasEstado,
     ...marcasCidade,
+    ...modelos,
     ...oportunidades,
   ];
 }

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { NOME_POR_UF } from "@/lib/estados";
-import { extrairMarca } from "@/lib/marca";
-import { caminhoCidade, caminhoEstado, caminhoMarca, URL_BASE_SITE } from "@/lib/site";
+import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
+import { caminhoCidade, caminhoEstado, caminhoMarca, caminhoModelo, URL_BASE_SITE } from "@/lib/site";
 import type { Oportunidade } from "@/lib/types";
 
 export function BreadcrumbOportunidade({
@@ -21,6 +21,9 @@ export function BreadcrumbOportunidade({
   caminhoAtual?: string;
 }) {
   const marca = marcaForcada ?? (titulo ? extrairMarca(titulo) : null);
+  // Modelo sai da heurística sobre o título (não é campo do banco). Marca composta
+  // (Land Rover) → null, então o nível Modelo só entra pra marca de 1 palavra.
+  const modelo = titulo ? extrairModeloSeo(titulo) : null;
 
   const itens: Array<{ rotulo: string; href?: string }> = [{ rotulo: "Carros", href: "/" }];
 
@@ -35,6 +38,9 @@ export function BreadcrumbOportunidade({
   }
   if (marca) {
     itens.push({ rotulo: marca, href: caminhoMarca(oportunidade, marca) });
+  }
+  if (marca && modelo) {
+    itens.push({ rotulo: modelo, href: caminhoModelo(oportunidade, marca, modelo) });
   }
 
   if (caminhoAtual) {

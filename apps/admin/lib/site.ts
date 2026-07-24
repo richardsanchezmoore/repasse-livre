@@ -48,3 +48,22 @@ export function caminhoMarca(localidade: { cidade?: string | null; estado?: stri
 export function urlMarca(localidade: { cidade?: string | null; estado?: string | null }, marca: string): string {
   return `${URL_BASE_SITE}${caminhoMarca(localidade, marca)}`;
 }
+
+// Modelo = 1 nível abaixo da marca (/carros/{cidadeUf}/{marca}/{modelo}). Só
+// cidade/estado no v1 (nacional /carros/{marca}/{modelo} conflitaria com a rota
+// carro/marca). Ver project_repasse_livre_seo_pagina_modelo.
+export function caminhoModelo(
+  localidade: { cidade?: string | null; estado?: string | null },
+  marca: string,
+  modelo: string,
+): string {
+  return `${caminhoMarca(localidade, marca)}/${slugify(modelo)}`;
+}
+
+export function urlModelo(
+  localidade: { cidade?: string | null; estado?: string | null },
+  marca: string,
+  modelo: string,
+): string {
+  return `${URL_BASE_SITE}${caminhoModelo(localidade, marca, modelo)}`;
+}

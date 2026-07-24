@@ -23,6 +23,12 @@ const PAGINAS: Array<{ chave: string; rotulo: string; ajudaExtra: string }> = [
       'Variáveis disponíveis: $tag (ex.: "Volkswagen"), $cidade ou $estado (conforme o nível da página). URL: /carros/volkswagen, /carros/pernambuco/volkswagen ou /carros/recife-pe/volkswagen.',
   },
   {
+    chave: "modelo",
+    rotulo: "Página de modelo",
+    ajudaExtra:
+      'Variáveis disponíveis: $tag (marca, ex.: "Chevrolet"), $modelo (ex.: "Onix"), $cidade ou $estado (conforme o nível). URL: /carros/recife-pe/chevrolet/onix.',
+  },
+  {
     chave: "produto",
     rotulo: "Página individual (anúncio)",
     ajudaExtra: "Variáveis disponíveis: $title_ad, $description_ad, $tag, $cidade, $estado.",

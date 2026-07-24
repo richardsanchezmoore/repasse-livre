@@ -5,7 +5,7 @@ import { UFS } from "@/lib/mascaras";
 import { MARGEM_MINIMA_PADRAO } from "@/lib/margin";
 import { buscarMargemPremium } from "@/lib/configWorker";
 import { semParecer } from "@/lib/copilotoResumo";
-import { extrairMarca } from "@/lib/marca";
+import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
 import type { MarcaContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import { cidadesDaRegiao } from "@/lib/regioes";
@@ -445,6 +445,76 @@ export async function buscarMarcaPorSlug(
   }
 
   return { marca: marcaCanonica, total: count ?? 0 };
+}
+
+export interface ModeloResolvido {
+  marca: string;
+  modelo: string;
+  total: number;
+}
+
+// Só geramos página de modelo com VOLUME — abaixo disso é página fina (1-2 carros
+// = SEO ruim). O gate vale pra rota (abaixo → trata como inexistente → redirect
+// pra marca) e pro sitemap. Ver project_repasse_livre_seo_pagina_modelo.
+export const MIN_ANUNCIOS_MODELO = 5;
+
+/**
+ * Resolve {marcaSlug}/{modeloSlug} pra grafia canônica (marca+modelo) — espelho de
+ * buscarMarcaPorSlug, um nível abaixo. Casa por slug numa amostra da localidade,
+ * escolhe a grafia mais frequente (canônica), conta o total exato com ilike. GATE:
+ * retorna null se total < MIN_ANUNCIOS_MODELO (a rota vira redirect pra marca).
+ */
+export async function buscarModeloPorSlug(
+  filtro: { cidade?: string; estado?: string },
+  marcaSlug: string,
+  modeloSlug: string,
+): Promise<ModeloResolvido | null> {
+  let amostra = supabaseAdmin
+    .from("opportunities")
+    .select("veiculo")
+    .eq("status", "aprovada")
+    .limit(filtro.estado ? LIMITE_AMOSTRA_MARCA : LIMITE_AMOSTRA_MARCA_NACIONAL);
+  if (filtro.estado) amostra = amostra.eq("estado", filtro.estado);
+  if (filtro.cidade) amostra = amostra.eq("cidade", filtro.cidade);
+
+  const { data, error } = await amostra;
+  if (error) {
+    throw new Error(`Falha ao buscar modelo: ${error.message}`);
+  }
+
+  // Conta grafias do par (marca, modelo) que casam AMBOS os slugs → canônica.
+  const contagem = new Map<string, number>();
+  for (const linha of data ?? []) {
+    const veiculo = linha.veiculo as string;
+    const marca = extrairMarca(veiculo);
+    const modelo = extrairModeloSeo(veiculo);
+    if (!marca || !modelo) continue;
+    if (slugify(marca) === marcaSlug && slugify(modelo) === modeloSlug) {
+      const chave = `${marca}||${modelo}`;
+      contagem.set(chave, (contagem.get(chave) ?? 0) + 1);
+    }
+  }
+  if (contagem.size === 0) return null;
+
+  const [chaveCanonica] = [...contagem.entries()].sort((a, b) => b[1] - a[1])[0];
+  const [marcaCanonica, modeloCanonico] = chaveCanonica.split("||");
+
+  let consultaTotal = supabaseAdmin
+    .from("opportunities")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "aprovada")
+    .ilike("veiculo", `${marcaCanonica} ${modeloCanonico}%`);
+  if (filtro.estado) consultaTotal = consultaTotal.eq("estado", filtro.estado);
+  if (filtro.cidade) consultaTotal = consultaTotal.eq("cidade", filtro.cidade);
+
+  const { count, error: erroTotal } = await consultaTotal;
+  if (erroTotal) {
+    throw new Error(`Falha ao contar oportunidades do modelo: ${erroTotal.message}`);
+  }
+
+  const total = count ?? 0;
+  if (total < MIN_ANUNCIOS_MODELO) return null; // gate de volume
+  return { marca: marcaCanonica, modelo: modeloCanonico, total };
 }
 
 /** Contagem por aba pros badges da Sidebar — só conta, não carrega as linhas. */

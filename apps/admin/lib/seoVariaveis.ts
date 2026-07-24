@@ -15,7 +15,7 @@ export interface ConfigSeoPagina {
 // runtime (ver substituirVariaveisSeo). Estender esta lista (e o rótulo em
 // PainelSeo.tsx) é o suficiente pra cobrir uma nova página — não precisa de
 // migration nova, a tabela é chave/valor.
-export const CHAVES_SEO_PAGINAS = ["home", "cidade", "estado", "marca", "produto"] as const;
+export const CHAVES_SEO_PAGINAS = ["home", "cidade", "estado", "marca", "modelo", "produto"] as const;
 export type ChaveSeoPagina = (typeof CHAVES_SEO_PAGINAS)[number];
 
 // Mapa de variáveis disponíveis pros templates do painel /seo — cada página
@@ -25,7 +25,8 @@ export type ChaveSeoPagina = (typeof CHAVES_SEO_PAGINAS)[number];
 export const VARIAVEIS_SEO: Array<{ nome: string; descricao: string }> = [
   { nome: "title_ad", descricao: "Título do anúncio (página Individual)" },
   { nome: "description_ad", descricao: "Descrição calculada do anúncio — margem e local (página Individual)" },
-  { nome: "tag", descricao: "Marca (página de Marca e Individual)" },
+  { nome: "tag", descricao: "Marca (página de Marca, Modelo e Individual)" },
+  { nome: "modelo", descricao: "Modelo (página de Modelo)" },
   { nome: "tags", descricao: "As 3 marcas mais frequentes no recorte (página de Cidade e Estado)" },
   { nome: "estado", descricao: "Nome do estado (página de Estado)" },
   { nome: "cidade", descricao: "Cidade + estado (página de Cidade)" },
