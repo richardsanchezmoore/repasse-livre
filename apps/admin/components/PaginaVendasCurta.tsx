@@ -255,8 +255,8 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <div style={{ maxWidth: 1040, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
             <div style={{ flex: "1 1 340px", minWidth: 280 }}>
               <div style={eyebrow}>Demonstração</div>
-              <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Veja o que o radar já achou — sem você procurar.</h3>
-              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Esta é uma oportunidade <b style={{ color: "#0F1B2D" }}>real</b>. Veja como um anúncio comum ganha contexto no Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos e análise.</b> Pronto pra decidir.</p>
+              <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Uma oferta real que achamos pra você.</h3>
+              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Abra e veja a análise completa: <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos e Score.</b> Tudo pronto pra decidir.</p>
               {dados.numerosRegionais && dados.numerosRegionais.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, margin: "0 0 16px" }}>
                   {dados.numerosRegionais.map((n) => (
