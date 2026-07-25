@@ -55,12 +55,22 @@ export function FormularioEnvio({
   siteKeyTurnstile,
   nomeInicial,
   whatsappInicial,
+  acaoEnvio = enviarOportunidade,
+  mensagemSucesso = "Oportunidade enviada com sucesso! Nossa equipe vai revisar em breve.",
+  checkoutBaseUrl,
 }: {
   siteKeyTurnstile: string;
   nomeInicial?: string | null;
   whatsappInicial?: string | null;
+  /** Server action do submit. Default = /enviar (fila de revisão, exige login).
+   *  O /vender passa a `enviarAnuncioVenda` (público, aguardando_pagamento). */
+  acaoEnvio?: typeof enviarOportunidade;
+  mensagemSucesso?: string;
+  /** Fluxo pago (/vender): se presente, o sucesso mostra o CTA de pagamento
+   *  (checkoutBaseUrl + sck=listing_{anuncioId}). Ausente = só a mensagem. */
+  checkoutBaseUrl?: string;
 }) {
-  const [estado, acao] = useFormState(enviarOportunidade, ESTADO_INICIAL);
+  const [estado, acao] = useFormState(acaoEnvio, ESTADO_INICIAL);
 
   const [marcas, setMarcas] = useState<FipeOpcao[]>([]);
   const [modelos, setModelos] = useState<FipeOpcao[]>([]);
@@ -173,9 +183,17 @@ export function FormularioEnvio({
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
 
       {estado.sucesso ? (
-        <p className="formulario-sucesso">
-          Oportunidade enviada com sucesso! Nossa equipe vai revisar em breve.
-        </p>
+        <div className="formulario-sucesso">
+          <p>{mensagemSucesso}</p>
+          {checkoutBaseUrl && estado.anuncioId && (
+            <a
+              href={`${checkoutBaseUrl}${checkoutBaseUrl.includes("?") ? "&" : "?"}sck=listing_${estado.anuncioId}`}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14, background: "#16A34A", color: "#fff", padding: "13px 22px", borderRadius: 12, fontWeight: 800, textDecoration: "none" }}
+            >
+              Pagar R$ 29,90 via PIX e publicar →
+            </a>
+          )}
+        </div>
       ) : (
         <form
           action={acao}

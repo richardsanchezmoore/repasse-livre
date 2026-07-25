@@ -1,22 +1,13 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { buscarValorFipe } from "@/lib/fipe";
 import { calcularMargemPercentual, classificar, ehElegivel } from "@/lib/margin";
 import { verificarTurnstileToken } from "@/lib/turnstile";
-import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { PERFIS_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { MOTIVOS_VENDA, type MotivoVenda } from "@/lib/motivoVenda";
-
-export interface ResultadoEnvio {
-  erro: string | null;
-  sucesso: boolean;
-  /** ID do anúncio criado — só o fluxo pago (/vender) preenche, pra amarrar no
-   *  checkout Cakto (sck=listing_{id}). O /enviar normal deixa undefined. */
-  anuncioId?: string;
-}
+import type { ResultadoEnvio } from "@/app/enviar/actions";
 
 const REGEX_WHATSAPP = /^\d{10,11}$/;
 
@@ -24,7 +15,19 @@ function lerTexto(formData: FormData, campo: string): string {
   return String(formData.get(campo) ?? "").trim();
 }
 
-export async function enviarOportunidade(
+/**
+ * Envio PÚBLICO do "Vender o anúncio" (Low Ticket, R$29,90) — SEM login. Cria o
+ * anúncio como `status=aguardando_pagamento` / `origem_tipo=anuncio_pago`: fica
+ * FORA do board público (que só mostra `aprovada`), da fila de revisão (que é
+ * `descoberta`) e das stats da BIA (que contam `descoberta`). Devolve o id do
+ * anúncio pra amarrar no checkout Cakto na Fase 2 (sck=listing_{id}).
+ *
+ * Mantém o MESMO gate abaixo-da-FIPE (>=5%, ehElegivel) do /enviar e revalida a
+ * FIPE no servidor (não confia no cliente). Validação duplicada de propósito —
+ * o fluxo pago pode divergir do /enviar (spam, campos extras) sem risco de mexer
+ * na action que já roda. Ver project_repasse_livre_low_ticket_vender_anuncio.
+ */
+export async function enviarAnuncioVenda(
   _estadoAnterior: ResultadoEnvio,
   formData: FormData
 ): Promise<ResultadoEnvio> {
@@ -60,13 +63,7 @@ export async function enviarOportunidade(
   const opcionais = lerListaJson("opcionaisJson");
   const sinistroLeilao = lerListaJson("sinistroLeilaoJson");
 
-  // /enviar exige conta (ver app/enviar/page.tsx) — chegar aqui sem sessão
-  // só é possível burlando a UI (ex.: chamando a action direto), por isso
-  // o guard se repete na action e não só na página.
-  const usuario = await obterUsuarioAtual();
-  if (!usuario) {
-    return { erro: "Você precisa estar logado para anunciar.", sucesso: false };
-  }
+  // Público: SEM guard de login (a conta é criada no pagamento, via webhook Cakto).
 
   if (!veiculo || !marcaCode || !modeloCode || !anoCode || !precoTexto) {
     return { erro: "Preencha veículo, marca, modelo, ano e preço.", sucesso: false };
@@ -112,7 +109,7 @@ export async function enviarOportunidade(
   const margemPercentual = calcularMargemPercentual(preco, fipe.valor);
   if (!ehElegivel(margemPercentual)) {
     return {
-      erro: `Esse veículo está ${margemPercentual.toFixed(1)}% abaixo da FIPE — o mínimo exigido é 5%.`,
+      erro: `Esse veículo está ${margemPercentual.toFixed(1)}% abaixo da FIPE — o mínimo exigido é 5%. Ajuste o preço pra entrar.`,
       sucesso: false,
     };
   }
@@ -122,49 +119,42 @@ export async function enviarOportunidade(
     return { erro: "Não foi possível classificar essa oportunidade.", sucesso: false };
   }
 
-  const { error: erroInsercao } = await supabaseAdmin.from("opportunities").insert({
-    fonte: "Inserção Direta",
-    link_origem: `insercao-direta:${randomUUID()}`,
-    veiculo,
-    versao: modeloNome || null,
-    ano: anoNome || anoCode,
-    cambio: cambio || null,
-    km: kmTexto ? Number(kmTexto) : null,
-    cidade: cidade || null,
-    estado: estado || null,
-    preco,
-    fipe_valor: fipe.valor,
-    fipe_data_referencia: fipe.mesReferencia,
-    margem_percentual: Number(margemPercentual.toFixed(2)),
-    classificacao,
-    foto_principal: fotoPrincipalUrl,
-    fotos_secundarias: fotosSecundarias,
-    descricao: descricao || null,
-    origem_tipo: "insercao_direta",
-    status: "descoberta",
-    whatsapp,
-    nome_remetente: nomeRemetente || null,
-    perfil_remetente: perfilRemetente,
-    motivo_venda: motivoVenda,
-    opcionais,
-    sinistro_leilao: sinistroLeilao,
-    criado_por: usuario.id,
-  });
+  const { data, error: erroInsercao } = await supabaseAdmin
+    .from("opportunities")
+    .insert({
+      fonte: "Inserção Direta",
+      link_origem: `insercao-direta:${randomUUID()}`,
+      veiculo,
+      versao: modeloNome || null,
+      ano: anoNome || anoCode,
+      cambio: cambio || null,
+      km: kmTexto ? Number(kmTexto) : null,
+      cidade: cidade || null,
+      estado: estado || null,
+      preco,
+      fipe_valor: fipe.valor,
+      fipe_data_referencia: fipe.mesReferencia,
+      margem_percentual: Number(margemPercentual.toFixed(2)),
+      classificacao,
+      foto_principal: fotoPrincipalUrl,
+      fotos_secundarias: fotosSecundarias,
+      descricao: descricao || null,
+      origem_tipo: "anuncio_pago",
+      status: "aguardando_pagamento",
+      whatsapp,
+      nome_remetente: nomeRemetente || null,
+      perfil_remetente: perfilRemetente,
+      motivo_venda: motivoVenda,
+      opcionais,
+      sinistro_leilao: sinistroLeilao,
+      criado_por: null, // vinculado à conta no pagamento (webhook Cakto)
+    })
+    .select("id")
+    .single();
 
-  if (erroInsercao) {
-    return { erro: "Falha ao salvar a oportunidade. Tente novamente.", sucesso: false };
+  if (erroInsercao || !data) {
+    return { erro: "Falha ao salvar o anúncio. Tente novamente.", sucesso: false };
   }
 
-  // Primeira vez que essa conta anuncia "completa os dados" automaticamente
-  // — não sobrescreve se a conta já tinha nome/whatsapp salvos (ex.: editado
-  // manualmente em /completar-dados depois do envio anterior).
-  if (!usuario.nome || !usuario.whatsapp) {
-    await supabaseAdmin
-      .from("perfis")
-      .update({ nome: usuario.nome ?? (nomeRemetente || null), whatsapp: usuario.whatsapp ?? whatsapp })
-      .eq("user_id", usuario.id);
-  }
-
-  revalidatePath("/");
-  return { erro: null, sucesso: true };
+  return { erro: null, sucesso: true, anuncioId: data.id as string };
 }
