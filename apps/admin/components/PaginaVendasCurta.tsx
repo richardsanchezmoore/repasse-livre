@@ -37,8 +37,6 @@ const TIT = "var(--fv-titulo), Poppins, sans-serif";
 const CORPO = "var(--fv-corpo), Manrope, sans-serif";
 const REVEAL: CSSProperties = { opacity: 0, transform: "translateY(24px)", transition: "opacity .7s ease, transform .7s ease" };
 const PAD = "clamp(48px,6vw,80px) clamp(20px,5vw,56px)";
-// Milhar determinístico (server === client) — evita mismatch de hidratação do toLocaleString.
-const nfMilhar = (v: number) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 const COPY = {
   padrao: {
@@ -261,9 +259,9 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, margin: "0 0 16px" }}>
                   {dados.numerosRegionais.map((n) => (
                     <div key={n.uf} style={{ flex: "1 1 150px", background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 14, padding: "12px 14px" }}>
-                      <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{nfMilhar(n.abaixoFipe)}</div>
+                      <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{n.abaixoFipe}</div>
                       <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>abaixo da FIPE no {n.nome}</div>
-                      {n.novas24h > 0 && <div style={{ font: `700 11px ${CORPO}`, color: "#2f6446", marginTop: 4 }}>+{nfMilhar(n.novas24h)} nas últimas 24h</div>}
+                      {n.novas24h > 0 && <div style={{ font: `600 11.5px ${CORPO}`, color: "#2f6446", marginTop: 5 }}><b style={{ fontSize: 14 }}>+{n.novas24h}</b> nas últimas 24h</div>}
                     </div>
                   ))}
                 </div>
