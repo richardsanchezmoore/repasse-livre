@@ -37,6 +37,8 @@ const TIT = "var(--fv-titulo), Poppins, sans-serif";
 const CORPO = "var(--fv-corpo), Manrope, sans-serif";
 const REVEAL: CSSProperties = { opacity: 0, transform: "translateY(24px)", transition: "opacity .7s ease, transform .7s ease" };
 const PAD = "clamp(48px,6vw,80px) clamp(20px,5vw,56px)";
+// Milhar determinístico (server === client) — evita mismatch de hidratação do toLocaleString.
+const nfMilhar = (v: number) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 const COPY = {
   padrao: {
@@ -259,21 +261,14 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, margin: "0 0 16px" }}>
                   {dados.numerosRegionais.map((n) => (
                     <div key={n.uf} style={{ flex: "1 1 150px", background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 14, padding: "12px 14px" }}>
-                      <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{n.abaixoFipe}</div>
+                      <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{nfMilhar(n.abaixoFipe)}</div>
                       <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>abaixo da FIPE no {n.nome}</div>
-                      {n.novas24h > 0 && <div style={{ font: `600 11.5px ${CORPO}`, color: "#2f6446", marginTop: 5 }}><b style={{ fontSize: 14 }}>+{n.novas24h}</b> nas últimas 24h</div>}
+                      {n.novas24h > 0 && <div style={{ font: `600 11.5px ${CORPO}`, color: "#2f6446", marginTop: 5 }}><b style={{ fontSize: 14 }}>+{nfMilhar(n.novas24h)}</b> nas últimas 24h</div>}
                     </div>
                   ))}
                 </div>
               )}
-              <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 18px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
-                  <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "7px 13px", font: `700 12px ${CORPO}`, color: "#2f6446" }}>
-                    <Check size={12} strokeWidth={3} color="#16A34A" /> {x}
-                  </span>
-                ))}
-              </div>
+              <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 4px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
             </div>
             <div style={{ flex: "0 1 320px", minWidth: 280, width: "100%", maxWidth: 340 }}>
               <ExperimenteDemo oferta={dados.ofertaDemo} />
