@@ -11,6 +11,7 @@ import { CarrosselVendas } from "@/components/CarrosselVendas";
 import { PixIcon } from "@/components/PixIcon";
 import { ContadorNumeroAoVivo } from "@/components/ContadorNumeroAoVivo";
 import type { OfertaDemo } from "@/lib/ofertaDemo";
+import type { NumeroEstado } from "@/lib/numerosRegionais";
 
 export interface DadosVendas {
   variante: "padrao" | "fomo";
@@ -26,6 +27,7 @@ export interface DadosVendas {
   gerenciarUrl: string | null;
   whatsappSuporte: string | null;
   ofertaDemo: OfertaDemo | null;
+  numerosRegionais?: NumeroEstado[];
   gateway: string | null;
 }
 // `estado`/`aviso`/`jaPremium` saíram daqui pelo mesmo motivo do PaginaVendas: eram o
@@ -35,6 +37,8 @@ const TIT = "var(--fv-titulo), Poppins, sans-serif";
 const CORPO = "var(--fv-corpo), Manrope, sans-serif";
 const REVEAL: CSSProperties = { opacity: 0, transform: "translateY(24px)", transition: "opacity .7s ease, transform .7s ease" };
 const PAD = "clamp(48px,6vw,80px) clamp(20px,5vw,56px)";
+// Milhar determinístico (server === client) — evita mismatch de hidratação do toLocaleString.
+const nfMilhar = (v: number) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 const COPY = {
   padrao: {
@@ -252,7 +256,18 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <div style={{ flex: "1 1 340px", minWidth: 280 }}>
               <div style={eyebrow}>Demonstração</div>
               <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Veja o que o radar já achou — sem você procurar.</h3>
-              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 12px" }}>Esta é uma oportunidade <b style={{ color: "#0F1B2D" }}>real</b>. Veja como um anúncio comum ganha contexto no Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos e análise.</b> Pronto pra decidir.</p>
+              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Esta é uma oportunidade <b style={{ color: "#0F1B2D" }}>real</b>. Veja como um anúncio comum ganha contexto no Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos e análise.</b> Pronto pra decidir.</p>
+              {dados.numerosRegionais && dados.numerosRegionais.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, margin: "0 0 16px" }}>
+                  {dados.numerosRegionais.map((n) => (
+                    <div key={n.uf} style={{ flex: "1 1 190px", background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 14, padding: "12px 14px" }}>
+                      <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{nfMilhar(n.abaixoFipe)}</div>
+                      <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>abaixo da FIPE no {n.nome}</div>
+                      {n.novas24h > 0 && <div style={{ font: `700 11px ${CORPO}`, color: "#2f6446", marginTop: 4 }}>+{nfMilhar(n.novas24h)} nas últimas 24h</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
               <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 18px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
