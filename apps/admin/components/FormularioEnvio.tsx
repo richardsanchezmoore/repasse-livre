@@ -188,6 +188,15 @@ export function FormularioEnvio({
           {checkoutBaseUrl && estado.anuncioId && (
             <a
               href={`${checkoutBaseUrl}${checkoutBaseUrl.includes("?") ? "&" : "?"}sck=listing_${estado.anuncioId}`}
+              onClick={() => {
+                // Auto-login pós-pagamento: guarda o anuncioId como token de claim
+                // (o webhook registra o claim; o /bem-vindo troca por sessão).
+                try {
+                  localStorage.setItem("rl_claim", estado.anuncioId!);
+                } catch {
+                  /* localStorage bloqueado → cai no login por email no /bem-vindo */
+                }
+              }}
               style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14, background: "#16A34A", color: "#fff", padding: "13px 22px", borderRadius: 12, fontWeight: 800, textDecoration: "none" }}
             >
               Pagar R$ 29,90 via PIX e publicar →

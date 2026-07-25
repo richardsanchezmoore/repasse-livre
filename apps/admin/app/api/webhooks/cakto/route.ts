@@ -182,6 +182,15 @@ export async function POST(req: Request): Promise<Response> {
         .update({ nome: main.customer?.name ?? null, whatsapp: main.customer?.phone ?? null })
         .eq("user_id", dono.userId);
     }
+    // Auto-login: registra o claim usando o PRÓPRIO anuncioId como token (o /vender
+    // salva localStorage["rl_claim"]=anuncioId; o /bem-vindo troca por sessão). Mesmo
+    // mecanismo da assinatura, sem precisar de token extra no sck.
+    if (dono?.userId) {
+      await supabaseAdmin.from("claims").upsert(
+        { token: anuncioId, user_id: dono.userId, email: main.customer?.email ?? null, status: "ready", criado_em: new Date().toISOString() },
+        { onConflict: "token" }
+      );
+    }
     console.log(`[cakto webhook] anúncio ${anuncioId} PUBLICADO (dono=${dono?.userId ?? "?"}${dono?.novo ? " NOVO" : ""}).`);
     return NextResponse.json({ ok: true, anuncioPublicado: anuncioId });
   }
