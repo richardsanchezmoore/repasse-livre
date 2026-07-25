@@ -111,7 +111,10 @@ async function resolverUsuario(
 
 export async function POST(req: Request): Promise<Response> {
   const raw = await req.text();
-  const esperado = process.env.CAKTO_WEBHOOK_SECRET ?? "";
+  // A Cakto usa uma chave POR WEBHOOK — cada produto (PRO, Anunciar, …) tem a sua.
+  // Aceita uma LISTA separada por vírgula em CAKTO_WEBHOOK_SECRET (ex.: "secretPRO,secretAnunciar")
+  // → qualquer uma que bater valida. Um único valor (sem vírgula) segue funcionando.
+  const esperados = (process.env.CAKTO_WEBHOOK_SECRET ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
   let evento: EventoCakto | null = null;
   try {
@@ -119,7 +122,8 @@ export async function POST(req: Request): Promise<Response> {
   } catch {
     /* corpo não-JSON */
   }
-  const secretOk = Boolean(esperado) && typeof evento?.secret === "string" && segredoConfere(evento.secret, esperado);
+  const secretRecebido = typeof evento?.secret === "string" ? evento.secret : "";
+  const secretOk = Boolean(secretRecebido) && esperados.some((s) => segredoConfere(secretRecebido, s));
 
   // Captura de debug (antes de validar) — inclui secret_ok pra confirmar o env sem log da Vercel.
   const headers: Record<string, string> = {};
@@ -137,7 +141,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // --- validação ---
-  if (!esperado) {
+  if (!esperados.length) {
     console.error("[cakto webhook] CAKTO_WEBHOOK_SECRET não configurado — rejeitando.");
     return NextResponse.json({ erro: "secret_nao_configurado" }, { status: 500 });
   }
