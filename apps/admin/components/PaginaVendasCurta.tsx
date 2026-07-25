@@ -5,10 +5,12 @@ import { Gem, Clock, Zap, Bell, Check, X, BarChart3, LayoutGrid, Compass, Shield
 import { AcaoAssinatura } from "@/components/AcaoAssinatura";
 import { AvisoAssinatura } from "@/components/AvisoAssinatura";
 import { BotaoWhatsappSuporte } from "@/components/BotaoWhatsappSuporte";
+import { ExperimenteDemo } from "@/components/ExperimenteDemo";
 import { ContadorRelogio, ContadorTexto } from "@/components/ContadorVendas";
 import { CarrosselVendas } from "@/components/CarrosselVendas";
 import { PixIcon } from "@/components/PixIcon";
 import { ContadorNumeroAoVivo } from "@/components/ContadorNumeroAoVivo";
+import type { OfertaDemo } from "@/lib/ofertaDemo";
 
 export interface DadosVendas {
   variante: "padrao" | "fomo";
@@ -23,6 +25,7 @@ export interface DadosVendas {
   checkoutUrl: string | null;
   gerenciarUrl: string | null;
   whatsappSuporte: string | null;
+  ofertaDemo: OfertaDemo | null;
   gateway: string | null;
 }
 // `estado`/`aviso`/`jaPremium` saíram daqui pelo mesmo motivo do PaginaVendas: eram o
@@ -35,8 +38,8 @@ const PAD = "clamp(48px,6vw,80px) clamp(20px,5vw,56px)";
 
 const COPY = {
   padrao: {
-    h1a: "Enquanto outros procuram carros, você encontra ",
-    h1b: "oportunidades.",
+    h1a: "Cansado de garimpar carro em ",
+    h1b: "5 sites?",
     timeline: "Quem compra primeiro normalmente encontrou primeiro.",
     finalSub: "Todos os dias milhares de anúncios entram no mercado. Poucos realmente representam uma oportunidade. O Repasse Livre foi criado para encontrar essas oportunidades antes da maioria.",
   },
@@ -241,6 +244,30 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
           <CTAInline rotulo="QUERO CHEGAR PRIMEIRO" />
         </div>
       </section>
+
+      {/* 6 ── demonstração (demo real) — prova logo após a agitação */}
+      {dados.ofertaDemo && (
+        <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
+          <div style={{ maxWidth: 1040, margin: "0 auto", padding: PAD, display: "flex", flexWrap: "wrap", gap: "clamp(28px,4vw,48px)", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "1 1 340px", minWidth: 280 }}>
+              <div style={eyebrow}>Demonstração</div>
+              <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Veja o que o radar já achou — sem você procurar.</h3>
+              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 12px" }}>Esta é uma oportunidade <b style={{ color: "#0F1B2D" }}>real</b>. Veja como um anúncio comum ganha contexto no Repasse Livre — <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos e análise.</b> Pronto pra decidir.</p>
+              <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 18px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {["Sem cadastro", "Análise completa", "Oferta real de hoje"].map((x) => (
+                  <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 999, padding: "7px 13px", font: `700 12px ${CORPO}`, color: "#2f6446" }}>
+                    <Check size={12} strokeWidth={3} color="#16A34A" /> {x}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: "0 1 320px", minWidth: 280, width: "100%", maxWidth: 340 }}>
+              <ExperimenteDemo oferta={dados.ofertaDemo} />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 4 ── timeline */}
       <section data-reveal style={{ ...REVEAL, width: "100%", background: "#fff" }}>
