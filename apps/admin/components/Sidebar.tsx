@@ -19,6 +19,7 @@ import {
   Search,
   Send,
   Settings,
+  Tag,
   UserCircle,
   UserPlus,
   Users,
@@ -197,6 +198,16 @@ export function Sidebar({
             </button>
             <button
               type="button"
+              onClick={() => navegar("/anuncios-pagos")}
+              className={`sidebar-item ${pathname === "/anuncios-pagos" ? "sidebar-item-ativo" : ""}`}
+              title="Anúncios pagos (/vender)"
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Tag size={18} strokeWidth={1.75} />
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => navegar("/configuracoes")}
               className={`sidebar-item ${pathname === "/configuracoes" ? "sidebar-item-ativo" : ""}`}
               title="Configurações"
@@ -361,6 +372,16 @@ export function Sidebar({
                 <Users size={18} strokeWidth={1.75} />
               </span>
               <span className="sidebar-rotulo">Usuários</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/anuncios-pagos")}
+              className={`sidebar-item ${pathname === "/anuncios-pagos" ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Tag size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">Anúncios pagos</span>
             </button>
             <button
               type="button"
