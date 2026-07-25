@@ -201,12 +201,14 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
 
       {GATEWAYS.map((gw) => {
         const ehAtivo = ativo === gw.chave;
+        const serveAnuncio = anunciarGw === gw.chave && !gw.emBreve;
+        const destaque = ehAtivo || serveAnuncio;
         return (
           <section
             key={gw.chave}
             style={{
-              border: `1px solid ${ehAtivo ? "#16a34a" : "#e5e7eb"}`,
-              background: ehAtivo ? "#f0fdf4" : "#fff",
+              border: `1px solid ${destaque ? "#16a34a" : "#e5e7eb"}`,
+              background: destaque ? "#f0fdf4" : "#fff",
               borderRadius: 14,
               padding: "18px 20px",
               marginBottom: 14,
@@ -214,20 +216,28 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{gw.nome}</h2>
                 {ehAtivo && (
-                  <span style={{ fontSize: 11.5, fontWeight: 800, color: "#0a5d2c", background: "#dcfce7", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    Ativo
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#0a5d2c", background: "#dcfce7", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                    Assinatura
+                  </span>
+                )}
+                {serveAnuncio && (
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#075985", background: "#e0f2fe", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                    Anunciar
                   </span>
                 )}
                 {gw.emBreve && (
-                  <span style={{ fontSize: 11.5, fontWeight: 800, color: "#64748b", background: "#f1f5f9", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase" }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#64748b", background: "#f1f5f9", padding: "2px 9px", borderRadius: 999, textTransform: "uppercase" }}>
                     Em breve
                   </span>
                 )}
               </div>
-              <Interruptor ligado={ehAtivo} onToggle={() => alternar(gw.chave)} disabled={gw.emBreve || salvando} />
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 700 }} title="Este toggle liga o gateway só da ASSINATURA (Planos). O Anunciar usa o seletor lá em cima.">Assinatura</span>
+                <Interruptor ligado={ehAtivo} onToggle={() => alternar(gw.chave)} disabled={gw.emBreve || salvando} />
+              </div>
             </div>
 
             <p style={{ margin: "8px 0 0", fontSize: 13.5, color: "#6b7280", lineHeight: 1.5 }}>{gw.desc}</p>
