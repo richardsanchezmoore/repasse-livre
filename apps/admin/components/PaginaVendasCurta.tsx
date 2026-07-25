@@ -262,7 +262,7 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
                   {dados.numerosRegionais.map((n) => (
                     <div key={n.uf} style={{ flex: "1 1 150px", background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 14, padding: "12px 14px" }}>
                       <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{nfMilhar(n.abaixoFipe)}</div>
-                      <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>abaixo da FIPE {n.preposicao} {n.nome}</div>
+                      <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>carros abaixo da FIPE {n.preposicao} {n.nome}</div>
                       {n.novas24h > 0 && <div style={{ font: `600 11.5px ${CORPO}`, color: "#2f6446", marginTop: 5 }}><b style={{ fontSize: 14 }}>+{nfMilhar(n.novas24h)}</b> nas últimas 24h</div>}
                     </div>
                   ))}
