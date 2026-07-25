@@ -123,6 +123,14 @@ export default async function AnunciosPagosPage() {
                       <span style={{ fontSize: 12, color: "#9ca3af", whiteSpace: "nowrap" }}>
                         {a.data_captura ? FMT_DATA.format(new Date(a.data_captura)) : ""}
                       </span>
+                      <a
+                        href={`/oportunidade/${a.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ fontSize: 12.5, fontWeight: 700, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}
+                      >
+                        Ver →
+                      </a>
                     </div>
                   </div>
                 );
