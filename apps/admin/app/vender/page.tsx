@@ -54,9 +54,24 @@ export default async function VenderPage() {
         <h1 style={{ font: `800 clamp(28px,5vw,42px)/1.1 ${TIT}`, letterSpacing: "-.02em", margin: "0 0 16px", textWrap: "balance" }}>
           Precisa de liquidez? Anuncie onde o comprador certo <span style={{ color: "#16A34A" }}>já está procurando.</span>
         </h1>
-        <p style={{ font: `500 clamp(15px,2vw,18px)/1.6 ${CORPO}`, color: "#4a5568", margin: "0 0 30px", maxWidth: 560 }}>
+        <p style={{ font: `500 clamp(15px,2vw,18px)/1.6 ${CORPO}`, color: "#4a5568", margin: "0 0 22px", maxWidth: 560 }}>
           Seu carro abaixo da FIPE entra numa vitrine curada — vista por quem caça exatamente esse tipo de oportunidade. Não é mais um anúncio perdido na multidão.
         </p>
+
+        {/* Prova visual: a plataforma onde o anúncio entra */}
+        <figure style={{ margin: "0 0 30px" }}>
+          <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid #E4EAE6", boxShadow: "0 24px 55px -26px rgba(15,27,45,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/vender/plataforma-home.jpg"
+              alt="A plataforma Repasse Livre — vitrine de carros abaixo da FIPE que os compradores acompanham"
+              style={{ display: "block", width: "100%", height: "auto" }}
+            />
+          </div>
+          <figcaption style={{ font: `600 12.5px ${CORPO}`, color: "#8a97a0", textAlign: "center", margin: "10px 0 0" }}>
+            É aqui que seu carro entra — na vitrine que os compradores acompanham todo dia.
+          </figcaption>
+        </figure>
 
         {/* Diferenciais */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14, marginBottom: 30 }}>
