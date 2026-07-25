@@ -26,6 +26,10 @@ export const dynamic = "force-dynamic";
 
 const GRANT = new Set(["purchase_approved", "subscription_created", "subscription_renewed"]);
 const REVOGAR = new Set(["refund", "chargeback"]);
+// PIX/boleto gerado (não pago ainda). SÓ pro produto Anunciar: marca o estágio do
+// funil ("gerou PIX mas não pagou" = abandono no último passo). Nomes-candidatos
+// (confirmar o exato pelo CAKTO_DEBUG_ULTIMO_EVENTO). Pra assinatura, é ignorado.
+const GERADO = new Set(["pix_generated", "pix_created", "pix_gerado", "boleto_generated", "boleto_created", "boleto_gerado"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FOLGA_MS = 3 * 86_400_000; // 3 dias de folga p/ o timing da renovação
 
@@ -145,8 +149,9 @@ export async function POST(req: Request): Promise<Response> {
   const tipo = evento?.event ?? "";
   const ehGrant = GRANT.has(tipo);
   const ehRevogar = REVOGAR.has(tipo);
-  if (!ehGrant && !ehRevogar) {
-    return NextResponse.json({ ok: true, ignorado: tipo }); // canceled/renewal_refused/gerado → lapsa sozinho
+  const ehGerado = GERADO.has(tipo);
+  if (!ehGrant && !ehRevogar && !ehGerado) {
+    return NextResponse.json({ ok: true, ignorado: tipo }); // canceled/renewal_refused → lapsa sozinho
   }
 
   const itens = Array.isArray(evento?.data) ? evento!.data! : [];
@@ -159,6 +164,13 @@ export async function POST(req: Request): Promise<Response> {
   const sckListing = (main.sck ?? "").trim();
   if (sckListing.startsWith("listing_")) {
     const anuncioId = sckListing.slice("listing_".length);
+    if (ehGerado) {
+      // PIX/boleto gerado, sem pagamento ainda → marca o estágio do funil (não publica).
+      // "Gerou PIX e não pagou" = abandono no último passo (diagnostica preço/gateway).
+      await supabaseAdmin.from("opportunities").update({ status: "pix_gerado" }).eq("id", anuncioId);
+      console.log(`[cakto webhook] anúncio ${anuncioId} PIX GERADO (nao pago).`);
+      return NextResponse.json({ ok: true, anuncioPixGerado: anuncioId });
+    }
     if (ehRevogar) {
       // refund/chargeback → despublica (volta pra aguardando_pagamento).
       await supabaseAdmin.from("opportunities").update({ status: "aguardando_pagamento" }).eq("id", anuncioId);
@@ -194,6 +206,10 @@ export async function POST(req: Request): Promise<Response> {
     console.log(`[cakto webhook] anúncio ${anuncioId} PUBLICADO (dono=${dono?.userId ?? "?"}${dono?.novo ? " NOVO" : ""}).`);
     return NextResponse.json({ ok: true, anuncioPublicado: anuncioId });
   }
+
+  // Assinatura (não-listing): evento GERADO não mexe em premium — só grant/revoke.
+  // (Sem esta guarda, um "pix gerado" cairia no patch abaixo e marcaria canceled.)
+  if (ehGerado) return NextResponse.json({ ok: true, ignorado: tipo });
 
   // Identidade: sck (logado) OU email do comprador (checkout sem login → acha/cria).
   // `sck=claim_{token}` = guest zero-clique: resolve pelo email e amarra o token à
