@@ -51,6 +51,7 @@ export async function PaginaOportunidade({
   copilotoResumo = null,
   ehPremium = false,
   ehAssinante = false,
+  ocultarAcessoExterno = false,
 }: {
   oportunidade: Oportunidade;
   /** FactSheet da BIA (só computado p/ premium/admin) — vira a aba "Copiloto"
@@ -76,6 +77,10 @@ export async function PaginaOportunidade({
    * de Ads) recebe o CTA travado → /planos-slim, pra não vazar pra plataforma
    * de origem ("clica e não volta"). Ver bridge refinement #3. */
   ehAssinante?: boolean;
+  /** Demo/embed (iframe da /planos): esconde o acesso à fonte (link original +
+   * WhatsApp do vendedor) MESMO p/ assinante/admin — o demo é vitrine e não pode
+   * vazar o "pulo do gato". Ver project_repasse_livre_card_travado_foto_sanitize. */
+  ocultarAcessoExterno?: boolean;
 }) {
   const [historicoFipe, referenciaPreco, piso] = await Promise.all([
     buscarHistoricoFipe(oportunidade.fipe_codigo, oportunidade.ano),
@@ -342,7 +347,7 @@ export async function PaginaOportunidade({
           <BlocoAcessoBloqueado oportunidadeId={oportunidade.id} />
         ) : (
           <>
-            {oportunidade.whatsapp && (
+            {!ocultarAcessoExterno && oportunidade.whatsapp && (
               <BotaoWhatsapp
                 opportunityId={oportunidade.id}
                 whatsapp={oportunidade.whatsapp}
@@ -351,7 +356,7 @@ export async function PaginaOportunidade({
             )}
 
             {!oportunidade.link_origem.startsWith("insercao-direta:") &&
-              (ehAssinante ? (
+              (ehAssinante && !ocultarAcessoExterno ? (
                 <a
                   href={oportunidade.link_origem}
                   target="_blank"

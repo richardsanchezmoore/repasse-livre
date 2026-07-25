@@ -398,6 +398,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               copilotoResumo={copilotoResumo}
               ehPremium={ehPremiumEfetivo}
               ehAssinante={ehAssinante}
+              ocultarAcessoExterno
             />
           </div>
         </SelecaoMultiplaProvider>
