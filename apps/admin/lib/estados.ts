@@ -1,3 +1,12 @@
+/** Preposição correta antes do nome do estado ("no Paraná", "em Santa Catarina",
+ *  "na Bahia") — pra frases tipo "abaixo da FIPE {prep} {estado}". Default "em". */
+export const PREPOSICAO_POR_UF: Record<string, string> = {
+  AC: "no", AL: "em", AP: "no", AM: "no", BA: "na", CE: "no", DF: "no",
+  ES: "no", GO: "em", MA: "no", MT: "em", MS: "no", MG: "em", PA: "no",
+  PB: "na", PR: "no", PE: "em", PI: "no", RJ: "no", RN: "no", RS: "no",
+  RO: "em", RR: "em", SC: "em", SP: "em", SE: "em", TO: "no",
+};
+
 export const NOME_POR_UF: Record<string, string> = {
   AC: "Acre",
   AL: "Alagoas",

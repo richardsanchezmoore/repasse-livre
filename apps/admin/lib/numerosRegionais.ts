@@ -1,7 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
-import { NOME_POR_UF } from "@/lib/estados";
+import { NOME_POR_UF, PREPOSICAO_POR_UF } from "@/lib/estados";
 
 /**
  * "Prova regional" pra landing de anúncio: contagem de oportunidades por estado.
@@ -13,6 +13,7 @@ import { NOME_POR_UF } from "@/lib/estados";
 export interface NumeroEstado {
   uf: string;
   nome: string; // "Paraná"
+  preposicao: string; // "no" | "na" | "em" — pra "abaixo da FIPE {prep} {nome}"
   abaixoFipe: number; // total aprovado abaixo da FIPE
   novas24h: number; // descobertas nas últimas 24h
 }
@@ -34,6 +35,7 @@ async function contar(uf: string): Promise<NumeroEstado> {
   return {
     uf,
     nome: NOME_POR_UF[uf] ?? uf,
+    preposicao: PREPOSICAO_POR_UF[uf] ?? "em",
     abaixoFipe: abaixo.count ?? 0,
     novas24h: novas.count ?? 0,
   };

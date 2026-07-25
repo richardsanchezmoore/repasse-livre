@@ -256,19 +256,18 @@ export function PaginaVendasCurta({ dados }: { dados: DadosVendas }) {
             <div style={{ flex: "1 1 340px", minWidth: 280 }}>
               <div style={eyebrow}>Demonstração</div>
               <h3 style={{ font: `800 clamp(24px,3.2vw,32px)/1.15 ${TIT}`, color: "#0F1B2D", letterSpacing: "-.02em", margin: "0 0 14px" }}>Uma oferta real que achamos pra você.</h3>
-              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Abra e veja a análise completa: <b style={{ color: "#0F1B2D" }}>preço, margem, FIPE, comparativos e Score.</b> Tudo pronto pra decidir.</p>
+              <p style={{ font: `500 15px/1.6 ${CORPO}`, color: "#6A7686", margin: "0 0 14px" }}>Abra e veja a análise completa: <b style={{ color: "#0F1B2D" }}>margem, FIPE e comparativos.</b> Oportunidades como essas entram e você recebe um alerta em segundos.</p>
               {dados.numerosRegionais && dados.numerosRegionais.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10, margin: "0 0 16px" }}>
                   {dados.numerosRegionais.map((n) => (
                     <div key={n.uf} style={{ flex: "1 1 150px", background: "#F4FBF6", border: "1px solid #D8EEDF", borderRadius: 14, padding: "12px 14px" }}>
                       <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{nfMilhar(n.abaixoFipe)}</div>
-                      <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>abaixo da FIPE no {n.nome}</div>
+                      <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>abaixo da FIPE {n.preposicao} {n.nome}</div>
                       {n.novas24h > 0 && <div style={{ font: `600 11.5px ${CORPO}`, color: "#2f6446", marginTop: 5 }}><b style={{ fontSize: 14 }}>+{nfMilhar(n.novas24h)}</b> nas últimas 24h</div>}
                     </div>
                   ))}
                 </div>
               )}
-              <p style={{ font: `700 16px/1.5 ${TIT}`, color: "#0F1B2D", margin: "0 0 4px" }}>Todo mundo vê o anúncio. <span style={{ color: "#16A34A" }}>Só os assinantes enxergam o contexto.</span></p>
             </div>
             <div style={{ flex: "0 1 320px", minWidth: 280, width: "100%", maxWidth: 340 }}>
               <ExperimenteDemo oferta={dados.ofertaDemo} />
