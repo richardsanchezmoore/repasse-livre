@@ -28,7 +28,7 @@ export default async function PlanosSlimPage() {
     buscarPrecoAncora(),
     buscarWhatsappSuporte(),
     buscarOfertaDemo(),
-    buscarNumerosRegionais(["PR", "RS"]), // alvos da campanha: CWB (PR) + POA (RS)
+    buscarNumerosRegionais(["RS", "SC", "PR"]), // Sul inteiro: RS (POA), SC, PR (CWB)
     buscarKpisTopo(),
     buscarCaktoCheckoutUrl(),
     buscarTictoCheckoutUrl(),
