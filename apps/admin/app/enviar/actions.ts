@@ -16,6 +16,8 @@ export interface ResultadoEnvio {
   /** ID do anúncio criado — só o fluxo pago (/vender) preenche, pra amarrar no
    *  checkout Cakto (sck=listing_{id}). O /enviar normal deixa undefined. */
   anuncioId?: string;
+  /** URL de pagamento pós-envio (fluxo pago /vender) — o form mostra o passo "Pagar". */
+  checkoutUrl?: string | null;
 }
 
 const REGEX_WHATSAPP = /^\d{10,11}$/;

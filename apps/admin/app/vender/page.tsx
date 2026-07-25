@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Target, Lock, Zap, Check } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
+import { buscarCheckoutAnunciar } from "@/lib/configWorker";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
 export const metadata: Metadata = {
@@ -36,7 +37,7 @@ const DIFERENCIAIS = [
 ];
 
 export default async function VenderPage() {
-  const kpis = await buscarKpisTopo();
+  const [kpis, checkout] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar()]);
   const siteKeyTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const milhar = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
 
@@ -106,6 +107,7 @@ export default async function VenderPage() {
                 siteKeyTurnstile={siteKeyTurnstile}
                 acaoEnvio={enviarAnuncioVenda}
                 mensagemSucesso="Anúncio recebido! ✅ Falta só o pagamento via PIX pra publicar — em instantes você garante seu lugar na plataforma."
+                checkoutBaseUrl={checkout?.url}
               />
             </div>
           </details>

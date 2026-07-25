@@ -19,6 +19,7 @@ interface Gateway {
   configKey?: string;
   configLabel?: string;
   configPlaceholder?: string;
+  anunciarKey?: string; // URL de checkout do produto Anunciar (low ticket R$29,90)
   envs?: string;
   emBreve?: boolean;
 }
@@ -31,6 +32,7 @@ const GATEWAYS: Gateway[] = [
     configKey: "CAKTO_CHECKOUT_URL",
     configLabel: "URL de checkout do Repasse Livre PRO",
     configPlaceholder: "https://pay.cakto.com.br/…",
+    anunciarKey: "CAKTO_CHECKOUT_ANUNCIAR",
     envs: "CAKTO_CLIENT_ID · CAKTO_CLIENT_SECRET · CAKTO_WEBHOOK_SECRET",
   },
   {
@@ -40,6 +42,7 @@ const GATEWAYS: Gateway[] = [
     configKey: "TICTO_CHECKOUT_URL",
     configLabel: "URL de checkout do Repasse Livre PRO",
     configPlaceholder: "https://pay.ticto.com.br/…",
+    anunciarKey: "TICTO_CHECKOUT_ANUNCIAR",
     envs: "TICTO_WEBHOOK_TOKEN",
   },
   {
@@ -141,6 +144,7 @@ function CampoGateway({ chave, label, valorInicial, placeholder }: { chave: stri
 
 export function PainelPagamentos({ configs }: { configs: Record<string, string> }) {
   const [ativo, setAtivo] = useState(configs["GATEWAY_ATIVO"] ?? "");
+  const [anunciarGw, setAnunciarGw] = useState(configs["GATEWAY_ANUNCIAR"] || "cakto");
   const [salvando, iniciar] = useTransition();
 
   function alternar(chave: string) {
@@ -151,6 +155,14 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
     });
   }
 
+  // Gateway do Anunciar — INDEPENDENTE do da assinatura (não conflita com o Planos).
+  function alternarAnunciar(chave: string) {
+    iniciar(async () => {
+      await salvarConfigWorker("GATEWAY_ANUNCIAR", chave);
+      setAnunciarGw(chave);
+    });
+  }
+
   return (
     <div style={{ padding: "0 0 8px" }}>
       <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
@@ -158,9 +170,34 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Sistemas de Pagamento</h2>
       </header>
       <p style={{ margin: "0 0 20px", color: "#6b7280", fontSize: 14, lineHeight: 1.5 }}>
-        Ligue <strong>um</strong> gateway por vez — é o que o botão de assinatura usa. Os demais ficam codados e prontos
-        pra reativar num clique. As chaves secretas ficam no ambiente (Vercel), não aqui.
+        Ligue <strong>um</strong> gateway por vez para a <strong>assinatura (Planos)</strong> — é o que o botão de assinatura
+        usa. Os demais ficam codados e prontos pra reativar num clique. As chaves secretas ficam no ambiente (Vercel), não aqui.
       </p>
+
+      {/* Produto Anunciar — gateway independente do da assinatura (não conflita com Planos). */}
+      <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: "14px 16px", marginBottom: 18, background: "#fafafa" }}>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#374151" }}>Gateway do produto “Anunciar” (R$ 29,90)</div>
+        <p style={{ margin: "4px 0 10px", fontSize: 12.5, color: "#6b7280", lineHeight: 1.5 }}>
+          Independente da assinatura — o Anunciar pode rodar num gateway e o Planos noutro, sem conflito. Preencha a URL de
+          checkout do Anunciar no gateway escolhido (campo abaixo, em cada card).
+        </p>
+        <div style={{ display: "flex", gap: 8 }}>
+          {[{ k: "cakto", n: "Cakto" }, { k: "ticto", n: "Ticto" }].map(({ k, n }) => {
+            const sel = anunciarGw === k;
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => alternarAnunciar(k)}
+                disabled={salvando}
+                style={{ padding: "7px 16px", fontSize: 13, fontWeight: 700, borderRadius: 999, cursor: salvando ? "default" : "pointer", border: `1px solid ${sel ? "#16a34a" : "#d1d5db"}`, background: sel ? "#16a34a" : "#fff", color: sel ? "#fff" : "#374151" }}
+              >
+                {n}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {GATEWAYS.map((gw) => {
         const ehAtivo = ativo === gw.chave;
@@ -200,6 +237,15 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
                 chave={gw.configKey}
                 label={gw.configLabel ?? gw.configKey}
                 valorInicial={configs[gw.configKey] ?? ""}
+                placeholder={gw.configPlaceholder}
+              />
+            )}
+
+            {gw.anunciarKey && !gw.emBreve && (
+              <CampoGateway
+                chave={gw.anunciarKey}
+                label="URL de checkout do Anunciar (R$ 29,90)"
+                valorInicial={configs[gw.anunciarKey] ?? ""}
                 placeholder={gw.configPlaceholder}
               />
             )}

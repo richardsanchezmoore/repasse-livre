@@ -153,6 +153,39 @@ export async function POST(req: Request): Promise<Response> {
   const main = itens.find((i) => i.offer_type === "main") ?? itens[0];
   if (!main) return NextResponse.json({ ok: true, semItem: true });
 
+  // --- Produto ANUNCIAR (low ticket R$29,90): sck=listing_{id} → publica o anúncio
+  // + cria/liga a conta do vendedor (pelo email da compra) pra ele administrar. Não
+  // mexe em premium. Ver project_repasse_livre_low_ticket_vender_anuncio. ---
+  const sckListing = (main.sck ?? "").trim();
+  if (sckListing.startsWith("listing_")) {
+    const anuncioId = sckListing.slice("listing_".length);
+    if (ehRevogar) {
+      // refund/chargeback → despublica (volta pra aguardando_pagamento).
+      await supabaseAdmin.from("opportunities").update({ status: "aguardando_pagamento" }).eq("id", anuncioId);
+      console.log(`[cakto webhook] anúncio ${anuncioId} DESPUBLICADO (${tipo}).`);
+      return NextResponse.json({ ok: true, anuncioRevogado: anuncioId });
+    }
+    // grant: acha/cria a conta do vendedor pelo email da compra (login pronto,
+    // passwordless — email_confirm no createUser) e publica o anúncio nela.
+    const dono = await resolverUsuario("", main.customer, true);
+    const patchAnuncio: Record<string, unknown> = { status: "aprovada" };
+    if (dono?.userId) patchAnuncio.criado_por = dono.userId;
+    const { error: eAnuncio } = await supabaseAdmin.from("opportunities").update(patchAnuncio).eq("id", anuncioId);
+    if (eAnuncio) {
+      console.error(`[cakto webhook] falha ao publicar anúncio ${anuncioId}: ${eAnuncio.message}`);
+      return NextResponse.json({ erro: "falha_publicar" }, { status: 500 });
+    }
+    // Dono NOVO → preenche nome/whatsapp do perfil com o que a Cakto mandou.
+    if (dono?.novo && dono.userId && (main.customer?.name || main.customer?.phone)) {
+      await supabaseAdmin
+        .from("perfis")
+        .update({ nome: main.customer?.name ?? null, whatsapp: main.customer?.phone ?? null })
+        .eq("user_id", dono.userId);
+    }
+    console.log(`[cakto webhook] anúncio ${anuncioId} PUBLICADO (dono=${dono?.userId ?? "?"}${dono?.novo ? " NOVO" : ""}).`);
+    return NextResponse.json({ ok: true, anuncioPublicado: anuncioId });
+  }
+
   // Identidade: sck (logado) OU email do comprador (checkout sem login → acha/cria).
   // `sck=claim_{token}` = guest zero-clique: resolve pelo email e amarra o token à
   // conta (o /bem-vindo troca por sessão). `sck={uuid}` = comprador logado.

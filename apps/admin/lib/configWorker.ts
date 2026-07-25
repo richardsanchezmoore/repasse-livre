@@ -245,6 +245,40 @@ export async function buscarTictoCheckoutUrl(): Promise<string | null> {
 }
 
 /**
+ * Gateway do produto ANUNCIAR (low ticket R$29,90, `worker_config.GATEWAY_ANUNCIAR`):
+ * "cakto" | "ticto" | "". INDEPENDENTE do GATEWAY_ATIVO (que é da assinatura) — assim
+ * o Anunciar roda num gateway e o Planos noutro, sem conflito. Default "cakto".
+ * Server-only. Ver project_repasse_livre_low_ticket_vender_anuncio.
+ */
+export async function buscarGatewayAnunciar(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "GATEWAY_ANUNCIAR")
+    .maybeSingle();
+  return (data?.valor ?? "").trim().toLowerCase() || "cakto";
+}
+
+/**
+ * URL de checkout do produto ANUNCIAR, resolvida pelo gateway do anunciar: lê
+ * CAKTO_CHECKOUT_ANUNCIAR ou TICTO_CHECKOUT_ANUNCIAR conforme buscarGatewayAnunciar.
+ * O /vender manda o vendedor pra cá com `?sck=listing_{id}` — é o que amarra o
+ * pagamento ao anúncio no webhook (galho `listing_`). null = não configurado.
+ * Server-only.
+ */
+export async function buscarCheckoutAnunciar(): Promise<{ url: string; gateway: string } | null> {
+  const gateway = await buscarGatewayAnunciar();
+  const chave = gateway === "ticto" ? "TICTO_CHECKOUT_ANUNCIAR" : "CAKTO_CHECKOUT_ANUNCIAR";
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", chave)
+    .maybeSingle();
+  const url = (data?.valor ?? "").trim();
+  return url.startsWith("http") ? { url, gateway } : null;
+}
+
+/**
  * Preço-âncora (SÓ VISUAL) mostrado riscado na /planos — o "De R$ X" que a
  * oferta de lançamento risca ao lado do valor real cobrado pelo Stripe. Vem do
  * painel (`worker_config.PRECO_ANCORA`, em reais, ex.: "249") pra ajustar a
