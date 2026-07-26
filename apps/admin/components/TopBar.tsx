@@ -97,9 +97,10 @@ export function TopBar({
   }
 
   const podeSelecionarVarios = usuario?.role === "admin" && aba !== "favoritos";
-  // Anunciar exige conta — quem não está logado vai pro login e volta pra
-  // /enviar automaticamente depois (ver app/auth/callback/route.ts).
-  const hrefAnunciar = usuario ? "/enviar" : "/login?redirect=%2Fenviar";
+  // Anunciar grátis é perk de PRO/admin → /enviar. Todo o resto (deslogado OU
+  // não-PRO) vai DIRETO pro produto pago /vender — sem passar por login (a conta
+  // nasce no pagamento). Ver project_repasse_livre_low_ticket_vender_anuncio.
+  const hrefAnunciar = usuario?.premium || usuario?.role === "admin" ? "/enviar" : "/vender";
 
   return (
     <div className="top-bar">

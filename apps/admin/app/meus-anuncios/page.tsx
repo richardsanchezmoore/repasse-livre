@@ -7,6 +7,7 @@ import { TopBar } from "@/components/TopBar";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { formatarMoeda } from "@/lib/formatadores";
+import { BotaoExcluirAnuncio } from "@/components/BotaoExcluirAnuncio";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -41,6 +42,7 @@ export default async function MeusAnunciosPage() {
       .from("opportunities")
       .select("id, veiculo, ano, preco, margem_percentual, status, foto_principal, cidade, estado, data_captura")
       .eq("criado_por", usuario.id)
+      .neq("status", "excluido")
       .order("data_captura", { ascending: false })
       .limit(200),
     contarOportunidades(usuario),
@@ -107,6 +109,7 @@ export default async function MeusAnunciosPage() {
                         >
                           {a.status === "pix_gerado" || a.status === "aguardando_pagamento" ? "Concluir →" : "Ver →"}
                         </a>
+                        <BotaoExcluirAnuncio anuncioId={a.id} veiculo={a.veiculo} />
                       </div>
                     );
                   })}

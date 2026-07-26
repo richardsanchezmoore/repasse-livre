@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Gem, ScanSearch, IdCard, Car, Heart, BellRing, ChevronRight, Lock } from "lucide-react";
+import { Gem, ScanSearch, IdCard, Car, Heart, Tag, BellRing, ChevronRight, Lock } from "lucide-react";
 import { buscarEstadosDisponiveis, contarOportunidades } from "@/components/DiscoveriesBoard";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -183,7 +183,16 @@ export default async function ContaPage() {
                     <ChevronRight size={18} className="conta-atalho-seta" />
                   </Link>
 
-                  <Link href="/enviar" className="conta-atalho">
+                  <Link href="/meus-anuncios" className="conta-atalho">
+                    <Tag size={20} strokeWidth={1.9} className="conta-atalho-icone" />
+                    <span className="conta-atalho-texto">
+                      <span className="conta-atalho-titulo">Meus anúncios</span>
+                      <span className="conta-atalho-sub">Gerencie seus carros anunciados</span>
+                    </span>
+                    <ChevronRight size={18} className="conta-atalho-seta" />
+                  </Link>
+
+                  <Link href={ehPro || ehAdmin ? "/enviar" : "/vender"} className="conta-atalho">
                     <Car size={20} strokeWidth={1.9} className="conta-atalho-icone" />
                     <span className="conta-atalho-texto">
                       <span className="conta-atalho-titulo">Anunciar</span>
