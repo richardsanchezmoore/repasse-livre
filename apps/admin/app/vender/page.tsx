@@ -89,7 +89,7 @@ export default async function VenderPage() {
         {/* Por que aqui e não só no OLX (honesto — sem prometer venda) */}
         <div style={{ background: "#0E2A1A", color: "#EAF3EE", borderRadius: 18, padding: "clamp(22px,4vw,30px)", marginBottom: 30 }}>
           <p style={{ font: `600 clamp(15px,2vw,17px)/1.6 ${CORPO}`, margin: 0 }}>
-            No OLX e no Facebook seu carro compete com lojista, anúncio destaque e milhões de outros. Aqui, por <b style={{ color: "#5AE08C" }}>{PRECO}</b>, ele entra num clube curado de carros <b style={{ color: "#5AE08C" }}>abaixo da FIPE</b> — visto por caçadores de oportunidade.
+            No OLX e no Webmotors, pra seu anúncio aparecer de verdade você <b style={{ color: "#5AE08C" }}>compete com loja</b> — que paga caro por destaque e passa na sua frente. Aqui, por <b style={{ color: "#5AE08C" }}>{PRECO}</b>, seu carro entra numa vitrine só de carros <b style={{ color: "#5AE08C" }}>abaixo da FIPE</b>, no mesmo nível de todos. Sem leilão de destaque.
           </p>
           <p style={{ font: `500 13.5px/1.6 ${CORPO}`, color: "#9FBFAC", margin: "12px 0 0" }}>
             Você não compra promessa de venda — compra o <b style={{ color: "#EAF3EE" }}>lugar certo</b> pra ser visto por quem realmente quer comprar abaixo da tabela.
