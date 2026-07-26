@@ -60,7 +60,7 @@ export default async function VenderPage() {
           Precisa de liquidez? Anuncie onde o comprador certo <span style={{ color: "#16A34A" }}>já está procurando.</span>
         </h1>
         <p style={{ font: `500 clamp(15px,2vw,18px)/1.6 ${CORPO}`, color: "#4a5568", margin: "0 0 22px", maxWidth: 560 }}>
-          Seu carro abaixo da FIPE aparece pra quem está caçando um bom negócio — e não some no meio de milhares de anúncios, como acontece no OLX e no Facebook.
+          Seu carro abaixo da FIPE é exibido para quem realmente compra: lojistas, investidores e repassadores que, na maioria das vezes, pagam à vista. Sem se perder entre milhares de anúncios da OLX e do Facebook.
         </p>
 
         {/* Prova visual: a plataforma onde o anúncio entra */}
