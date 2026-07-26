@@ -57,10 +57,10 @@ export default async function VenderPage() {
           Anuncie seu carro abaixo da FIPE
         </div>
         <h1 style={{ font: `800 clamp(28px,5vw,42px)/1.1 ${TIT}`, letterSpacing: "-.02em", margin: "0 0 16px", textWrap: "balance" }}>
-          Seu carro na frente de quem <span style={{ color: "#16A34A" }}>realmente procura.</span>
+          Seu carro na frente de quem <span style={{ color: "#16A34A" }}>realmente compra.</span>
         </h1>
         <p style={{ font: `500 clamp(15px,2vw,18px)/1.6 ${CORPO}`, color: "#4a5568", margin: "0 0 22px", maxWidth: 560 }}>
-          Anuncie para lojistas, investidores e repassadores que procuram veículos abaixo da FIPE — sem disputar atenção com milhares de anúncios comuns.
+          No OLX e no Facebook seu carro se perde entre curiosos que só olham. Aqui, ele é visto por lojistas, investidores e repassadores — compradores de verdade, muitas vezes à vista.
         </p>
 
         {/* Prova visual: a plataforma onde o anúncio entra */}
