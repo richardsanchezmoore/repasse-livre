@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Target, Lock, Zap, Check, Share2 } from "lucide-react";
+import { Target, Lock, Zap, Check } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
 import { buscarCheckoutAnunciar, buscarPisoMargem } from "@/lib/configWorker";
@@ -33,11 +33,6 @@ const DIFERENCIAIS = [
     icone: Zap,
     titulo: "Referência em liquidez",
     texto: "Uma plataforma pensada pra girar rápido — pra quem precisa vender, não pra quem só está de vitrine.",
-  },
-  {
-    icone: Share2,
-    titulo: "Vai além da vitrine",
-    texto: "Seu carro também é divulgado nas nossas redes sociais (Instagram e TikTok) — alcance que a plataforma sozinha não dá.",
   },
 ];
 
