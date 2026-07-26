@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Target, Lock, Zap, Check } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
+import { RastreioEvento } from "@/components/RastreioEvento";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
 import { buscarCheckoutAnunciar, buscarPisoMargem } from "@/lib/configWorker";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
@@ -43,6 +44,8 @@ export default async function VenderPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#F4F7F5", color: "#0F1B2D", fontFamily: CORPO }}>
+      {/* Dispara ver_oferta → ViewContent (o Meta otimiza a campanha de vendedor por isso). */}
+      <RastreioEvento evento="ver_oferta" params={{ pagina: "vender" }} />
       {/* esconde o marcador nativo do <details> */}
       <style>{`.vender-acc > summary{list-style:none}.vender-acc > summary::-webkit-details-marker{display:none}`}</style>
 
