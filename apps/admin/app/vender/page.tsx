@@ -58,7 +58,7 @@ export default async function VenderPage() {
           Seu carro na frente de quem <span style={{ color: "#16A34A" }}>realmente compra.</span>
         </h1>
         <p style={{ font: `500 clamp(15px,2vw,18px)/1.6 ${CORPO}`, color: "#4a5568", margin: "0 0 22px", maxWidth: 560 }}>
-          No OLX e no Facebook seu carro se perde entre curiosos que só olham. Aqui, ele é visto por lojistas, investidores e repassadores — compradores de verdade, com dinheiro na mão.
+          No OLX e no Facebook seu carro se perde entre curiosos que só olham. Aqui, ele é visto por lojistas, investidores e repassadores — compradores de verdade, com <b style={{ color: "#16A34A" }}>dinheiro na mão</b>.
         </p>
 
         {/* Prova visual: a plataforma onde o anúncio entra */}
