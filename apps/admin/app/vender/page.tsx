@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Target, Lock, Zap, Check } from "lucide-react";
+import { Target, Lock, Zap, Check, Clock } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
 import { RastreioEvento } from "@/components/RastreioEvento";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
 import { buscarCheckoutAnunciar, buscarPisoMargem, buscarPrecoAnunciar } from "@/lib/configWorker";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
+import { buscarNumerosRegionais } from "@/lib/numerosRegionais";
 
 export const metadata: Metadata = {
   title: "Anuncie seu carro abaixo da FIPE — Repasse Livre",
@@ -37,7 +38,7 @@ const DIFERENCIAIS = [
 ];
 
 export default async function VenderPage() {
-  const [kpis, checkout, piso, preco] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar(), buscarPisoMargem(), buscarPrecoAnunciar()]);
+  const [kpis, checkout, piso, preco, numerosRegionais] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar(), buscarPisoMargem(), buscarPrecoAnunciar(), buscarNumerosRegionais(["RS", "SC", "PR"])]);
   const siteKeyTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const milhar = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
 
@@ -137,6 +138,27 @@ export default async function VenderPage() {
         <p style={{ font: `600 12.5px ${CORPO}`, color: "#8a97a0", textAlign: "center", margin: "26px 0 0" }}>
           {milhar(kpis.mapeados)} ofertas mapeadas · 4 fontes monitoradas · plataforma referência em carros abaixo da FIPE
         </p>
+
+        {/* Prova viva grudada no CTA — números por estado (RS/SC/PR), fundo branco
+            pra contrastar com o body cinza. Mesmos dados da /planos-slim. */}
+        {numerosRegionais.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 16 }}>
+            {numerosRegionais.map((n) => (
+              <div key={n.uf} style={{ flex: "1 1 150px", background: "#fff", border: "1px solid #E4EAE6", borderRadius: 14, padding: "14px 16px" }}>
+                <div style={{ font: `800 clamp(22px,3vw,28px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em", lineHeight: 1 }}>{milhar(n.abaixoFipe)}</div>
+                <div style={{ font: `600 12.5px ${CORPO}`, color: "#3a4652", marginTop: 3 }}>
+                  carros abaixo da FIPE {n.preposicao} <b style={{ color: "#1f2937" }}>{n.nome}</b>
+                </div>
+                {n.novas24h > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, font: `600 11.5px ${CORPO}`, color: "#2f6446", marginTop: 5 }}>
+                    <Clock size={12} strokeWidth={2.2} />
+                    <span><b style={{ fontSize: 14 }}>+{milhar(n.novas24h)}</b> nas últimas 24h</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
