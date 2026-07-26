@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { buscarValorFipe } from "@/lib/fipe";
 import { calcularMargemPercentual, classificar, ehElegivel } from "@/lib/margin";
 import { verificarTurnstileToken } from "@/lib/turnstile";
+import { buscarPisoMargem } from "@/lib/configWorker";
 import { PERFIS_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { MOTIVOS_VENDA, type MotivoVenda } from "@/lib/motivoVenda";
 import type { ResultadoEnvio } from "@/app/enviar/actions";
@@ -106,15 +107,16 @@ export async function enviarAnuncioVenda(
     return { erro: "Não foi possível consultar a tabela FIPE para esse veículo. Tente novamente.", sucesso: false };
   }
 
+  const piso = await buscarPisoMargem();
   const margemPercentual = calcularMargemPercentual(preco, fipe.valor);
-  if (!ehElegivel(margemPercentual)) {
+  if (!ehElegivel(margemPercentual, piso)) {
     return {
-      erro: `Esse veículo está ${margemPercentual.toFixed(1)}% abaixo da FIPE — o mínimo exigido é 5%. Ajuste o preço pra entrar.`,
+      erro: `Esse veículo está ${margemPercentual.toFixed(1)}% abaixo da FIPE — o mínimo pra anunciar é ${piso}%. Ajuste o preço pra entrar.`,
       sucesso: false,
     };
   }
 
-  const classificacao = classificar(margemPercentual);
+  const classificacao = classificar(margemPercentual, piso);
   if (!classificacao) {
     return { erro: "Não foi possível classificar essa oportunidade.", sucesso: false };
   }

@@ -8,7 +8,7 @@ import { enviarOportunidade, type ResultadoEnvio } from "@/app/enviar/actions";
 import { DropzoneFotos, type FotoEnviada } from "@/components/DropzoneFotos";
 import { EstadoEnvioFormulario } from "@/components/EstadoEnvioFormulario";
 import { BotaoEnviarFormulario } from "@/components/BotaoEnviarFormulario";
-import { calcularMargemPercentual, ehElegivel, classificar } from "@/lib/margin";
+import { calcularMargemPercentual, ehElegivel, classificar, MARGEM_MINIMA_PADRAO } from "@/lib/margin";
 import { ROTULO_CLASSIFICACAO } from "@/lib/classificacao";
 import { PERFIS_REMETENTE, ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
 import { MOTIVOS_VENDA, ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
@@ -58,6 +58,7 @@ export function FormularioEnvio({
   acaoEnvio = enviarOportunidade,
   mensagemSucesso = "Oportunidade enviada com sucesso! Nossa equipe vai revisar em breve.",
   checkoutBaseUrl,
+  margemMinima = MARGEM_MINIMA_PADRAO,
 }: {
   siteKeyTurnstile: string;
   nomeInicial?: string | null;
@@ -69,6 +70,9 @@ export function FormularioEnvio({
   /** Fluxo pago (/vender): se presente, o sucesso mostra o CTA de pagamento
    *  (checkoutBaseUrl + sck=listing_{anuncioId}). Ausente = só a mensagem. */
   checkoutBaseUrl?: string;
+  /** Piso de margem (% abaixo da FIPE) pra elegibilidade — vem do painel
+   *  (MARGEM_MINIMA_PERCENTUAL). Default 5. */
+  margemMinima?: number;
 }) {
   const [estado, acao] = useFormState(acaoEnvio, ESTADO_INICIAL);
 
@@ -147,7 +151,7 @@ export function FormularioEnvio({
     return calcularMargemPercentual(preco, valorFipe);
   }, [preco, valorFipe]);
 
-  const precoMaximoElegivel = valorFipe ? Math.floor(valorFipe * 0.95) : null;
+  const precoMaximoElegivel = valorFipe ? Math.floor(valorFipe * (1 - margemMinima / 100)) : null;
 
   function marcarTocado(campo: string) {
     setTocado((anterior) => ({ ...anterior, [campo]: true }));
@@ -169,14 +173,14 @@ export function FormularioEnvio({
     motivoVenda: motivoVenda ? null : "Selecione o motivo da venda.",
   };
 
-  const margemInsuficiente = margem !== null && !ehElegivel(margem);
+  const margemInsuficiente = margem !== null && !ehElegivel(margem, margemMinima);
   const formularioValido = Object.values(erros).every((e) => e === null) && margem !== null && !margemInsuficiente;
 
   function erroVisivel(campo: string): string | null {
     return tocado[campo] ? erros[campo] : null;
   }
 
-  const classificacaoPreview = margem !== null && !margemInsuficiente ? classificar(margem) : null;
+  const classificacaoPreview = margem !== null && !margemInsuficiente ? classificar(margem, margemMinima) : null;
 
   return (
     <>
@@ -329,8 +333,8 @@ export function FormularioEnvio({
               <span>
                 {margemInsuficiente
                   ? margem < 0
-                    ? `Valor acima da FIPE! Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}. Mínimo aceito é de 5% abaixo!`
-                    : `Margem de ${margem.toFixed(1)}% — abaixo do mínimo de 5%. Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
+                    ? `Valor acima da FIPE! Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}. Mínimo aceito é de ${margemMinima}% abaixo!`
+                    : `Margem de ${margem.toFixed(1)}% — abaixo do mínimo de ${margemMinima}%. Preço máximo aceito: ${precoMaximoElegivel?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
                   : `Margem de ${margem.toFixed(1)}% abaixo da FIPE — Sua classificação é: ${classificacaoPreview ? ROTULO_CLASSIFICACAO[classificacaoPreview] : ""}.`}
               </span>
             </div>

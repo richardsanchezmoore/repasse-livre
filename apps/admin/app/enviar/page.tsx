@@ -6,6 +6,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
+import { buscarPisoMargem } from "@/lib/configWorker";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -23,9 +24,10 @@ export default async function EnviarOportunidadePage() {
   if (!usuario.premium && usuario.role !== "admin") {
     redirect("/vender");
   }
-  const [contagens, estadosDisponiveis] = await Promise.all([
+  const [contagens, estadosDisponiveis, piso] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(),
+    buscarPisoMargem(),
   ]);
 
   return (
@@ -44,12 +46,13 @@ export default async function EnviarOportunidadePage() {
               <h1>Envie uma oportunidade</h1>
               <p className="pagina-publica-intro">
                 Encontrou um carro abaixo da tabela FIPE? Envie aqui — se a margem for
-                de pelo menos 5%, sua oportunidade entra na fila de revisão.
+                de pelo menos {piso}%, sua oportunidade entra na fila de revisão.
               </p>
               <FormularioEnvio
                 siteKeyTurnstile={siteKeyTurnstile}
                 nomeInicial={usuario.nome}
                 whatsappInicial={usuario.whatsapp}
+                margemMinima={piso}
               />
             </div>
           </main>

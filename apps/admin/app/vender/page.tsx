@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Target, Lock, Zap, Check } from "lucide-react";
+import { Target, Lock, Zap, Check, Share2 } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
-import { buscarCheckoutAnunciar } from "@/lib/configWorker";
+import { buscarCheckoutAnunciar, buscarPisoMargem } from "@/lib/configWorker";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
 export const metadata: Metadata = {
@@ -34,10 +34,15 @@ const DIFERENCIAIS = [
     titulo: "Referência em liquidez",
     texto: "Uma plataforma pensada pra girar rápido — pra quem precisa vender, não pra quem só está de vitrine.",
   },
+  {
+    icone: Share2,
+    titulo: "Vai além da vitrine",
+    texto: "Seu carro também é divulgado nas nossas redes sociais (Instagram e TikTok) — alcance que a plataforma sozinha não dá.",
+  },
 ];
 
 export default async function VenderPage() {
-  const [kpis, checkout] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar()]);
+  const [kpis, checkout, piso] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar(), buscarPisoMargem()]);
   const siteKeyTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const milhar = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
 
@@ -55,7 +60,7 @@ export default async function VenderPage() {
           Precisa de liquidez? Anuncie onde o comprador certo <span style={{ color: "#16A34A" }}>já está procurando.</span>
         </h1>
         <p style={{ font: `500 clamp(15px,2vw,18px)/1.6 ${CORPO}`, color: "#4a5568", margin: "0 0 22px", maxWidth: 560 }}>
-          Seu carro abaixo da FIPE entra numa vitrine curada — vista por quem caça exatamente esse tipo de oportunidade. Não é mais um anúncio perdido na multidão.
+          Seu carro abaixo da FIPE aparece pra quem está caçando um bom negócio — e não some no meio de milhares de anúncios, como acontece no OLX e no Facebook.
         </p>
 
         {/* Prova visual: a plataforma onde o anúncio entra */}
@@ -116,13 +121,14 @@ export default async function VenderPage() {
             </summary>
             <div style={{ marginTop: 20 }}>
               <p style={{ font: `500 13px/1.5 ${CORPO}`, color: "#5a6572", margin: "0 0 16px" }}>
-                Seu carro precisa estar <b>pelo menos 5% abaixo da FIPE</b> pra entrar — é o que atrai o comprador certo. A gente confirma a FIPE na hora.
+                Seu carro precisa estar <b>pelo menos {piso}% abaixo da FIPE</b> pra entrar — é o que atrai o comprador certo. A gente confirma a FIPE na hora.
               </p>
               <FormularioEnvio
                 siteKeyTurnstile={siteKeyTurnstile}
                 acaoEnvio={enviarAnuncioVenda}
                 mensagemSucesso="Anúncio recebido! ✅ Falta só o pagamento via PIX pra publicar — em instantes você garante seu lugar na plataforma."
                 checkoutBaseUrl={checkout?.url}
+                margemMinima={piso}
               />
             </div>
           </details>
