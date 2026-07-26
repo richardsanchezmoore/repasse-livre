@@ -279,6 +279,23 @@ export async function buscarCheckoutAnunciar(): Promise<{ url: string; gateway: 
 }
 
 /**
+ * Preço do produto ANUNCIAR (low ticket) exibido na /vender
+ * (`worker_config.PRECO_ANUNCIAR`, em reais, ex.: "29,90"). Trocar o preço = mudar
+ * aqui E na Cakto (é o checkout Cakto que cobra de fato). Devolve o rótulo já
+ * formatado (R$ 29,90). Default R$ 29,90. Server-only.
+ */
+export async function buscarPrecoAnunciar(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from("worker_config")
+    .select("valor")
+    .eq("chave", "PRECO_ANUNCIAR")
+    .maybeSingle();
+  const n = Number((data?.valor ?? "").replace(/[^\d.,]/g, "").replace(",", "."));
+  if (!Number.isFinite(n) || n <= 0) return "R$ 29,90";
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+}
+
+/**
  * Preço-âncora (SÓ VISUAL) mostrado riscado na /planos — o "De R$ X" que a
  * oferta de lançamento risca ao lado do valor real cobrado pelo Stripe. Vem do
  * painel (`worker_config.PRECO_ANCORA`, em reais, ex.: "249") pra ajustar a

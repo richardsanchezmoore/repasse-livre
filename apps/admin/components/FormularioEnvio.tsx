@@ -13,6 +13,7 @@ import { ROTULO_CLASSIFICACAO } from "@/lib/classificacao";
 import { PERFIS_REMETENTE, ROTULO_PERFIL_REMETENTE } from "@/lib/perfilRemetente";
 import { MOTIVOS_VENDA, ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { UFS, apenasDigitos, formatarMoeda, formatarWhatsapp } from "@/lib/mascaras";
+import { pushDL } from "@/lib/dataLayer";
 import type { FipeOpcao } from "@/lib/fipe";
 
 const ESTADO_INICIAL: ResultadoEnvio = { erro: null, sucesso: false };
@@ -59,6 +60,7 @@ export function FormularioEnvio({
   mensagemSucesso = "Oportunidade enviada com sucesso! Nossa equipe vai revisar em breve.",
   checkoutBaseUrl,
   margemMinima = MARGEM_MINIMA_PADRAO,
+  precoLabel = "R$ 29,90",
 }: {
   siteKeyTurnstile: string;
   nomeInicial?: string | null;
@@ -73,6 +75,8 @@ export function FormularioEnvio({
   /** Piso de margem (% abaixo da FIPE) pra elegibilidade — vem do painel
    *  (MARGEM_MINIMA_PERCENTUAL). Default 5. */
   margemMinima?: number;
+  /** Rótulo do preço no CTA de pagamento (/vender) — vem do painel (PRECO_ANUNCIAR). */
+  precoLabel?: string;
 }) {
   const [estado, acao] = useFormState(acaoEnvio, ESTADO_INICIAL);
 
@@ -193,6 +197,10 @@ export function FormularioEnvio({
             <a
               href={`${checkoutBaseUrl}${checkoutBaseUrl.includes("?") ? "&" : "?"}sck=listing_${estado.anuncioId}`}
               onClick={() => {
+                // Dispara InitiateCheckout (iniciar_checkout→GTM) — é o evento pra
+                // otimizar a campanha de vendedor por INTENÇÃO real (preencheu + clicou
+                // pagar), não por curioso que só entrou na /vender.
+                pushDL("iniciar_checkout", { moeda: "BRL", origem: "vender" });
                 // Auto-login pós-pagamento: guarda o anuncioId como token de claim
                 // (o webhook registra o claim; o /bem-vindo troca por sessão).
                 try {
@@ -203,7 +211,7 @@ export function FormularioEnvio({
               }}
               style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14, background: "#16A34A", color: "#fff", padding: "13px 22px", borderRadius: 12, fontWeight: 800, textDecoration: "none" }}
             >
-              Pagar R$ 29,90 via PIX e publicar →
+              Pagar {precoLabel} via PIX e publicar →
             </a>
           )}
         </div>

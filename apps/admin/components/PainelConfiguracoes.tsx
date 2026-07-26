@@ -146,6 +146,18 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
             em até 5 min.
           </CampoConfig>
 
+          <CampoConfig
+            chave="PRECO_ANUNCIAR"
+            valorInicial={configs["PRECO_ANUNCIAR"] ?? "29,90"}
+            titulo="Preço do Anunciar (R$)"
+            tipo="texto"
+            placeholder="29,90"
+          >
+            Valor <strong>exibido</strong> na página <code>/vender</code> (o low ticket). Informe só o número em
+            reais (ex.: <code>29,90</code>). Deve <strong>bater com o preço do produto na Cakto</strong> — é a
+            Cakto que cobra de fato. Reflete em até 5 min.
+          </CampoConfig>
+
           <h2 style={{ margin: "8px 0 6px", fontSize: 18, fontWeight: 700 }}>Extras da página de vendas</h2>
           <p style={{ margin: "0 0 16px", color: "#6b7280", fontSize: 14 }}>Preço-âncora e contato.</p>
 

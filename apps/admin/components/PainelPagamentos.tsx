@@ -176,7 +176,7 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
 
       {/* Produto Anunciar — gateway independente do da assinatura (não conflita com Planos). */}
       <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: "14px 16px", marginBottom: 18, background: "#fafafa" }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#374151" }}>Gateway do produto “Anunciar” (R$ 29,90)</div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#374151" }}>Gateway do produto “Anunciar” (low ticket)</div>
         <p style={{ margin: "4px 0 10px", fontSize: 12.5, color: "#6b7280", lineHeight: 1.5 }}>
           Independente da assinatura — o Anunciar pode rodar num gateway e o Planos noutro, sem conflito. Preencha a URL de
           checkout do Anunciar no gateway escolhido (campo abaixo, em cada card).
@@ -254,7 +254,7 @@ export function PainelPagamentos({ configs }: { configs: Record<string, string> 
             {gw.anunciarKey && !gw.emBreve && (
               <CampoGateway
                 chave={gw.anunciarKey}
-                label="URL de checkout do Anunciar (R$ 29,90)"
+                label="URL de checkout do Anunciar"
                 valorInicial={configs[gw.anunciarKey] ?? ""}
                 placeholder={gw.configPlaceholder}
               />

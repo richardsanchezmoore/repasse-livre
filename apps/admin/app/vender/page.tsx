@@ -3,7 +3,7 @@ import { Target, Lock, Zap, Check } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
 import { RastreioEvento } from "@/components/RastreioEvento";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
-import { buscarCheckoutAnunciar, buscarPisoMargem } from "@/lib/configWorker";
+import { buscarCheckoutAnunciar, buscarPisoMargem, buscarPrecoAnunciar } from "@/lib/configWorker";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 
 export const metadata: Metadata = {
@@ -17,7 +17,6 @@ export const revalidate = 3600;
 
 const TIT = "Poppins, system-ui, sans-serif";
 const CORPO = "Manrope, system-ui, sans-serif";
-const PRECO = "R$ 29,90";
 
 const DIFERENCIAIS = [
   {
@@ -38,7 +37,7 @@ const DIFERENCIAIS = [
 ];
 
 export default async function VenderPage() {
-  const [kpis, checkout, piso] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar(), buscarPisoMargem()]);
+  const [kpis, checkout, piso, preco] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar(), buscarPisoMargem(), buscarPrecoAnunciar()]);
   const siteKeyTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const milhar = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
 
@@ -103,7 +102,7 @@ export default async function VenderPage() {
         {/* Preço + accordion com o formulário */}
         <div style={{ background: "#fff", border: "1px solid #E4EAE6", borderRadius: 18, padding: "clamp(20px,4vw,28px)" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-            <span style={{ font: `800 clamp(30px,6vw,40px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>{PRECO}</span>
+            <span style={{ font: `800 clamp(30px,6vw,40px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>{preco}</span>
             <span style={{ font: `600 14px ${CORPO}`, color: "#5a6572" }}>pra publicar</span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginBottom: 18 }}>
@@ -128,6 +127,7 @@ export default async function VenderPage() {
                 mensagemSucesso="Anúncio recebido! ✅ Falta só o pagamento via PIX pra publicar — em instantes você garante seu lugar na plataforma."
                 checkoutBaseUrl={checkout?.url}
                 margemMinima={piso}
+                precoLabel={preco}
               />
             </div>
           </details>
