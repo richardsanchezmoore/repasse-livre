@@ -153,6 +153,16 @@ export function Sidebar({
               </span>
               <button
                 type="button"
+                onClick={() => navegar("/meus-anuncios")}
+                className={`sidebar-item ${pathname === "/meus-anuncios" ? "sidebar-item-ativo" : ""}`}
+                title="Meus anúncios"
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <Tag size={18} strokeWidth={1.75} />
+                </span>
+              </button>
+              <button
+                type="button"
                 onClick={() => navegar("/conta")}
                 className={`sidebar-item ${pathname === "/conta" ? "sidebar-item-ativo" : ""}`}
                 title="Minha Conta"
@@ -327,6 +337,16 @@ export function Sidebar({
                 <span className="sidebar-rotulo">Buscas · Alertas</span>
                 <span className="sidebar-contador">Em breve</span>
               </div>
+              <button
+                type="button"
+                onClick={() => navegarEFechar("/meus-anuncios")}
+                className={`sidebar-item ${pathname === "/meus-anuncios" ? "sidebar-item-ativo" : ""}`}
+              >
+                <span className="sidebar-icone" aria-hidden="true">
+                  <Tag size={18} strokeWidth={1.75} />
+                </span>
+                <span className="sidebar-rotulo">Meus anúncios</span>
+              </button>
               <button
                 type="button"
                 onClick={() => navegarEFechar("/conta")}

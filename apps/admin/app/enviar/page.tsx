@@ -18,6 +18,11 @@ export default async function EnviarOportunidadePage() {
   if (!usuario) {
     redirect("/login?redirect=%2Fenviar");
   }
+  // Anunciar de graça virou perk de PRO/admin. Não-PRO → produto pago /vender
+  // (R$29,90 por anúncio). Ver project_repasse_livre_low_ticket_vender_anuncio.
+  if (!usuario.premium && usuario.role !== "admin") {
+    redirect("/vender");
+  }
   const [contagens, estadosDisponiveis] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(),
