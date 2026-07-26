@@ -69,6 +69,11 @@ export async function enviarOportunidade(
   if (!usuario) {
     return { erro: "Você precisa estar logado para anunciar.", sucesso: false };
   }
+  // Anunciar grátis é perk de PRO/admin — não-PRO usa o produto pago /vender.
+  // Guard na action também (defense-in-depth): não basta o redirect da página.
+  if (!usuario.premium && usuario.role !== "admin") {
+    return { erro: "Anunciar grátis é exclusivo do plano PRO. Anuncie seu carro em /vender.", sucesso: false };
+  }
 
   if (!veiculo || !marcaCode || !modeloCode || !anoCode || !precoTexto) {
     return { erro: "Preencha veículo, marca, modelo, ano e preço.", sucesso: false };
