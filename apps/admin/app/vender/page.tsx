@@ -102,11 +102,8 @@ export default async function VenderPage() {
             <span style={{ font: `800 clamp(30px,6vw,40px) ${TIT}`, color: "#16A34A", letterSpacing: "-.02em" }}>{PRECO}</span>
             <span style={{ font: `600 14px ${CORPO}`, color: "#5a6572" }}>pra publicar</span>
           </div>
-          <p style={{ font: `600 13.5px/1.5 ${CORPO}`, color: "#3a4652", margin: "0 0 14px" }}>
-            Pelo preço de um <b>cachorro-quente</b>, seu carro na frente de quem compra — <b>pagamento único</b>, sem mensalidade nem renovação.
-          </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginBottom: 18 }}>
-            {["Só carros abaixo da FIPE", "Sem letra miúda", "Você administra seu anúncio"].map((x) => (
+            {["Paga uma única vez", "Sem vencimento", "Publicação imediata"].map((x) => (
               <span key={x} style={{ display: "inline-flex", alignItems: "center", gap: 6, font: `700 12.5px ${CORPO}`, color: "#2f6446" }}>
                 <Check size={14} strokeWidth={3} color="#16A34A" /> {x}
               </span>
