@@ -41,18 +41,33 @@ export default async function VenderPage() {
   const [kpis, checkout, piso, preco, numerosRegionais] = await Promise.all([buscarKpisTopo(), buscarCheckoutAnunciar(), buscarPisoMargem(), buscarPrecoAnunciar(), buscarNumerosRegionais(["RS", "SC", "PR"])]);
   const siteKeyTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const milhar = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
+  // Totais do Sul (PR+RS+SC) pro banner "ao vivo" — sem GEO, agrega os 3 estados.
+  const novasTotal = numerosRegionais.reduce((s, n) => s + n.novas24h, 0);
+  const abaixoTotal = numerosRegionais.reduce((s, n) => s + n.abaixoFipe, 0);
 
   return (
     <main style={{ minHeight: "100vh", background: "#F4F7F5", color: "#0F1B2D", fontFamily: CORPO }}>
       {/* Dispara ver_oferta → ViewContent (o Meta otimiza a campanha de vendedor por isso). */}
       <RastreioEvento evento="ver_oferta" params={{ pagina: "vender" }} />
-      {/* esconde o marcador nativo do <details> */}
-      <style>{`.vender-acc > summary{list-style:none}.vender-acc > summary::-webkit-details-marker{display:none}`}</style>
+      {/* esconde o marcador nativo do <details> + pulsação do "ao vivo" */}
+      <style>{`.vender-acc > summary{list-style:none}.vender-acc > summary::-webkit-details-marker{display:none}@keyframes rlPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}`}</style>
+
+      {/* Barra "ao vivo" — prova de demanda logo na aterrissagem, sem GEO (agrega PR+RS+SC). */}
+      <div style={{ background: "#0E2A1A", color: "#EAF3EE", textAlign: "center", padding: "10px 16px" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center", font: `700 clamp(12px,1.7vw,13.5px) ${CORPO}` }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 0 3px rgba(34,197,94,.25)", animation: "rlPulse 1.6s ease-in-out infinite", flexShrink: 0 }} />
+          {novasTotal > 0 ? (
+            <span><b style={{ color: "#5AE08C" }}>+{milhar(novasTotal)} carros abaixo da FIPE</b> entraram no Sul (PR·RS·SC) nas últimas 24h</span>
+          ) : (
+            <span><b style={{ color: "#5AE08C" }}>{milhar(abaixoTotal)} carros abaixo da FIPE</b> à procura de dono no Sul — PR · RS · SC</span>
+          )}
+        </span>
+      </div>
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(32px,6vw,64px) clamp(20px,5vw,40px)" }}>
         {/* Hero */}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(22,163,74,.1)", color: "#16A34A", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".14em", textTransform: "uppercase", marginBottom: 18 }}>
-          Anuncie seu carro abaixo da FIPE
+          Compradores procurando agora
         </div>
         <h1 style={{ font: `800 clamp(28px,5vw,42px)/1.1 ${TIT}`, letterSpacing: "-.02em", margin: "0 0 16px", textWrap: "balance" }}>
           Seu carro na frente de quem <span style={{ color: "#16A34A" }}>realmente compra.</span>
@@ -116,7 +131,7 @@ export default async function VenderPage() {
 
           <details className="vender-acc">
             <summary style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#16A34A", color: "#fff", padding: "15px 22px", borderRadius: 12, font: `800 15px ${TIT}` }}>
-              Anunciar meu carro →
+              Qual carro você quer vender? →
             </summary>
             <div style={{ marginTop: 20 }}>
               <p style={{ font: `500 13px/1.5 ${CORPO}`, color: "#5a6572", margin: "0 0 16px" }}>
