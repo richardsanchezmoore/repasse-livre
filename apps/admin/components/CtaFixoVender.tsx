@@ -32,7 +32,13 @@ export function CtaFixoVender() {
     if (!det) return;
     det.open = true;
     setVisivel(false);
-    det.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Rola pro TOPO do form (não pro centro) — assim mostra o parágrafo logo
+    // abaixo do CTA e os primeiros campos, não o meio. rAF pra esperar o
+    // accordion expandir antes de medir a posição.
+    requestAnimationFrame(() => {
+      const y = det.getBoundingClientRect().top + window.scrollY - 12;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    });
   }
 
   return (
