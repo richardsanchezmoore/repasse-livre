@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Target, Lock, Zap, Check, Clock } from "lucide-react";
+import { Target, Lock, Zap, Check, Clock, Car } from "lucide-react";
 import { FormularioEnvio } from "@/components/FormularioEnvio";
 import { RastreioEvento } from "@/components/RastreioEvento";
+import { CtaFixoVender } from "@/components/CtaFixoVender";
 import { enviarAnuncioVenda } from "@/app/vender/actions";
 import { buscarCheckoutAnunciar, buscarPisoMargem, buscarPrecoAnunciar } from "@/lib/configWorker";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
@@ -50,7 +51,7 @@ export default async function VenderPage() {
       {/* Dispara ver_oferta → ViewContent (o Meta otimiza a campanha de vendedor por isso). */}
       <RastreioEvento evento="ver_oferta" params={{ pagina: "vender" }} />
       {/* esconde o marcador nativo do <details> + pulsação do "ao vivo" */}
-      <style>{`.vender-acc > summary{list-style:none}.vender-acc > summary::-webkit-details-marker{display:none}@keyframes rlPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}`}</style>
+      <style>{`.vender-acc > summary{list-style:none;transition:transform .08s,box-shadow .08s}.vender-acc > summary::-webkit-details-marker{display:none}.vender-acc>summary:active{transform:translateY(2px);box-shadow:0 2px 0 #0E7A38,0 8px 18px -10px rgba(22,163,74,.6)}@keyframes rlPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}.cta-fixo-vender{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(244,247,245,.98),rgba(244,247,245,.82) 62%,rgba(244,247,245,0));transform:translateY(135%);transition:transform .32s cubic-bezier(.34,1.42,.5,1);pointer-events:none}.cta-fixo-vender[data-visivel="true"]{transform:translateY(0);pointer-events:auto}.cta-fixo-btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#16A34A;color:#fff;border:none;padding:15px 20px;border-radius:14px;font:800 15px ${TIT};box-shadow:0 4px 0 #0E7A38,0 12px 26px -8px rgba(22,163,74,.6);cursor:pointer;transition:transform .08s,box-shadow .08s}.cta-fixo-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #0E7A38}@media(min-width:641px){.cta-fixo-vender{display:none}}`}</style>
 
       {/* Barra "ao vivo" — prova de demanda logo na aterrissagem, sem GEO (agrega PR+RS+SC). */}
       <div style={{ background: "#0E2A1A", color: "#EAF3EE", textAlign: "center", padding: "10px 16px" }}>
@@ -67,7 +68,8 @@ export default async function VenderPage() {
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(32px,6vw,64px) clamp(20px,5vw,40px)" }}>
         {/* Hero */}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(22,163,74,.1)", color: "#16A34A", padding: "6px 14px", borderRadius: 999, font: `800 11px ${CORPO}`, letterSpacing: ".14em", textTransform: "uppercase", marginBottom: 18 }}>
-          Compradores procurando agora
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16A34A", boxShadow: "0 0 0 3px rgba(22,163,74,.2)", animation: "rlPulse 1.6s ease-in-out infinite", flexShrink: 0 }} />
+          Compradores de verdade, online
         </div>
         <h1 style={{ font: `800 clamp(28px,5vw,42px)/1.1 ${TIT}`, letterSpacing: "-.02em", margin: "0 0 16px", textWrap: "balance" }}>
           Seu carro na frente de quem <span style={{ color: "#16A34A" }}>realmente compra.</span>
@@ -129,9 +131,10 @@ export default async function VenderPage() {
             ))}
           </div>
 
-          <details className="vender-acc">
-            <summary style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#16A34A", color: "#fff", padding: "15px 22px", borderRadius: 12, font: `800 15px ${TIT}` }}>
-              Qual carro você quer vender? →
+          <details className="vender-acc" id="anunciar">
+            <summary style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#16A34A", color: "#fff", padding: "16px 22px", borderRadius: 14, font: `800 15px ${TIT}`, boxShadow: "0 4px 0 #0E7A38, 0 12px 26px -10px rgba(22,163,74,.65)" }}>
+              <Car size={19} strokeWidth={2.4} />
+              Qual carro você quer vender?
             </summary>
             <div style={{ marginTop: 20 }}>
               <p style={{ font: `500 13px/1.5 ${CORPO}`, color: "#5a6572", margin: "0 0 16px" }}>
@@ -175,6 +178,9 @@ export default async function VenderPage() {
           </div>
         )}
       </div>
+
+      {/* CTA fixo no rodapé (mobile) — surge após 5% de scroll, efeito surpresa. */}
+      <CtaFixoVender />
     </main>
   );
 }
