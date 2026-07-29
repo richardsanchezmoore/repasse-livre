@@ -130,6 +130,15 @@
   .card:hover{transform:translateY(-3px);border-color:var(--gold)}
   .card .em{font-size:24px}
   .card-img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--gold-soft);margin-bottom:12px;display:block}
+  /* slider horizontal dos 12 perfis (uma visão, arrasta pro lado) */
+  .pslider{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--gold-soft) transparent}
+  .pslider .card{flex:0 0 clamp(230px,80%,285px);scroll-snap-align:center}
+  .pslider .card-img{aspect-ratio:4/5}
+  .pslider::-webkit-scrollbar{height:8px}
+  .pslider::-webkit-scrollbar-track{background:transparent}
+  .pslider::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:20px}
+  .slider-hint{text-align:center;font:700 12px var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:4px}
   .card h3{font:700 20px/1.15 var(--disp);color:var(--wine);margin:8px 0 6px}
   .card p{font-size:15.5px;color:var(--ink-soft);line-height:1.5}
   .card.secret{background:linear-gradient(160deg,#3f5670,#2c3d52);border-color:var(--gold);
@@ -218,18 +227,15 @@
     <!-- STORYTELLING LETTER -->
     <section style="padding-top:8px">
       <div class="letter frame">
-        <h2>Querida e estimada leitora,</h2>
-        <span class="tag">— de Lady Whistledown do Altar</span>
-        <p class="open">Deixe-me ser completamente honesta com você.</p>
-        <p>Tenho observado os salões paroquiais, os acampamentos de jovens e as redes sociais. E o que vejo me corta o coração: jovens damas virtuosas, que oram e guardam seus corações, caindo nos mesmos contos de fadas de homens que vestem terno no domingo, mas agem como libertinos na segunda-feira.</p>
-        <p>Você conhece o tipo:</p>
+        <h2>Querida leitora, seja honesta.</h2>
+        <span class="tag">— Lady Whistledown do Altar</span>
+        <p>Quantas vezes você já se encantou por um homem que veste terno no domingo — e age como libertino na segunda? Você conhece o tipo:</p>
         <ul>
-          <li>Aquele que recita Cantares de Salomão, mas some quando o assunto é compromisso.</li>
-          <li>O que se diz "líder espiritual", mas tenta controlar até as suas amizades.</li>
-          <li>Ou aquele que tem grandes sonhos de futuro, mas tem alergia ao trabalho duro.</li>
+          <li>Recita Cantares de Salomão, mas some quando o assunto é compromisso.</li>
+          <li>Diz-se "líder espiritual", mas quer controlar até as suas amizades.</li>
+          <li>Tem grandes sonhos de futuro, mas alergia ao trabalho duro.</li>
         </ul>
-        <p>A grande verdade que ninguém te contou é que a Bíblia <strong>não está em silêncio</strong> sobre os relacionamentos modernos. Milhares de anos antes de qualquer romance de época ou aplicativo de namoro, a Palavra de Deus catalogou exatamente os homens que você deve evitar a todo custo se quiser manter sua paz intacta.</p>
-        <p>Chegou a hora de parar de sofrer por pretendentes sem futuro. Apresento-lhe o diário secreto da temporada de pretendentes da igreja.</p>
+        <p>A verdade que ninguém te contou: a Bíblia <strong>não está calada</strong>. Milênios antes dos apps de namoro, a Palavra já catalogou exatamente os homens a evitar — e este diário te entrega a lista.</p>
         <div class="sign">Lady Whistledown do Altar</div>
       </div>
     </section>
@@ -249,7 +255,7 @@
         <span class="kicker">A Coleção de Desastres · 12 Perfis</span>
         <h2>Os 12 Homens Que Você Vai <em>Desmascarar</em></h2>
       </div>
-      <div class="grid">
+      <div class="pslider">
         <div class="card"><img class="card-img" src="/pelafe/ebook/imagens/cena1.jpg" alt="O Cavalheiro de Palavras Doces"><div class="em">🕵️‍♂️</div><h3>1 · O Cavalheiro de Palavras Doces</h3><p>O sedutor de Provérbios que usa a teologia para desarmar a sua guarda.</p></div>
         <div class="card"><img class="card-img" src="/pelafe/ebook/imagens/cena2.jpg" alt="O Lorde de Aparências"><div class="em">👑</div><h3>2 · O Lorde de Aparências</h3><p>O orgulhoso que ama mais o cargo dele na igreja do que o Cristo do altar.</p></div>
         <div class="card"><img class="card-img" src="/pelafe/ebook/imagens/cena3.jpg" alt="O Visconde Iracundo"><div class="em">🌋</div><h3>3 · O Visconde Iracundo</h3><p>O briguento explosivo que disfarça a fúria de "personalidade forte" e "zelo santo".</p></div>
@@ -263,6 +269,7 @@
         <div class="card"><img class="card-img" src="/pelafe/ebook/imagens/cena11.jpg" alt="O Conde Avarento"><div class="em">🪙</div><h3>11 · O Conde Avarento</h3><p>O mão-de-vaca espiritual que disfarça a mesquinhez de "mordomia" e "jejum".</p></div>
         <div class="card"><img class="card-img" src="/pelafe/ebook/imagens/cena12.jpg" alt="O Marquês Crítico"><div class="em">🗡️</div><h3>12 · O Marquês Crítico</h3><p>O acusador que demole a sua autoestima em nome de "te ajudar a crescer".</p></div>
       </div>
+      <p class="slider-hint">← arraste para conhecer os 12 →</p>
     </section>
 
     <!-- VALUE -->
