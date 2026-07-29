@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>O Panfleto Secreto do Altar — O diário escandaloso que os "varões" queriam proibir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#c6d4e1;          /* powder blue base */
+    --azul-2:#aec3d6;
+    --azul-deep:#3f5670;     /* wedgwood */
+    --creme:#fbf6ea;         /* paper */
+    --creme-2:#f3e8ce;
+    --gold:#b0873f;
+    --gold-2:#cba85b;
+    --gold-soft:#e6d3a3;
+    --wine:#7c2b37;
+    --wine-2:#61202a;
+    --ink:#2c2833;
+    --ink-soft:#544d59;
+    --disp:'Playfair Display',Georgia,serif;
+    --serif:'Cormorant Garamond','Times New Roman',serif;
+    --script:'Pinyon Script',cursive;
+    --ui:system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--serif);color:var(--ink);line-height:1.6;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #dbe5ef 0%, transparent 60%),
+      linear-gradient(180deg,#c6d4e1 0%,#bccde0 40%,#c9d6e2 100%);
+    background-attachment:fixed;
+  }
+
+  /* ---------- ornaments ---------- */
+  .flourish{display:block;margin:26px auto;width:min(340px,70%);height:22px;color:var(--gold);opacity:.9}
+  .kicker{font:700 12px/1 var(--ui);letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+  .frame{border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:5px}
+
+  /* ---------- top bar ---------- */
+  .topbar{background:linear-gradient(90deg,var(--wine-2),var(--wine));color:#f6e7c9;
+    text-align:center;font:600 13.5px/1.4 var(--serif);letter-spacing:.02em;padding:10px 16px;
+    border-bottom:1px solid var(--gold)}
+  .topbar b{color:#fff}
+
+  /* ---------- shell ---------- */
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px}
+  section{padding:clamp(38px,6vw,72px) 0}
+
+  /* ---------- hero ---------- */
+  .hero{text-align:center;padding-top:clamp(30px,5vw,54px)}
+  .hero .kicker{margin-bottom:18px}
+  h1.head{font:900 clamp(34px,6.4vw,64px)/1.02 var(--disp);letter-spacing:-.015em;color:var(--ink);
+    text-shadow:0 1px 0 rgba(255,255,255,.4)}
+  h1.head em{font-style:italic;color:var(--wine)}
+  .subhead{font:500 clamp(17px,2.5vw,22px)/1.55 var(--serif);color:var(--ink-soft);
+    max-width:640px;margin:20px auto 0}
+  .subhead b{color:var(--azul-deep);font-weight:600}
+
+  /* ---------- CTA button ---------- */
+  .cta{display:inline-flex;flex-direction:column;align-items:center;gap:3px;
+    background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;
+    font-family:var(--ui);font-weight:700;letter-spacing:.02em;
+    padding:17px 34px;border-radius:4px;border:1px solid var(--gold-2);
+    box-shadow:0 10px 26px -12px rgba(97,32,42,.8), inset 0 0 0 1px rgba(255,255,255,.08);
+    transition:transform .15s, box-shadow .15s}
+  .cta:hover{transform:translateY(-2px);box-shadow:0 16px 34px -12px rgba(97,32,42,.9)}
+  .cta .big{font-size:16.5px;text-transform:uppercase}
+  .cta .small{font-size:12.5px;font-weight:600;color:#f0d9ad;text-transform:none;letter-spacing:.04em}
+  .cta.pulse{animation:pulse 1.9s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 10px 26px -12px rgba(97,32,42,.8)}50%{box-shadow:0 10px 40px -6px rgba(176,135,63,.75)}}
+  .cta-note{font:italic 500 14px var(--serif);color:var(--ink-soft);margin-top:12px}
+
+  /* ---------- product mockup ---------- */
+  .mock-wrap{display:flex;justify-content:center;margin-top:40px}
+  .mock{position:relative;width:min(320px,80%);aspect-ratio:2/3;border-radius:6px;
+    background:
+      repeating-linear-gradient(135deg,#b9cce0 0 14px,#aec3d9 14px 28px);
+    box-shadow:0 30px 60px -24px rgba(38,52,72,.7), 14px 0 22px -18px rgba(0,0,0,.35);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:30px 24px;overflow:hidden}
+  .mock::before{content:"";position:absolute;inset:12px;border:1.5px solid var(--gold);border-radius:3px;
+    box-shadow:inset 0 0 0 1px var(--gold)}
+  .mock .corner{position:absolute;font-size:26px;color:var(--gold);opacity:.85}
+  .mock .corner.tl{top:16px;left:18px}.mock .corner.tr{top:16px;right:18px}
+  .mock .corner.bl{bottom:16px;left:18px}.mock .corner.br{bottom:16px;right:18px}
+  .mock-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5}
+  .mock-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5}
+  .mock .mk{font:700 10px var(--ui);letter-spacing:.24em;text-transform:uppercase;color:var(--azul-deep);margin-bottom:14px}
+  .mock .mt{font:700 26px/1.05 var(--disp);color:var(--ink)}
+  .mock .mt em{color:var(--wine);font-style:italic}
+  .mock .msub{font:italic 500 13px/1.4 var(--serif);color:var(--ink-soft);margin-top:12px}
+  .mock .msign{font:400 26px var(--script);color:var(--gold);margin-top:16px}
+  .mock .placeholder-note{position:absolute;bottom:8px;left:0;right:0;font:600 9px var(--ui);
+    letter-spacing:.12em;text-transform:uppercase;color:rgba(63,86,112,.6)}
+
+  /* ---------- letter card ---------- */
+  .letter{background:
+      linear-gradient(180deg,var(--creme),#f7efd9);
+    border-radius:8px;padding:clamp(28px,5vw,56px);position:relative;
+    box-shadow:0 24px 50px -28px rgba(44,40,51,.55);border:1px solid var(--gold-soft)}
+  .letter::before{content:"";position:absolute;inset:9px;border:1px solid rgba(176,135,63,.5);border-radius:4px;pointer-events:none}
+  .letter h2{font:700 clamp(24px,4vw,34px)/1.15 var(--disp);color:var(--wine);text-align:center;margin-bottom:6px}
+  .letter .tag{display:block;text-align:center;font:italic 600 15px var(--serif);color:var(--gold);margin-bottom:24px}
+  .letter p{font-size:clamp(16px,2.1vw,18.5px);margin-bottom:15px;color:var(--ink)}
+  .letter p.open{font-style:italic;color:var(--ink-soft)}
+  .letter ul{list-style:none;margin:6px 0 18px;padding:0}
+  .letter li{position:relative;padding:8px 0 8px 34px;font-size:17px;border-bottom:1px dashed rgba(176,135,63,.35)}
+  .letter li:last-child{border-bottom:none}
+  .letter li::before{content:"❦";position:absolute;left:6px;top:8px;color:var(--gold)}
+  .sign{font:400 40px/1 var(--script);color:var(--wine);text-align:right;margin-top:18px}
+
+  /* ---------- generic section heads ---------- */
+  .sec-head{text-align:center;margin-bottom:34px}
+  .sec-head h2{font:700 clamp(26px,4.4vw,40px)/1.12 var(--disp);color:var(--ink)}
+  .sec-head h2 em{color:var(--wine);font-style:italic}
+  .sec-head .kicker{display:block;margin-bottom:12px}
+  .sec-head p{font-size:18px;color:var(--ink-soft);max-width:620px;margin:12px auto 0}
+
+  /* ---------- profiles grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .card{background:rgba(251,246,234,.9);border:1px solid var(--gold-soft);border-radius:8px;padding:20px 22px;
+    box-shadow:0 14px 30px -22px rgba(44,40,51,.5);transition:transform .15s,border-color .15s}
+  .card:hover{transform:translateY(-3px);border-color:var(--gold)}
+  .card .em{font-size:24px}
+  .card-img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;border:1px solid var(--gold-soft);margin-bottom:12px;display:block}
+  .card h3{font:700 20px/1.15 var(--disp);color:var(--wine);margin:8px 0 6px}
+  .card p{font-size:15.5px;color:var(--ink-soft);line-height:1.5}
+  .card.secret{background:linear-gradient(160deg,#3f5670,#2c3d52);border-color:var(--gold);
+    display:flex;flex-direction:column;justify-content:center;text-align:center;color:#f3e8ce}
+  .card.secret .lock{font-size:30px}
+  .card.secret h3{color:var(--gold-2);margin-top:6px}
+  .card.secret p{color:#d7cbb0}
+
+  /* ---------- value strip ---------- */
+  .value{background:linear-gradient(180deg,#3f5670,#33475e);color:#f3e8ce;border-radius:12px;
+    padding:clamp(30px,5vw,54px);border:1px solid var(--gold);position:relative}
+  .value .sec-head h2{color:#fff}.value .sec-head .kicker{color:var(--gold-2)}
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;margin-top:10px}
+  .vitem{text-align:center;padding:10px}
+  .vitem .vem{font-size:34px}
+  .vitem h4{font:700 20px var(--disp);color:var(--gold-2);margin:10px 0 8px}
+  .vitem p{font-size:15.5px;color:#e2d7bd;line-height:1.55}
+
+  /* ---------- price ---------- */
+  .price{text-align:center}
+  .price .cross{font:500 22px var(--serif);color:var(--ink-soft);text-decoration:line-through;
+    text-decoration-color:var(--wine);margin:0 8px}
+  .pricebox{display:inline-block;background:var(--creme);border:1px solid var(--gold);border-radius:10px;
+    padding:26px 40px;margin:22px 0 14px;box-shadow:0 20px 40px -26px rgba(44,40,51,.5)}
+  .pricebox .lbl{font:600 13px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);display:block}
+  .pricebox .val{font:900 clamp(46px,9vw,68px)/1 var(--disp);color:var(--wine);margin-top:6px}
+  .pricebox .val small{font-size:.4em;font-weight:700;vertical-align:super}
+  .pricebox .cents{font-size:.55em}
+
+  /* ---------- footer ---------- */
+  footer{text-align:center;padding:40px 20px 60px;color:var(--ink-soft);font:italic 500 15px var(--serif)}
+  footer .sign{font:400 34px var(--script);color:var(--wine);text-align:center;margin-top:8px}
+
+  /* ---------- bonus stack ---------- */
+  .bonus{background:linear-gradient(180deg,#fbf6ea,#f3e8ce);border:1px solid var(--gold);border-radius:12px;padding:clamp(26px,5vw,50px)}
+  .bonus .sec-head h2{color:var(--ink)}
+  .blist{display:grid;gap:13px;margin-top:6px}
+  .bitem{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,.55);border:1px solid var(--gold-soft);border-radius:10px;padding:16px 18px}
+  .bitem .bico{font-size:28px;line-height:1.1;flex-shrink:0}
+  .bitem .btx{flex:1}
+  .bitem .btx h4{font:700 19px var(--disp);color:var(--wine);margin-bottom:3px}
+  .bitem .btx h4 span{font:700 10px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-left:8px;vertical-align:middle}
+  .bitem .btx p{font-size:15.5px;color:var(--ink-soft);line-height:1.45}
+  .bval{text-align:right;flex-shrink:0;font:700 13px var(--ui);color:var(--azul-deep);line-height:1.5}
+  .bval s{color:#b09a86;font-weight:500}
+  .btotal{text-align:center;margin-top:22px;font:italic 500 18px var(--serif);color:var(--ink)}
+  .btotal b{font-style:normal;color:var(--wine);font-weight:700}
+
+  @media(max-width:560px){
+    .letter li{font-size:16px}
+    .cta{width:100%;padding:16px 20px}
+    .bitem{flex-wrap:wrap}.bval{margin-left:44px;text-align:left}
+  }
+</style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">🚨 <b>Alerta da Temporada:</b> o manual secreto que os cavalheiros da igreja não queriam que você lesse.</div>
+
+  <div class="wrap">
+
+    <!-- HERO -->
+    <section class="hero">
+      <span class="kicker">Crônicas do Altar · Temporada de Pretendentes</span>
+      <h1 class="head">"Até quando você vai<br><em>ignorar os sinais?</em>"</h1>
+      <p class="subhead">O Criador já te deu o <b>mapa bíblico</b> para desmascarar os "Príncipes" que só vão destruir o seu coração — e a sua fé.</p>
+
+      <svg class="flourish" viewBox="0 0 340 22" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M10 11 H140"/><path d="M330 11 H200"/>
+        <path d="M140 11 q10 -9 20 0 q10 9 20 0 q10 -9 20 0" fill="none"/>
+        <circle cx="170" cy="11" r="3.2" fill="currentColor" stroke="none"/>
+      </svg>
+
+      <a class="cta pulse" href="#comprar">
+        <span class="big">👉 Quero desmascarar os pretendentes agora</span>
+        <span class="small">Acesso imediato · por apenas R$ 29,90</span>
+      </a>
+
+      <!-- MOCKUP -->
+      <div class="mock-wrap">
+        <div class="mock">
+          <img class="mock-img" src="imagens/capa.jpg" alt="Capa — O Panfleto Secreto do Altar" onerror="this.remove()">
+          <span class="corner tl">❧</span><span class="corner tr">❧</span>
+          <span class="corner bl">❧</span><span class="corner br">❧</span>
+          <div class="mk">Panfleto Secreto</div>
+          <div class="mt">O Panfleto Secreto<br>do <em>Altar</em></div>
+          <div class="msub">O diário escandaloso que os "varões" queriam proibir</div>
+          <div class="msign">Por Uma Dama do Altar</div>
+          <div class="placeholder-note">◈ substituir pelo mockup 3D da capa (Gemini) ◈</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STORYTELLING LETTER -->
+    <section>
+      <div class="letter frame">
+        <h2>Querida e estimada leitora,</h2>
+        <span class="tag">— de Lady Whistledown do Altar</span>
+        <p class="open">Deixe-me ser completamente honesta com você.</p>
+        <p>Tenho observado os salões paroquiais, os acampamentos de jovens e as redes sociais. E o que vejo me corta o coração: jovens damas virtuosas, que oram e guardam seus corações, caindo nos mesmos contos de fadas de homens que vestem terno no domingo, mas agem como libertinos na segunda-feira.</p>
+        <p>Você conhece o tipo:</p>
+        <ul>
+          <li>Aquele que recita Cantares de Salomão, mas some quando o assunto é compromisso.</li>
+          <li>O que se diz "líder espiritual", mas tenta controlar até as suas amizades.</li>
+          <li>Ou aquele que tem grandes sonhos de futuro, mas tem alergia ao trabalho duro.</li>
+        </ul>
+        <p>A grande verdade que ninguém te contou é que a Bíblia <strong>não está em silêncio</strong> sobre os relacionamentos modernos. Milhares de anos antes de qualquer romance de época ou aplicativo de namoro, a Palavra de Deus catalogou exatamente os homens que você deve evitar a todo custo se quiser manter sua paz intacta.</p>
+        <p>Chegou a hora de parar de sofrer por pretendentes sem futuro. Apresento-lhe o diário secreto da temporada de pretendentes da igreja.</p>
+        <div class="sign">Lady Whistledown do Altar</div>
+      </div>
+    </section>
+
+    <!-- WHAT IS IT -->
+    <section>
+      <div class="sec-head">
+        <span class="kicker">O Guia Secreto</span>
+        <h2>O Panfleto Secreto<br>do <em>Altar</em></h2>
+        <p>Este não é apenas mais um e-book teológico maçante. É um <strong>manual de sobrevivência amorosa</strong> ilustrado e escrito com a dose certa de ironia, elegância e sabedoria pastoral profunda. Em formato digital de leitura rápida e devocional, você vai descobrir o diagnóstico exato dos <strong>12 Perfis Bíblicos de Homens a Evitar</strong> antes de entregar o seu coração — ou a sua aliança — para o homem errado.</p>
+      </div>
+    </section>
+
+    <!-- 12 PROFILES -->
+    <section>
+      <div class="sec-head">
+        <span class="kicker">A Coleção de Desastres · 12 Perfis</span>
+        <h2>Os 12 Homens Que Você Vai <em>Desmascarar</em></h2>
+      </div>
+      <div class="grid">
+        <div class="card"><img class="card-img" src="imagens/cena1.jpg" alt="O Cavalheiro de Palavras Doces" onerror="this.remove()"><div class="em">🕵️‍♂️</div><h3>1 · O Cavalheiro de Palavras Doces</h3><p>O sedutor de Provérbios que usa a teologia para desarmar a sua guarda.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena2.jpg" alt="O Lorde de Aparências" onerror="this.remove()"><div class="em">👑</div><h3>2 · O Lorde de Aparências</h3><p>O orgulhoso que ama mais o cargo dele na igreja do que o Cristo do altar.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena3.jpg" alt="O Visconde Iracundo" onerror="this.remove()"><div class="em">🌋</div><h3>3 · O Visconde Iracundo</h3><p>O briguento explosivo que disfarça a fúria de "personalidade forte" e "zelo santo".</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena4.jpg" alt="O Conde Indeciso" onerror="this.remove()"><div class="em">⏳</div><h3>4 · O Conde Indeciso</h3><p>O inconstante que te enrola há anos sob a desculpa de "esperar o tempo de Deus".</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena5.jpg" alt="O Duque Oculto" onerror="this.remove()"><div class="em">🎭</div><h3>5 · O Duque Oculto</h3><p>O hipócrita de vida dupla: santo no culto, libertino quando a carruagem vira a esquina.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena6.jpg" alt="O Marquês Controlador" onerror="this.remove()"><div class="em">⛓️</div><h3>6 · O Marquês Controlador</h3><p>O dominador que chama de "cuidado" e "proteção" o que é isolamento e controle.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena7.jpg" alt="O Barão Escorado" onerror="this.remove()"><div class="em">🛋️</div><h3>7 · O Barão Escorado</h3><p>O preguiçoso de grandes sonhos dourados e alergia crônica ao trabalho duro.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena8.jpg" alt="O Lorde Narcisista" onerror="this.remove()"><div class="em">🦚</div><h3>8 · O Lorde Narcisista</h3><p>O amante de si mesmo que busca uma fã de primeira fila, não uma esposa.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena9.jpg" alt="O Duque Infantil" onerror="this.remove()"><div class="em">🍼</div><h3>9 · O Duque Infantil</h3><p>O rapaz preso ao cordão umbilical da mamãe, que quer uma babá com aliança.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena10.jpg" alt="O Cavalheiro Omissão" onerror="this.remove()"><div class="em">🤐</div><h3>10 · O Cavalheiro Omissão</h3><p>O Adão silencioso que se cala e se esconde quando deveria te proteger.</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena11.jpg" alt="O Conde Avarento" onerror="this.remove()"><div class="em">🪙</div><h3>11 · O Conde Avarento</h3><p>O mão-de-vaca espiritual que disfarça a mesquinhez de "mordomia" e "jejum".</p></div>
+        <div class="card"><img class="card-img" src="imagens/cena12.jpg" alt="O Marquês Crítico" onerror="this.remove()"><div class="em">🗡️</div><h3>12 · O Marquês Crítico</h3><p>O acusador que demole a sua autoestima em nome de "te ajudar a crescer".</p></div>
+      </div>
+    </section>
+
+    <!-- VALUE -->
+    <section>
+      <div class="value frame">
+        <div class="sec-head">
+          <span class="kicker">Muito mais que um e-book</span>
+          <h2>Não é apenas um texto</h2>
+        </div>
+        <div class="vgrid">
+          <div class="vitem"><div class="vem">🎨</div><h4>Design de Época Impecável</h4><p>Formato de panfleto vitoriano para uma leitura extremamente prazerosa e imersiva.</p></div>
+          <div class="vitem"><div class="vem">📝</div><h4>Diário Secreto da Dama</h4><p>Páginas interativas de <em>journaling</em> com perguntas de autoanálise e espaço para as suas orações.</p></div>
+          <div class="vitem"><div class="vem">🛡️</div><h4>O Teste da Temporada</h4><p>Um quiz prático ao final para aplicar ao seu pretendente atual e ver se ele passa no crivo bíblico.</p></div>
+          <div class="vitem"><div class="vem">📱</div><h4>Feito para Ler no Celular</h4><p>Diagramação suave e letras generosas: dá pra <strong>começar a ler agora mesmo</strong>, no seu telefone, deitada na cama, sem apertar os olhos.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BONUS STACK -->
+    <section>
+      <div class="bonus frame">
+        <div class="sec-head">
+          <span class="kicker">O Kit Completo · Bônus Inclusos</span>
+          <h2>E a Dama Ainda Leva <em>de Presente</em></h2>
+          <p>Você não leva apenas o diário — leva a experiência inteira da temporada. Cinco tesouros para discernir, orar e se lembrar do seu valor.</p>
+        </div>
+        <div class="blist">
+          <div class="bitem"><div class="bico">🎁</div><div class="btx"><h4>O Cavalheiro Que Vale o Seu Altar <span>Bônus 1</span></h4><p>O contramodelo positivo — Boaz e Efésios 5. Depois de aprender de quem fugir, o retrato do homem que Deus preparou, para você mirar sem ansiedade.</p></div><div class="bval"><s>R$ 27</s><br>Grátis</div></div>
+          <div class="bitem"><div class="bico">📿</div><div class="btx"><h4>O Diário Secreto da Dama — 7 Noites <span>Bônus 2</span></h4><p>O <em>journaling</em> devocional completo e imprimível: sete noites com versículo, pergunta de autoanálise e espaço para a sua oração.</p></div><div class="bval"><s>R$ 37</s><br>Grátis</div></div>
+          <div class="bitem"><div class="bico">🃏</div><div class="btx"><h4>Cartas Entre Nós <span>Bônus 3</span></h4><p>Um baralho de 24 perguntas que revelam o caráter por baixo do terno de domingo — para os encontros ou a roda de chá com as amigas.</p></div><div class="bval"><s>R$ 27</s><br>Grátis</div></div>
+          <div class="bitem"><div class="bico">🛡️</div><div class="btx"><h4>Guia de Bolso "Verde ou Vermelho?" <span>Bônus 4</span></h4><p>O cartão-resumo da temporada: as 12 bandeiras vermelhas de um lado, os sinais do homem de Deus do outro. Leia em segundos.</p></div><div class="bval"><s>R$ 17</s><br>Grátis</div></div>
+          <div class="bitem"><div class="bico">📱</div><div class="btx"><h4>Wallpapers "Mulher de Valor" <span>Bônus 5</span></h4><p>Versículos de identidade para a tela do celular — porque quem conhece o próprio valor não implora migalhas.</p></div><div class="bval"><s>R$ 17</s><br>Grátis</div></div>
+        </div>
+        <div class="btotal">Só de bônus, <b>R$ 125</b> em tesouros da corte — inclusos hoje, sem custo, no seu exemplar.</div>
+      </div>
+    </section>
+
+    <!-- PRICE -->
+    <section id="comprar" class="price">
+      <div class="sec-head">
+        <span class="kicker">O Veredito do Preço</span>
+        <h2>Quanto vale blindar o seu coração<br>contra o <em>homem errado?</em></h2>
+        <p>Um casamento quebrado destrói anos de vida. Um namoro tóxico drena a sua saúde mental e te afasta de Deus. Curar um coração partido custa caro. Saber exatamente quem evitar deveria custar centenas de reais.</p>
+      </div>
+
+      <p style="font-size:18px;color:var(--ink-soft)">Você não vai investir <span class="cross">R$ 97</span>, nem mesmo <span class="cross">R$ 47</span>.</p>
+
+      <div class="pricebox">
+        <span class="lbl">Garanta seu exemplar hoje por</span>
+        <div class="val"><small>R$</small> 29<span class="cents">,90</span></div>
+      </div>
+
+      <p class="cta-note">Menos do que um café com bolo que você racharia com o pretendente errado.</p>
+
+      <div style="margin-top:26px">
+        <a class="cta pulse" href="#">
+          <span class="big">👉 Comprar o e-book agora e proteger meu futuro</span>
+          <span class="small">Pagamento seguro · acesso imediato</span>
+        </a>
+      </div>
+      <!-- TODO: trocar href="#" pela URL de checkout da Cakto -->
+    </section>
+
+    <svg class="flourish" viewBox="0 0 340 22" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M10 11 H140"/><path d="M330 11 H200"/>
+      <path d="M140 11 q10 -9 20 0 q10 9 20 0 q10 -9 20 0"/>
+      <circle cx="170" cy="11" r="3.2" fill="currentColor" stroke="none"/>
+    </svg>
+
+  </div>
+
+  <footer>
+    Prepare seu chá, ajuste seu espartilho e abra bem os olhos.<br>
+    <span class="sign">Sua, na busca pelo escândalo bíblico</span>
+  </footer>
+
+</body>
+</html>
