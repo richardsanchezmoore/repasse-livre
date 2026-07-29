@@ -198,11 +198,12 @@
   .value{background:linear-gradient(180deg,#3f5670,#33475e);color:#f3e8ce;border-radius:12px;
     padding:clamp(30px,5vw,54px);border:1px solid var(--gold);position:relative}
   .value .sec-head h2{color:#fff}.value .sec-head .kicker{color:var(--gold-2)}
-  .vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;margin-top:10px}
-  .vitem{text-align:center;padding:10px}
-  .vitem .vem{font-size:34px}
-  .vitem h4{font:700 20px var(--disp);color:var(--gold-2);margin:10px 0 8px}
-  .vitem p{font-size:15.5px;color:#e2d7bd;line-height:1.55}
+  .vgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:6px}
+  @media(min-width:640px){.vgrid{grid-template-columns:repeat(4,1fr);gap:18px}}
+  .vitem{text-align:center;padding:6px}
+  .vitem .vem{font-size:29px}
+  .vitem h4{font:700 16px/1.2 var(--disp);color:var(--gold-2);margin:8px 0 6px}
+  .vitem p{font-size:13.5px;color:#e2d7bd;line-height:1.5}
 
   /* ---------- price ---------- */
   .price{text-align:center}
@@ -244,7 +245,7 @@
 <body>
 
   <!-- TOP BAR -->
-  <div class="topbar">❧&ensp;As damas da corte já estão lendo. <b>E você?</b>&ensp;❧</div>
+  <div class="topbar">❧&ensp;As damas da igreja já estão lendo. <b>E você?</b>&ensp;❧</div>
 
   <div class="wrap">
 
@@ -343,7 +344,7 @@
         </div>
         <div class="vgrid">
           <div class="vitem"><div class="vem">🎨</div><h4>Design de Época Impecável</h4><p>Formato de panfleto vitoriano para uma leitura extremamente prazerosa e imersiva.</p></div>
-          <div class="vitem"><div class="vem">📝</div><h4>Diário Secreto da Dama</h4><p>Páginas interativas de <em>journaling</em> com perguntas de autoanálise e espaço para as suas orações.</p></div>
+          <div class="vitem"><div class="vem">📝</div><h4>Diário Secreto da Dama</h4><p>Um diário de reflexão com perguntas de autoanálise e espaço para as suas orações.</p></div>
           <div class="vitem"><div class="vem">🛡️</div><h4>O Teste da Temporada</h4><p>Um quiz prático ao final para aplicar ao seu pretendente atual e ver se ele passa no crivo bíblico.</p></div>
           <div class="vitem"><div class="vem">📱</div><h4>Feito para Ler no Celular</h4><p>Diagramação suave e letras generosas: dá pra <strong>começar a ler agora mesmo</strong>, no seu telefone, deitada na cama, sem apertar os olhos.</p></div>
         </div>
