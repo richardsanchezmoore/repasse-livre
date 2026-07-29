@@ -139,6 +139,52 @@
   .pslider::-webkit-scrollbar-track{background:transparent}
   .pslider::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:20px}
   .slider-hint{text-align:center;font:700 12px var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:4px}
+
+  /* ---------- oferta (bloco de preço) ---------- */
+  .offer{background:linear-gradient(180deg,#fbf6ea,#f3e8ce);border:1px solid var(--gold);border-radius:14px;
+    padding:clamp(26px,4.5vw,44px);text-align:center;box-shadow:0 22px 46px -26px rgba(44,40,51,.5)}
+  .offer .from{font:500 18px var(--serif);color:var(--ink-soft);margin-top:8px}
+  .offer .from s{color:var(--wine);text-decoration-thickness:2px;margin:0 5px}
+  .offer .big-price{font:900 clamp(54px,12vw,80px)/1 var(--disp);color:var(--wine);margin:4px 0 2px}
+  .offer .big-price small{font-size:.34em;font-weight:700;vertical-align:super}
+  .offer .big-price .c{font-size:.5em}
+  .offer .parcela{font:600 14px var(--ui);color:var(--ink-soft);margin-bottom:18px}
+  .guarantee{display:inline-flex;align-items:center;gap:9px;background:#e9f1ec;border:1px solid #b7cfc1;
+    border-radius:40px;padding:9px 20px;font:600 14px var(--ui);color:#2f4f43;margin-top:16px}
+  .urgency{font:italic 600 15.5px var(--serif);color:var(--wine);margin-top:12px}
+
+  /* ---------- prova social (slider) ---------- */
+  .sslider{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;
+    scrollbar-width:thin;scrollbar-color:var(--gold-soft) transparent}
+  .sslider::-webkit-scrollbar{height:8px}
+  .sslider::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:20px}
+  .scard{flex:0 0 clamp(260px,84%,330px);scroll-snap-align:center;background:var(--creme);
+    border:1px solid var(--gold-soft);border-radius:12px;padding:22px 22px 20px;
+    box-shadow:0 14px 30px -22px rgba(44,40,51,.5);display:flex;flex-direction:column;gap:11px}
+  .scard .stars{color:#e0a92e;font-size:17px;letter-spacing:2px}
+  .scard .quote{font:italic 500 17.5px/1.5 var(--serif);color:var(--ink);flex:1}
+  .scard .who{display:flex;align-items:center;gap:11px;font:600 13px var(--ui);color:var(--ink-soft)}
+  .scard .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(160deg,#5E2029,#3A1319);
+    color:#f3e8ce;display:flex;align-items:center;justify-content:center;font:700 16px var(--disp);flex-shrink:0}
+
+  /* ---------- bônus compacto ---------- */
+  .blist.compact{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .bmini{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;
+    background:rgba(255,255,255,.55);border:1px solid var(--gold-soft);border-radius:10px;padding:16px 10px}
+  .bmini .bico{font-size:27px;line-height:1}
+  .bmini h4{font:700 14px/1.25 var(--ui);color:var(--wine)}
+  .bmini .bval{font:700 12px var(--ui);color:var(--azul-deep)}
+  .bmini .bval s{color:#b09a86;font-weight:500}
+
+  /* ---------- CTA fixo (sticky) ---------- */
+  .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:200;display:none;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(97,32,42,0),rgba(97,32,42,.14))}
+  .sticky-cta.show{display:block}
+  .sticky-cta a{display:flex;align-items:center;justify-content:center;gap:10px;max-width:520px;margin:0 auto;
+    background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;
+    border:1px solid var(--gold-2);border-radius:6px;padding:15px 20px;font:700 15.5px var(--ui);letter-spacing:.01em;
+    box-shadow:0 12px 30px -8px rgba(97,32,42,.7)}
+  .sticky-cta a b{color:#f0d9ad;font-weight:800}
   .card h3{font:700 20px/1.15 var(--disp);color:var(--wine);margin:8px 0 6px}
   .card p{font-size:15.5px;color:var(--ink-soft);line-height:1.5}
   .card.secret{background:linear-gradient(160deg,#3f5670,#2c3d52);border-color:var(--gold);
@@ -169,7 +215,7 @@
   .pricebox .cents{font-size:.55em}
 
   /* ---------- footer ---------- */
-  footer{text-align:center;padding:40px 20px 60px;color:var(--ink-soft);font:italic 500 15px var(--serif)}
+  footer{text-align:center;padding:40px 20px 100px;color:var(--ink-soft);font:italic 500 15px var(--serif)}
   footer .sign{font:400 34px var(--script);color:var(--wine);text-align:center;margin-top:8px}
 
   /* ---------- bonus stack ---------- */
@@ -272,6 +318,22 @@
       <p class="slider-hint">← arraste para conhecer os 12 →</p>
     </section>
 
+    <!-- OFERTA (logo após o slider) -->
+    <section id="comprar">
+      <div class="offer frame">
+        <span class="kicker">A Oferta da Temporada</span>
+        <p class="from">De <s>R$ 97</s> por apenas</p>
+        <div class="big-price"><small>R$</small> 29<span class="c">,90</span></div>
+        <p class="parcela">à vista ou em até 3x no cartão · + 5 bônus grátis</p>
+        <a class="cta pulse" href="#">
+          <span class="big">👉 Quero o diário agora</span>
+          <span class="small">Acesso imediato e vitalício</span>
+        </a>
+        <div class="guarantee">🛡️ Garantia incondicional de 7 dias</div>
+        <p class="urgency">⏳ [ urgência aqui — ex.: preço de lançamento só nesta temporada ]</p>
+      </div>
+    </section>
+
     <!-- VALUE -->
     <section>
       <div class="value frame">
@@ -294,40 +356,51 @@
         <div class="sec-head">
           <span class="kicker">O Kit Completo · Bônus Inclusos</span>
           <h2>E a Dama Ainda Leva <em>de Presente</em></h2>
-          <p>Você não leva apenas o diário — leva a experiência inteira da temporada. Cinco tesouros para discernir, orar e se lembrar do seu valor.</p>
+          <p>Leve a temporada inteira: <strong>5 bônus</strong> que acompanham o diário, sem custo.</p>
         </div>
-        <div class="blist">
-          <div class="bitem"><div class="bico">🎁</div><div class="btx"><h4>O Cavalheiro Que Vale o Seu Altar <span>Bônus 1</span></h4><p>O contramodelo positivo — Boaz e Efésios 5. Depois de aprender de quem fugir, o retrato do homem que Deus preparou, para você mirar sem ansiedade.</p></div><div class="bval"><s>R$ 27</s><br>Grátis</div></div>
-          <div class="bitem"><div class="bico">📿</div><div class="btx"><h4>O Diário Secreto da Dama — 7 Noites <span>Bônus 2</span></h4><p>O <em>journaling</em> devocional completo e imprimível: sete noites com versículo, pergunta de autoanálise e espaço para a sua oração.</p></div><div class="bval"><s>R$ 37</s><br>Grátis</div></div>
-          <div class="bitem"><div class="bico">🃏</div><div class="btx"><h4>Cartas Entre Nós <span>Bônus 3</span></h4><p>Um baralho de 24 perguntas que revelam o caráter por baixo do terno de domingo — para os encontros ou a roda de chá com as amigas.</p></div><div class="bval"><s>R$ 27</s><br>Grátis</div></div>
-          <div class="bitem"><div class="bico">🛡️</div><div class="btx"><h4>Guia de Bolso "Verde ou Vermelho?" <span>Bônus 4</span></h4><p>O cartão-resumo da temporada: as 12 bandeiras vermelhas de um lado, os sinais do homem de Deus do outro. Leia em segundos.</p></div><div class="bval"><s>R$ 17</s><br>Grátis</div></div>
-          <div class="bitem"><div class="bico">📱</div><div class="btx"><h4>Wallpapers "Mulher de Valor" <span>Bônus 5</span></h4><p>Versículos de identidade para a tela do celular — porque quem conhece o próprio valor não implora migalhas.</p></div><div class="bval"><s>R$ 17</s><br>Grátis</div></div>
+        <div class="blist compact">
+          <div class="bmini"><div class="bico">🎁</div><h4>O Cavalheiro Que Vale o Seu Altar</h4><div class="bval"><s>R$ 27</s> Grátis</div></div>
+          <div class="bmini"><div class="bico">📿</div><h4>Diário Secreto da Dama — 7 Noites</h4><div class="bval"><s>R$ 37</s> Grátis</div></div>
+          <div class="bmini"><div class="bico">🃏</div><h4>Cartas Entre Nós</h4><div class="bval"><s>R$ 27</s> Grátis</div></div>
+          <div class="bmini"><div class="bico">🛡️</div><h4>Guia "Verde ou Vermelho?"</h4><div class="bval"><s>R$ 17</s> Grátis</div></div>
+          <div class="bmini"><div class="bico">📱</div><h4>Wallpapers "Mulher de Valor"</h4><div class="bval"><s>R$ 17</s> Grátis</div></div>
         </div>
         <div class="btotal">Só de bônus, <b>R$ 125</b> em tesouros da corte — inclusos hoje, sem custo, no seu exemplar.</div>
       </div>
     </section>
 
-    <!-- PRICE -->
-    <section id="comprar" class="price">
+    <!-- PROVA SOCIAL -->
+    <section>
       <div class="sec-head">
-        <span class="kicker">O Veredito do Preço</span>
-        <h2>Quanto vale blindar o seu coração<br>contra o <em>homem errado?</em></h2>
-        <p>Um casamento quebrado destrói anos de vida. Um namoro tóxico drena a sua saúde mental e te afasta de Deus. Curar um coração partido custa caro. Saber exatamente quem evitar deveria custar centenas de reais.</p>
+        <span class="kicker">Damas da Corte · Prova Social</span>
+        <h2>O que as leitoras estão <em>dizendo</em></h2>
       </div>
+      <div class="sslider">
+        <div class="scard"><div class="stars">★★★★★</div><p class="quote">[ depoimento aqui — substituir por relato real de leitora ]</p><div class="who"><span class="av">A</span> [ Nome ], [ cidade ]</div></div>
+        <div class="scard"><div class="stars">★★★★★</div><p class="quote">[ depoimento aqui ]</p><div class="who"><span class="av">M</span> [ Nome ], [ cidade ]</div></div>
+        <div class="scard"><div class="stars">★★★★★</div><p class="quote">[ depoimento aqui ]</p><div class="who"><span class="av">J</span> [ Nome ], [ cidade ]</div></div>
+        <div class="scard"><div class="stars">★★★★★</div><p class="quote">[ depoimento aqui ]</p><div class="who"><span class="av">C</span> [ Nome ], [ cidade ]</div></div>
+        <div class="scard"><div class="stars">★★★★★</div><p class="quote">[ depoimento aqui ]</p><div class="who"><span class="av">R</span> [ Nome ], [ cidade ]</div></div>
+      </div>
+      <p class="slider-hint">← arraste para ler mais →</p>
+      <!-- TODO: preencher com depoimentos REAIS antes de rodar a campanha -->
+    </section>
 
-      <p style="font-size:18px;color:var(--ink-soft)">Você não vai investir <span class="cross">R$ 97</span>, nem mesmo <span class="cross">R$ 47</span>.</p>
-
+    <!-- CTA FINAL -->
+    <section class="price">
+      <div class="sec-head">
+        <span class="kicker">Última Chamada da Temporada</span>
+        <h2>Guarde o seu coração<br>antes da <em>próxima valsa.</em></h2>
+      </div>
       <div class="pricebox">
-        <span class="lbl">Garanta seu exemplar hoje por</span>
+        <span class="lbl">O diário + 5 bônus por</span>
         <div class="val"><small>R$</small> 29<span class="cents">,90</span></div>
       </div>
-
       <p class="cta-note">Menos do que um café com bolo que você racharia com o pretendente errado.</p>
-
-      <div style="margin-top:26px">
+      <div style="margin-top:24px">
         <a class="cta pulse" href="#">
-          <span class="big">👉 Comprar o e-book agora e proteger meu futuro</span>
-          <span class="small">Pagamento seguro · acesso imediato</span>
+          <span class="big">👉 Quero desmascarar os pretendentes agora</span>
+          <span class="small">🛡️ 7 dias de garantia · acesso imediato e vitalício</span>
         </a>
       </div>
       <!-- TODO: trocar href="#" pela URL de checkout da Cakto -->
@@ -345,6 +418,16 @@
     Prepare seu chá, ajuste seu espartilho e abra bem os olhos.<br>
     <span class="sign">Sua, na busca pelo escândalo bíblico</span>
   </footer>
+
+  <!-- CTA fixo (aparece ao rolar) -->
+  <div class="sticky-cta"><a href="#comprar">👑 Garantir o diário — <b>R$ 29,90</b></a></div>
+  <script>
+    (function(){
+      var s=document.querySelector('.sticky-cta'); if(!s) return;
+      function upd(){ ((window.scrollY||document.documentElement.scrollTop) > 700) ? s.classList.add('show') : s.classList.remove('show'); }
+      window.addEventListener('scroll', upd, {passive:true}); upd();
+    })();
+  </script>
 
 </body>
 </html>
