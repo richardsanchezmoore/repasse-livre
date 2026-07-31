@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { usuariaAtual } from "@/lib/auth";
 import { carregarEsquema, totalCampos, nivel, respondida, ehMissao } from "@/lib/dossieDb";
+import { avaliarVeredito } from "@/lib/veredito";
 import CamposDossie from "@/components/CamposDossie";
 import { salvarRespostas } from "../actions";
 
@@ -13,9 +14,11 @@ export default async function FichaDossie({ params }) {
   if (!user) redirect(`/entrar?redirect=/dossie/${params.id}`);
 
   const sb = await criarSupabaseServer();
-  const [{ data: dossie }, esquema] = await Promise.all([
+  const [{ data: dossie }, esquema, regrasRes, cfgRes] = await Promise.all([
     sb.from("corte_dossies").select("id, nome, igreja, emblema").eq("id", params.id).maybeSingle(),
     carregarEsquema(sb),
+    sb.from("corte_regras").select("*").eq("ativo", true).order("ordem"),
+    sb.from("corte_config").select("valor").eq("chave", "veredito_faixas").maybeSingle(),
   ]);
   if (!dossie) notFound();
 
@@ -39,6 +42,8 @@ export default async function FichaDossie({ params }) {
     }
   }
   const n = nivel(respondidos, total);
+  const faixas = Array.isArray(cfgRes.data?.valor) ? cfgRes.data.valor : [];
+  const veredito = avaliarVeredito({ valores, regras: regrasRes.data || [], faixas });
   const salvar = salvarRespostas.bind(null, params.id);
 
   return (
@@ -58,6 +63,22 @@ export default async function FichaDossie({ params }) {
         <div className="bar big" style={{ margin: "10px 0 8px" }}><span style={{ width: `${n.pct}%` }} /></div>
         <div className="c-p" style={{ color: "#e9ddc2" }}>{n.pct}% · {n.msg}</div>
       </section>
+
+      {veredito.houveResposta && veredito.faixa && (
+        <section className={"card vd b-" + veredito.faixa.bandeira} style={{ marginTop: 14 }}>
+          <div className="c-k">O Veredito da Lady</div>
+          <div className="c-t">{veredito.faixa.rotulo}</div>
+          <div className="c-p">{veredito.faixa.mensagem}</div>
+          {veredito.sinais.length > 0 && (
+            <ul className="sinais">
+              {veredito.sinais.map((s, i) => (
+                <li key={i} className={"sinal s-" + s.bandeira}><span className="dot" />{s.mensagem}</li>
+              ))}
+            </ul>
+          )}
+          <p className="vd-nota">Isto é discernimento, não sentença — observe, pergunte e leve ao Senhor em oração.</p>
+        </section>
+      )}
 
       {missoes.length > 0 && (
         <section className="card" style={{ marginTop: 14 }}>

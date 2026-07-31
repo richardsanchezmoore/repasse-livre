@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import SeletorIcone from "@/components/SeletorIcone";
 import {
   criarEtapa, editarEtapa, excluirEtapa,
   criarCampo, atualizarCampo, excluirCampo, alternarAtivoCampo, reordenarCampos,
@@ -108,12 +109,36 @@ function NovaEtapa({ onDone }) {
   }
   return (
     <div className="cf">
-      <div className="trio2">
-        <div><label className="fld-l">Ícone</label><input className="fld" value={icone} onChange={(e) => setIcone(e.target.value)} placeholder="⛪" /></div>
-        <div style={{ flex: 1 }}><label className="fld-l">Nome da etapa</label><input className="fld" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex.: Fé & Igreja" autoFocus /></div>
-      </div>
+      <label className="fld-l">Ícone da etapa</label>
+      <SeletorIcone value={icone} onChange={setIcone} />
+      <label className="fld-l" style={{ marginTop: 10 }}>Nome da etapa</label>
+      <input className="fld" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex.: Fé & Igreja" autoFocus />
       <div className="cf-acts">
         <button type="button" className="pill" onClick={salvar} disabled={busy}>{busy ? "Salvando…" : "Criar etapa"}</button>
+        <button type="button" className="mini" onClick={onDone}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+function EditarEtapa({ etapa, onDone }) {
+  const router = useRouter();
+  const [titulo, setTitulo] = useState(etapa.titulo);
+  const [icone, setIcone] = useState(etapa.icone || "");
+  const [busy, setBusy] = useState(false);
+  async function salvar() {
+    if (!titulo.trim()) return;
+    setBusy(true);
+    try { await editarEtapa(etapa.id, { titulo, icone }); router.refresh(); onDone(); } finally { setBusy(false); }
+  }
+  return (
+    <div className="cf">
+      <label className="fld-l">Ícone da etapa</label>
+      <SeletorIcone value={icone} onChange={setIcone} />
+      <label className="fld-l" style={{ marginTop: 10 }}>Nome da etapa</label>
+      <input className="fld" value={titulo} onChange={(e) => setTitulo(e.target.value)} autoFocus />
+      <div className="cf-acts">
+        <button type="button" className="pill" onClick={salvar} disabled={busy}>{busy ? "Salvando…" : "Salvar etapa"}</button>
         <button type="button" className="mini" onClick={onDone}>Cancelar</button>
       </div>
     </div>
@@ -124,6 +149,7 @@ export default function ConstrutorDossie({ esquema }) {
   const router = useRouter();
   const [form, setForm] = useState(null); // { etapaId, campo }
   const [novaEtapa, setNovaEtapa] = useState(false);
+  const [editEtapaId, setEditEtapaId] = useState(null);
   const [arrast, setArrast] = useState(null); // campo id sendo arrastado
 
   async function soltarEm(etapa, alvoId) {
@@ -145,11 +171,16 @@ export default function ConstrutorDossie({ esquema }) {
     <div>
       {esquema.map((etapa) => (
         <section key={etapa.id} className="adm-etapa">
-          <div className="adm-eh">
-            <span className="adm-ei">{etapa.icone || "❦"}</span>
-            <h2>{etapa.titulo}</h2>
-            <button className="mini danger" onClick={() => apagarEtapa(etapa)} title="Excluir etapa">🗑</button>
-          </div>
+          {editEtapaId === etapa.id ? (
+            <EditarEtapa etapa={etapa} onDone={() => setEditEtapaId(null)} />
+          ) : (
+            <div className="adm-eh">
+              <span className="adm-ei">{etapa.icone || "❦"}</span>
+              <h2>{etapa.titulo}</h2>
+              <button className="mini" onClick={() => setEditEtapaId(etapa.id)} title="Editar etapa">✎</button>
+              <button className="mini danger" onClick={() => apagarEtapa(etapa)} title="Excluir etapa">🗑</button>
+            </div>
+          )}
 
           <div className="adm-campos">
             {etapa.campos.map((c) => (
