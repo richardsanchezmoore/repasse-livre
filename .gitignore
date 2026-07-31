@@ -7,3 +7,4 @@ dist/
 
 # Dumps de scrape (Bright Data) — não versionar
 docs/sd_*.json
+scripts/fb-watchdog.log
