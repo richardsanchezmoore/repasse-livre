@@ -1,0 +1,14 @@
+{
+  "name": "A Corte · Pela Fé",
+  "short_name": "A Corte",
+  "description": "Discernimento, fé e comunidade na Temporada de Pretendentes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbf6ea",
+  "theme_color": "#fbf6ea",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
