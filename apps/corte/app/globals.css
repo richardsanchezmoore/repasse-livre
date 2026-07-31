@@ -117,3 +117,56 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .miss{list-style:none;display:flex;flex-direction:column;gap:6px}
 .miss li{font:500 14.5px var(--serif);color:var(--ink);padding-left:20px;position:relative}
 .miss li::before{content:"◇";position:absolute;left:0;color:var(--gold)}
+
+/* ---- tipos de campo (radio/checkbox como chips, slider) ---- */
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.6);border:1px solid var(--gold-soft);
+  border-radius:999px;padding:8px 13px;font:500 14px var(--serif);color:var(--ink);cursor:pointer}
+.opt-chip:has(input:checked){background:var(--wine);border-color:var(--wine);color:#fdf3dd}
+.opt-chip input{accent-color:var(--gold);width:15px;height:15px}
+.sld{display:flex;align-items:center;gap:12px}
+.sld input[type=range]{flex:1;accent-color:var(--wine)}
+.sld output{min-width:36px;text-align:center;font:700 16px var(--disp);color:var(--wine);
+  background:rgba(255,255,255,.6);border:1px solid var(--gold-soft);border-radius:8px;padding:3px 8px}
+.chk{display:flex;align-items:center;gap:8px;font:500 14px var(--serif);color:var(--ink)}
+.chk input{accent-color:var(--wine);width:16px;height:16px}
+
+/* ---- painel admin ---- */
+.adm{max-width:520px;margin:0 auto;min-height:100dvh;padding-bottom:24px}
+.adm-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px calc(13px + env(safe-area-inset-top));background:rgba(44,61,82,.96);backdrop-filter:blur(8px)}
+.adm-brand{font:700 12px var(--ui);letter-spacing:.18em;text-transform:uppercase;color:var(--gold-soft)}
+.adm-sair{font:700 12px var(--ui);color:#d7cbb0}
+.adm-tabs{display:flex;gap:4px;overflow-x:auto;padding:10px 14px;background:rgba(251,246,234,.9);border-bottom:1px solid var(--gold-soft);position:sticky;top:0}
+.adm-tabs a{white-space:nowrap;font:700 12.5px var(--ui);color:var(--ink-soft);padding:7px 13px;border-radius:999px}
+.adm-tabs a.on{background:var(--wine);color:#fdf3dd}
+
+.adm-etapa{margin-top:16px;background:rgba(255,255,255,.5);border:1px solid var(--gold-soft);border-radius:14px;padding:14px}
+.adm-eh{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.adm-eh h2{flex:1;font:700 18px var(--disp);color:var(--wine)}
+.adm-ei{font-size:20px}
+.adm-campos{display:flex;flex-direction:column;gap:8px}
+.adm-campo{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--gold-soft);border-radius:11px;padding:10px 11px}
+.adm-campo.off{opacity:.5}
+.adm-campo.drag{border-color:var(--wine);box-shadow:0 6px 16px -8px rgba(124,43,55,.5)}
+.grip{cursor:grab;color:var(--gold);font-size:16px;user-select:none}
+.adm-cbody{flex:1;min-width:0}
+.adm-crot{font:600 15px var(--serif);color:var(--ink);line-height:1.2}
+.adm-cmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.tag{font:700 10px var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--wine);background:var(--creme-2);border-radius:6px;padding:2px 7px}
+.tag.ghost{color:var(--ink-soft);background:rgba(0,0,0,.05)}
+.mini{font:700 13px var(--ui);color:var(--ink-soft);background:rgba(255,255,255,.7);border:1px solid var(--gold-soft);
+  border-radius:8px;padding:6px 9px;cursor:pointer;line-height:1}
+.mini.danger{color:var(--wine)}
+.add-campo,.add-etapa{margin-top:10px;width:100%;font:700 13px var(--ui);color:var(--wine);background:rgba(255,255,255,.5);
+  border:1px dashed var(--gold);border-radius:10px;padding:11px;cursor:pointer}
+.add-etapa{margin-top:16px;border-style:solid;background:linear-gradient(160deg,#f7edd4,#efe0be)}
+
+.cf{margin-top:10px;background:#fff;border:1px solid var(--gold);border-radius:12px;padding:14px}
+.cf-acts{display:flex;align-items:center;gap:10px;margin-top:14px}
+.cf-acts .pill{margin-top:0}
+.opt-row{display:flex;gap:7px;margin-bottom:6px}
+.opt-row .fld{flex:1}
+.trio{display:flex;gap:8px}.trio>div{flex:1}
+.trio2{display:flex;gap:8px}
+.trio2>div:first-child{width:72px;flex:none}

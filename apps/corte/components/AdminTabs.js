@@ -1,0 +1,21 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const TABS = [
+  { href: "/admin/dossie", label: "Dossiê" },
+  { href: "/admin/materiais", label: "Materiais" },
+  { href: "/admin/membros", label: "Membros" },
+  { href: "/admin/assinaturas", label: "Assinaturas" },
+];
+
+export default function AdminTabs() {
+  const path = usePathname();
+  return (
+    <nav className="adm-tabs">
+      {TABS.map((t) => (
+        <Link key={t.href} href={t.href} className={path.startsWith(t.href) ? "on" : ""}>{t.label}</Link>
+      ))}
+    </nav>
+  );
+}

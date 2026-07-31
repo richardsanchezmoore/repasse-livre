@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { usuariaAtual } from "@/lib/auth";
-import { nivel } from "@/lib/dossie";
+import { carregarEsquema, totalCampos, nivel } from "@/lib/dossieDb";
 
 export const metadata = { title: "O Dossiê · A Corte" };
 export const dynamic = "force-dynamic";
@@ -12,15 +12,16 @@ export default async function DossiePage() {
   if (!user) redirect("/entrar?redirect=/dossie");
 
   const sb = await criarSupabaseServer();
-  const { data: dossies } = await sb
-    .from("corte_dossies")
-    .select("id, nome, igreja, emblema, atualizado_em")
-    .order("atualizado_em", { ascending: false });
+  const [{ data: dossies }, esquema] = await Promise.all([
+    sb.from("corte_dossies").select("id, nome, igreja, emblema, atualizado_em").order("atualizado_em", { ascending: false }),
+    carregarEsquema(sb),
+  ]);
+  const total = totalCampos(esquema);
 
   const ids = (dossies || []).map((d) => d.id);
   let contagem = {};
   if (ids.length) {
-    const { data: respostas } = await sb.from("corte_respostas").select("dossie_id").in("dossie_id", ids);
+    const { data: respostas } = await sb.from("corte_respostas").select("dossie_id").in("dossie_id", ids).not("campo_id", "is", null);
     for (const r of respostas || []) contagem[r.dossie_id] = (contagem[r.dossie_id] || 0) + 1;
   }
 
@@ -39,7 +40,7 @@ export default async function DossiePage() {
       ) : (
         <div className="shelf" style={{ marginTop: 18 }}>
           {dossies.map((d) => {
-            const n = nivel(contagem[d.id] || 0);
+            const n = nivel(contagem[d.id] || 0, total);
             return (
               <Link key={d.id} href={`/dossie/${d.id}`} className="row">
                 <div className="ri">{d.emblema || "♟"}</div>

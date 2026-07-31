@@ -11,6 +11,7 @@ const ITEMS = [
 
 export default function BottomNav() {
   const path = usePathname();
+  if (path.startsWith("/admin")) return null; // painel admin tem navegação própria
   const active = (href) => (href === "/" ? path === "/" : path.startsWith(href));
   return (
     <nav className="nav">
