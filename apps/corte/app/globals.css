@@ -204,3 +204,24 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .regra-msg{font:500 13.5px var(--serif);color:var(--ink);margin-top:6px}
 .faixa-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed var(--gold-soft)}
 .faixa-row .fld{flex:1;min-width:60px}
+.fld.mono{font-family:var(--ui);font-size:13px;line-height:1.5}
+
+/* ---- leitor (Biblioteca) ---- */
+.ld-head{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:10px}
+.ld-ic{font-size:34px;line-height:1}
+.leitura{font-family:var(--serif);color:var(--ink)}
+.leitura h1{font:900 clamp(24px,6.4vw,30px)/1.1 var(--disp);color:var(--wine);margin:22px 0 8px}
+.leitura h2{font:700 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);margin:26px 0 10px;
+  padding-top:16px;border-top:1px solid var(--gold-soft)}
+.leitura h2:first-child{border-top:none;padding-top:0;margin-top:6px}
+.leitura h3{font:700 18px var(--disp);color:var(--gold);margin:18px 0 6px}
+.leitura p{font-size:clamp(16.5px,4.4vw,18px);line-height:1.72;margin:0 0 14px;text-align:left}
+.leitura strong{color:var(--wine);font-weight:600}
+.leitura em{font-style:italic}
+.leitura blockquote{margin:14px 0;padding:12px 16px;background:rgba(255,255,255,.55);
+  border-left:3px solid var(--gold);border-radius:0 10px 10px 0;font-style:italic;color:var(--ink-soft);
+  font-size:clamp(15px,4vw,17px);line-height:1.6}
+.leitura ul{margin:0 0 14px;padding-left:22px}
+.leitura li{font-size:clamp(16px,4.2vw,17.5px);line-height:1.65;margin-bottom:6px}
+.leitura .ld-rule{border:none;text-align:center;margin:22px 0}
+.leitura .ld-rule::before{content:"❦";color:var(--gold);font-size:16px}
