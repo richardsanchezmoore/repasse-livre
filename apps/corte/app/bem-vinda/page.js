@@ -10,13 +10,13 @@ export default function BemVinda({ searchParams }) {
       <div className="lp-hero">
         <div className="eyebrow">◈ Compra confirmada ◈</div>
         <h1 className="lp-title">Bem-vinda à <em>Corte</em>, dama.</h1>
-        <p className="lp-sub">Sua conta e o seu <strong>Kit</strong> já estão prontos. Receba o seu acesso e comece a investigar — antes do altar.</p>
+        <p className="lp-sub">Sua conta e o seu <strong>Kit</strong> já estão prontos. Crie uma senha e entre <em>na hora</em> — sem esperar e-mail.</p>
       </div>
 
       <section className="card" style={{ margin: "6px 18px" }}>
-        <div className="c-k">Seu acesso</div>
+        <div className="c-k">Crie o seu acesso</div>
         <BemVindaAcesso emailInicial={email} />
-        <p className="opt" style={{ marginTop: 12 }}>Enviamos um link mágico — um clique e você entra, sem senha. Depois, se quiser, defina uma senha no seu Perfil.</p>
+        <p className="opt" style={{ marginTop: 12 }}>Use o mesmo e-mail da compra. É só definir a senha — nada de link no e-mail.</p>
       </section>
 
       <div className="lp-final">

@@ -28,7 +28,12 @@ async function acharOuCriarUsuario(admin, email, nome) {
     email, email_confirm: true, password: crypto.randomUUID() + "Aa1!", user_metadata: { nome: nome || null },
   });
   if (error) throw new Error(error.message);
-  await admin.from("corte_membros").upsert({ user_id: novo.user.id, nome: nome || null }, { onConflict: "user_id" });
+  // Marca setup_pendente: a compradora define a senha em /bem-vinda (sem link mágico),
+  // válido por 2h. Fora disso, usa o login normal / link mágico.
+  await admin.from("corte_membros").upsert(
+    { user_id: novo.user.id, nome: nome || null, setup_pendente: true, setup_expira_em: new Date(Date.now() + 2 * 3600 * 1000).toISOString() },
+    { onConflict: "user_id" }
+  );
   return novo.user;
 }
 

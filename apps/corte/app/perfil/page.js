@@ -4,6 +4,7 @@ import { ehAdmin } from "@/lib/admin";
 import { acessosDaUsuaria } from "@/lib/acessos";
 import DefinirSenha from "@/components/DefinirSenha";
 import LogoutButton from "@/components/LogoutButton";
+import InstalarApp from "@/components/InstalarApp";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,8 @@ export default async function Perfil() {
           </>
         )}
       </section>
+
+      <InstalarApp />
 
       <section className="card" style={{ marginTop: 14 }}>
         <div className="c-k">A sua conta</div>

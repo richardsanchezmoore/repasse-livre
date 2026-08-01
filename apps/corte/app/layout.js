@@ -1,6 +1,7 @@
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import TopBar from "@/components/TopBar";
+import RegistrarSW from "@/components/RegistrarSW";
 
 export const metadata = {
   title: "A Corte · Pela Fé",
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
           {children}
         </div>
         <BottomNav />
+        <RegistrarSW />
       </body>
     </html>
   );

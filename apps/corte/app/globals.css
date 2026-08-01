@@ -44,6 +44,7 @@ a{color:inherit;text-decoration:none}
   border-radius:16px;padding:18px 18px;box-shadow:0 16px 34px -24px rgba(44,40,51,.6);position:relative;overflow:hidden}
 .card.dark{background:linear-gradient(160deg,#4a6079,#2c3d52);border-color:var(--gold);color:#f3e8ce}
 .card.dark .c-k{color:var(--gold-2)} .card.dark .c-t{color:#fff} .card.dark .c-p{color:#d7cbb0}
+.card.dark .c-t em,.card.dark em{color:#d8b1bb}
 .c-k{font:700 10.5px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .c-t{font:700 21px/1.15 var(--disp);color:var(--ink);margin:6px 0 6px}
 .c-t em{font-style:italic;color:var(--wine)}
