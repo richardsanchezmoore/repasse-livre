@@ -505,10 +505,16 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     .map((m) => Number(m[1].replace(/\./g, "")))
     .filter((n) => n >= 1000 && n <= 2_000_000);
 
-  // Localização também ancorada no bloco do principal (senão first-match pega de relacionado).
+  // Localização. ★ 01/08/2026: o FB REORDENOU o reverse_geocode e MOVEU o bloco pra FORA da
+  // janela do principal → cidade/estado vinham null ("sem-localizacao"). Fix: regex TOLERANTE
+  // (city/state em qualquer ordem) tentando a janela e, se não achar, o HTML todo — o 1º
+  // reverse_geocode é o do anúncio PRINCIPAL (vem antes dos ~24 relacionados; validado vs
+  // city_page). O lat/long segue na janela.
   const janLoc = janelaPrincipal(html);
-  const loc = janLoc.match(/"reverse_geocode":\{"city":"([^"]+)","state":"([^"]+)"/);
-  const ll = janLoc.match(/"latitude":([\-\d.]+),"longitude":([\-\d.]+)/);
+  const reLoc = /"reverse_geocode":\{[^}]*?"city":"([^"]+)"[^}]*?"state":"([^"]+)"/;
+  const loc = janLoc.match(reLoc) ?? html.match(reLoc);
+  const reLL = /"latitude":([\-\d.]+),"longitude":([\-\d.]+)/;
+  const ll = janLoc.match(reLL) ?? html.match(reLL);
 
   // Loja/isca: 2+ sinais de discurso de loja no título+descrição (o preço-campo vira entrada).
   const suspeitaIsca = contarSinaisLoja(`${titulo} ${descricao ?? ""}`) >= 2;
@@ -530,7 +536,7 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     precoCampo,
     precosDescricao,
     cidade: loc ? decodar(loc[1]) : null,
-    estado: loc ? loc[2] : null,
+    estado: loc ? decodar(loc[2]).trim().toUpperCase() : null,
     latitude: ll ? Number(ll[1]) : null,
     longitude: ll ? Number(ll[2]) : null,
     descricao,
