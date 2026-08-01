@@ -13,7 +13,25 @@ export function mdParaHtml(md) {
   let html = "";
   let paras = [];
   let itens = [];
-  const flushP = () => { if (paras.length) { html += `<p>${inline(paras.join(" "))}</p>`; paras = []; } };
+  // Parágrafo que começa com "**Rótulo.** ..." vira componente do livro:
+  // Alerta Bíblico → versículo · Diagnóstico → caixa escura · outros → rótulo.
+  const flushP = () => {
+    if (!paras.length) return;
+    const txt = paras.join(" ");
+    const m = txt.match(/^\*\*\s*([^*]+?)\s*\*\*\s*([\s\S]*)$/);
+    if (m) {
+      const rotulo = m[1].replace(/\.\s*$/, "");
+      const resto = m[2];
+      const low = rotulo.toLowerCase();
+      if (/diagn/.test(low)) html += `<div class="ld-diag"><div class="ld-lbl">${inline(rotulo)}</div><p>${inline(resto)}</p></div>`;
+      else if (/alerta|b[íi]blic|vers[íi]cul/.test(low)) html += `<div class="ld-verse"><div class="ld-lbl">${inline(rotulo)}</div>${inline(resto)}</div>`;
+      else html += `<p class="ld-p"><span class="ld-lbl-in">${inline(rotulo)}.</span> ${inline(resto)}</p>`;
+      paras = [];
+      return;
+    }
+    html += `<p>${inline(txt)}</p>`;
+    paras = [];
+  };
   const flushL = () => { if (itens.length) { html += "<ul>" + itens.map((i) => `<li>${inline(i)}</li>`).join("") + "</ul>"; itens = []; } };
 
   for (const raw of linhas) {

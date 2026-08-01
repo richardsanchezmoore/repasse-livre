@@ -37,10 +37,15 @@ export async function POST(req) {
   try { body = await req.json(); } catch { body = {}; }
 
   // A Cakto envia o segredo NO CORPO ("secret"). Fallbacks: query/header.
-  // CORTE_CAKTO_SECRET pode ter VÁRIOS segredos (1 por produto) separados por vírgula.
+  // Segredo do KIT em CORTE_CAKTO_SECRET, da ASSINATURA em CORTE_CAKTO_SECRET_ASSINATURA
+  // (cada um pode ter vários por vírgula). O webhook sabe o produto PELO segredo —
+  // resolve a Cakto não expor um "ID de produto" copiável.
   const url = new URL(req.url);
   const segredo = String(body?.secret || url.searchParams.get("secret") || req.headers.get("x-cakto-secret") || "").trim();
-  const validos = (process.env.CORTE_CAKTO_SECRET || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const lista = (v) => (v || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const secretsKit = lista(process.env.CORTE_CAKTO_SECRET);
+  const secretsAssin = lista(process.env.CORTE_CAKTO_SECRET_ASSINATURA);
+  const validos = [...secretsKit, ...secretsAssin];
   if (!validos.length || !segredo || !validos.includes(segredo)) {
     return NextResponse.json({ erro: "segredo inválido" }, { status: 401 });
   }
@@ -60,8 +65,9 @@ export async function POST(req) {
   const admin = supabaseAdmin();
   const { data: cfg } = await admin.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
   const planos = cfg?.valor || {};
+  // Tipo pelo SEGREDO (cada produto tem o seu) — fallback: ID de produto se preenchido.
   const idAssin = planos?.assinatura?.cakto_produto || "";
-  const tipo = produto && idAssin && String(produto) === String(idAssin) ? "assinatura" : "kit";
+  const tipo = secretsAssin.includes(segredo) || (produto && idAssin && String(produto) === String(idAssin)) ? "assinatura" : "kit";
 
   // aprovado/renovação → concede · reembolso/cancelamento → revoga · resto → ignora
   const cancela = /(refund|estorn|reembol|cancel|chargeback|expired|dispute|revok|inadimpl|overdue|atras)/.test(evento);

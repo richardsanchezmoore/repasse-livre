@@ -66,7 +66,7 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
         <div className="wh"><code>{secret}</code></div>
         <button type="button" className="mini" onClick={() => copiar(secret)} style={{ marginTop: 6 }}>Copiar segredo</button>
 
-        <p className="opt" style={{ marginTop: 12 }}>⚠️ Se a Cakto pedir um segredo <strong>por produto</strong>, coloque todos em <code>CORTE_CAKTO_SECRET</code> na <strong>Vercel</strong> separados por <strong>vírgula</strong> — o webhook aceita qualquer um. Depois, redeploy.</p>
+        <p className="opt" style={{ marginTop: 12 }}>⚠️ Como a Cakto usa um segredo <strong>por produto</strong>, na <strong>Vercel</strong> coloque o segredo do <strong>Kit</strong> em <code>CORTE_CAKTO_SECRET</code> e o da <strong>assinatura</strong> em <code>CORTE_CAKTO_SECRET_ASSINATURA</code> — é pelo segredo que o webhook sabe qual produto liberar (não precisa de ID de produto). Depois, redeploy.</p>
       </section>
     </div>
   );

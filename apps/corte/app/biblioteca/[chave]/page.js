@@ -55,16 +55,17 @@ export default async function Leitor({ params }) {
   }
 
   return (
-    <main className="screen">
+    <main className="screen leitor">
       <Link href="/biblioteca" className="muted" style={{ display: "block", textAlign: "left", padding: 0, marginBottom: 10 }}>← biblioteca</Link>
-      <div className="ld-head">
-        <span className="ld-ic">{m.icone || "📖"}</span>
-        <h1 className="h-title" style={{ fontSize: 27 }}>{m.titulo}</h1>
-        {m.subtitulo && <p className="h-sub" style={{ marginTop: 4 }}>{m.subtitulo}</p>}
+      <div className="livro">
+        <div className="ld-head">
+          <span className="ld-ic">{m.icone || "📖"}</span>
+          <h1 className="h-title" style={{ fontSize: 27 }}>{m.titulo}</h1>
+          {m.subtitulo && <p className="h-sub" style={{ marginTop: 4 }}>{m.subtitulo}</p>}
+        </div>
+        <article className="leitura" dangerouslySetInnerHTML={{ __html: mdParaHtml(m.corpo) }} />
       </div>
-      <article className="leitura" dangerouslySetInnerHTML={{ __html: mdParaHtml(m.corpo) }} />
-      <hr className="divider" />
-      <Link href="/biblioteca" className="muted" style={{ display: "block" }}>← voltar ao acervo</Link>
+      <Link href="/biblioteca" className="muted" style={{ display: "block", marginTop: 16 }}>← voltar ao acervo</Link>
     </main>
   );
 }
