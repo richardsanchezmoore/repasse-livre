@@ -19,6 +19,8 @@ export function mdParaHtml(md) {
   for (const raw of linhas) {
     const l = raw.trim();
     if (l === "") { flushP(); flushL(); continue; }
+    const img = l.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (img) { flushP(); flushL(); html += `<img class="ld-art" src="${img[2]}" alt="${esc(img[1])}" loading="lazy"/>`; continue; }
     if (l === "---" || l === "***") { flushP(); flushL(); html += '<hr class="ld-rule"/>'; continue; }
     if (l.startsWith("### ")) { flushP(); flushL(); html += `<h3>${inline(l.slice(4))}</h3>`; continue; }
     if (l.startsWith("## ")) { flushP(); flushL(); html += `<h2>${inline(l.slice(3))}</h2>`; continue; }

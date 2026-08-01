@@ -227,6 +227,9 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .pw-lock{width:70px;height:70px;border-radius:50%;background:var(--creme-2);border:1px solid var(--gold-soft);
   display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:8px}
 .pw-msg{font:500 15.5px/1.55 var(--serif);color:var(--ink-soft);max-width:320px;margin:8px 0 12px}
+
+/* ---- arte no leitor (fotos do Panfleto) ---- */
+.leitura img,.ld-art{display:block;width:100%;height:auto;border-radius:12px;margin:20px 0;box-shadow:0 14px 30px -20px rgba(44,40,51,.55)}
 .fld.mono{font-family:var(--ui);font-size:13px;line-height:1.5}
 
 /* ---- leitor (Biblioteca) ---- */
