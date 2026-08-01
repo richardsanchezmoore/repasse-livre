@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { ehAdmin } from "@/lib/admin";
+import { acessosDaUsuaria } from "@/lib/acessos";
 import DefinirSenha from "@/components/DefinirSenha";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -10,7 +11,16 @@ export default async function Perfil() {
   const sb = await criarSupabaseServer();
   const { data } = await sb.auth.getUser();
   const user = data.user;
-  const admin = user ? await ehAdmin(sb, user.id) : false;
+  const [admin, acessos, cfg] = await Promise.all([
+    user ? ehAdmin(sb, user.id) : false,
+    user ? acessosDaUsuaria(sb, user.id) : new Set(),
+    sb.from("corte_config").select("valor").eq("chave", "planos").maybeSingle(),
+  ]);
+  const planos = cfg.data?.valor || {};
+  const kit = planos.kit || {};
+  const assin = planos.assinatura || {};
+  const temKit = acessos.has("kit") || acessos.has("assinatura");
+  const temAssin = acessos.has("assinatura");
 
   return (
     <main className="screen">
@@ -27,17 +37,42 @@ export default async function Perfil() {
         </Link>
       )}
 
+      {/* Kit */}
       <section className="card" style={{ marginTop: 14 }}>
-        <div className="c-k">Seu acesso</div>
-        <div className="c-t">Kit da Temporada <em>· vitalício</em></div>
-        <div className="c-p">Você tem acesso ao Panfleto e aos 5 bônus, para sempre.</div>
+        <div className="c-k">{kit.nome || "Kit da Temporada"} · vitalício</div>
+        {temKit ? (
+          <>
+            <div className="c-t">✓ Ativo</div>
+            <div className="c-p">Você tem o Panfleto e os bônus, para sempre.</div>
+          </>
+        ) : (
+          <>
+            <div className="c-t">Ainda não liberado</div>
+            <div className="c-p">{kit.descricao || "O Panfleto + os bônus, acesso vitalício."}</div>
+            {kit.cakto_url
+              ? <a href={kit.cakto_url} className="pill" target="_blank" rel="noopener noreferrer">Liberar o Kit{kit.preco ? ` · ${kit.preco}` : ""} →</a>
+              : <p className="muted" style={{ textAlign: "left" }}>Link em breve.</p>}
+          </>
+        )}
       </section>
 
+      {/* Assinatura */}
       <section className="card dark" style={{ marginTop: 14 }}>
-        <div className="c-k">A Corte · assinatura</div>
-        <div className="c-t">Jornada semanal + comunidade</div>
-        <div className="c-p">Devocional novo toda semana, o Salão das damas e as ferramentas de discernimento.</div>
-        <span className="pill">Começar 7 dias grátis</span>
+        <div className="c-k">{assin.nome || "A Corte"} · assinatura</div>
+        {temAssin ? (
+          <>
+            <div className="c-t">✓ Assinatura ativa</div>
+            <div className="c-p">Jornada semanal, o Salão e as ferramentas de discernimento.</div>
+          </>
+        ) : (
+          <>
+            <div className="c-t">{assin.descricao ? "Jornada semanal + comunidade" : "Em breve"}</div>
+            <div className="c-p">{assin.descricao || "Devocional novo toda semana, o Salão das damas e as ferramentas."}</div>
+            {assin.cakto_url
+              ? <a href={assin.cakto_url} className="pill" target="_blank" rel="noopener noreferrer">{assin.trial_dias ? `Começar ${assin.trial_dias} dias grátis` : "Assinar"}{assin.preco ? ` · ${assin.preco}` : ""} →</a>
+              : <span className="pill" style={{ opacity: 0.6 }}>Em breve</span>}
+          </>
+        )}
       </section>
 
       <section className="card" style={{ marginTop: 14 }}>
