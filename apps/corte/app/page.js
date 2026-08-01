@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { acessosDaUsuaria } from "@/lib/acessos";
+import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
 
@@ -44,9 +45,9 @@ export default async function Home() {
           <div className="c-k">✦ {oferta.tag}</div>
           <div className="c-t">{oferta.p.nome}{oferta.p.preco ? <em> · {oferta.p.preco}</em> : null}</div>
           <div className="c-p">{oferta.p.descricao}</div>
-          <a href={oferta.p.cakto_url} className="pill" target="_blank" rel="noopener noreferrer">
+          <BotaoCompra url={oferta.p.cakto_url} className="pill">
             {oferta.p.trial_dias ? `Começar ${oferta.p.trial_dias} dias grátis` : "Liberar agora"} →
-          </a>
+          </BotaoCompra>
         </section>
       )}
 

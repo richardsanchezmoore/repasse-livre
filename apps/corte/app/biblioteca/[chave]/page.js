@@ -5,6 +5,7 @@ import { usuariaAtual } from "@/lib/auth";
 import { ehAdmin } from "@/lib/admin";
 import { acessosDaUsuaria, temAcesso } from "@/lib/acessos";
 import { mdParaHtml } from "@/lib/markdown";
+import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
 
@@ -43,9 +44,9 @@ export default async function Leitor({ params }) {
             Libere o seu acesso e leia agora mesmo.
           </p>
           {url ? (
-            <a href={url} className="pill" target="_blank" rel="noopener noreferrer">
+            <BotaoCompra url={url} className="pill">
               Liberar {plano?.preco ? `· ${plano.preco}` : "acesso"} →
-            </a>
+            </BotaoCompra>
           ) : (
             <p className="muted">Link de compra ainda não configurado no painel.</p>
           )}

@@ -1,4 +1,5 @@
 import { criarSupabaseServer } from "@/lib/supabaseServer";
+import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -28,7 +29,7 @@ export default async function Assinar() {
         <h1 className="lp-title">O seu <em>refúgio</em> de discernimento</h1>
         <p className="lp-sub">Enquanto o mundo manda você caçar, a Corte te ensina a <strong>ler os sinais</strong> — com fé, elegância e uma pitada de veneno bíblico.</p>
         {url
-          ? <a href={url} className="pill lp-cta" target="_blank" rel="noopener noreferrer">{trial ? `Começar ${trial} dias grátis` : "Assinar agora"} · {preco} →</a>
+          ? <BotaoCompra url={url} className="pill lp-cta">{trial ? `Começar ${trial} dias grátis` : "Assinar agora"} · {preco} →</BotaoCompra>
           : <span className="pill lp-cta" style={{ opacity: 0.6 }}>Em breve</span>}
         <p className="lp-mini">{trial ? `${trial} dias grátis, depois ${preco}. Cancele quando quiser.` : `${preco}. Cancele quando quiser.`}</p>
       </div>
@@ -53,7 +54,7 @@ export default async function Assinar() {
 
       <div className="lp-final">
         {url
-          ? <a href={url} className="pill" target="_blank" rel="noopener noreferrer">{trial ? `Começar ${trial} dias grátis` : "Assinar"} · {preco} →</a>
+          ? <BotaoCompra url={url} className="pill">{trial ? `Começar ${trial} dias grátis` : "Assinar"} · {preco} →</BotaoCompra>
           : <span className="pill" style={{ opacity: 0.6 }}>Em breve</span>}
         <p className="muted">Uma dama sábia não improvisa o coração. — Lady Whistledown do Altar</p>
       </div>

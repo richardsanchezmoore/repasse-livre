@@ -4,6 +4,7 @@ import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { usuariaAtual } from "@/lib/auth";
 import { ehAdmin } from "@/lib/admin";
 import { acessosDaUsuaria } from "@/lib/acessos";
+import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "O Salão · A Corte" };
@@ -44,7 +45,7 @@ export default async function Salao() {
           <div className="c-t">Exclusivo das assinantes</div>
           <div className="c-p">O Salão é o grupo privado das damas d’A Corte. Assine e entre na conversa — com quem entende a sua jornada.</div>
           {assinUrl
-            ? <a href={assinUrl} className="pill" target="_blank" rel="noopener noreferrer">Assinar A Corte →</a>
+            ? <BotaoCompra url={assinUrl} className="pill">Assinar A Corte →</BotaoCompra>
             : <Link href="/assinar" className="pill">Conhecer A Corte →</Link>}
         </section>
       )}

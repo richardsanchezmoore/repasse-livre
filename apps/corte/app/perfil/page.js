@@ -5,6 +5,7 @@ import { acessosDaUsuaria } from "@/lib/acessos";
 import DefinirSenha from "@/components/DefinirSenha";
 import LogoutButton from "@/components/LogoutButton";
 import InstalarApp from "@/components/InstalarApp";
+import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,7 @@ export default async function Perfil() {
             <div className="c-t">Ainda não liberado</div>
             <div className="c-p">{kit.descricao || "O Panfleto + os bônus, acesso vitalício."}</div>
             {kit.cakto_url
-              ? <a href={kit.cakto_url} className="pill" target="_blank" rel="noopener noreferrer">Liberar o Kit{kit.preco ? ` · ${kit.preco}` : ""} →</a>
+              ? <BotaoCompra url={kit.cakto_url} className="pill">Liberar o Kit{kit.preco ? ` · ${kit.preco}` : ""} →</BotaoCompra>
               : <p className="muted" style={{ textAlign: "left" }}>Link em breve.</p>}
           </>
         )}
@@ -70,7 +71,7 @@ export default async function Perfil() {
             <div className="c-t">{assin.descricao ? "Jornada semanal + comunidade" : "Em breve"}</div>
             <div className="c-p">{assin.descricao || "Devocional novo toda semana, o Salão das damas e as ferramentas."}</div>
             {assin.cakto_url
-              ? <a href={assin.cakto_url} className="pill" target="_blank" rel="noopener noreferrer">{assin.trial_dias ? `Começar ${assin.trial_dias} dias grátis` : "Assinar"}{assin.preco ? ` · ${assin.preco}` : ""} →</a>
+              ? <BotaoCompra url={assin.cakto_url} className="pill">{assin.trial_dias ? `Começar ${assin.trial_dias} dias grátis` : "Assinar"}{assin.preco ? ` · ${assin.preco}` : ""} →</BotaoCompra>
               : <span className="pill" style={{ opacity: 0.6 }}>Em breve</span>}
           </>
         )}

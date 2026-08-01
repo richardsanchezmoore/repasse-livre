@@ -60,6 +60,9 @@ export async function POST(req) {
   const email = pick(d0, ["customer.email", "buyer.email", "email"]) || pick(body, ["customer.email", "email"]);
   const nome = pick(d0, ["customer.name", "buyer.name", "name"]);
   const produto = pick(d0, ["product.id", "product.short_id", "product.name", "offer.id", "offer.name", "offer.short_id", "refId", "product_id"]);
+  // sck = ponte de auto-login: o BotaoCompra injeta ?sck=claim_{token} no checkout.
+  const sckRaw = String(pick(d0, ["sck"]) || pick(body, ["sck"]) || "").trim();
+  const claimToken = sckRaw.startsWith("claim_") ? sckRaw.slice(6) : null;
   const evento = String(body.event || pick(body, ["status", "type"]) || pick(d0, ["status"]) || "").toLowerCase();
 
   if (!email) {
@@ -88,7 +91,15 @@ export async function POST(req) {
   if (concede) {
     const expira = tipo === "assinatura" ? new Date(Date.now() + 35 * 24 * 3600 * 1000).toISOString() : null;
     await concederAcesso(admin, user.id, tipo, { origem: "cakto", referencia: String(produto || ""), expira_em: expira });
-    console.log(`[cakto] CONCEDIDO/RENOVADO ${tipo} · ${email} · ${evento}`);
+    // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
+    // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.
+    if (claimToken) {
+      await admin.from("corte_claims").upsert(
+        { token: claimToken, user_id: user.id, email, status: "ready", criado_em: new Date().toISOString() },
+        { onConflict: "token" }
+      );
+    }
+    console.log(`[cakto] CONCEDIDO/RENOVADO ${tipo} · ${email} · ${evento}${claimToken ? " [claim]" : ""}`);
     return NextResponse.json({ ok: true, acao: "concedido", tipo });
   }
   console.log(`[cakto] ignorado · ${evento} · ${email}`);
