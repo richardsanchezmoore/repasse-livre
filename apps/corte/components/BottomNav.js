@@ -12,6 +12,8 @@ const ITEMS = [
 export default function BottomNav() {
   const path = usePathname();
   if (path.startsWith("/admin")) return null; // painel admin tem navegação própria
+  // fluxo do dossiê (/dossie/<id>) é imersivo e tem o próprio ✕; a lista e /novo mantêm a nav
+  if (path.startsWith("/dossie/") && path !== "/dossie/novo") return null;
   const active = (href) => (href === "/" ? path === "/" : path.startsWith(href));
   return (
     <nav className="nav">

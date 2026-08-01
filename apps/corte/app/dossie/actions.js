@@ -37,6 +37,28 @@ export async function criarDossie(formData) {
 }
 
 /** Salva todas as respostas do dossiê (schema dinâmico), por campo_id. */
+/** Salva UMA resposta (autosave do fluxo gamificado). valor: string | array | number | null. */
+export async function salvarUmaResposta(dossieId, campoId, valor) {
+  const sb = await criarSupabaseServer();
+  const { data: auth } = await sb.auth.getUser();
+  const user = auth.user;
+  if (!user) return { erro: "sem sessão" };
+
+  const vazio = valor == null || (Array.isArray(valor) && valor.length === 0) || (typeof valor === "string" && valor.trim() === "");
+  if (vazio) {
+    await sb.from("corte_respostas").delete().eq("dossie_id", dossieId).eq("campo_id", campoId);
+  } else {
+    const { error } = await sb.from("corte_respostas").upsert(
+      { dossie_id: dossieId, user_id: user.id, campo_id: campoId, valor },
+      { onConflict: "dossie_id,campo_id" }
+    );
+    if (error) return { erro: error.message };
+  }
+  await sb.from("corte_dossies").update({ atualizado_em: new Date().toISOString() }).eq("id", dossieId);
+  revalidatePath("/dossie");
+  return { ok: true };
+}
+
 export async function salvarRespostas(dossieId, formData) {
   const sb = await criarSupabaseServer();
   const { data: auth } = await sb.auth.getUser();
