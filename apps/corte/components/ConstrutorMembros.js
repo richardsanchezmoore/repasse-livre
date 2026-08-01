@@ -1,0 +1,39 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { alternarAdmin, definirAcesso } from "@/app/admin/membros/actions";
+
+export default function ConstrutorMembros({ membros }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [q, setQ] = useState("");
+
+  async function acao(fn) { setBusy(true); try { await fn(); router.refresh(); } finally { setBusy(false); } }
+  const termo = q.trim().toLowerCase();
+  const lista = termo ? membros.filter((m) => (m.email + " " + (m.nome || "")).toLowerCase().includes(termo)) : membros;
+
+  return (
+    <div>
+      <input className="fld" placeholder="Buscar por e-mail ou nome…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="shelf" style={{ marginTop: 12 }}>
+        {lista.map((m) => (
+          <div key={m.user_id} className="memb">
+            <div className="memb-top">
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="memb-nome">{m.nome || "sem nome"}{m.is_admin && <span className="tag" style={{ marginLeft: 6 }}>ADMIN</span>}</div>
+                <div className="memb-email">{m.email}</div>
+              </div>
+              <div className="memb-dos">{m.dossies} 🗂️</div>
+            </div>
+            <div className="memb-chips">
+              <button type="button" className={"chip" + (m.kit ? " on" : "")} disabled={busy} onClick={() => acao(() => definirAcesso(m.user_id, "kit", !m.kit))}>📕 Kit</button>
+              <button type="button" className={"chip" + (m.assinatura ? " on" : "")} disabled={busy} onClick={() => acao(() => definirAcesso(m.user_id, "assinatura", !m.assinatura))}>✦ Assinatura</button>
+              <button type="button" className={"chip" + (m.is_admin ? " on" : "")} disabled={busy} onClick={() => acao(() => alternarAdmin(m.user_id, !m.is_admin))}>👑 Admin</button>
+            </div>
+          </div>
+        ))}
+        {lista.length === 0 && <p className="muted" style={{ textAlign: "left" }}>Nenhum membro encontrado.</p>}
+      </div>
+    </div>
+  );
+}
