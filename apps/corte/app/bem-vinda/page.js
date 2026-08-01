@@ -1,4 +1,5 @@
 import BemVindaAcesso from "@/components/BemVindaAcesso";
+import InstalarApp from "@/components/InstalarApp";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Bem-vinda à Corte" };
@@ -18,6 +19,10 @@ export default function BemVinda({ searchParams }) {
         <BemVindaAcesso emailInicial={email} />
         <p className="opt" style={{ marginTop: 12 }}>Use o mesmo e-mail da compra. É só definir a senha — nada de link no e-mail.</p>
       </section>
+
+      <div style={{ margin: "14px 18px 0" }}>
+        <InstalarApp titulo="📲 Já deixe A Corte na tela inicial" />
+      </div>
 
       <div className="lp-final">
         <p className="muted">Já tem senha? <a href="/entrar" style={{ color: "var(--wine)", borderBottom: "1px solid var(--gold)" }}>Entrar</a></p>

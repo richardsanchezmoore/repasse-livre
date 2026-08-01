@@ -247,6 +247,17 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .lp-bt{font:700 16px var(--disp);color:var(--wine)}
 .lp-bd{font:500 14px/1.45 var(--serif);color:var(--ink-soft);margin-top:2px}
 .lp-final{text-align:center;padding:18px 22px 8px}
+
+/* ---- instalar app (auto-detecta a plataforma) ---- */
+.inst-opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;margin-top:8px}
+.inst-ic{font-size:30px;flex:none;line-height:1}
+.inst-t{font:700 15.5px var(--disp);color:var(--wine)}
+.inst-d{font:500 13px/1.42 var(--serif);color:var(--ink-soft);margin-top:2px}
+.inst-btn{background:linear-gradient(180deg,var(--wine),var(--wine-2));border:1px solid var(--gold-2);border-radius:12px;padding:14px 16px;cursor:pointer;transition:transform .1s}
+.inst-btn:active{transform:scale(.98)}
+.inst-btn .inst-t{color:#fff}
+.inst-btn .inst-d{color:#f0dcc2}
+.inst-go{margin-left:auto;font:800 18px var(--ui);color:#fdf3dd}
 .fld.mono{font-family:var(--ui);font-size:13px;line-height:1.5}
 
 /* ---- leitor (Biblioteca) ---- */
