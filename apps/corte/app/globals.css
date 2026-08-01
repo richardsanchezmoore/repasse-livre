@@ -217,6 +217,8 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .chip{font:700 12px var(--ui);color:var(--ink-soft);background:rgba(0,0,0,.04);border:1px solid var(--gold-soft);border-radius:99px;padding:7px 12px;cursor:pointer}
 .chip.on{background:var(--wine);color:#fdf3dd;border-color:var(--wine)}
 .chip:disabled{opacity:.5}
+.chip-del{color:#a3324c;border-color:rgba(163,50,76,.35);margin-left:auto}
+.chip-del:hover{background:rgba(163,50,76,.1)}
 
 /* ---- webhook box (Assinaturas) ---- */
 .wh{background:var(--creme-2);border:1px solid var(--gold-soft);border-radius:9px;padding:10px;overflow-x:auto}

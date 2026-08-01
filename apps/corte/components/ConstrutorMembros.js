@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { alternarAdmin, definirAcesso } from "@/app/admin/membros/actions";
+import { alternarAdmin, definirAcesso, excluirUsuario } from "@/app/admin/membros/actions";
 
 export default function ConstrutorMembros({ membros }) {
   const router = useRouter();
@@ -9,6 +9,12 @@ export default function ConstrutorMembros({ membros }) {
   const [q, setQ] = useState("");
 
   async function acao(fn) { setBusy(true); try { await fn(); router.refresh(); } finally { setBusy(false); } }
+  async function excluir(m) {
+    if (!confirm(`Excluir definitivamente ${m.email}?\nApaga a conta, acessos e dossiês. Não dá pra desfazer.`)) return;
+    setBusy(true);
+    try { const r = await excluirUsuario(m.user_id); if (r?.erro) alert(r.erro); router.refresh(); }
+    finally { setBusy(false); }
+  }
   const termo = q.trim().toLowerCase();
   const lista = termo ? membros.filter((m) => (m.email + " " + (m.nome || "")).toLowerCase().includes(termo)) : membros;
 
@@ -29,6 +35,7 @@ export default function ConstrutorMembros({ membros }) {
               <button type="button" className={"chip" + (m.kit ? " on" : "")} disabled={busy} onClick={() => acao(() => definirAcesso(m.user_id, "kit", !m.kit))}>📕 Kit</button>
               <button type="button" className={"chip" + (m.assinatura ? " on" : "")} disabled={busy} onClick={() => acao(() => definirAcesso(m.user_id, "assinatura", !m.assinatura))}>✦ Assinatura</button>
               <button type="button" className={"chip" + (m.is_admin ? " on" : "")} disabled={busy} onClick={() => acao(() => alternarAdmin(m.user_id, !m.is_admin))}>👑 Admin</button>
+              <button type="button" className="chip chip-del" disabled={busy} onClick={() => excluir(m)} title="Excluir usuário">🗑️ Excluir</button>
             </div>
           </div>
         ))}

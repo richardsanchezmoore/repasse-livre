@@ -20,6 +20,25 @@ export async function alternarAdmin(userId, val) {
   refresh();
 }
 
+export async function excluirUsuario(userId) {
+  await garantirAdmin();
+  // Não deixa o admin apagar a própria conta por engano.
+  const sb = await criarSupabaseServer();
+  const { data } = await sb.auth.getUser();
+  if (data.user?.id === userId) return { erro: "Você não pode excluir a sua própria conta." };
+  const admin = supabaseAdmin();
+  // Limpa os vínculos e a conta de auth (uso: excluir contas de teste).
+  await admin.from("corte_claims").delete().eq("user_id", userId);
+  await admin.from("corte_respostas").delete().eq("user_id", userId);
+  await admin.from("corte_dossies").delete().eq("user_id", userId);
+  await admin.from("corte_acessos").delete().eq("user_id", userId);
+  await admin.from("corte_membros").delete().eq("user_id", userId);
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) return { erro: error.message };
+  refresh();
+  return { ok: true };
+}
+
 export async function definirAcesso(userId, tipo, conceder) {
   await garantirAdmin();
   const admin = supabaseAdmin();
