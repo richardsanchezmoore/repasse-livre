@@ -35,5 +35,5 @@ export async function definirAcessoBoasVindas({ email, senha, confirma }) {
   const sb = await criarSupabaseServer();
   const { error: e2 } = await sb.auth.signInWithPassword({ email, password: senha });
   if (e2) return { erro: "Senha definida, mas o login automático falhou. Toque em Entrar." };
-  redirect("/dossie");
+  redirect("/biblioteca");
 }

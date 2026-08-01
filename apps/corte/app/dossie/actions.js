@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { carregarEsquema } from "@/lib/dossieDb";
+import { ehAdmin } from "@/lib/admin";
+import { acessosDaUsuaria } from "@/lib/acessos";
 
 async function garantirMembro(sb, user) {
   await sb.from("corte_membros").upsert(
@@ -23,6 +25,13 @@ export async function criarDossie(formData) {
   const igreja = String(formData.get("igreja") || "").trim() || null;
   const avatar = String(formData.get("avatar") || "").trim() || null;
   if (!nome) redirect("/dossie/novo");
+
+  // Grátis (Kit): 1 dossiê. Para o 2º, precisa da assinatura → manda pro upsell em /dossie.
+  const [acessos, admin] = await Promise.all([acessosDaUsuaria(sb, user.id), ehAdmin(sb, user.id)]);
+  if (!admin && !acessos.has("assinatura")) {
+    const { count } = await sb.from("corte_dossies").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    if ((count || 0) >= 1) redirect("/dossie");
+  }
 
   await garantirMembro(sb, user);
   const emblema = nome.charAt(0).toUpperCase();

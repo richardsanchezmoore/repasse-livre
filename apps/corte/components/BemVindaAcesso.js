@@ -75,7 +75,7 @@ export default function BemVindaAcesso({ emailInicial }) {
     const { error } = await sb.auth.updateUser({ password: f.senha });
     setBusy(false);
     if (error) { setErro("Não consegui salvar a senha agora. Tente de novo."); return; }
-    window.location.href = "/dossie";
+    window.location.href = "/biblioteca";
   }
 
   // Fase "form": fallback (pagou em outro aparelho / storage limpo) → e-mail + senha.

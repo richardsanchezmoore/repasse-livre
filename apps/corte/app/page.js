@@ -26,19 +26,19 @@ export default async function Home() {
       <h1 className="h-title">Querida <em>leitora</em>,</h1>
       <p className="h-sub">bem-vinda à Corte. Aqui você aprende a ler os sinais — antes do altar.</p>
 
-      <Link href="/dossie" className="card hero" style={{ marginTop: 18 }}>
-        <div className="c-k">A dinâmica da temporada</div>
-        <div className="c-t">O <em>Dossiê</em> 🗂️</div>
-        <div className="c-p">Investigue seu pretendente como uma verdadeira Lady Whistledown. Quanto mais você o conhece, mais o Veredito se revela.</div>
-        <span className="pill">Abrir um dossiê →</span>
-      </Link>
-
-      <section className="card dark" style={{ marginTop: 14 }}>
+      <section className="card dark" style={{ marginTop: 18 }}>
         <div className="c-k">Devocional de hoje</div>
         <div className="c-t">"Sobre tudo o que se deve guardar, <em>guarda o teu coração</em>."</div>
         <div className="c-p">Provérbios 4:23 — o discernimento não nasce da desconfiança, mas da intimidade com Deus.</div>
         <Link href="/jornada" className="pill">Abrir a Jornada de hoje →</Link>
       </section>
+
+      <Link href="/dossie" className="card hero" style={{ marginTop: 14 }}>
+        <div className="c-k">A dinâmica da temporada</div>
+        <div className="c-t">O <em>Dossiê</em> 🗂️</div>
+        <div className="c-p">Investigue seu pretendente como uma verdadeira Lady Whistledown. Quanto mais você o conhece, mais o Veredito se revela.</div>
+        <span className="pill">Abrir um dossiê →</span>
+      </Link>
 
       {oferta?.p?.cakto_url && (
         <section className="card" style={{ marginTop: 14 }}>

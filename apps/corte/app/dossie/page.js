@@ -2,8 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { usuariaAtual } from "@/lib/auth";
+import { ehAdmin } from "@/lib/admin";
+import { acessosDaUsuaria } from "@/lib/acessos";
 import { carregarEsquema, totalCampos, nivel } from "@/lib/dossieDb";
 import Avatar from "@/components/Avatar";
+import BotaoCompra from "@/components/BotaoCompra";
 
 export const metadata = { title: "O Dossiê · A Corte" };
 export const dynamic = "force-dynamic";
@@ -13,11 +16,18 @@ export default async function DossiePage() {
   if (!user) redirect("/entrar?redirect=/dossie");
 
   const sb = await criarSupabaseServer();
-  const [{ data: dossies }, esquema] = await Promise.all([
+  const [{ data: dossies }, esquema, acessos, admin, { data: cfg }] = await Promise.all([
     sb.from("corte_dossies").select("id, nome, igreja, emblema, avatar, atualizado_em").order("atualizado_em", { ascending: false }),
     carregarEsquema(sb),
+    acessosDaUsuaria(sb, user.id),
+    ehAdmin(sb, user.id),
+    sb.from("corte_config").select("valor").eq("chave", "planos").maybeSingle(),
   ]);
   const total = totalCampos(esquema);
+  const assin = cfg?.valor?.assinatura || {};
+  const ehAssinante = admin || acessos.has("assinatura");
+  // Grátis (Kit): 1 dossiê. Para o 2º, entra pra Comunidade (assinatura).
+  const podeCriar = ehAssinante || (dossies?.length || 0) < 1;
 
   const ids = (dossies || []).map((d) => d.id);
   let contagem = {};
@@ -32,9 +42,22 @@ export default async function DossiePage() {
       <h1 className="h-title">O <em>Dossiê</em></h1>
       <p className="h-sub">Toda dama sábia investiga antes de entregar o coração. Abra um dossiê e conheça-o de verdade.</p>
 
-      <Link href="/dossie/novo" className="pill" style={{ width: "100%", justifyContent: "center", marginTop: 16 }}>
-        ✒️ Novo pretendente
-      </Link>
+      {podeCriar ? (
+        <Link href="/dossie/novo" className="pill" style={{ width: "100%", justifyContent: "center", marginTop: 16 }}>
+          ✒️ Novo pretendente
+        </Link>
+      ) : (
+        <section className="card dark" style={{ marginTop: 16, textAlign: "center" }}>
+          <div className="c-k">✦ Mais de um pretendente?</div>
+          <div className="c-t">Investigue <em>quantos</em> quiser</div>
+          <div className="c-p">
+            No Kit você acompanha um dossiê. Entre para <strong>A Corte</strong> e abra dossiês ilimitados — e em breve compare os pretendentes lado a lado para ver quem realmente vale o seu altar.
+          </div>
+          {assin.cakto_url
+            ? <BotaoCompra url={assin.cakto_url} className="pill">{assin.trial_dias ? `Começar ${assin.trial_dias} dias grátis` : "Entrar para a Comunidade"}{assin.preco ? ` · ${assin.preco}` : ""} →</BotaoCompra>
+            : <Link href="/assinar" className="pill">Conhecer A Corte →</Link>}
+        </section>
+      )}
 
       {(!dossies || dossies.length === 0) ? (
         <p className="muted" style={{ marginTop: 22 }}>Nenhum pretendente em investigação ainda. Comece pelo primeiro nome que passou pela sua cabeça 👀</p>

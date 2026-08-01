@@ -27,7 +27,7 @@ export default function BemVinda({ searchParams }) {
         <p className="opt" style={{ marginTop: 12 }}>Use o mesmo e-mail da compra. É só definir a senha — nada de link no e-mail.</p>
       </section>
 
-      <div style={{ margin: "14px 18px 0" }}>
+      <div style={{ margin: "0 18px" }}>
         <InstalarApp titulo="📲 Já deixe A Corte na tela inicial" />
       </div>
 
