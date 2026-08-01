@@ -12,7 +12,7 @@ function Campo({ label, val, onChange, ph }) {
   );
 }
 
-export default function ConstrutorAssinaturas({ planosIniciais, webhook }) {
+export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret }) {
   const router = useRouter();
   const [p, setP] = useState({ kit: {}, assinatura: {}, ...planosIniciais });
   const [busy, setBusy] = useState(false);
@@ -23,7 +23,7 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook }) {
     setBusy(true); setOk(false);
     try { await salvarPlanos(p); setOk(true); router.refresh(); } finally { setBusy(false); }
   }
-  function copiar() { try { navigator.clipboard?.writeText(webhook); } catch {} }
+  function copiar(txt) { try { navigator.clipboard?.writeText(txt); } catch {} }
 
   return (
     <div>
@@ -52,10 +52,17 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook }) {
 
       <section className="card" style={{ marginTop: 16 }}>
         <div className="c-k">🔗 Webhook da Cakto</div>
-        <p className="c-p" style={{ marginBottom: 8 }}>Cole esta URL em <strong>Cakto → Configurações → Webhooks</strong> (eventos de compra aprovada e reembolso). Ela cria/libera o acesso sozinha.</p>
+        <p className="c-p" style={{ marginBottom: 10 }}>Na Cakto, no produto → <strong>Webhooks</strong>, marque <strong>Compra aprovada</strong> + <strong>Reembolso</strong> e preencha os dois campos abaixo. A mesma URL serve pro Kit e pra assinatura.</p>
+
+        <label className="fld-l">URL do webhook</label>
         <div className="wh"><code>{webhook}</code></div>
-        <button type="button" className="mini" onClick={copiar} style={{ marginTop: 8 }}>Copiar URL</button>
-        <p className="opt" style={{ marginTop: 10 }}>⚠️ Adicione também <code>CORTE_CAKTO_SECRET</code> nas variáveis da Vercel (o mesmo valor do .env.local), senão o webhook responde 401.</p>
+        <button type="button" className="mini" onClick={() => copiar(webhook)} style={{ marginTop: 6 }}>Copiar URL</button>
+
+        <label className="fld-l" style={{ marginTop: 12 }}>Chave secreta do webhook</label>
+        <div className="wh"><code>{secret}</code></div>
+        <button type="button" className="mini" onClick={() => copiar(secret)} style={{ marginTop: 6 }}>Copiar segredo</button>
+
+        <p className="opt" style={{ marginTop: 12 }}>⚠️ Adicione <code>CORTE_CAKTO_SECRET</code> (este segredo) nas variáveis da <strong>Vercel</strong> e faça redeploy, senão o webhook responde 401.</p>
       </section>
     </div>
   );

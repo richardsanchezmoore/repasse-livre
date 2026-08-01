@@ -33,22 +33,25 @@ async function acharOuCriarUsuario(admin, email, nome) {
 }
 
 export async function POST(req) {
+  let body = {};
+  try { body = await req.json(); } catch { body = {}; }
+
+  // A Cakto envia o segredo NO CORPO ("secret"). Fallbacks: query/header.
   const url = new URL(req.url);
-  const segredo = url.searchParams.get("secret") || req.headers.get("x-cakto-secret");
+  const segredo = body?.secret || url.searchParams.get("secret") || req.headers.get("x-cakto-secret");
   if (!process.env.CORTE_CAKTO_SECRET || segredo !== process.env.CORTE_CAKTO_SECRET) {
     return NextResponse.json({ erro: "segredo inválido" }, { status: 401 });
   }
 
-  let body = {};
-  try { body = await req.json(); } catch { body = {}; }
-
-  const email = pick(body, ["customer.email", "data.customer.email", "buyer.email", "data.buyer.email", "email", "data.email"]);
-  const nome = pick(body, ["customer.name", "data.customer.name", "buyer.name", "name"]);
-  const produto = pick(body, ["product.id", "data.product.id", "offer.id", "data.offer.id", "product_id", "offer_id", "product.short_id"]);
-  const evento = String(pick(body, ["event", "status", "data.status", "type", "data.event"]) || "").toLowerCase();
+  // "data" vem como ARRAY no disparo Agrupado; pode vir objeto em outros modos.
+  const d0 = Array.isArray(body.data) ? (body.data[0] || {}) : (body.data || body);
+  const email = pick(d0, ["customer.email", "buyer.email", "email"]) || pick(body, ["customer.email", "email"]);
+  const nome = pick(d0, ["customer.name", "buyer.name", "name"]);
+  const produto = pick(d0, ["product.id", "product.short_id", "product.name", "offer.id", "offer.name", "offer.short_id", "refId", "product_id"]);
+  const evento = String(body.event || pick(body, ["status", "type"]) || pick(d0, ["status"]) || "").toLowerCase();
 
   if (!email) {
-    console.log("[cakto] sem email:", JSON.stringify(body).slice(0, 300));
+    console.log("[cakto] sem email:", JSON.stringify(body).slice(0, 400));
     return NextResponse.json({ ok: false, motivo: "sem email" });
   }
 
@@ -58,10 +61,9 @@ export async function POST(req) {
   const idAssin = planos?.assinatura?.cakto_produto || "";
   const tipo = produto && idAssin && String(produto) === String(idAssin) ? "assinatura" : "kit";
 
-  // Cancelamento/estorno → revoga. Pendente/recusado → ignora.
-  // Aprovado, RENOVAÇÃO recorrente, ou evento desconhecido → concede (renova).
-  const cancela = /(refund|estorn|cancel|chargeback|expired|dispute|revok|inadimpl|overdue|atras)/.test(evento);
-  const pendente = /(pend|aguard|await|refus|declin|fail|recus|error|erro)/.test(evento);
+  // aprovado/renovação → concede · reembolso/cancelamento → revoga · resto → ignora
+  const cancela = /(refund|estorn|reembol|cancel|chargeback|expired|dispute|revok|inadimpl|overdue|atras)/.test(evento);
+  const concede = /(approv|aprovad|paid|pago|purchase_approved|complete|active|renov|renew|recur|recorren)/.test(evento);
 
   const user = await acharOuCriarUsuario(admin, email, nome);
 
@@ -70,14 +72,13 @@ export async function POST(req) {
     console.log(`[cakto] REVOGADO ${tipo} · ${email} · ${evento}`);
     return NextResponse.json({ ok: true, acao: "revogado", tipo });
   }
-  if (!pendente) {
-    // assinatura: renova ~35 dias a cada webhook de pagamento (folga p/ atraso do repasse).
+  if (concede) {
     const expira = tipo === "assinatura" ? new Date(Date.now() + 35 * 24 * 3600 * 1000).toISOString() : null;
     await concederAcesso(admin, user.id, tipo, { origem: "cakto", referencia: String(produto || ""), expira_em: expira });
     console.log(`[cakto] CONCEDIDO/RENOVADO ${tipo} · ${email} · ${evento}`);
     return NextResponse.json({ ok: true, acao: "concedido", tipo });
   }
-  console.log(`[cakto] ignorado (pendente) · ${evento} · ${email}`);
+  console.log(`[cakto] ignorado · ${evento} · ${email}`);
   return NextResponse.json({ ok: true, acao: "ignorado", evento });
 }
 
