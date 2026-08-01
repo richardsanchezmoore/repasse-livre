@@ -225,3 +225,9 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .leitura li{font-size:clamp(16px,4.2vw,17.5px);line-height:1.65;margin-bottom:6px}
 .leitura .ld-rule{border:none;text-align:center;margin:22px 0}
 .leitura .ld-rule::before{content:"❦";color:var(--gold);font-size:16px}
+
+/* ---- seletor de avatar ---- */
+.av-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+.av-cell{padding:4px;background:transparent;border:2px solid transparent;border-radius:14px;cursor:pointer;line-height:0;display:flex;justify-content:center;transition:transform .1s}
+.av-cell:active{transform:scale(.94)}
+.av-cell.on{border-color:var(--wine);background:rgba(124,43,55,.06)}

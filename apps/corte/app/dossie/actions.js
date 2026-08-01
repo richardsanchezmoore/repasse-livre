@@ -21,13 +21,14 @@ export async function criarDossie(formData) {
 
   const nome = String(formData.get("nome") || "").trim();
   const igreja = String(formData.get("igreja") || "").trim() || null;
+  const avatar = String(formData.get("avatar") || "").trim() || null;
   if (!nome) redirect("/dossie/novo");
 
   await garantirMembro(sb, user);
   const emblema = nome.charAt(0).toUpperCase();
   const { data, error } = await sb
     .from("corte_dossies")
-    .insert({ user_id: user.id, nome, igreja, emblema })
+    .insert({ user_id: user.id, nome, igreja, emblema, avatar })
     .select("id")
     .single();
   if (error) throw new Error(error.message);

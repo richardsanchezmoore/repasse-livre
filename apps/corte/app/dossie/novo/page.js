@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { usuariaAtual } from "@/lib/auth";
+import SeletorAvatar from "@/components/SeletorAvatar";
 import { criarDossie } from "../actions";
 
 export const metadata = { title: "Novo pretendente · A Corte" };
@@ -16,7 +17,10 @@ export default async function NovoDossiePage() {
       <p className="h-sub">Só o começo. Os detalhes você descobre — e registra — com o tempo.</p>
 
       <form action={criarDossie} className="card" style={{ marginTop: 18 }}>
-        <label className="fld-l">Nome dele</label>
+        <label className="fld-l">Escolha um retrato</label>
+        <SeletorAvatar />
+
+        <label className="fld-l" style={{ marginTop: 14 }}>Nome dele</label>
         <input className="fld" name="nome" required placeholder="Ex.: Carlos Alberto" autoFocus />
 
         <label className="fld-l" style={{ marginTop: 14 }}>Igreja que ele frequenta <span className="opt">(opcional)</span></label>

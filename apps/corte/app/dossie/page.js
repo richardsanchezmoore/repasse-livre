@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { usuariaAtual } from "@/lib/auth";
 import { carregarEsquema, totalCampos, nivel } from "@/lib/dossieDb";
+import Avatar from "@/components/Avatar";
 
 export const metadata = { title: "O Dossiê · A Corte" };
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export default async function DossiePage() {
 
   const sb = await criarSupabaseServer();
   const [{ data: dossies }, esquema] = await Promise.all([
-    sb.from("corte_dossies").select("id, nome, igreja, emblema, atualizado_em").order("atualizado_em", { ascending: false }),
+    sb.from("corte_dossies").select("id, nome, igreja, emblema, avatar, atualizado_em").order("atualizado_em", { ascending: false }),
     carregarEsquema(sb),
   ]);
   const total = totalCampos(esquema);
@@ -43,7 +44,7 @@ export default async function DossiePage() {
             const n = nivel(contagem[d.id] || 0, total);
             return (
               <Link key={d.id} href={`/dossie/${d.id}`} className="row">
-                <div className="ri">{d.emblema || "♟"}</div>
+                {d.avatar ? <Avatar id={d.avatar} size={44} /> : <div className="ri">{d.emblema || "♟"}</div>}
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="rt">{d.nome}</div>
                   <div className="rd">{d.igreja || "igreja não informada"} · {n.selo}</div>
