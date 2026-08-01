@@ -5,7 +5,14 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Bem-vinda à Corte" };
 
 export default function BemVinda({ searchParams }) {
-  const email = typeof searchParams?.email === "string" ? searchParams.email : "";
+  // A Cakto pode nomear a variável de e-mail de formas diferentes no redirecionamento —
+  // aceitamos as mais comuns pra o campo já vir preenchido (menos erro de digitação).
+  const chaves = ["email", "e-mail", "customer_email", "customerEmail", "cliente_email", "buyer_email", "mail"];
+  let email = "";
+  for (const k of chaves) {
+    const v = searchParams?.[k];
+    if (typeof v === "string" && v.includes("@")) { email = v.trim(); break; }
+  }
   return (
     <main className="lp">
       <div className="lp-hero">

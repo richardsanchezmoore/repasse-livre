@@ -248,16 +248,26 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .lp-bd{font:500 14px/1.45 var(--serif);color:var(--ink-soft);margin-top:2px}
 .lp-final{text-align:center;padding:18px 22px 8px}
 
-/* ---- instalar app (auto-detecta a plataforma) ---- */
-.inst-opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;margin-top:8px}
-.inst-ic{font-size:30px;flex:none;line-height:1}
-.inst-t{font:700 15.5px var(--disp);color:var(--wine)}
-.inst-d{font:500 13px/1.42 var(--serif);color:var(--ink-soft);margin-top:2px}
-.inst-btn{background:linear-gradient(180deg,var(--wine),var(--wine-2));border:1px solid var(--gold-2);border-radius:12px;padding:14px 16px;cursor:pointer;transition:transform .1s}
-.inst-btn:active{transform:scale(.98)}
-.inst-btn .inst-t{color:#fff}
-.inst-btn .inst-d{color:#f0dcc2}
+/* ---- instalar app (1 clique; mini-guia só quando o SO exige) ---- */
+.card.inst{padding:0;overflow:hidden}
+.inst-cta{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:16px 18px;background:linear-gradient(180deg,var(--wine),var(--wine-2));border:none;cursor:pointer;transition:transform .1s}
+.inst-cta:active{transform:scale(.985)}
+.inst-ic{font-size:28px;flex:none;line-height:1}
+.inst-tx{display:flex;flex-direction:column;min-width:0}
+.inst-t{font:700 15.5px var(--disp);color:#fff}
+.inst-d{font:500 12.5px/1.4 var(--serif);color:#f0dcc2;margin-top:2px}
 .inst-go{margin-left:auto;font:800 18px var(--ui);color:#fdf3dd}
+/* bottom-sheet do mini-guia */
+.inst-sheet{position:fixed;inset:0;z-index:60;background:rgba(24,10,16,.55);backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center;animation:instFade .18s ease}
+.inst-sheet-card{width:100%;max-width:520px;background:var(--paper,#fff);border-radius:20px 20px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(0,0,0,.3);animation:instUp .22s cubic-bezier(.2,.8,.2,1)}
+.inst-sheet-h{font:800 18px var(--disp);color:var(--wine);text-align:center;margin-bottom:14px}
+.inst-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.inst-steps li{display:flex;align-items:flex-start;gap:10px;font:500 14.5px/1.5 var(--serif);color:var(--ink)}
+.inst-num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#3a2410;font:800 13px var(--ui);display:flex;align-items:center;justify-content:center}
+.inst-share{display:inline-block;transform:translateY(1px)}
+.inst-fechar{margin-top:18px;width:100%;padding:14px;border:none;border-radius:12px;background:var(--wine);color:#fff;font:700 15px var(--disp);cursor:pointer}
+@keyframes instFade{from{opacity:0}to{opacity:1}}
+@keyframes instUp{from{transform:translateY(30px)}to{transform:translateY(0)}}
 .fld.mono{font-family:var(--ui);font-size:13px;line-height:1.5}
 
 /* ---- leitor (Biblioteca) ---- */
