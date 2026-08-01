@@ -6,8 +6,8 @@ export default function EntrarPage() {
   return (
     <main className="screen">
       <div className="eyebrow">◈ O seu convite ◈</div>
-      <h1 className="h-title">Entre na <em>Corte</em></h1>
-      <p className="h-sub">Enviamos um selo mágico ao seu e-mail — um clique e você está dentro. Sem senha.</p>
+      <h1 className="h-title">Bem-vinda à <em>Corte</em></h1>
+      <p className="h-sub">Crie sua conta em segundos — ou entre, se já é uma dama da casa.</p>
       <section className="card" style={{ marginTop: 18 }}>
         <EntrarForm />
       </section>

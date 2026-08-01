@@ -1,5 +1,6 @@
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import TopBar from "@/components/TopBar";
 
 export const metadata = {
   title: "A Corte · Pela Fé",
@@ -31,7 +32,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <div className="app">
-          <header className="top"><span className="brand">◈ A Corte ◈</span></header>
+          <TopBar />
           {children}
         </div>
         <BottomNav />

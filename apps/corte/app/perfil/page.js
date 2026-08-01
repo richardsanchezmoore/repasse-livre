@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { ehAdmin } from "@/lib/admin";
+import DefinirSenha from "@/components/DefinirSenha";
+import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +38,12 @@ export default async function Perfil() {
         <div className="c-t">Jornada semanal + comunidade</div>
         <div className="c-p">Devocional novo toda semana, o Salão das damas e as ferramentas de discernimento.</div>
         <span className="pill">Começar 7 dias grátis</span>
+      </section>
+
+      <section className="card" style={{ marginTop: 14 }}>
+        <div className="c-k">A sua conta</div>
+        <DefinirSenha />
+        <div style={{ marginTop: 10 }}><LogoutButton /></div>
       </section>
 
       <hr className="divider" />

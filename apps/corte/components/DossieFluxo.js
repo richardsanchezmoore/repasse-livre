@@ -66,11 +66,12 @@ export default function DossieFluxo({ dossie, esquema, valoresIniciais, regras, 
   }, [esquema]);
 
   const totais = useMemo(() => esquema.map((e) => e.campos.length), [esquema]);
-  const respondidosPorEtapa = esquema.map((e) => e.campos.filter((c) => respondida(valores[c.id])).length);
+  const respPorEtapa = esquema.map((e) => e.campos.filter((c) => respondida(valores[c.id])).length);
   const totalCampos = totais.reduce((a, b) => a + b, 0);
-  const totalResp = respondidosPorEtapa.reduce((a, b) => a + b, 0);
+  const totalResp = respPorEtapa.reduce((a, b) => a + b, 0);
 
   const step = steps[idx];
+  const noFim = step.tipo === "veredito";
   const setVal = (id, v) => setValores((o) => ({ ...o, [id]: v }));
   function flash() { setSalvo(true); setTimeout(() => setSalvo(false), 1400); }
   async function salvar(id, v) { await salvarUmaResposta(dossie.id, id, v ?? null); flash(); }
@@ -79,90 +80,91 @@ export default function DossieFluxo({ dossie, esquema, valoresIniciais, regras, 
   async function continuar(campo) { await salvar(campo.id, valores[campo.id]); avancar(); }
   async function escolher(campo, v) { setVal(campo.id, v); await salvar(campo.id, v); avancar(); }
 
-  const noFim = step.tipo === "veredito";
+  const veredito = noFim ? avaliarVeredito({ valores, regras, faixas }) : null;
+  const pct = totalCampos ? Math.round((totalResp / totalCampos) * 100) : 0;
+  const single = step.tipo === "campo" && (step.campo.tipo === "radio" || step.campo.tipo === "select");
 
   return (
     <main className="screen fx">
-      {/* topo: pretendente + progresso */}
-      <div className="fx-head">
-        <Link href="/dossie" className="fx-x" aria-label="fechar">✕</Link>
-        {dossie.avatar ? <Avatar id={dossie.avatar} size={34} /> : <span className="fx-emb">{dossie.emblema || "♟"}</span>}
-        <span className="fx-nome">{dossie.nome}</span>
-        {salvo && <span className="fx-saved">salvo ✓</span>}
-      </div>
-      {!noFim && (
-        <div className="fx-prog">
-          {esquema.map((e, i) => (
-            <div key={e.id} className={"fx-seg" + (i === step.ei ? " atual" : "")}>
-              <span style={{ width: `${totais[i] ? (respondidosPorEtapa[i] / totais[i]) * 100 : 0}%` }} />
-            </div>
-          ))}
+      {/* TOPO FIXO */}
+      <div className="fx-top">
+        <div className="fx-head">
+          <Link href="/dossie" className="fx-x" aria-label="fechar">✕</Link>
+          {dossie.avatar ? <Avatar id={dossie.avatar} size={34} /> : <span className="fx-emb">{dossie.emblema || "♟"}</span>}
+          <span className="fx-nome">{dossie.nome}</span>
+          {salvo && <span className="fx-saved">salvo ✓</span>}
         </div>
-      )}
-
-      {/* CAMPO */}
-      {step.tipo === "campo" && (
-        <div className="fx-body">
-          <div className="fx-eyebrow">{step.etapa.icone} {step.etapa.titulo}</div>
-          <h1 className="fx-q">{step.campo.rotulo}</h1>
-          {step.campo.config?.dica && <p className="fx-dica">{step.campo.config.dica}</p>}
-          <Controle
-            campo={step.campo}
-            valor={valores[step.campo.id]}
-            onChange={(v) => setVal(step.campo.id, v)}
-            onEscolher={(v) => escolher(step.campo, v)}
-          />
-          <div className="fx-nav">
-            <button type="button" className="mini" onClick={voltar} disabled={idx === 0}>← Voltar</button>
-            <button type="button" className="fx-skip" onClick={avancar}>Pular</button>
-            {step.campo.tipo !== "radio" && step.campo.tipo !== "select" && (
-              <button type="button" className="pill" onClick={() => continuar(step.campo)}>Continuar →</button>
-            )}
+        {!noFim && (
+          <div className="fx-prog">
+            {esquema.map((e, i) => (
+              <div key={e.id} className={"fx-seg" + (i === step.ei ? " atual" : "")}>
+                <span style={{ width: `${totais[i] ? (respPorEtapa[i] / totais[i]) * 100 : 0}%` }} />
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+        {step.tipo === "campo" && (
+          <>
+            <div className="fx-eyebrow">{step.etapa.icone} {step.etapa.titulo}</div>
+            <h1 className="fx-q">{step.campo.rotulo}</h1>
+            {step.campo.config?.dica && <p className="fx-dica">{step.campo.config.dica}</p>}
+          </>
+        )}
+      </div>
 
-      {/* CELEBRAÇÃO */}
-      {step.tipo === "celebracao" && (
-        <div className="fx-celebra">
-          <div className="fx-selo">{step.etapa.icone}</div>
-          <h1 className="h-title" style={{ textAlign: "center" }}>Etapa <em>{step.etapa.titulo}</em> desvendada!</h1>
-          <p className="fx-celebra-p">Você reuniu <strong>{respondidosPorEtapa[step.ei]}</strong> de {totais[step.ei]} pistas desta etapa. 🕯️</p>
-          <button type="button" className="pill" onClick={avancar} style={{ marginTop: 8 }}>Continuar a investigação →</button>
-          <button type="button" className="mini" onClick={voltar} style={{ marginTop: 10 }}>← Voltar</button>
-        </div>
-      )}
+      {/* MEIO ROLÁVEL */}
+      <div className="fx-scroll">
+        {step.tipo === "campo" && (
+          <Controle campo={step.campo} valor={valores[step.campo.id]} onChange={(v) => setVal(step.campo.id, v)} onEscolher={(v) => escolher(step.campo, v)} />
+        )}
 
-      {/* VEREDITO */}
-      {noFim && (() => {
-        const v = avaliarVeredito({ valores, regras, faixas });
-        const pct = totalCampos ? Math.round((totalResp / totalCampos) * 100) : 0;
-        return (
-          <div className="fx-body">
-            <div className="fx-eyebrow" style={{ textAlign: "center", width: "100%" }}>◈ O Veredito da Lady ◈</div>
-            <div className="fx-selo" style={{ margin: "6px auto 4px" }}>🔮</div>
-            {v.houveResposta && v.faixa ? (
-              <section className={"card vd b-" + v.faixa.bandeira}>
-                <div className="c-t" style={{ textAlign: "center" }}>{v.faixa.rotulo}</div>
-                <div className="c-p" style={{ textAlign: "center" }}>{v.faixa.mensagem}</div>
-                {v.sinais.length > 0 && (
+        {step.tipo === "celebracao" && (
+          <div className="fx-celebra">
+            <div className="fx-selo">{step.etapa.icone}</div>
+            <h1 className="h-title" style={{ textAlign: "center" }}>Etapa <em>{step.etapa.titulo}</em> desvendada!</h1>
+            <p className="fx-celebra-p">Você reuniu <strong>{respPorEtapa[step.ei]}</strong> de {totais[step.ei]} pistas desta etapa. 🕯️</p>
+            <button type="button" className="pill" onClick={avancar} style={{ marginTop: 8 }}>Continuar a investigação →</button>
+            <button type="button" className="fx-skip" onClick={voltar}>← Voltar</button>
+          </div>
+        )}
+
+        {noFim && (
+          <div className="fx-celebra" style={{ justifyContent: "flex-start", paddingTop: 8 }}>
+            <div className="fx-eyebrow" style={{ textAlign: "center" }}>◈ O Veredito da Lady ◈</div>
+            <div className="fx-selo">🔮</div>
+            {veredito.houveResposta && veredito.faixa ? (
+              <section className={"card vd b-" + veredito.faixa.bandeira} style={{ width: "100%", textAlign: "left" }}>
+                <div className="c-t" style={{ textAlign: "center" }}>{veredito.faixa.rotulo}</div>
+                <div className="c-p" style={{ textAlign: "center" }}>{veredito.faixa.mensagem}</div>
+                {veredito.sinais.length > 0 && (
                   <ul className="sinais">
-                    {v.sinais.map((s, i) => <li key={i} className={"sinal s-" + s.bandeira}><span className="dot" />{s.mensagem}</li>)}
+                    {veredito.sinais.map((s, i) => <li key={i} className={"sinal s-" + s.bandeira}><span className="dot" />{s.mensagem}</li>)}
                   </ul>
                 )}
                 <p className="vd-nota">Isto é discernimento, não sentença — observe, pergunte e leve ao Senhor em oração.</p>
               </section>
             ) : (
-              <p className="fx-dica" style={{ textAlign: "center" }}>Responda algumas perguntas para o Veredito ganhar corpo.</p>
+              <p className="fx-celebra-p">Responda algumas perguntas para o Veredito ganhar corpo.</p>
             )}
             <p className="muted">Dossiê {pct}% completo.</p>
-            <div className="fx-nav" style={{ justifyContent: "center" }}>
-              <button type="button" className="mini" onClick={() => setIdx(0)}>↻ Revisar</button>
-              <Link href="/dossie" className="pill">Concluir ✧</Link>
-            </div>
           </div>
-        );
-      })()}
+        )}
+      </div>
+
+      {/* RODAPÉ FIXO */}
+      {step.tipo === "campo" && (
+        <div className="fx-nav">
+          <button type="button" className="fx-skip" onClick={voltar} disabled={idx === 0}>← Voltar</button>
+          <button type="button" className="fx-skip" onClick={avancar}>Pular</button>
+          {!single && <button type="button" className="pill" onClick={() => continuar(step.campo)}>Continuar →</button>}
+        </div>
+      )}
+      {noFim && (
+        <div className="fx-nav" style={{ justifyContent: "space-between" }}>
+          <button type="button" className="fx-skip" onClick={() => setIdx(0)}>↻ Revisar</button>
+          <Link href="/dossie" className="pill">Concluir ✧</Link>
+        </div>
+      )}
     </main>
   );
 }
