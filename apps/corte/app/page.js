@@ -60,7 +60,7 @@ export default async function Home() {
           <span className="ic">🛡️</span>
           <div><div className="tt">O Veredito</div><div className="td">Cavalheiro ou libertino?</div></div>
         </Link>
-        <Link href="/jornada" className="tile">
+        <Link href="/biblioteca/diario" className="tile">
           <span className="ic">📿</span>
           <div><div className="tt">Diário da Dama</div><div className="td">7 noites de discernimento</div></div>
         </Link>
