@@ -39,56 +39,82 @@ export interface ResultadoReboot {
  * gatilho automático do ML (autoReiniciarRoteador) chamam esta função. Com `reiniciar:false`
  * é um dry-run (só valida a autenticação). Não chama process.exit — devolve o resultado.
  */
-export async function reiniciarRoteador(reiniciar: boolean): Promise<ResultadoReboot> {
+export async function reiniciarRoteador(reiniciar: boolean, tentativas = 3): Promise<ResultadoReboot> {
   if (!SENHA) return { ok: false, erro: "ROTEADOR_SENHA não definida no .env" };
   console.log(`[roteador] usuário="${USUARIO}" | senha lida do .env: ${SENHA.length} caracteres`);
 
   const nav = await chromium.launch({ headless: true });
-  const ctx = await nav.newContext();
-  const page = await ctx.newPage();
   try {
-    // 1. LOGIN — campos `loginUsername`/`loginPassword` são HIDDEN: o JS do roteador ofusca
-    // o que digitamos nos VISÍVEIS (fora do <form>) e joga nos hidden. Botão <a id="btnLogin">
-    // (login.js:67) faz isso no click. Enter NÃO serve (é <a>, não submit).
-    console.log(`[roteador] abrindo ${BASE}/login.asp`);
-    await page.goto(`${BASE}/login.asp`, { waitUntil: "domcontentloaded", timeout: 20_000 });
-    const campoUser = page.locator('input[type="text"]:visible').first();
-    const campoSenha = page.locator('input[type="password"]:visible').first();
-    // DIGITA char a char (não fill()): o login.js ofusca lendo os EVENTOS de teclado; fill()
-    // setava o .value sem keydown → ofuscava vazio → "senha inválida" com a senha CERTA.
-    await campoUser.click({ timeout: 10_000 });
-    await campoUser.pressSequentially(USUARIO, { delay: 40 });
-    await campoSenha.click({ timeout: 10_000 });
-    await campoSenha.pressSequentially(SENHA, { delay: 40 });
-    await Promise.allSettled([
-      page.waitForNavigation({ timeout: 15_000 }),
-      page.click("#btnLogin", { timeout: 5_000 }),
-    ]);
+    // O "senha inválida" costuma ser FALSO: o login.js ofusca lendo os EVENTOS de teclado e,
+    // se algum keystroke se perde (handlers ainda não prontos / campo sem foco), a senha CERTA
+    // vira uma cifra errada. Antes desistíamos na 1ª → ficávamos 4 sessões bloqueadas até
+    // re-tentar. Agora PERSISTIMOS: contexto novo por tentativa, espera o JS inicializar, e
+    // digitação mais lenta a cada retry.
+    let ultimoErro = "login não tentado";
+    for (let t = 1; t <= tentativas; t++) {
+      const ctx = await nav.newContext();
+      const page = await ctx.newPage();
+      try {
+        const delay = 45 + (t - 1) * 30; // 45ms, 75ms, 105ms…
+        console.log(`[roteador] tentativa ${t}/${tentativas} — abrindo ${BASE}/login.asp (delay ${delay}ms/tecla)`);
+        await page.goto(`${BASE}/login.asp`, { waitUntil: "domcontentloaded", timeout: 20_000 });
+        await page.waitForTimeout(700); // deixa o login.js registrar os handlers de teclado
 
-    // 2. CONFIRMA autenticação — carrega a página de reboot e checa que NÃO voltou pro login.
-    await page.goto(`${BASE}/device-management-resets.asp`, { waitUntil: "domcontentloaded", timeout: 20_000 });
-    const html = await page.content();
-    if (/login\.asp|não está Autenticado|name="loginPassword"/i.test(html)) {
-      const aviso = html.match(/senha inv[áa]lida|incorret[ao]|bloquead|tentativas|não está Autenticado/i);
-      await page.screenshot({ path: "C:/claude/_roteador-falha.png", fullPage: true }).catch(() => {});
-      return { ok: false, erro: `login falhou (${aviso ? aviso[0] : "voltou pro login"})` };
-    }
-    const m = html.match(/sessionKey\s*=\s*'(\d+)'/);
-    if (!m) return { ok: false, erro: "autenticou mas não achei o sessionKey (firmware pode ter mudado)" };
-    const sessionKey = m[1];
-    console.log(`✅ LOGIN OK — sessionKey=${sessionKey}`);
+        const campoUser = page.locator('input[type="text"]:visible').first();
+        const campoSenha = page.locator('input[type="password"]:visible').first();
+        await campoUser.click({ timeout: 10_000 });
+        await campoUser.fill("");
+        await campoUser.pressSequentially(USUARIO, { delay });
+        await campoSenha.click({ timeout: 10_000 });
+        await campoSenha.fill("");
+        await campoSenha.pressSequentially(SENHA, { delay });
+        await Promise.allSettled([
+          page.waitForNavigation({ timeout: 15_000 }),
+          page.click("#btnLogin", { timeout: 5_000 }),
+        ]);
 
-    if (!reiniciar) {
-      console.log("(dry-run) autenticação validada. NÃO reiniciei.");
-      return { ok: true };
+        await page.goto(`${BASE}/device-management-resets.asp`, { waitUntil: "domcontentloaded", timeout: 20_000 });
+        const html = await page.content();
+        if (/login\.asp|não está Autenticado|name="loginPassword"/i.test(html)) {
+          const aviso = html.match(/senha inv[áa]lida|incorret[ao]|bloquead|tentativas|não está Autenticado/i);
+          ultimoErro = `login falhou (${aviso ? aviso[0] : "voltou pro login"})`;
+          console.log(`[roteador] ⚠ tentativa ${t} falhou: ${ultimoErro}`);
+          if (t === tentativas) await page.screenshot({ path: "C:/claude/_roteador-falha.png", fullPage: true }).catch(() => {});
+          await ctx.close();
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+        const m = html.match(/sessionKey\s*=\s*'(\d+)'/);
+        if (!m) {
+          ultimoErro = "autenticou mas não achei o sessionKey (firmware pode ter mudado)";
+          await ctx.close();
+          continue;
+        }
+        const sessionKey = m[1];
+        console.log(`✅ LOGIN OK (tentativa ${t}) — sessionKey=${sessionKey}`);
+
+        if (!reiniciar) {
+          console.log("(dry-run) autenticação validada. NÃO reiniciei.");
+          await ctx.close();
+          return { ok: true };
+        }
+        console.log("↻ disparando reboot…");
+        const r = await ctx.request.post(`${BASE}/cgi-bin/cbReboot.xml?sessionKey=${sessionKey}`, {
+          headers: { Referer: `${BASE}/device-management-resets.asp` },
+          timeout: 15_000,
+        });
+        console.log(`↻ reboot enviado — HTTP ${r.status()}. A internet deve cair e voltar em ~1-5 min.`);
+        const okReboot = r.ok();
+        await ctx.close();
+        return okReboot ? { ok: true } : { ok: false, erro: `reboot devolveu HTTP ${r.status()}` };
+      } catch (e) {
+        ultimoErro = e instanceof Error ? e.message : String(e);
+        console.log(`[roteador] ⚠ tentativa ${t} erro: ${ultimoErro}`);
+        await ctx.close().catch(() => {});
+        await new Promise((r) => setTimeout(r, 1500));
+      }
     }
-    console.log("↻ disparando reboot…");
-    const r = await ctx.request.post(`${BASE}/cgi-bin/cbReboot.xml?sessionKey=${sessionKey}`, {
-      headers: { Referer: `${BASE}/device-management-resets.asp` },
-      timeout: 15_000,
-    });
-    console.log(`↻ reboot enviado — HTTP ${r.status()}. A internet deve cair e voltar em ~1-5 min.`);
-    return r.ok() ? { ok: true } : { ok: false, erro: `reboot devolveu HTTP ${r.status()}` };
+    return { ok: false, erro: `${tentativas} tentativa(s) de login falharam — ${ultimoErro}` };
   } finally {
     await nav.close();
   }

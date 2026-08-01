@@ -595,10 +595,22 @@ function janelaPrincipal(html: string): string {
   return di === -1 ? html : html.slice(Math.max(0, di - 9000), di + 9000);
 }
 
-/** Preço do anúncio principal: ancorado na janela do `redacted_description`. */
+/** Preço do anúncio principal: ancorado na janela do `redacted_description`.
+ *  ★ 01/08/2026: o FB trocou `listing_price.amount` (reais) por
+ *  `listing_price.amount_with_offset` (CENTAVOS). Sem esse fallback o preço vinha
+ *  null → margem 100% → TUDO virava "margem_suspeita" (0 elegíveis). */
 function precoAncorado(html: string): number | null {
-  const m = janelaPrincipal(html).match(/"listing_price":\{"amount":"([\d.]+)"/);
-  return m ? Math.round(Number(m[1])) : null;
+  const win = janelaPrincipal(html);
+  // Formato novo: centavos.
+  let m = win.match(/"listing_price":\{[^}]{0,160}?"amount_with_offset":"(\d+)"/);
+  if (m) return Math.round(Number(m[1]) / 100);
+  // Formato antigo: reais.
+  m = win.match(/"listing_price":\{[^}]{0,160}?"amount":"([\d.]+)"/);
+  if (m) return Math.round(Number(m[1]));
+  // Último recurso: o texto formatado "R$50.000" (pontos = milhar).
+  m = win.match(/"formatted_price":\{"text":"R\$\s?([\d.]+)/);
+  if (m) return Math.round(Number(m[1].replace(/\./g, "")));
+  return null;
 }
 
 /** Título ancorado no bloco do principal (fallback quando não há og:title). */
