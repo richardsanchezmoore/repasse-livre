@@ -56,7 +56,7 @@ export default async function Home() {
           <span className="ic">📖</span>
           <div><div className="tt">O Panfleto</div><div className="td">Os 12 perfis a evitar</div></div>
         </Link>
-        <Link href="/dossie" className="tile">
+        <Link href="/quiz" className="tile">
           <span className="ic">🛡️</span>
           <div><div className="tt">O Veredito</div><div className="td">Cavalheiro ou libertino?</div></div>
         </Link>

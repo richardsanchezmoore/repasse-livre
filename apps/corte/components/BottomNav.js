@@ -13,6 +13,7 @@ export default function BottomNav() {
   const path = usePathname();
   if (path.startsWith("/admin")) return null; // painel admin tem navegação própria
   if (path === "/assinar") return null; // landing pública standalone
+  if (path === "/quiz") return null; // quiz imersivo
   // fluxo do dossiê (/dossie/<id>) é imersivo e tem o próprio ✕; a lista e /novo mantêm a nav
   if (path.startsWith("/dossie/") && path !== "/dossie/novo") return null;
   const active = (href) => (href === "/" ? path === "/" : path.startsWith(href));
