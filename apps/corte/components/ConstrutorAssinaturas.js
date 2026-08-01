@@ -12,7 +12,7 @@ function Campo({ label, val, onChange, ph }) {
   );
 }
 
-export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret }) {
+export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret, salesUrl }) {
   const router = useRouter();
   const [p, setP] = useState({ kit: {}, assinatura: {}, ...planosIniciais });
   const [busy, setBusy] = useState(false);
@@ -51,10 +51,14 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret 
       </button>
 
       <section className="card" style={{ marginTop: 16 }}>
-        <div className="c-k">🔗 Webhook da Cakto</div>
-        <p className="c-p" style={{ marginBottom: 10 }}>Na Cakto, no produto → <strong>Webhooks</strong>, marque <strong>Compra aprovada</strong> + <strong>Reembolso</strong> e preencha os dois campos abaixo. A mesma URL serve pro Kit e pra assinatura.</p>
+        <div className="c-k">🔗 Ligar na Cakto</div>
+        <p className="c-p" style={{ marginBottom: 10 }}>No produto da Cakto → <strong>Webhooks</strong>, marque <strong>Compra aprovada</strong> + <strong>Reembolso</strong>. A mesma URL de webhook serve pros dois produtos.</p>
 
-        <label className="fld-l">URL do webhook</label>
+        <label className="fld-l">Página de vendas <span className="opt">(campo obrigatório da Cakto — use a da assinatura)</span></label>
+        <div className="wh"><code>{salesUrl}</code></div>
+        <button type="button" className="mini" onClick={() => copiar(salesUrl)} style={{ marginTop: 6 }}>Copiar</button>
+
+        <label className="fld-l" style={{ marginTop: 12 }}>URL do webhook</label>
         <div className="wh"><code>{webhook}</code></div>
         <button type="button" className="mini" onClick={() => copiar(webhook)} style={{ marginTop: 6 }}>Copiar URL</button>
 
@@ -62,7 +66,7 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret 
         <div className="wh"><code>{secret}</code></div>
         <button type="button" className="mini" onClick={() => copiar(secret)} style={{ marginTop: 6 }}>Copiar segredo</button>
 
-        <p className="opt" style={{ marginTop: 12 }}>⚠️ Adicione <code>CORTE_CAKTO_SECRET</code> (este segredo) nas variáveis da <strong>Vercel</strong> e faça redeploy, senão o webhook responde 401.</p>
+        <p className="opt" style={{ marginTop: 12 }}>⚠️ Se a Cakto pedir um segredo <strong>por produto</strong>, coloque todos em <code>CORTE_CAKTO_SECRET</code> na <strong>Vercel</strong> separados por <strong>vírgula</strong> — o webhook aceita qualquer um. Depois, redeploy.</p>
       </section>
     </div>
   );

@@ -37,9 +37,11 @@ export async function POST(req) {
   try { body = await req.json(); } catch { body = {}; }
 
   // A Cakto envia o segredo NO CORPO ("secret"). Fallbacks: query/header.
+  // CORTE_CAKTO_SECRET pode ter VÁRIOS segredos (1 por produto) separados por vírgula.
   const url = new URL(req.url);
-  const segredo = body?.secret || url.searchParams.get("secret") || req.headers.get("x-cakto-secret");
-  if (!process.env.CORTE_CAKTO_SECRET || segredo !== process.env.CORTE_CAKTO_SECRET) {
+  const segredo = String(body?.secret || url.searchParams.get("secret") || req.headers.get("x-cakto-secret") || "").trim();
+  const validos = (process.env.CORTE_CAKTO_SECRET || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!validos.length || !segredo || !validos.includes(segredo)) {
     return NextResponse.json({ erro: "segredo inválido" }, { status: 401 });
   }
 

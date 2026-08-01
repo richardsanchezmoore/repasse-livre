@@ -13,6 +13,7 @@ export default async function AdminAssinaturasPage() {
   const host = h.get("host") || "localhost:3001";
   const proto = host.includes("localhost") ? "http" : "https";
   const webhook = `${proto}://${host}/api/cakto`;
+  const salesUrl = `${proto}://${host}/assinar`;
   const secret = process.env.CORTE_CAKTO_SECRET || "DEFINA_CORTE_CAKTO_SECRET";
 
   return (
@@ -21,7 +22,7 @@ export default async function AdminAssinaturasPage() {
       <h1 className="h-title">Planos & <em>acessos</em></h1>
       <p className="h-sub">Defina o Kit e a assinatura, e ligue o webhook da Cakto que libera o acesso sozinho.</p>
       <div style={{ marginTop: 16 }}>
-        <ConstrutorAssinaturas planosIniciais={planos} webhook={webhook} secret={secret} />
+        <ConstrutorAssinaturas planosIniciais={planos} webhook={webhook} secret={secret} salesUrl={salesUrl} />
       </div>
     </main>
   );
