@@ -219,6 +219,14 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 /* ---- webhook box (Assinaturas) ---- */
 .wh{background:var(--creme-2);border:1px solid var(--gold-soft);border-radius:9px;padding:10px;overflow-x:auto}
 .wh code{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);white-space:nowrap}
+
+/* ---- gate de acesso (Biblioteca) ---- */
+.row.trancada{opacity:.6}
+.row.trancada .ri{filter:grayscale(.55)}
+.paywall{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:22px 6px}
+.pw-lock{width:70px;height:70px;border-radius:50%;background:var(--creme-2);border:1px solid var(--gold-soft);
+  display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:8px}
+.pw-msg{font:500 15.5px/1.55 var(--serif);color:var(--ink-soft);max-width:320px;margin:8px 0 12px}
 .fld.mono{font-family:var(--ui);font-size:13px;line-height:1.5}
 
 /* ---- leitor (Biblioteca) ---- */

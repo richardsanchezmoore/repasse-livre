@@ -58,8 +58,10 @@ export async function POST(req) {
   const idAssin = planos?.assinatura?.cakto_produto || "";
   const tipo = produto && idAssin && String(produto) === String(idAssin) ? "assinatura" : "kit";
 
-  const cancela = /(refund|estorn|cancel|chargeback|expired|dispute)/.test(evento);
-  const pago = /(approv|paid|aprovad|pago|active|complete|purchase)/.test(evento) && !/(refus|declin|pend)/.test(evento);
+  // Cancelamento/estorno → revoga. Pendente/recusado → ignora.
+  // Aprovado, RENOVAÇÃO recorrente, ou evento desconhecido → concede (renova).
+  const cancela = /(refund|estorn|cancel|chargeback|expired|dispute|revok|inadimpl|overdue|atras)/.test(evento);
+  const pendente = /(pend|aguard|await|refus|declin|fail|recus|error|erro)/.test(evento);
 
   const user = await acharOuCriarUsuario(admin, email, nome);
 
@@ -68,13 +70,14 @@ export async function POST(req) {
     console.log(`[cakto] REVOGADO ${tipo} · ${email} · ${evento}`);
     return NextResponse.json({ ok: true, acao: "revogado", tipo });
   }
-  if (pago || evento === "") {
+  if (!pendente) {
+    // assinatura: renova ~35 dias a cada webhook de pagamento (folga p/ atraso do repasse).
     const expira = tipo === "assinatura" ? new Date(Date.now() + 35 * 24 * 3600 * 1000).toISOString() : null;
     await concederAcesso(admin, user.id, tipo, { origem: "cakto", referencia: String(produto || ""), expira_em: expira });
-    console.log(`[cakto] CONCEDIDO ${tipo} · ${email} · ${evento}`);
+    console.log(`[cakto] CONCEDIDO/RENOVADO ${tipo} · ${email} · ${evento}`);
     return NextResponse.json({ ok: true, acao: "concedido", tipo });
   }
-  console.log(`[cakto] ignorado · ${evento} · ${email}`);
+  console.log(`[cakto] ignorado (pendente) · ${evento} · ${email}`);
   return NextResponse.json({ ok: true, acao: "ignorado", evento });
 }
 

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { usuariaAtual } from "@/lib/auth";
+import { ehAdmin } from "@/lib/admin";
+import { acessosDaUsuaria, temAcesso } from "@/lib/acessos";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "A Biblioteca · A Corte" };
@@ -11,11 +13,11 @@ export default async function Biblioteca() {
   if (!user) redirect("/entrar?redirect=/biblioteca");
 
   const sb = await criarSupabaseServer();
-  const { data: obras } = await sb
-    .from("corte_materiais")
-    .select("chave, titulo, subtitulo, icone")
-    .eq("ativo", true)
-    .order("ordem");
+  const [{ data: obras }, acessos, admin] = await Promise.all([
+    sb.from("corte_materiais").select("chave, titulo, subtitulo, icone, acesso").eq("ativo", true).order("ordem"),
+    acessosDaUsuaria(sb, user.id),
+    ehAdmin(sb, user.id),
+  ]);
 
   return (
     <main className="screen">
@@ -24,16 +26,19 @@ export default async function Biblioteca() {
       <p className="h-sub">O diário e os tesouros da temporada, sempre à mão.</p>
 
       <div className="shelf" style={{ marginTop: 18 }}>
-        {(obras || []).map((o) => (
-          <Link key={o.chave} href={`/biblioteca/${o.chave}`} className="row">
-            <span className="ri">{o.icone || "📖"}</span>
-            <div>
-              <div className="rt">{o.titulo}</div>
-              <div className="rd">{o.subtitulo}</div>
-            </div>
-            <span className="rgo">→</span>
-          </Link>
-        ))}
+        {(obras || []).map((o) => {
+          const aberto = admin || temAcesso(acessos, o.acesso);
+          return (
+            <Link key={o.chave} href={`/biblioteca/${o.chave}`} className={"row" + (aberto ? "" : " trancada")}>
+              <span className="ri">{o.icone || "📖"}</span>
+              <div style={{ minWidth: 0 }}>
+                <div className="rt">{o.titulo}</div>
+                <div className="rd">{o.subtitulo}</div>
+              </div>
+              <span className="rgo">{aberto ? "→" : "🔒"}</span>
+            </Link>
+          );
+        })}
       </div>
 
       <hr className="divider" />
