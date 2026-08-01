@@ -3,7 +3,10 @@
   --gold:#b0873f; --gold-2:#cba85b; --gold-soft:#e6d3a3;
   --wine:#7c2b37; --wine-2:#61202a; --ink:#2c2833; --ink-soft:#5a5361;
   --disp:'Playfair Display',Georgia,serif;
-  --serif:'Cormorant Garamond','Times New Roman',serif;
+  /* corpo de leitura (80%): Merriweather — desenhada p/ tela, alta legibilidade no mobile */
+  --serif:'Merriweather',Georgia,serif;
+  /* decorativa (20%): Cormorant — subtítulos e citações elegantes */
+  --fancy:'Cormorant Garamond','Times New Roman',serif;
   --script:'Pinyon Script',cursive;
   --ui:system-ui,-apple-system,'Segoe UI',sans-serif;
   --nav-h:66px;
@@ -11,7 +14,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:var(--serif); color:var(--ink);
+  font-family:var(--serif); color:var(--ink); line-height:1.6;
   background:
     radial-gradient(900px 500px at 50% -8%, #eaf1f8 0%, transparent 55%),
     linear-gradient(180deg,#e6eef7 0%,#dfe8f2 45%,#eaf1f8 100%);
@@ -36,7 +39,7 @@ a{color:inherit;text-decoration:none}
 .eyebrow{font:700 11px/1 var(--ui);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
 .h-title{font:900 clamp(26px,7vw,34px)/1.05 var(--disp);color:var(--ink);letter-spacing:-.01em}
 .h-title em{font-style:italic;color:var(--wine)}
-.h-sub{font:italic 500 16px/1.5 var(--serif);color:var(--ink-soft);margin-top:8px}
+.h-sub{font:italic 500 17px/1.5 var(--fancy);color:var(--ink-soft);margin-top:8px}
 .sec-h{font:700 20px var(--disp);color:var(--wine);margin:22px 0 12px}
 
 /* ---- cards ---- */
@@ -48,7 +51,7 @@ a{color:inherit;text-decoration:none}
 .c-k{font:700 10.5px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .c-t{font:700 21px/1.15 var(--disp);color:var(--ink);margin:6px 0 6px}
 .c-t em{font-style:italic;color:var(--wine)}
-.c-p{font:500 15px/1.5 var(--serif);color:var(--ink-soft)}
+.c-p{font:400 14.5px/1.6 var(--serif);color:var(--ink-soft)}
 .pill{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:linear-gradient(180deg,var(--wine),var(--wine-2));
   color:#fdf3dd;border:1px solid var(--gold-2);border-radius:9px;padding:11px 18px;font:700 14px var(--ui)}
 
@@ -84,7 +87,7 @@ a{color:inherit;text-decoration:none}
 
 .divider{border:none;text-align:center;margin:20px 0 8px}
 .divider::before{content:"❦";color:var(--gold);font-size:15px}
-.muted{font:italic 500 14px var(--serif);color:var(--ink-soft);text-align:center;padding:8px;display:block}
+.muted{font:italic 500 15px var(--fancy);color:var(--ink-soft);text-align:center;padding:8px;display:block}
 
 /* ---- herói (Dossiê na Home) ---- */
 .card.hero{display:block;background:linear-gradient(160deg,#f7edd4,#efe0be);border-color:var(--gold)}
@@ -240,7 +243,7 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .lp-hero{text-align:center;padding:34px 22px 18px;background:radial-gradient(700px 300px at 50% -10%,#eaf1f8 0%,transparent 60%)}
 .lp-title{font:900 clamp(27px,8vw,37px)/1.08 var(--disp);color:var(--ink);letter-spacing:-.01em;margin:8px 0}
 .lp-title em{font-style:italic;color:var(--wine)}
-.lp-sub{font:500 16.5px/1.55 var(--serif);color:var(--ink-soft);max-width:360px;margin:0 auto 18px}
+.lp-sub{font:italic 500 17px/1.55 var(--fancy);color:var(--ink-soft);max-width:360px;margin:0 auto 18px}
 .lp-cta{margin-top:4px}
 .lp-mini{font:500 12.5px var(--ui);color:var(--ink-soft);margin-top:10px}
 .lp-benes{display:flex;flex-direction:column;gap:10px;padding:12px 18px}
@@ -285,14 +288,14 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
   padding-top:16px;border-top:1px solid var(--gold-soft)}
 .leitura h2:first-child{border-top:none;padding-top:0;margin-top:6px}
 .leitura h3{font:700 18px var(--disp);color:var(--gold);margin:18px 0 6px}
-.leitura p{font-size:clamp(16.5px,4.4vw,18px);line-height:1.72;margin:0 0 14px;text-align:left}
+.leitura p{font-size:clamp(16px,4.3vw,17.5px);line-height:1.8;margin:0 0 15px;text-align:left}
 .leitura strong{color:var(--wine);font-weight:600}
 .leitura em{font-style:italic}
 .leitura blockquote{margin:14px 0;padding:12px 16px;background:rgba(255,255,255,.55);
   border-left:3px solid var(--gold);border-radius:0 10px 10px 0;font-style:italic;color:var(--ink-soft);
   font-size:clamp(15px,4vw,17px);line-height:1.6}
 .leitura ul{margin:0 0 14px;padding-left:22px}
-.leitura li{font-size:clamp(16px,4.2vw,17.5px);line-height:1.65;margin-bottom:6px}
+.leitura li{font-size:clamp(15.5px,4.1vw,17px);line-height:1.72;margin-bottom:7px}
 .leitura .ld-rule{border:none;text-align:center;margin:22px 0}
 .leitura .ld-rule::before{content:"❦";color:var(--gold);font-size:16px}
 
