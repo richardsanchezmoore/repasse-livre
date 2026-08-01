@@ -46,6 +46,11 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
         <Campo label="Dias de teste grátis" val={p.assinatura?.trial_dias} onChange={(v) => upd("assinatura", "trial_dias", v)} ph="7" />
       </section>
 
+      <section className="card" style={{ marginTop: 14 }}>
+        <div className="c-k">🍵 O Salão (grupo das assinantes)</div>
+        <Campo label="Link do grupo de WhatsApp" val={p.salao_whatsapp} onChange={(v) => setP({ ...p, salao_whatsapp: v })} ph="https://chat.whatsapp.com/…" />
+      </section>
+
       <button type="button" className="pill" onClick={salvar} disabled={busy} style={{ marginTop: 14 }}>
         {busy ? "Salvando…" : ok ? "Salvo ✓" : "Salvar planos"}
       </button>

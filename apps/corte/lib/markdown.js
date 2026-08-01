@@ -33,9 +33,24 @@ export function mdParaHtml(md) {
     paras = [];
   };
   const flushL = () => { if (itens.length) { html += "<ul>" + itens.map((i) => `<li>${inline(i)}</li>`).join("") + "</ul>"; itens = []; } };
+  let tabela = [];
+  const flushT = () => {
+    if (!tabela.length) return;
+    const linhasT = tabela.map((r) => r.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map((c) => c.trim()));
+    const corpo = linhasT.filter((r) => !r.every((c) => c === "" || /^:?-{2,}:?$/.test(c)));
+    let out = '<div class="ld-tabwrap"><table class="ld-tab"><tbody>';
+    corpo.forEach((cells, i) => {
+      const tag = i === 0 ? "th" : "td";
+      out += "<tr>" + cells.map((c) => `<${tag}>${inline(c)}</${tag}>`).join("") + "</tr>";
+    });
+    html += out + "</tbody></table></div>";
+    tabela = [];
+  };
 
   for (const raw of linhas) {
     const l = raw.trim();
+    if (l.startsWith("|") && l.length > 1) { flushP(); flushL(); tabela.push(l); continue; }
+    if (tabela.length) flushT();
     if (l === "") { flushP(); flushL(); continue; }
     const img = l.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (img) { flushP(); flushL(); html += `<img class="ld-art" src="${img[2]}" alt="${esc(img[1])}" loading="lazy"/>`; continue; }
@@ -47,6 +62,6 @@ export function mdParaHtml(md) {
     if (l.startsWith("- ") || l.startsWith("* ")) { flushP(); itens.push(l.slice(2)); continue; }
     paras.push(l);
   }
-  flushP(); flushL();
+  flushP(); flushL(); flushT();
   return html;
 }
