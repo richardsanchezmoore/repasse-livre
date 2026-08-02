@@ -20,20 +20,16 @@ export async function GET() {
   // Botão de WhatsApp na landing: só aparece quando ATIVADO no admin (ninguém pra
   // responder → melhor sem botão). Default: desativado.
   let whatsapp = { ativo: false, numero: "" };
-  const _diag = { hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL, hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY, gotRow: false, err: null };
   try {
     const admin = adminSemCache();
-    const { data, error } = await admin.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
-    _diag.err = error ? String(error.message) : null;
-    _diag.gotRow = !!data;
-    _diag.kitLido = data?.valor?.kit?.preco ?? null;
+    const { data } = await admin.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
     const p = data?.valor || {};
     if (p.kit?.preco) kit = p.kit.preco;
     if (p.assinatura?.preco) assinatura = p.assinatura.preco;
     if (p.whatsapp) whatsapp = { ativo: !!p.whatsapp.ativo, numero: String(p.whatsapp.numero || "").replace(/\D/g, "") };
-  } catch (e) { _diag.err = "throw:" + (e?.message || String(e)); }
+  } catch { /* mantém os defaults */ }
   return NextResponse.json(
-    { kit, assinatura, whatsapp, _diag },
-    { headers: { "cache-control": "no-store" } }
+    { kit, assinatura, whatsapp },
+    { headers: { "cache-control": "public, max-age=60, s-maxage=60" } }
   );
 }
