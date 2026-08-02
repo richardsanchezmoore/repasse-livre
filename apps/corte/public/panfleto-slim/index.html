@@ -57,10 +57,15 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .topbar b{color:#fff}
 
   /* CTA */
-  .cta{display:inline-flex;flex-direction:column;align-items:center;gap:3px;
+  .cta{position:relative;overflow:hidden;display:inline-flex;flex-direction:column;align-items:center;gap:3px;
     background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;
     font-family:var(--ui);font-weight:800;letter-spacing:.01em;padding:18px 36px;border-radius:6px;border:1px solid var(--gold-2);
     box-shadow:0 12px 28px -12px rgba(97,32,42,.85);transition:transform .15s, box-shadow .15s}
+  .cta>*{position:relative;z-index:1}
+  .cta::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;z-index:0;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);
+    animation:shine 3.4s ease-in-out infinite}
+  @keyframes shine{0%{left:-75%}45%{left:130%}100%{left:130%}}
   .cta:hover{transform:translateY(-2px)}
   .cta .big{font-size:17px;text-transform:uppercase}
   .cta .small{font-size:12.5px;font-weight:600;color:#f0d9ad;text-transform:none;letter-spacing:.03em}
@@ -177,9 +182,10 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:200;display:none;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
     background:linear-gradient(180deg,rgba(97,32,42,0),rgba(97,32,42,.14))}
   .sticky-cta.show{display:block}
-  .sticky-cta a{display:flex;align-items:center;justify-content:center;gap:10px;max-width:520px;margin:0 auto;
+  .sticky-cta a{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;max-width:520px;margin:0 auto;
     background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;border:1px solid var(--gold-2);border-radius:6px;
     padding:15px 20px;font:800 15px var(--ui);box-shadow:0 12px 30px -8px rgba(97,32,42,.7)}
+  .sticky-cta a::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:shine 3.4s ease-in-out infinite}
   .sticky-cta a b{color:#f0d9ad}
   .center{text-align:center}
   .mt{margin-top:26px}
