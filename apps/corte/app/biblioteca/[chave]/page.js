@@ -63,6 +63,11 @@ export default async function Leitor({ params }) {
           <span className="ld-ic">{m.icone || "📖"}</span>
           <h1 className="h-title" style={{ fontSize: 27 }}>{m.titulo}</h1>
           {m.subtitulo && <p className="h-sub" style={{ marginTop: 4 }}>{m.subtitulo}</p>}
+          {m.pdf_path && (
+            <a href={`/api/pdf/${params.chave}`} className="pill pdf-btn" style={{ marginTop: 12 }}>
+              📄 Salvar em PDF
+            </a>
+          )}
         </div>
         <article className="leitura" dangerouslySetInnerHTML={{ __html: mdParaHtml(m.corpo) }} />
       </div>
