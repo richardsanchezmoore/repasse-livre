@@ -82,6 +82,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .checks{list-style:none;display:inline-grid;gap:6px;text-align:left;margin:16px 0 4px}
   .checks li{font:600 14.5px var(--ui);color:var(--ink);padding-left:26px;position:relative}
   .checks li::before{content:"✓";position:absolute;left:0;color:#2f8f5b;font-weight:800}
+  .checks.checks-row{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;margin:18px auto 4px}
   .book{width:min(280px,68%);height:auto;margin:22px auto 0;display:block;filter:drop-shadow(0 34px 46px rgba(60,50,30,.42))}
 
   .sec-head{text-align:center;margin-bottom:28px}
@@ -173,8 +174,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .sticky-cta a::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:shine 3.4s ease-in-out infinite}
   /* depoimentos WhatsApp + botao flutuante */
   .wslider{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;scrollbar-width:thin;scrollbar-color:var(--gold-soft) transparent}
-  .wcard{flex:0 0 clamp(220px,72%,262px);scroll-snap-align:center;border-radius:16px;overflow:hidden;border:1px solid var(--gold-soft);box-shadow:0 16px 34px -22px rgba(44,40,51,.55);background:#fff}
-  .wcard img{display:block;width:100%;height:auto}
+  .wcard{flex:0 0 auto;scroll-snap-align:center;height:clamp(430px,62vh,520px);border-radius:16px;overflow:hidden;border:1px solid var(--gold-soft);box-shadow:0 16px 34px -22px rgba(44,40,51,.55);background:#fff}
+  .wcard img{display:block;height:100%;width:auto}
   .wpp-flutuante{position:fixed;right:clamp(16px,3vw,24px);bottom:clamp(84px,14vw,96px);z-index:210;display:inline-flex;align-items:center;gap:9px;padding:12px 18px;font:700 14px var(--ui);color:#fff;background:#25d366;border-radius:999px;text-decoration:none;box-shadow:0 10px 26px -8px rgba(37,211,102,.55),0 3px 10px -4px rgba(0,0,0,.35);transition:transform .15s}
   .wpp-flutuante:hover{background:#1fbe5a;transform:translateY(-2px)}
   @media(max-width:560px){.wpp-flutuante{padding:13px;gap:0}.wpp-flutuante-texto{display:none}}
@@ -195,11 +196,9 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         <span class="big">👑 Quero conhecer os 12 pretendentes</span>
         <span class="small">Acesso imediato · no seu celular</span>
       </a>
-      <ul class="checks">
-        <li>Acesso imediato após a compra</li>
+      <ul class="checks checks-row">
         <li>Leia pelo celular — ou salve em PDF</li>
         <li>Kit completo de discernimento incluso</li>
-        <li>Pagamento único · acesso vitalício</li>
       </ul>
       <img class="book" src="/panfleto/imagens/capa-3d.png" alt="O Panfleto Secreto do Altar">
     </section>
@@ -246,6 +245,13 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         <li>O que observar antes de assumir um compromisso</li>
       </ul>
       <div class="center mt"><a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439"><span class="big">👑 Quero conhecer os 12</span><span class="small">Acesso imediato · no seu celular</span></a></div>
+    </section>
+
+    <!-- PROVA SOCIAL (movida p/ apos os 12 perfis) -->
+    <section>
+      <div class="sec-head"><span class="kicker">Damas da igreja</span><h2>O que as leitoras estão <em>dizendo</em></h2></div>
+      <div class="wslider"><div class="wcard"><img src="/panfleto/depoimentos/dep1.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep2.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep3.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep4.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep5.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep6.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep7.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep8.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep9.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div></div>
+      <p class="slider-hint">← arraste para ler mais →</p>
     </section>
 
     <!-- 5. A VIRADA -->
@@ -299,12 +305,6 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
       </div>
     </section>
 
-    <!-- 8. PROVA SOCIAL -->
-    <section>
-      <div class="sec-head"><span class="kicker">Damas da igreja</span><h2>O que as leitoras estão <em>dizendo</em></h2></div>
-      <div class="wslider"><div class="wcard"><img src="/panfleto/depoimentos/dep1.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep2.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep3.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep4.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep5.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep6.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep7.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep8.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep9.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep10.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep11.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep12.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep13.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div></div>
-      <p class="slider-hint">← arraste para ler mais →</p>
-    </section>
 
     <!-- 9. OFERTA -->
     <section id="comprar">
