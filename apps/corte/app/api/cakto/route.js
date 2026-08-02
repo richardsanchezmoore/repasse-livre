@@ -97,7 +97,7 @@ export async function POST(req) {
     const precoPlano = tipo === "assinatura" ? planos?.assinatura?.preco : planos?.kit?.preco;
     const valorPayload = Number(String(pick(d0, ["amount", "total", "offer.price", "price", "value"]) || "").toString().replace(/[^\d,.-]/g, "").replace(",", "."));
     const valorPlano = Number(String(precoPlano || "").replace(/[^\d,.-]/g, "").replace(",", "."));
-    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : 29.9));
+    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : 27.9));
     // não bloqueia a resposta do webhook se o CAPI demorar/falhar
     enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : "Panfleto + Kit" })
       .catch((e) => console.error("[cakto] capi falhou:", e?.message));
