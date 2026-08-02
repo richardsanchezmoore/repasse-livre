@@ -11,7 +11,7 @@ const NOITES = [
 export default function Jornada() {
   return (
     <main className="screen">
-      <div className="eyebrow">◈ A Escola da Corte ◈</div>
+      <div className="eyebrow">◈ A Escola das Virtuosas ◈</div>
       <h1 className="h-title">A sua <em>jornada</em></h1>
       <p className="h-sub">Sete noites de discernimento. Uma por vez — no seu ritmo.</p>
 
@@ -29,7 +29,7 @@ export default function Jornada() {
       </div>
 
       <hr className="divider" />
-      <p className="muted">Novos conteúdos toda semana para a assinante da Corte.</p>
+      <p className="muted">Novos conteúdos toda semana para a assinante das Damas Virtuosas.</p>
     </main>
   );
 }

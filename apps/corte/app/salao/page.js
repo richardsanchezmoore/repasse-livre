@@ -7,7 +7,7 @@ import { acessosDaUsuaria } from "@/lib/acessos";
 import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "O Salão · A Corte" };
+export const metadata = { title: "O Salão · Damas Virtuosas" };
 
 export default async function Salao() {
   const user = await usuariaAtual();
@@ -33,7 +33,7 @@ export default async function Salao() {
       {liberado ? (
         <section className="card" style={{ marginTop: 18, textAlign: "center" }}>
           <div className="fx-selo" style={{ margin: "0 auto 10px", width: 76, height: 76, fontSize: 34 }}>🍵</div>
-          <div className="c-t">Você é uma dama da Corte ✓</div>
+          <div className="c-t">Você é uma Dama Virtuosa ✓</div>
           <div className="c-p">Entre no grupo privado e junte-se à conversa das assinantes.</div>
           {salaoUrl
             ? <a href={salaoUrl} className="pill" target="_blank" rel="noopener noreferrer">Entrar no Salão →</a>
@@ -43,10 +43,10 @@ export default async function Salao() {
         <section className="card" style={{ marginTop: 18, textAlign: "center" }}>
           <div className="pw-lock" style={{ margin: "0 auto 8px" }}>🔒</div>
           <div className="c-t">Exclusivo das assinantes</div>
-          <div className="c-p">O Salão é o grupo privado das damas d’A Corte. Assine e entre na conversa — com quem entende a sua jornada.</div>
+          <div className="c-p">O Salão é o grupo privado das Damas Virtuosas. Assine e entre na conversa — com quem entende a sua jornada.</div>
           {assinUrl
-            ? <BotaoCompra url={assinUrl} className="pill">Assinar A Corte →</BotaoCompra>
-            : <Link href="/assinar" className="pill">Conhecer A Corte →</Link>}
+            ? <BotaoCompra url={assinUrl} className="pill">Assinar as Damas Virtuosas →</BotaoCompra>
+            : <Link href="/assinar" className="pill">Conhecer as Damas Virtuosas →</Link>}
         </section>
       )}
 

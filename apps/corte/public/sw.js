@@ -1,4 +1,4 @@
-// Service worker mínimo d'A Corte. Habilita a instalabilidade (o Chrome só
+// Service worker mínimo das Damas Virtuosas. Habilita a instalabilidade (o Chrome só
 // oferece "Adicionar à tela inicial" com um SW + fetch handler) + offline básico.
 const CACHE = "corte-v1";
 const CORE = ["/"];

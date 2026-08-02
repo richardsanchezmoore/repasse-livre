@@ -99,7 +99,7 @@ export async function POST(req) {
     const valorPlano = Number(String(precoPlano || "").replace(/[^\d,.-]/g, "").replace(",", "."));
     const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : 29.9));
     // não bloqueia a resposta do webhook se o CAPI demorar/falhar
-    enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "A Corte · assinatura" : "Panfleto + Kit" })
+    enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : "Panfleto + Kit" })
       .catch((e) => console.error("[cakto] capi falhou:", e?.message));
     // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
     // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.

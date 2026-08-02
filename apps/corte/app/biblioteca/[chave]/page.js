@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }) {
   const sb = await criarSupabaseServer();
   const { data: m } = await sb.from("corte_materiais").select("titulo").eq("chave", params.chave).maybeSingle();
-  return { title: m ? `${m.titulo} · A Corte` : "Leitura · A Corte" };
+  return { title: m ? `${m.titulo} · Damas Virtuosas` : "Leitura · Damas Virtuosas" };
 }
 
 export default async function Leitor({ params }) {
@@ -40,7 +40,7 @@ export default async function Leitor({ params }) {
           <h1 className="h-title" style={{ textAlign: "center" }}>{m.titulo}</h1>
           {m.subtitulo && <p className="h-sub" style={{ textAlign: "center" }}>{m.subtitulo}</p>}
           <p className="pw-msg">
-            Este tesouro faz parte {m.acesso === "assinatura" ? "d’A Corte (assinatura)" : "do Kit da Temporada"}.
+            Este tesouro faz parte {m.acesso === "assinatura" ? "das Damas Virtuosas (assinatura)" : "do Kit da Temporada"}.
             Libere o seu acesso e leia agora mesmo.
           </p>
           {url ? (

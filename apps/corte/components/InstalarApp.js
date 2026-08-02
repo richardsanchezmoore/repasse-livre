@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function InstalarApp({ titulo = "📲 Leve A Corte no bolso" }) {
+export default function InstalarApp({ titulo = "📲 Leve Damas Virtuosas no bolso" }) {
   const [prompt, setPrompt] = useState(null);
   const [instalado, setInstalado] = useState(false);
   const [os, setOs] = useState("outro"); // ios | android | outro
@@ -65,7 +65,7 @@ export default function InstalarApp({ titulo = "📲 Leve A Corte no bolso" }) {
               </>
             ) : (
               <>
-                <div className="inst-sheet-h">Instalar A Corte</div>
+                <div className="inst-sheet-h">Instalar Damas Virtuosas</div>
                 <ol className="inst-steps">
                   <li><span className="inst-num">1</span> Abra o menu <strong>{os === "android" ? "⋮" : "⋮ / barra de endereço"}</strong> do navegador.</li>
                   <li><span className="inst-num">2</span> Toque em <strong>“Instalar app”</strong> (ou “Adicionar à tela inicial”).</li>

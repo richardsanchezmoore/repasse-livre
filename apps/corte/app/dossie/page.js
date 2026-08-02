@@ -8,7 +8,7 @@ import { carregarEsquema, totalCampos, nivel } from "@/lib/dossieDb";
 import Avatar from "@/components/Avatar";
 import BotaoCompra from "@/components/BotaoCompra";
 
-export const metadata = { title: "O Dossiê · A Corte" };
+export const metadata = { title: "O Dossiê · Damas Virtuosas" };
 export const dynamic = "force-dynamic";
 
 export default async function DossiePage() {
@@ -51,11 +51,11 @@ export default async function DossiePage() {
           <div className="c-k">✦ Mais de um pretendente?</div>
           <div className="c-t">Investigue <em>quantos</em> quiser</div>
           <div className="c-p">
-            No Kit você acompanha um dossiê. Entre para <strong>A Corte</strong> e abra dossiês ilimitados — e em breve compare os pretendentes lado a lado para ver quem realmente vale o seu altar.
+            No Kit você acompanha um dossiê. Entre para as <strong>Damas Virtuosas</strong> e abra dossiês ilimitados — e em breve compare os pretendentes lado a lado para ver quem realmente vale o seu altar.
           </div>
           {assin.cakto_url
             ? <BotaoCompra url={assin.cakto_url} className="pill">{assin.trial_dias ? `Começar ${assin.trial_dias} dias grátis` : "Entrar para a Comunidade"}{assin.preco ? ` · ${assin.preco}` : ""} →</BotaoCompra>
-            : <Link href="/assinar" className="pill">Conhecer A Corte →</Link>}
+            : <Link href="/assinar" className="pill">Conhecer as Damas Virtuosas →</Link>}
         </section>
       )}
 

@@ -3,7 +3,7 @@ import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "A Corte · assinatura",
+  title: "Damas Virtuosas · assinatura",
   description: "O refúgio de discernimento, fé e comunidade — na Temporada de Pretendentes.",
 };
 
@@ -25,9 +25,9 @@ export default async function Assinar() {
   return (
     <main className="lp">
       <div className="lp-hero">
-        <div className="eyebrow">◈ A Corte · assinatura ◈</div>
+        <div className="eyebrow">◈ Damas Virtuosas · assinatura ◈</div>
         <h1 className="lp-title">O seu <em>refúgio</em> de discernimento</h1>
-        <p className="lp-sub">Enquanto o mundo manda você caçar, a Corte te ensina a <strong>ler os sinais</strong> — com fé, elegância e uma pitada de veneno bíblico.</p>
+        <p className="lp-sub">Enquanto o mundo manda você caçar, Damas Virtuosas te ensina a <strong>ler os sinais</strong> — com fé, elegância e uma pitada de veneno bíblico.</p>
         {url
           ? <BotaoCompra url={url} className="pill lp-cta">{trial ? `Começar ${trial} dias grátis` : "Assinar agora"} · {preco} →</BotaoCompra>
           : <span className="pill lp-cta" style={{ opacity: 0.6 }}>Em breve</span>}
@@ -49,7 +49,7 @@ export default async function Assinar() {
       <section className="card dark" style={{ margin: "6px 18px" }}>
         <div className="c-k">A promessa</div>
         <div className="c-t">"Sobre tudo o que se deve guardar, <em>guarda o teu coração</em>."</div>
-        <div className="c-p">Provérbios 4:23. A Corte é o lugar onde você aprende a fazer isso — semana após semana.</div>
+        <div className="c-p">Provérbios 4:23. Damas Virtuosas é o lugar onde você aprende a fazer isso — semana após semana.</div>
       </section>
 
       <div className="lp-final">

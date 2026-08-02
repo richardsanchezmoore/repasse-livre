@@ -37,7 +37,7 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
       </section>
 
       <section className="card" style={{ marginTop: 14 }}>
-        <div className="c-k">✦ A Corte (assinatura)</div>
+        <div className="c-k">✦ Damas Virtuosas (assinatura)</div>
         <Campo label="Nome" val={p.assinatura?.nome} onChange={(v) => upd("assinatura", "nome", v)} />
         <Campo label="Preço" val={p.assinatura?.preco} onChange={(v) => upd("assinatura", "preco", v)} ph="R$ 19,90/mês" />
         <Campo label="Descrição" val={p.assinatura?.descricao} onChange={(v) => upd("assinatura", "descricao", v)} />

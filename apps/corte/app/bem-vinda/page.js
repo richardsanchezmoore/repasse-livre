@@ -2,7 +2,7 @@ import BemVindaAcesso from "@/components/BemVindaAcesso";
 import InstalarApp from "@/components/InstalarApp";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Bem-vinda à Corte" };
+export const metadata = { title: "Bem-vinda às Damas Virtuosas" };
 
 export default function BemVinda({ searchParams }) {
   // A Cakto pode nomear a variável de e-mail de formas diferentes no redirecionamento —
@@ -17,7 +17,7 @@ export default function BemVinda({ searchParams }) {
     <main className="lp">
       <div className="lp-hero">
         <div className="eyebrow">◈ Compra confirmada ◈</div>
-        <h1 className="lp-title">Bem-vinda à <em>Corte</em>, dama.</h1>
+        <h1 className="lp-title">Bem-vinda, <em>dama virtuosa</em>.</h1>
         <p className="lp-sub">Sua conta e o seu <strong>Kit</strong> já estão prontos. Crie uma senha e entre <em>na hora</em> — sem esperar e-mail.</p>
       </div>
 
@@ -28,7 +28,7 @@ export default function BemVinda({ searchParams }) {
       </section>
 
       <div style={{ margin: "0 18px" }}>
-        <InstalarApp titulo="📲 Já deixe A Corte na tela inicial" />
+        <InstalarApp titulo="📲 Já deixe Damas Virtuosas na tela inicial" />
       </div>
 
       <div className="lp-final">

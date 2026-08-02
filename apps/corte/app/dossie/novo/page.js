@@ -4,7 +4,7 @@ import { usuariaAtual } from "@/lib/auth";
 import SeletorAvatar from "@/components/SeletorAvatar";
 import { criarDossie } from "../actions";
 
-export const metadata = { title: "Novo pretendente · A Corte" };
+export const metadata = { title: "Novo pretendente · Damas Virtuosas" };
 
 export default async function NovoDossiePage() {
   const user = await usuariaAtual();

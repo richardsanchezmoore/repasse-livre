@@ -34,7 +34,7 @@ export default async function Perfil() {
         <Link href="/admin/dossie" className="card hero" style={{ marginTop: 16, display: "block" }}>
           <div className="c-k">Acesso de administração</div>
           <div className="c-t">✦ Abrir o <em>Painel</em></div>
-          <div className="c-p">Construir o Dossiê, publicar materiais e gerir a Corte.</div>
+          <div className="c-p">Construir o Dossiê, publicar materiais e gerir as Damas Virtuosas.</div>
           <span className="pill">Entrar no painel →</span>
         </Link>
       )}
@@ -60,7 +60,7 @@ export default async function Perfil() {
 
       {/* Assinatura */}
       <section className="card dark" style={{ marginTop: 14 }}>
-        <div className="c-k">{assin.nome || "A Corte"} · assinatura</div>
+        <div className="c-k">{assin.nome || "Damas Virtuosas"} · assinatura</div>
         {temAssin ? (
           <>
             <div className="c-t">✓ Assinatura ativa</div>

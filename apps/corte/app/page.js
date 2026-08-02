@@ -24,7 +24,7 @@ export default async function Home() {
     <main className="screen">
       <div className="eyebrow">◈ A Temporada ◈</div>
       <h1 className="h-title">Querida <em>leitora</em>,</h1>
-      <p className="h-sub">bem-vinda à Corte. Aqui você aprende a ler os sinais — antes do altar.</p>
+      <p className="h-sub">bem-vinda às Damas Virtuosas. Aqui você aprende a ler os sinais — antes do altar.</p>
 
       <section className="card dark" style={{ marginTop: 18 }}>
         <div className="c-k">Devocional de hoje</div>

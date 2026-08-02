@@ -7,7 +7,7 @@ import { acessosDaUsuaria, temAcesso } from "@/lib/acessos";
 import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "A Biblioteca · A Corte" };
+export const metadata = { title: "A Biblioteca · Damas Virtuosas" };
 
 export default async function Biblioteca() {
   const user = await usuariaAtual();
@@ -48,13 +48,13 @@ export default async function Biblioteca() {
       {!ehAssinante && (
         <section className="card dark" style={{ marginTop: 18, textAlign: "center" }}>
           <div className="c-k">✦ Vá além do Kit</div>
-          <div className="c-t">Entre para <em>A Corte</em></div>
+          <div className="c-t">Entre para as <em>Damas Virtuosas</em></div>
           <div className="c-p">
             Dossiês ilimitados, a Jornada semanal, o Salão das damas e as ferramentas de discernimento — tudo o que o Kit começou, aprofundado.
           </div>
           {assin.cakto_url
             ? <BotaoCompra url={assin.cakto_url} className="pill">{assin.trial_dias ? `Começar ${assin.trial_dias} dias grátis` : "Assinar"}{assin.preco ? ` · ${assin.preco}` : ""} →</BotaoCompra>
-            : <Link href="/assinar" className="pill">Conhecer A Corte →</Link>}
+            : <Link href="/assinar" className="pill">Conhecer as Damas Virtuosas →</Link>}
         </section>
       )}
 

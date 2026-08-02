@@ -3,7 +3,7 @@ import { usuariaAtual } from "@/lib/auth";
 import Quiz from "@/components/Quiz";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "O Veredito Real · A Corte" };
+export const metadata = { title: "O Veredito Real · Damas Virtuosas" };
 
 export default async function QuizPage() {
   const user = await usuariaAtual();

@@ -34,7 +34,7 @@ export default async function AdminMembrosPage() {
   return (
     <main className="screen">
       <div className="eyebrow">◈ Membros ◈</div>
-      <h1 className="h-title">As <em>damas</em> da Corte</h1>
+      <h1 className="h-title">As <em>Damas Virtuosas</em></h1>
       <p className="h-sub">{lista.length} conta(s). Conceda acessos, promova admin, acompanhe quem entrou.</p>
       <div style={{ marginTop: 16 }}>
         <ConstrutorMembros membros={lista} />

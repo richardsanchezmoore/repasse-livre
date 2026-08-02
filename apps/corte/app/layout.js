@@ -4,7 +4,7 @@ import TopBar from "@/components/TopBar";
 import RegistrarSW from "@/components/RegistrarSW";
 
 export const metadata = {
-  title: "A Corte · Pela Fé",
+  title: "Damas Virtuosas · Pela Fé",
   description: "O seu refúgio de discernimento, fé e comunidade — na Temporada de Pretendentes.",
   manifest: "/manifest.webmanifest",
 };
@@ -29,10 +29,10 @@ export default function RootLayout({ children }) {
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="A Corte" />
+        <meta name="apple-mobile-web-app-title" content="Damas Virtuosas" />
         <link rel="apple-touch-icon" href="/icon-180.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-        {/* Meta Pixel (A Corte · Damas do Altar) — PageView em todo o app */}
+        {/* Meta Pixel (Damas Virtuosas · Damas do Altar) — PageView em todo o app */}
         <script
           dangerouslySetInnerHTML={{
             __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1013277894836851');fbq('track','PageView');`,
