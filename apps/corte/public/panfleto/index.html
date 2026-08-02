@@ -82,7 +82,9 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .checks{list-style:none;display:inline-grid;gap:6px;text-align:left;margin:16px 0 4px}
   .checks li{font:600 14.5px var(--ui);color:var(--ink);padding-left:26px;position:relative}
   .checks li::before{content:"✓";position:absolute;left:0;color:#2f8f5b;font-weight:800}
-  .checks.checks-row{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;margin:18px auto 4px}
+  .checks.checks-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;text-align:left;margin:18px auto 4px}
+  .checks.checks-row li{background:rgba(255,255,255,.45);border:1px solid var(--gold-soft);border-radius:12px;padding:11px 16px 11px 38px}
+  .checks.checks-row li::before{left:16px}
   .book{width:min(280px,68%);height:auto;margin:22px auto 0;display:block;filter:drop-shadow(0 34px 46px rgba(60,50,30,.42))}
 
   .sec-head{text-align:center;margin-bottom:28px}
@@ -129,7 +131,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .kitem h3{font:700 21px var(--disp);color:var(--wine);margin-bottom:6px}
   .kitem p{font:400 15.5px/1.6 var(--serif);color:var(--ink-soft)}
   .kitem .soft{color:#2f6b48;font-weight:600}
-  .kitem .mock{margin-top:12px;width:min(230px,70%);filter:drop-shadow(0 22px 34px rgba(30,42,60,.34))}
+  .kitem .mock{margin-top:14px;width:min(340px,100%);display:block;filter:drop-shadow(0 22px 34px rgba(30,42,60,.34))}
 
   /* como recebe */
   .how{background:linear-gradient(180deg,#3f5670,#2c3d52);color:#eef3f8;border-radius:16px;padding:clamp(26px,5vw,48px);border:1px solid var(--gold);text-align:center}
@@ -203,6 +205,13 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
       <img class="book" src="/panfleto/imagens/capa-3d.png" alt="O Panfleto Secreto do Altar">
     </section>
 
+    <!-- PROVA SOCIAL (logo apos o herói) -->
+    <section>
+      <div class="sec-head"><span class="kicker">Damas da igreja</span><h2>O que as leitoras estão <em>dizendo</em></h2></div>
+      <div class="wslider"><div class="wcard"><img src="/panfleto/depoimentos/dep1.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep2.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep3.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep4.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep5.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep6.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep7.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep8.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep9.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div></div>
+      <p class="slider-hint">← arraste para ler mais →</p>
+    </section>
+
     <!-- 2. BIG IDEA -->
     <section>
       <div class="idea frame">
@@ -211,7 +220,6 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         <ul class="types">
           <li>O sedutor, cheio de palavras e vazio de atitudes.</li>
           <li>O preguiçoso, de grandes sonhos e pouca disposição.</li>
-          <li>O controlador, que chama de "cuidado".</li>
           <li>O que parece santo diante de todos — e revela outra face quando ninguém olha.</li>
         </ul>
         <div class="end">E talvez você já tenha conhecido um deles.</div>
@@ -247,20 +255,14 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
       <div class="center mt"><a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439"><span class="big">👑 Quero conhecer os 12</span><span class="small">Acesso imediato · no seu celular</span></a></div>
     </section>
 
-    <!-- PROVA SOCIAL (movida p/ apos os 12 perfis) -->
-    <section>
-      <div class="sec-head"><span class="kicker">Damas da igreja</span><h2>O que as leitoras estão <em>dizendo</em></h2></div>
-      <div class="wslider"><div class="wcard"><img src="/panfleto/depoimentos/dep1.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep2.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep3.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep4.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep5.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep6.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep7.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep8.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div><div class="wcard"><img src="/panfleto/depoimentos/dep9.png" alt="Depoimento de uma leitora no WhatsApp" loading="lazy"></div></div>
-      <p class="slider-hint">← arraste para ler mais →</p>
-    </section>
 
     <!-- 5. A VIRADA -->
     <section>
       <div class="turn-box frame">
-        <span class="kicker">Mas nós decidimos ir além…</span>
-        <p style="margin-top:14px">Você poderia receber apenas um PDF. Mas de que adiantaria reconhecer os sinais no livro… e esquecê-los quando o coração se envolver?</p>
+        <span class="kicker">Mas tem mais…</span>
+        <p style="margin-top:14px">Reconhecer os sinais no livro é fácil. Difícil é lembrar deles quando o coração se envolve.</p>
         <div class="big-idea">É muito mais do que um PDF.</div>
-        <p>Por isso a sua compra não entrega só o Panfleto: transformamos tudo num <b style="color:var(--wine)">Kit Completo de Discernimento</b> — para você não apenas ler os sinais, mas observá-los na vida real. Tudo incluso, sem custo adicional.</p>
+        <p>A sua compra vira um <b style="color:var(--wine)">Kit Completo de Discernimento</b> — pra você não só <em>ler</em> os sinais, mas <em>enxergá-los</em> na vida real. Tudo incluso.</p>
       </div>
     </section>
 
@@ -270,26 +272,26 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
       <div class="kit">
         <div class="kitem"><div class="ki">📜</div><div>
           <h3>1. O Panfleto Secreto do Altar</h3>
-          <p>Os 12 perfis para você aprender a reconhecer os padrões que merecem atenção.</p>
-          <p class="soft">Prefere só ler? Abra pelo celular ou salve o seu Panfleto em PDF e leia quando quiser. Sem complicação. ❤️</p>
+          <p>Os 12 perfis a reconhecer — ilustrados, com o versículo que denuncia cada um.</p>
+          <p class="soft">Prefere só ler? Salve em PDF e leia quando quiser. ❤️</p>
         </div></div>
         <div class="kitem"><div class="ki">🔎</div><div>
           <h3>2. O Dossiê da Dama</h3>
-          <p>Crie um dossiê privado do pretendente e registre o que observa: sinais verdes, sinais de atenção, padrões que se repetem. Porque memória apaixonada é seletiva. 👀</p>
+          <p>Investigue o seu pretendente e registre os sinais — verdes e vermelhos. Porque memória apaixonada é seletiva. 👀</p>
           <img class="mock" src="/panfleto/mockups/mock-dossie.png" alt="Dossiê da Dama">
         </div></div>
         <div class="kitem"><div class="ki">⚖️</div><div>
           <h3>3. O Veredito</h3>
-          <p>Suas respostas organizam os sinais e colocam diante dos seus olhos o que o coração tenta justificar. <b>A decisão é sua</b> — mas agora você decide olhando os sinais.</p>
+          <p>O app organiza os sinais e mostra o que o coração tenta justificar. <b>A decisão é sua</b> — agora com os olhos abertos.</p>
           <img class="mock" src="/panfleto/mockups/mock-veredito.png" alt="O Veredito">
         </div></div>
         <div class="kitem"><div class="ki">📖</div><div>
           <h3>4. O Diário da Dama</h3>
-          <p>Registre pensamentos, dúvidas e o que vai ficando claro. Um espaço seu, privado, sem julgamentos.</p>
+          <p>Um espaço seu, privado, pra registrar o que vai ficando claro.</p>
         </div></div>
         <div class="kitem"><div class="ki">❤️</div><div>
           <h3>5. O Cavalheiro Que Vale o Seu Altar</h3>
-          <p>Não é só sobre defeitos. Aprenda quais virtudes procurar — caráter, responsabilidade, respeito, fé vivida (não só declarada). Porque discernimento também é saber quando vale dizer <em>sim</em>.</p>
+          <p>Não é só evitar. Aprenda quais virtudes procurar — pra reconhecer quando vale dizer <em>sim</em>.</p>
         </div></div>
       </div>
     </section>
