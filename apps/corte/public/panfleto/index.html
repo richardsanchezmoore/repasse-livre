@@ -357,10 +357,10 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
 
   <footer>
     Prepare o seu chá, ajuste o espartilho e abra bem os olhos.
-    <span class="sign">Sua, na busca pelo escândalo bíblico — Lady Whistledown do Altar</span>
+    <span class="sign">Sua, na busca pelo escândalo bíblico — Lady do Altar</span>
   </footer>
 
-  <div class="sticky-cta"><a data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">👑 Liberar o meu acesso · R$ 29,90</a></div>
+  <div class="sticky-cta"><a data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">👑 Liberar o meu acesso · <span class="js-preco">R$ 29,90</span></a></div>
 
   <script>
     // Sticky CTA ao rolar
@@ -395,6 +395,16 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         });
       });
     })();
+
+    // Preço vem do painel admin (fonte da verdade) — sem hardcode. Injeta no .big-price e no .js-preco.
+    fetch('/api/preco').then(function(r){return r.json();}).then(function(d){
+      var k = d && d.kit; if(!k) return;
+      document.querySelectorAll('.js-preco').forEach(function(e){ e.textContent = k; });
+      var m = k.replace(/\s/g,'').match(/(\d+)[.,](\d{2})/);
+      if(m){ document.querySelectorAll('.big-price').forEach(function(e){
+        e.innerHTML = '<small>R$</small> '+m[1]+'<span class="c">,'+m[2]+'</span>';
+      }); }
+    }).catch(function(){});
   </script>
 
 </body>

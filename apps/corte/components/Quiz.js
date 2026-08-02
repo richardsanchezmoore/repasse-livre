@@ -30,7 +30,7 @@ export default function Quiz() {
             <p>{f.texto}</p>
           </div>
           <button type="button" className="fx-skip" onClick={refazer} style={{ margin: "18px auto 4px" }}>↺ Refazer o teste</button>
-          <p className="muted" style={{ fontFamily: "var(--script)", fontSize: 26, color: "var(--wine)" }}>Lady Whistledown do Altar</p>
+          <p className="muted" style={{ fontFamily: "var(--script)", fontSize: 26, color: "var(--wine)" }}>Lady do Altar</p>
         </div>
       </main>
     );

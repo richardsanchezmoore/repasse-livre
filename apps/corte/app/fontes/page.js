@@ -11,7 +11,7 @@ const AMOSTRA = {
   p1: "Toda dama já cruzou com ele: o homem que ora bonito, cita versículos de cor e comove a igreja inteira num domingo. Mas repare — a fé dele é palco, não altar. Ele ama a plateia que a devoção lhe rende, não o Deus a quem diz servir. E há uma distância enorme entre parecer espiritual e ser um homem de caráter.",
   p2: "O discernimento, querida leitora, não nasce da desconfiança, mas da atenção. Observe o que ele faz quando ninguém aplaude: como trata a mãe, o garçom, a mulher que discorda dele. É ali, no palco vazio, que o coração se revela — e é ali que a sua sabedoria deve olhar.",
   versiculo: "“Nem tudo o que reluz no culto reluz no compromisso.”",
-  ref: "— Lady Whistledown do Altar",
+  ref: "— Lady do Altar",
 };
 
 const OPCOES = [

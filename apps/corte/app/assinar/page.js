@@ -56,7 +56,7 @@ export default async function Assinar() {
         {url
           ? <BotaoCompra url={url} className="pill">{trial ? `Começar ${trial} dias grátis` : "Assinar"} · {preco} →</BotaoCompra>
           : <span className="pill" style={{ opacity: 0.6 }}>Em breve</span>}
-        <p className="muted">Uma dama sábia não improvisa o coração. — Lady Whistledown do Altar</p>
+        <p className="muted">Uma dama sábia não improvisa o coração. — Lady do Altar</p>
       </div>
     </main>
   );

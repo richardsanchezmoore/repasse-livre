@@ -51,7 +51,7 @@ export default async function Salao() {
       )}
 
       <hr className="divider" />
-      <p className="muted">Uma dama sábia caminha acompanhada. — Lady Whistledown do Altar</p>
+      <p className="muted">Uma dama sábia caminha acompanhada. — Lady do Altar</p>
     </main>
   );
 }

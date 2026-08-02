@@ -36,7 +36,7 @@ export default async function Home() {
       <Link href="/dossie" className="card hero" style={{ marginTop: 14 }}>
         <div className="c-k">A dinâmica da temporada</div>
         <div className="c-t">O <em>Dossiê</em> 🗂️</div>
-        <div className="c-p">Investigue seu pretendente como uma verdadeira Lady Whistledown. Quanto mais você o conhece, mais o Veredito se revela.</div>
+        <div className="c-p">Investigue seu pretendente como uma verdadeira Lady do Altar. Quanto mais você o conhece, mais o Veredito se revela.</div>
         <span className="pill">Abrir um dossiê →</span>
       </Link>
 
@@ -72,7 +72,7 @@ export default async function Home() {
       </div>
 
       <hr className="divider" />
-      <p className="muted">Sua, na busca pelo escândalo bíblico — Lady Whistledown do Altar</p>
+      <p className="muted">Sua, na busca pelo escândalo bíblico — Lady do Altar</p>
     </main>
   );
 }
