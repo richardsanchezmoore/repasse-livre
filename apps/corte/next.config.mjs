@@ -3,8 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
     return [
-      // Landing de vendas (HTML estático em /public/panfleto) com URL limpa /panfleto.
-      { source: "/panfleto", destination: "/panfleto/index.html" },
+      // Landings de vendas (HTML estático) com URL limpa.
+      { source: "/panfleto", destination: "/panfleto/index.html" },          // foco APP
+      { source: "/panfleto-slim", destination: "/panfleto-slim/index.html" }, // foco LIVRO (teste A/B)
     ];
   },
 };
