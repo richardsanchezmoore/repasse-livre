@@ -57,10 +57,15 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     font:600 15px/1.4 var(--fancy);letter-spacing:.02em;padding:11px 16px;border-bottom:1px solid var(--gold)}
   .topbar b{color:#fff}
 
-  .cta{display:inline-flex;flex-direction:column;align-items:center;gap:3px;
+  .cta{position:relative;overflow:hidden;display:inline-flex;flex-direction:column;align-items:center;gap:3px;
     background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;
     font-family:var(--ui);font-weight:800;padding:18px 32px;border-radius:6px;border:1px solid var(--gold-2);
     box-shadow:0 12px 28px -12px rgba(97,32,42,.85);transition:transform .15s}
+  .cta>*{position:relative;z-index:1}
+  .cta::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;z-index:0;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);
+    animation:shine 3.4s ease-in-out infinite}
+  @keyframes shine{0%{left:-75%}45%{left:130%}100%{left:130%}}
   .cta:hover{transform:translateY(-2px)}
   .cta .big{font-size:16.5px;text-transform:uppercase}
   .cta .small{font-size:12.5px;font-weight:600;color:#f0d9ad}
@@ -164,7 +169,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
 
   .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:200;display:none;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(97,32,42,0),rgba(97,32,42,.14))}
   .sticky-cta.show{display:block}
-  .sticky-cta a{display:flex;align-items:center;justify-content:center;gap:10px;max-width:520px;margin:0 auto;background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;border:1px solid var(--gold-2);border-radius:6px;padding:15px 20px;font:800 15px var(--ui);box-shadow:0 12px 30px -8px rgba(97,32,42,.7)}
+  .sticky-cta a{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;max-width:520px;margin:0 auto;background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;text-decoration:none;border:1px solid var(--gold-2);border-radius:6px;padding:15px 20px;font:800 15px var(--ui);box-shadow:0 12px 30px -8px rgba(97,32,42,.7)}
+  .sticky-cta a::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:shine 3.4s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -177,16 +183,16 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     <section class="hero">
       <span class="kicker">O Panfleto Secreto do Altar</span>
       <h1 class="head">Antes de entregar o seu coração, aprenda a <em>reconhecer os sinais</em>.</h1>
-      <p class="subhead">Conheça <b>12 tipos de pretendentes</b> que as histórias e os princípios bíblicos nos ensinam a observar — antes que o encanto fale mais alto que o caráter. Uma leitura leve, divertida e profundamente bíblica.</p>
+      <p class="subhead">Conheça <b>12 tipos de pretendentes</b> que a Bíblia nos ensina a observar — antes que o encanto fale mais alto que o caráter. Leitura leve, divertida e profundamente bíblica.</p>
       <a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">
         <span class="big">👑 Quero conhecer os 12 pretendentes</span>
-        <span class="small">Acesso imediato · R$ 27,90</span>
+        <span class="small">Acesso imediato · no seu celular</span>
       </a>
       <ul class="checks">
         <li>Acesso imediato após a compra</li>
         <li>Leia pelo celular — ou salve em PDF</li>
         <li>Kit completo de discernimento incluso</li>
-        <li>Pagamento único de <span class="js-preco">R$ 27,90</span></li>
+        <li>Pagamento único · acesso vitalício</li>
       </ul>
       <img class="book" src="/panfleto/imagens/capa-3d.png" alt="O Panfleto Secreto do Altar">
     </section>
@@ -195,7 +201,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     <section>
       <div class="idea frame">
         <h2>Muito antes dos apps de namoro…</h2>
-        <p class="lead" style="color:#eef3f8;text-align:center;max-width:600px;margin:0 auto 18px">A Bíblia já nos ensinava a observar o <em style="color:#e9c877">caráter</em>. Os tempos mudaram, as roupas mudaram, os aplicativos chegaram — mas certos padrões continuam surpreendentemente familiares.</p>
+        <p class="lead" style="color:#eef3f8;text-align:center;max-width:600px;margin:0 auto 18px">A Bíblia já ensinava a observar o <em style="color:#e9c877">caráter</em>. As roupas mudaram, os apps chegaram — os padrões, não:</p>
         <ul class="types">
           <li>O sedutor, cheio de palavras e vazio de atitudes.</li>
           <li>O preguiçoso, de grandes sonhos e pouca disposição.</li>
@@ -211,8 +217,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     <section class="pain">
       <div class="sec-head"><span class="kicker">Por que é tão difícil enxergar</span><h2>O problema é que eles raramente se apresentam <em>pelo nome</em>.</h2></div>
       <p>Ninguém chega dizendo: <span class="said">"Olá. Eu sou o Marquês Controlador." 🎭</span> Ele diz: <span class="said">"Só estou preocupado com você."</span></p>
-      <p>O homem das palavras doces não avisa que vai prometer muito e entregar pouco. E o preguiçoso não conta que pretende deixar todo o peso do futuro sobre você.</p>
-      <p>No começo, muitos sinais parecem pequenos. Alguns até parecem qualidades. E quando o coração começa a se envolver, fica muito mais fácil justificar aquilo que antes você enxergaria com clareza.</p>
+      <p>O das palavras doces não avisa que promete muito e entrega pouco. O preguiçoso não conta que vai deixar o peso do futuro com você.</p>
+      <p>No começo, os sinais parecem pequenos — alguns até parecem qualidades. Quando o coração se envolve, fica fácil justificar o que você enxergaria de longe.</p>
       <div class="quote-big">❤️ O coração se encanta com palavras.<br>A sabedoria observa padrões.</div>
     </section>
 
@@ -234,7 +240,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         <li>Os sinais que costumamos racionalizar</li>
         <li>O que observar antes de assumir um compromisso</li>
       </ul>
-      <div class="center mt"><a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439"><span class="big">👑 Quero conhecer os 12</span><span class="small">Acesso imediato · R$ 27,90</span></a></div>
+      <div class="center mt"><a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439"><span class="big">👑 Quero conhecer os 12</span><span class="small">Acesso imediato · no seu celular</span></a></div>
     </section>
 
     <!-- 5. A VIRADA -->
@@ -243,7 +249,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         <span class="kicker">Mas nós decidimos ir além…</span>
         <p style="margin-top:14px">Você poderia receber apenas um PDF. Mas de que adiantaria reconhecer os sinais no livro… e esquecê-los quando o coração se envolver?</p>
         <div class="big-idea">É muito mais do que um PDF.</div>
-        <p>Por isso, a sua compra não entrega só o Panfleto. Nós transformamos todo o conteúdo em um <b style="color:var(--wine)">Kit Completo de Discernimento</b> — uma experiência criada para ajudar você não apenas a ler sobre os sinais, mas a observá-los na vida real. E tudo já está incluso nos mesmos <span class="js-preco">R$ 27,90</span>.</p>
+        <p>Por isso a sua compra não entrega só o Panfleto: transformamos tudo num <b style="color:var(--wine)">Kit Completo de Discernimento</b> — para você não apenas ler os sinais, mas observá-los na vida real. Tudo incluso, sem custo adicional.</p>
       </div>
     </section>
 
@@ -258,21 +264,21 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         </div></div>
         <div class="kitem"><div class="ki">🔎</div><div>
           <h3>2. O Dossiê da Dama</h3>
-          <p>Conheceu alguém? O conhecimento sai das páginas. Crie um dossiê privado sobre o pretendente e registre, aos poucos, o que você realmente observa: comportamentos, sinais verdes, sinais de atenção, padrões que se repetem. Porque memória apaixonada pode ser seletiva. 👀</p>
+          <p>Crie um dossiê privado do pretendente e registre o que observa: sinais verdes, sinais de atenção, padrões que se repetem. Porque memória apaixonada é seletiva. 👀</p>
           <img class="mock" src="/panfleto/mockups/mock-dossie.png" alt="Dossiê da Dama">
         </div></div>
         <div class="kitem"><div class="ki">⚖️</div><div>
           <h3>3. O Veredito</h3>
-          <p>Conforme você alimenta o Dossiê, as suas respostas ajudam a organizar os sinais observados. Não para decidir por você — mas para colocar diante dos seus olhos aquilo que o coração talvez esteja tentando justificar. <b>A decisão continua sendo sua.</b> A diferença é que agora você decide olhando para os sinais.</p>
+          <p>Suas respostas organizam os sinais e colocam diante dos seus olhos o que o coração tenta justificar. <b>A decisão é sua</b> — mas agora você decide olhando os sinais.</p>
           <img class="mock" src="/panfleto/mockups/mock-veredito.png" alt="O Veredito">
         </div></div>
         <div class="kitem"><div class="ki">📖</div><div>
           <h3>4. O Diário da Dama</h3>
-          <p>Porque o discernimento não acontece só enquanto você lê. Registre pensamentos, dúvidas e aquilo que começa a ficar claro ao longo do caminho. Um espaço seu, privado, sem julgamentos.</p>
+          <p>Registre pensamentos, dúvidas e o que vai ficando claro. Um espaço seu, privado, sem julgamentos.</p>
         </div></div>
         <div class="kitem"><div class="ki">❤️</div><div>
           <h3>5. O Cavalheiro Que Vale o Seu Altar</h3>
-          <p>Não queremos ensinar você só a procurar defeitos. Depois de conhecer quem merece atenção, aprenda quais virtudes procurar: caráter, responsabilidade, domínio próprio, respeito, fé vivida — não apenas declarada. Porque discernimento também serve para reconhecer quando pode valer a pena dizer <em>sim</em>.</p>
+          <p>Não é só sobre defeitos. Aprenda quais virtudes procurar — caráter, responsabilidade, respeito, fé vivida (não só declarada). Porque discernimento também é saber quando vale dizer <em>sim</em>.</p>
         </div></div>
       </div>
     </section>
@@ -282,7 +288,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
       <div class="how frame">
         <span class="kicker" style="color:var(--gold-2)">E como eu recebo tudo isso?</span>
         <h2 style="margin-top:12px">Do jeito mais simples possível.</h2>
-        <p>Assim que a sua compra for aprovada, você recebe acesso à sua área exclusiva. 📱 Funciona direto pelo navegador do celular: <b style="color:#fff">não precisa procurar nada na loja de apps, nem instalar nada</b> para começar.</p>
+        <p>Compra aprovada, acesso na hora. 📱 Abre direto no navegador do celular — <b style="color:#fff">sem loja de apps, sem instalar nada</b>.</p>
         <p>Quer usar toda a experiência interativa? É só entrar. Quer apenas tomar o seu chá e ler o Panfleto? ☕ Salve o PDF e seja feliz.</p>
         <div class="pick">Você escolhe como quer usar.</div>
       </div>
@@ -355,7 +361,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     <span class="sign">Sua, na busca pelo escândalo bíblico — Lady do Altar</span>
   </footer>
 
-  <div class="sticky-cta"><a data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">👑 Quero o meu Kit · <span class="js-preco">R$ 27,90</span></a></div>
+  <div class="sticky-cta"><a data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">👑 Quero o meu Kit de Discernimento</a></div>
 
   <script>
     (function(){
