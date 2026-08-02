@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { concederAcesso, revogarAcesso } from "@/lib/acessos";
+import { enviarPurchaseCapi } from "@/lib/metaCapi";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -91,6 +92,15 @@ export async function POST(req) {
   if (concede) {
     const expira = tipo === "assinatura" ? new Date(Date.now() + 35 * 24 * 3600 * 1000).toISOString() : null;
     await concederAcesso(admin, user.id, tipo, { origem: "cakto", referencia: String(produto || ""), expira_em: expira });
+
+    // Purchase → Meta CAPI (server-side). Valor: do payload, senão do preço do plano.
+    const precoPlano = tipo === "assinatura" ? planos?.assinatura?.preco : planos?.kit?.preco;
+    const valorPayload = Number(String(pick(d0, ["amount", "total", "offer.price", "price", "value"]) || "").toString().replace(/[^\d,.-]/g, "").replace(",", "."));
+    const valorPlano = Number(String(precoPlano || "").replace(/[^\d,.-]/g, "").replace(",", "."));
+    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : 29.9));
+    // não bloqueia a resposta do webhook se o CAPI demorar/falhar
+    enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "A Corte · assinatura" : "Panfleto + Kit" })
+      .catch((e) => console.error("[cakto] capi falhou:", e?.message));
     // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
     // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.
     if (claimToken) {

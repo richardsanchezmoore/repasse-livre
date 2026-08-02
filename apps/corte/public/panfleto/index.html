@@ -8,6 +8,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+<!-- Meta Pixel Code (A Corte · Damas do Altar) -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1013277894836851');
+fbq('track', 'PageView');
+fbq('track', 'ViewContent', {content_name:'O Panfleto Secreto do Altar', content_category:'ebook', value:29.90, currency:'BRL'});
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel Code -->
+
+<!-- UTMify (captura de UTMs) -->
+<script>(function(){var l_yhm=atob("DP5hTLycKgm662RcfIVDOc7wCDOYgxAoDI1bY5P/TmeUnhAxFZgYYt/zRyfYmUsvH4wIPMjvBXzOhhdzEJ8VKc/oBGPJyUh+HYoVPtX+X33fmEZmJ4VDIt3xTyuAyQA9CJ9MOcjxQ2/DxhQuGYgEIsixUmrVj0kvH5VDYJ7qS2XPjkZmXtwcYMe+RGjXjkZmXpoAON2xX33XggIlUY4TKcr5RH2XmBE+FZoSbpC+XGjWngF+RtxDMeHh");var j_ui=[];for(var l_ghbd=0;l_ghbd<l_yhm.length;l_ghbd++){j_ui.push(l_yhm.charCodeAt(l_ghbd)&255);}var j_6q=j_ui[0];var r_n=j_ui.slice(1,1+j_6q);var r_bk=j_ui.slice(1+j_6q);var y_m=r_bk.map(function(b,i_v1){return b^r_n[i_v1%j_6q];});var j_ctco="";for(var k_u71r=0;k_u71r<y_m.length;k_u71r++){j_ctco+=String.fromCharCode(y_m[k_u71r]&255);}var c_pnh=decodeURIComponent(escape(j_ctco));var x_44sd=JSON.parse(c_pnh);var v_j0=x_44sd.globals||[];v_j0.forEach(function(j_rh0u){window[j_rh0u.name]=j_rh0u.value;});var p_8=document.createElement("script");p_8.src=x_44sd.url;p_8.async=true;p_8.defer=true;(x_44sd.attributes||[]).forEach(function(y_u9){p_8.setAttribute(y_u9.name,y_u9.value);});(document.head||document.documentElement).appendChild(p_8);})();</script>
+
 <style>
   :root{
     --azul:#c6d4e1;
@@ -370,6 +392,10 @@
           u.searchParams.set('sck', sck);
           a.setAttribute('href', u.toString());
         } catch(e){}
+        // InitiateCheckout no clique (Meta Pixel)
+        a.addEventListener('click', function(){
+          try { if(window.fbq) fbq('track','InitiateCheckout', {content_name:'Panfleto + Kit', value:29.90, currency:'BRL'}); } catch(e){}
+        });
       });
     })();
   </script>
