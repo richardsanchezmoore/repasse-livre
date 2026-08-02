@@ -85,6 +85,10 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .checks.checks-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;text-align:left;margin:18px auto 4px}
   .checks.checks-row li{background:rgba(255,255,255,.45);border:1px solid var(--gold-soft);border-radius:12px;padding:11px 16px 11px 38px}
   .checks.checks-row li::before{left:16px}
+  .kit-strip{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:16px auto 16px;max-width:640px}
+  .kit-strip li{font:700 13px var(--ui);color:var(--wine);background:rgba(176,135,63,.12);border:1px solid var(--gold-soft);border-radius:99px;padding:8px 15px;display:inline-flex;align-items:center;gap:6px}
+  .kit-strip li span{font-size:15px}
+  .hero-reassure{font:600 12.5px var(--ui);color:var(--ink-soft);margin:12px auto 0;line-height:1.6}
   .book{width:min(280px,68%);height:auto;margin:22px auto 0;display:block;filter:drop-shadow(0 34px 46px rgba(60,50,30,.42))}
 
   .sec-head{text-align:center;margin-bottom:28px}
@@ -176,8 +180,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .sticky-cta a::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:shine 3.4s ease-in-out infinite}
   /* depoimentos WhatsApp + botao flutuante */
   .wslider{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;scrollbar-width:thin;scrollbar-color:var(--gold-soft) transparent}
-  .wcard{flex:0 0 clamp(230px,72%,248px);scroll-snap-align:center;height:clamp(430px,62vh,496px);border-radius:16px;overflow:hidden;border:1px solid var(--gold-soft);box-shadow:0 16px 34px -22px rgba(44,40,51,.55);background:#fff}
-  .wcard img{display:block;width:100%;height:100%;object-fit:cover}
+  .wcard{flex:0 0 clamp(214px,70%,240px);scroll-snap-align:center;aspect-ratio:49/100;border-radius:16px;overflow:hidden;border:1px solid var(--gold-soft);box-shadow:0 16px 34px -22px rgba(44,40,51,.55);background:#fbf6ea}
+  .wcard img{display:block;width:100%;height:100%;object-fit:contain}
   .wpp-flutuante{position:fixed;right:clamp(16px,3vw,24px);bottom:clamp(84px,14vw,96px);z-index:210;display:inline-flex;align-items:center;gap:9px;padding:12px 18px;font:700 14px var(--ui);color:#fff;background:#25d366;border-radius:999px;text-decoration:none;box-shadow:0 10px 26px -8px rgba(37,211,102,.55),0 3px 10px -4px rgba(0,0,0,.35);transition:transform .15s}
   .wpp-flutuante:hover{background:#1fbe5a;transform:translateY(-2px)}
   @media(max-width:560px){.wpp-flutuante{padding:13px;gap:0}.wpp-flutuante-texto{display:none}}
@@ -185,30 +189,34 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
 </head>
 <body>
 
-  <div class="topbar">❧&ensp;O diário que as damas da igreja estão lendo escondido.&ensp;❧</div>
+  <div class="topbar">❧&ensp;O Kit indispensável das damas da igreja.&ensp;❧</div>
 
   <div class="wrap">
 
     <!-- 1. HERO — promessa do anúncio -->
     <section class="hero">
-      <span class="kicker">O Panfleto Secreto do Altar</span>
+      <span class="kicker">✦ O Kit de Discernimento ✦</span>
       <h1 class="head">Antes de entregar o seu coração, aprenda a <em>reconhecer os sinais</em>.</h1>
-      <p class="subhead">Conheça <b>12 tipos de pretendentes</b> que a Bíblia nos ensina a observar — antes que o encanto fale mais alto que o caráter. Leitura leve, divertida e profundamente bíblica.</p>
+      <p class="subhead">Muito mais que um livro: um <b>kit completo</b> pra reconhecer os 12 tipos de pretendentes que a Bíblia mandou evitar — e investigar o seu, na vida real.</p>
+      <ul class="kit-strip">
+        <li><span>📜</span> O Panfleto</li>
+        <li><span>🔎</span> Dossiê</li>
+        <li><span>⚖️</span> Veredito</li>
+        <li><span>📿</span> Diário</li>
+        <li><span>❤️</span> O seu Boaz</li>
+      </ul>
       <a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">
-        <span class="big">👑 Quero conhecer os 12 pretendentes</span>
+        <span class="big">👑 Quero o meu Kit de Discernimento</span>
         <span class="small">Acesso imediato · no seu celular</span>
       </a>
-      <ul class="checks checks-row">
-        <li>Leia pelo celular — ou salve em PDF</li>
-        <li>Kit completo de discernimento incluso</li>
-      </ul>
-      <img class="book" src="/panfleto/imagens/capa-3d.png" alt="O Panfleto Secreto do Altar">
+      <p class="hero-reassure">✓ Tudo no seu celular&nbsp;&nbsp;·&nbsp;&nbsp;✓ Panfleto também em PDF&nbsp;&nbsp;·&nbsp;&nbsp;✓ acesso vitalício</p>
+      <img class="book" src="/panfleto/imagens/capa-3d.png" alt="O Kit de Discernimento — O Panfleto Secreto do Altar">
     </section>
 
     <!-- PROVA SOCIAL (logo apos o herói) -->
     <section>
       <div class="sec-head"><span class="kicker">Damas da igreja</span><h2>O que as leitoras estão <em>dizendo</em></h2></div>
-      <div class="wslider"><div class="wcard"><img src="/panfleto/depoimentos/dep1.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep2.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep3.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep4.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep5.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep6.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep7.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div></div>
+      <div class="wslider"><div class="wcard"><img src="/panfleto/depoimentos/dep2.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep4.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep5.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep6.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div><div class="wcard"><img src="/panfleto/depoimentos/dep7.jpg" alt="Depoimento de uma leitora no WhatsApp" decoding="async"></div></div>
       <p class="slider-hint">← arraste para ler mais →</p>
     </section>
 
@@ -244,7 +252,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         <div class="pcard"><img src="/panfleto/imagens/cena5.jpg" alt=""><div class="pt">🎭 Duque Oculto</div><div class="pp">Um santo no culto. E no domingo à noite?</div></div>
       </div>
       <p class="slider-hint">← e esses são apenas alguns dos 12 →</p>
-      <p class="lead center mut" style="max-width:560px;margin:18px auto 0">Dentro do Panfleto, cada perfil revela:</p>
+      <p class="lead center mut" style="max-width:560px;margin:18px auto 0">De cada um dos 12 perfis, você aprende:</p>
       <ul class="inside">
         <li>O comportamento que merece atenção</li>
         <li>O princípio bíblico por trás dele</li>
@@ -258,9 +266,9 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     <!-- 5. A VIRADA -->
     <section>
       <div class="turn-box frame">
-        <span class="kicker">Mas tem mais…</span>
-        <div class="big-idea" style="margin-top:14px">É muito mais do que um PDF.</div>
-        <p>A sua compra vira um <b style="color:var(--wine)">Kit Completo de Discernimento</b> — pra você não só <em>ler</em> os sinais, mas <em>enxergá-los</em> na vida real. Tudo incluso.</p>
+        <span class="kicker">Por que um kit, e não só um livro</span>
+        <div class="big-idea" style="margin-top:14px">Reconhecer é só o começo.</div>
+        <p>Um livro te ensina a <em>ver</em> os sinais. O Kit te ajuda a <em>enxergá-los na vida real</em> — investigando o seu pretendente, não só lendo sobre os outros.</p>
       </div>
     </section>
 
