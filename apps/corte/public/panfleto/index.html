@@ -7,7 +7,7 @@
 <title>O Panfleto Secreto do Altar — O diário escandaloso que os "varões" queriam proibir</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
 
 <!-- Meta Pixel Code (A Corte · Damas do Altar) -->
 <script>
@@ -45,7 +45,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     --ink:#2c2833;
     --ink-soft:#544d59;
     --disp:'Playfair Display',Georgia,serif;
-    --serif:'Cormorant Garamond','Times New Roman',serif;
+    --serif:'Merriweather',Georgia,serif;                 /* corpo de leitura (legível no mobile) */
+    --fancy:'Cormorant Garamond','Times New Roman',serif; /* subtítulos decorativos */
     --script:'Pinyon Script',cursive;
     --ui:system-ui,-apple-system,'Segoe UI',sans-serif;
   }
@@ -72,7 +73,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   h1.head{font:900 clamp(34px,6.4vw,64px)/1.02 var(--disp);letter-spacing:-.015em;color:var(--ink);
     text-shadow:0 1px 0 rgba(255,255,255,.4)}
   h1.head em{font-style:italic;color:var(--wine)}
-  .subhead{font:500 clamp(17px,2.5vw,22px)/1.55 var(--serif);color:var(--ink-soft);
+  .subhead{font:italic 500 clamp(17px,2.4vw,21px)/1.5 var(--fancy);color:var(--ink-soft);
     max-width:640px;margin:20px auto 0}
   .subhead b{color:var(--azul-deep);font-weight:600}
   .cta{display:inline-flex;flex-direction:column;align-items:center;gap:3px;
