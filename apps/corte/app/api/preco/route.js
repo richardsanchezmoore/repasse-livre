@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createClient } from "@supabase/supabase-js";
+
+// Cliente com fetch no-store: o Next.js cacheia fetch() por padrão e isso
+// congelava a resposta do Supabase em produção (preço travado no default).
+function adminSemCache() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: (u, o = {}) => fetch(u, { ...o, cache: "no-store" }) },
+  });
+}
 
 /** Preço público (fonte da verdade = painel admin → corte_config.planos).
  *  A landing estática /panfleto consome isto e injeta o valor — sem hardcode. */
@@ -13,10 +22,11 @@ export async function GET() {
   let whatsapp = { ativo: false, numero: "" };
   const _diag = { hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL, hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY, gotRow: false, err: null };
   try {
-    const admin = supabaseAdmin();
+    const admin = adminSemCache();
     const { data, error } = await admin.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
     _diag.err = error ? String(error.message) : null;
     _diag.gotRow = !!data;
+    _diag.kitLido = data?.valor?.kit?.preco ?? null;
     const p = data?.valor || {};
     if (p.kit?.preco) kit = p.kit.preco;
     if (p.assinatura?.preco) assinatura = p.assinatura.preco;
