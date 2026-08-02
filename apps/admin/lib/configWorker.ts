@@ -326,9 +326,12 @@ export async function buscarPrecoAncora(): Promise<{ texto: string; centavos: nu
 export async function buscarWhatsappSuporte(): Promise<string | null> {
   const { data } = await supabaseAdmin
     .from("worker_config")
-    .select("valor")
-    .eq("chave", "WHATSAPP_SUPORTE")
-    .maybeSingle();
-  const numero = (data?.valor ?? "").replace(/\D/g, "");
+    .select("chave, valor")
+    .in("chave", ["WHATSAPP_SUPORTE", "WHATSAPP_SUPORTE_ATIVO"]);
+  const map = Object.fromEntries((data ?? []).map((c) => [c.chave, c.valor as string]));
+  // Botão/links de WhatsApp só aparecem quando ATIVADO no painel (ninguém pra
+  // responder → melhor ocultar). Default: desativado, mesmo com número salvo.
+  if (String(map["WHATSAPP_SUPORTE_ATIVO"] ?? "0") !== "1") return null;
+  const numero = (map["WHATSAPP_SUPORTE"] ?? "").replace(/\D/g, "");
   return numero || null;
 }

@@ -183,7 +183,22 @@ export function PainelConfiguracoes({ configs }: { configs: Record<string, strin
           >
             Número que aparece no botão <strong>“Ficou com dúvida? Chame no WhatsApp”</strong> da página de planos
             (e no “gerenciar assinatura” do Repasse Livre PRO). Formato internacional <strong>DDI 55 + DDD + número</strong>,
-            só dígitos (ex.: <code>5548999998888</code>). Deixe em branco pra esconder. Vale na hora.
+            só dígitos (ex.: <code>5548999998888</code>). Vale na hora.
+          </CampoConfig>
+
+          <CampoConfig
+            chave="WHATSAPP_SUPORTE_ATIVO"
+            valorInicial={configs["WHATSAPP_SUPORTE_ATIVO"] ?? "0"}
+            titulo="Botão de WhatsApp — ativar/desativar"
+            tipo="select"
+            opcoes={[
+              { valor: "0", rotulo: "Desativado (botão oculto)" },
+              { valor: "1", rotulo: "Ativado (botão aparece)" },
+            ]}
+          >
+            Liga/desliga o botão de WhatsApp na página de vendas <strong>sem apagar o número</strong>.
+            Deixe <strong>Desativado</strong> quando não houver ninguém pra responder na hora — melhor
+            sem botão do que deixar o visitante no vácuo. Vale na hora.
           </CampoConfig>
 
           <h2 style={{ margin: "20px 0 6px", fontSize: 18, fontWeight: 700 }}>Anúncios direcionados para ADS</h2>
