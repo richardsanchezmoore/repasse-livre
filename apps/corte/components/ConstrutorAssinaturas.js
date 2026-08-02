@@ -51,6 +51,16 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
         <Campo label="Link do grupo de WhatsApp" val={p.salao_whatsapp} onChange={(v) => setP({ ...p, salao_whatsapp: v })} ph="https://chat.whatsapp.com/…" />
       </section>
 
+      <section className="card" style={{ marginTop: 14 }}>
+        <div className="c-k">💬 Botão de WhatsApp na página de vendas</div>
+        <p className="c-p" style={{ marginBottom: 4 }}>O botão flutuante só aparece na landing quando estiver <strong>ativado</strong> — pra não deixar ninguém no vácuo quando não houver quem responda na hora.</p>
+        <Campo label="Número (com DDI+DDD, só números)" val={p.whatsapp?.numero} onChange={(v) => setP({ ...p, whatsapp: { ...p.whatsapp, numero: v } })} ph="554899999999" />
+        <button type="button" className={"chip" + (p.whatsapp?.ativo ? " on" : "")} style={{ marginTop: 12 }}
+          onClick={() => setP({ ...p, whatsapp: { ...p.whatsapp, ativo: !p.whatsapp?.ativo } })}>
+          {p.whatsapp?.ativo ? "🟢 Botão ATIVADO — aparece na página" : "⚪ Botão desativado — oculto"}
+        </button>
+      </section>
+
       <button type="button" className="pill" onClick={salvar} disabled={busy} style={{ marginTop: 14 }}>
         {busy ? "Salvando…" : ok ? "Salvo ✓" : "Salvar planos"}
       </button>
