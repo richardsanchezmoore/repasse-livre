@@ -23,14 +23,37 @@ Deploy futuro = **projeto Vercel próprio** (subdomínio amigável US → futuro
 - **Mockups do app:** gerar em INGLÊS (os PT não servem).
 - **Capa/cover do Almanac:** gerar arte com título em inglês.
 
-## Próximos passos (build do app)
-1. Scaffold Next (espelhar apps/corte): app/, lib/, middleware, next.config (rewrite `/almanac`), package.json.
-2. Migration `ca_*` no Supabase compartilhado.
-3. Webhook `/api/ls` (Lemon Squeezy): assina evento `order_created`, concede acesso em `ca_acessos`,
-   dispara e-mail de acesso (Resend, remetente do domínio US) + claim → `/welcome`.
-4. `/welcome` (equivalente ao /bem-vinda) em inglês.
-5. E-mail de acesso EN (reusar layout escuro do corte/lib/emailAcesso.js).
-6. Vercel: novo projeto apontando pra apps/courtship + subdomínio.
+## ✅ Scaffold do backend — FEITO (04/08)
+- **Next app** espelhando o corte: `package.json`, `next.config.mjs` (rewrite `/almanac`), `jsconfig.json`, `middleware.js`.
+- **Supabase clients** (`lib/supabaseAdmin/Server/Browser.js`), `lib/auth.js`, `lib/acessos.js` (tabelas `ca_`).
+- **Webhook Lemon Squeezy** `app/api/ls/route.js`: verifica assinatura HMAC (`X-Signature`), concede acesso em
+  `ca_acessos`, dispara **e-mail de acesso** (Resend, `await` — não fire-and-forget) e grava o **claim**. Claim
+  vem em `meta.custom_data.claim` (setado no checkout via `?checkout[custom][claim]=`).
+- **Auto-login**: `app/api/claim/route.js` + `app/welcome/` (page + actions + `WelcomeAccess.js`) + `app/auth/callback`.
+- **/login** mínimo, **home** placeholder (`app/page.js`), **globals.css** (Regency).
+- **E-mail de acesso EN** (`lib/emailAcesso.js`, layout escuro, remetente por env).
+- **Migration** `supabase/migrations/0061_ca_funil.sql` (ca_membros, ca_config, ca_acessos, ca_claims + RLS).
+
+## Env vars (projeto Vercel do courtship)
+```
+NEXT_PUBLIC_SUPABASE_URL        (mesmo do Repasse Livre)
+NEXT_PUBLIC_SUPABASE_ANON_KEY   (mesmo)
+SUPABASE_SERVICE_ROLE_KEY       (mesmo)
+LEMON_WEBHOOK_SECRET            (segredo do webhook no Lemon Squeezy)
+RESEND_API_KEY                  (conta Resend do brand US)
+CA_EMAIL_FROM                   (default: The Courtship Almanac <hello@courtshipalmanac.com>)
+CA_APP_URL                      (default: https://courtshipalmanac.com — trocar pelo subdomínio Vercel no início)
+```
+
+## Pra LIGAR o funil (o que falta, precisa de você)
+1. **Lemon Squeezy**: criar loja + produto ($9). Pegar (a) a **URL de checkout** e (b) o **segredo do webhook**.
+   - Webhook LS → apontar pra `https://<subdominio>/api/ls`, eventos `order_created` + `order_refunded`.
+   - Redirect pós-compra do produto → `https://<subdominio>/welcome`.
+   - Trocar `REPLACE-ME` na landing (`public/almanac/index.html`) e em `ca_config.plans.kit.checkout_url` pela URL real.
+2. **Rodar a migration** `0061_ca_funil.sql` no Supabase (npm run migrar).
+3. **Vercel**: novo projeto, Root Directory = `apps/courtship`, colar as envs, subdomínio.
+4. **Resend**: verificar o domínio/remetente do brand US (ou usar o subdomínio inicial).
+5. **Pixel Meta US** no `<head>` do layout e da landing (novo dataset — TODO(US)).
 
 ## Assets que o usuário refaz
 Vídeos (áudio/legenda EN), imagens/criativos (captions EN), mockups EN, cover EN.
