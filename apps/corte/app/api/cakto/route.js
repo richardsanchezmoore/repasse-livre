@@ -99,9 +99,12 @@ export async function POST(req) {
     const valorPayload = Number(String(pick(d0, ["amount", "total", "offer.price", "price", "value"]) || "").toString().replace(/[^\d,.-]/g, "").replace(",", "."));
     const valorPlano = Number(String(precoPlano || "").replace(/[^\d,.-]/g, "").replace(",", "."));
     const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : 27.9));
-    // não bloqueia a resposta do webhook se o CAPI demorar/falhar
-    enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : "Panfleto + Kit" })
-      .catch((e) => console.error("[cakto] capi falhou:", e?.message));
+    // AWAIT (não fire-and-forget): no serverless a Vercel CONGELA a função assim que a
+    // resposta sai e mata promessas pendentes — o fetch não completa e nem o .catch roda.
+    // O try/catch garante que uma falha aqui não derruba a resposta 200 do webhook.
+    try {
+      await enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : "Panfleto + Kit" });
+    } catch (e) { console.error("[cakto] capi falhou:", e?.message); }
     // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
     // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.
     if (claimToken) {
@@ -117,9 +120,11 @@ export async function POST(req) {
       await admin.from("corte_membros")
         .update({ setup_pendente: true, setup_expira_em: new Date(Date.now() + 72 * 3600 * 1000).toISOString() })
         .eq("user_id", user.id);
-      enviarEmailAcesso({ email, nome, tipo })
-        .then((r) => { if (!r.ok) console.error("[cakto] email acesso:", r.erro); })
-        .catch((e) => console.error("[cakto] email acesso:", e?.message));
+      try {
+        const r = await enviarEmailAcesso({ email, nome, tipo });
+        if (!r.ok) console.error("[cakto] email acesso:", r.erro);
+        else console.log("[cakto] email acesso enviado ·", email);
+      } catch (e) { console.error("[cakto] email acesso:", e?.message); }
     }
     console.log(`[cakto] CONCEDIDO/RENOVADO ${tipo} · ${email} · ${evento}${claimToken ? " [claim]" : ""}`);
     return NextResponse.json({ ok: true, acao: "concedido", tipo });
