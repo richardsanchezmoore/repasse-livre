@@ -5,8 +5,8 @@
   --disp:'Playfair Display',Georgia,serif;
   /* corpo de leitura (80%): Merriweather — desenhada p/ tela, alta legibilidade no mobile */
   --serif:'Merriweather',Georgia,serif;
-  /* decorativa: Playfair (itálico) — subtítulos e citações elegantes */
-  --fancy:'Playfair Display',Georgia,serif;
+  /* legendas/citações curtas em itálico — Merriweather (legível; Playfair só em título) */
+  --fancy:'Merriweather',Georgia,serif;
   --script:'Pinyon Script',cursive;
   --ui:system-ui,-apple-system,'Segoe UI',sans-serif;
   --nav-h:66px;
@@ -39,7 +39,7 @@ a{color:inherit;text-decoration:none}
 .eyebrow{font:700 11px/1 var(--ui);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
 .h-title{font:900 clamp(26px,7vw,34px)/1.05 var(--disp);color:var(--ink);letter-spacing:-.01em}
 .h-title em{font-style:italic;color:var(--wine)}
-.h-sub{font:italic 500 17px/1.5 var(--fancy);color:var(--ink-soft);margin-top:8px}
+.h-sub{font:400 16.5px/1.55 var(--serif);color:var(--ink-soft);margin-top:8px}
 .sec-h{font:700 20px var(--disp);color:var(--wine);margin:22px 0 12px}
 
 /* ---- cards ---- */
@@ -61,8 +61,8 @@ a{color:inherit;text-decoration:none}
   border-radius:14px;padding:16px 14px;min-height:104px;justify-content:space-between;transition:transform .12s,border-color .12s}
 .tile:active{transform:scale(.98)}
 .tile .ic{font-size:24px}
-.tile .tt{font:700 15.5px/1.15 var(--disp);color:var(--wine)}
-.tile .td{font:500 12.5px/1.35 var(--serif);color:var(--ink-soft)}
+.tile .tt{font:700 18.5px/1.15 var(--disp);color:var(--wine)}
+.tile .td{font:500 13px/1.35 var(--serif);color:var(--ink-soft)}
 
 /* ---- bottom nav ---- */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;
