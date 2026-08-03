@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { concederAcesso, revogarAcesso } from "@/lib/acessos";
 import { enviarPurchaseCapi } from "@/lib/metaCapi";
+import { enviarEmailAcesso } from "@/lib/emailAcesso";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -108,6 +109,17 @@ export async function POST(req) {
         { token: claimToken, user_id: user.id, email, status: "ready", criado_em: new Date().toISOString() },
         { onConflict: "token" }
       );
+    }
+    // E-mail de acesso: fallback pra quem pagou (PIX) e não voltou pro /bem-vinda.
+    // SÓ pra quem NUNCA logou (não spamma renovação de assinante ativo) e reabre a
+    // janela de definir senha por 3 dias — o e-mail pode ser aberto horas depois.
+    if (!user.last_sign_in_at) {
+      await admin.from("corte_membros")
+        .update({ setup_pendente: true, setup_expira_em: new Date(Date.now() + 72 * 3600 * 1000).toISOString() })
+        .eq("user_id", user.id);
+      enviarEmailAcesso({ email, nome, tipo })
+        .then((r) => { if (!r.ok) console.error("[cakto] email acesso:", r.erro); })
+        .catch((e) => console.error("[cakto] email acesso:", e?.message));
     }
     console.log(`[cakto] CONCEDIDO/RENOVADO ${tipo} · ${email} · ${evento}${claimToken ? " [claim]" : ""}`);
     return NextResponse.json({ ok: true, acao: "concedido", tipo });
