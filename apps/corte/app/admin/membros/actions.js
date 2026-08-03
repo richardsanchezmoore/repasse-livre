@@ -51,3 +51,52 @@ export async function definirAcesso(userId, tipo, conceder) {
   }
   refresh();
 }
+
+/** Admin define/redefine a senha de um membro já existente (pra repassar ao cliente). */
+export async function definirSenhaMembro(userId, senha) {
+  await garantirAdmin();
+  senha = String(senha || "");
+  if (senha.length < 6) return { erro: "A senha precisa de ao menos 6 caracteres." };
+  const admin = supabaseAdmin();
+  const { error } = await admin.auth.admin.updateUserById(userId, { password: senha });
+  if (error) return { erro: error.message };
+  // conta agora tem senha definida → encerra o onboarding pendente (se houver)
+  await admin.from("corte_membros").update({ setup_pendente: false, setup_expira_em: null }).eq("user_id", userId);
+  refresh();
+  return { ok: true };
+}
+
+/** Libera um cliente do ZERO: acha ou cria a conta, define a senha e concede o acesso.
+ *  Uso: dar acesso manual (cortesia/venda externa) sem depender do webhook. */
+export async function criarAcessoCliente({ email, senha, tipo = "kit" }) {
+  await garantirAdmin();
+  email = String(email || "").trim().toLowerCase();
+  senha = String(senha || "");
+  if (!email.includes("@")) return { erro: "Informe um e-mail válido." };
+  if (senha.length < 6) return { erro: "A senha precisa de ao menos 6 caracteres." };
+  const admin = supabaseAdmin();
+
+  let user = null, pagina = 1;
+  while (pagina <= 10 && !user) {
+    const { data } = await admin.auth.admin.listUsers({ page: pagina, perPage: 1000 });
+    const users = data?.users || [];
+    user = users.find((u) => (u.email || "").toLowerCase() === email);
+    if (users.length < 1000) break;
+    pagina++;
+  }
+  let criado = false;
+  if (!user) {
+    const { data: novo, error } = await admin.auth.admin.createUser({ email, email_confirm: true, password: senha });
+    if (error) return { erro: error.message };
+    user = novo.user;
+    criado = true;
+  } else {
+    const { error } = await admin.auth.admin.updateUserById(user.id, { password: senha });
+    if (error) return { erro: error.message };
+  }
+  await admin.from("corte_membros").upsert({ user_id: user.id, setup_pendente: false, setup_expira_em: null }, { onConflict: "user_id" });
+  const expira = tipo === "assinatura" ? new Date(Date.now() + 35 * 24 * 3600 * 1000).toISOString() : null;
+  await concederAcesso(admin, user.id, tipo, { origem: "manual", expira_em: expira });
+  refresh();
+  return { ok: true, criado };
+}
