@@ -78,10 +78,16 @@ export default function ConstrutorMembros({ membros }) {
           <div key={m.user_id} className="memb">
             <div className="memb-top">
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div className="memb-nome">{m.nome || "sem nome"}{m.is_admin && <span className="tag" style={{ marginLeft: 6 }}>ADMIN</span>}</div>
+                <div className="memb-nome">
+                  {m.nome || "sem nome"}
+                  {m.is_admin && <span className="tag" style={{ marginLeft: 6 }}>ADMIN</span>}
+                  {m.pdfs > 0 && !m.kit && !m.assinatura && (
+                    <span className="tag" style={{ marginLeft: 6, background: "#7c2b37", color: "#fff" }} title="Baixou o PDF mas não tem acesso ativo (possível estorno após baixar)">⚠️ baixou s/ acesso</span>
+                  )}
+                </div>
                 <div className="memb-email">{m.email}</div>
               </div>
-              <div className="memb-dos">{m.dossies} 🗂️</div>
+              <div className="memb-dos">{m.dossies} 🗂️{m.pdfs > 0 ? ` · ${m.pdfs} 📄` : ""}</div>
             </div>
             <div className="memb-chips">
               <button type="button" className={"chip" + (m.kit ? " on" : "")} disabled={busy} onClick={() => acao(() => definirAcesso(m.user_id, "kit", !m.kit))}>📕 Kit</button>

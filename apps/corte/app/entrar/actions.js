@@ -5,7 +5,7 @@ import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 function destino(red) {
-  return typeof red === "string" && red.startsWith("/") ? red : "/dossie";
+  return typeof red === "string" && red.startsWith("/") ? red : "/biblioteca";
 }
 
 /** Cria conta com senha (SEM confirmação de e-mail) e já loga. */

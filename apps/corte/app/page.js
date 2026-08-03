@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { acessosDaUsuaria } from "@/lib/acessos";
+import { ehAdmin } from "@/lib/admin";
 import BotaoCompra from "@/components/BotaoCompra";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ export default async function Home() {
     user ? acessosDaUsuaria(sb, user.id) : new Set(),
     sb.from("corte_config").select("valor").eq("chave", "planos").maybeSingle(),
   ]);
+  const admin = user ? await ehAdmin(sb, user.id) : false;
   const planos = cfg.data?.valor || {};
   const semKit = !acessos.has("kit") && !acessos.has("assinatura");
   const semAssin = !acessos.has("assinatura");
@@ -26,12 +28,14 @@ export default async function Home() {
       <h1 className="h-title">Querida <em>leitora</em>,</h1>
       <p className="h-sub">bem-vinda às Damas Virtuosas. Aqui você aprende a ler os sinais — antes do altar.</p>
 
-      <section className="card dark" style={{ marginTop: 18 }}>
-        <div className="c-k">Devocional de hoje</div>
-        <div className="c-t">"Sobre tudo o que se deve guardar, <em>guarda o teu coração</em>."</div>
-        <div className="c-p">Provérbios 4:23 — o discernimento não nasce da desconfiança, mas da intimidade com Deus.</div>
-        <Link href="/jornada" className="pill">Abrir a Jornada de hoje →</Link>
-      </section>
+      {admin && (
+        <section className="card dark" style={{ marginTop: 18 }}>
+          <div className="c-k">Devocional de hoje <span className="tag" style={{ marginLeft: 6 }}>PRÉVIA ADMIN</span></div>
+          <div className="c-t">&quot;Sobre tudo o que se deve guardar, <em>guarda o teu coração</em>.&quot;</div>
+          <div className="c-p">Provérbios 4:23 — o discernimento não nasce da desconfiança, mas da intimidade com Deus.</div>
+          <Link href="/jornada" className="pill">Abrir a Jornada de hoje →</Link>
+        </section>
+      )}
 
       <Link href="/dossie" className="card hero" style={{ marginTop: 14 }}>
         <div className="c-k">A dinâmica da temporada</div>

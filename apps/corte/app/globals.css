@@ -5,8 +5,8 @@
   --disp:'Playfair Display',Georgia,serif;
   /* corpo de leitura (80%): Merriweather — desenhada p/ tela, alta legibilidade no mobile */
   --serif:'Merriweather',Georgia,serif;
-  /* decorativa (20%): Cormorant — subtítulos e citações elegantes */
-  --fancy:'Cormorant Garamond','Times New Roman',serif;
+  /* decorativa: Playfair (itálico) — subtítulos e citações elegantes */
+  --fancy:'Playfair Display',Georgia,serif;
   --script:'Pinyon Script',cursive;
   --ui:system-ui,-apple-system,'Segoe UI',sans-serif;
   --nav-h:66px;

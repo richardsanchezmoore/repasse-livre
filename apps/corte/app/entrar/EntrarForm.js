@@ -9,9 +9,10 @@ export default function EntrarForm() {
   const [erro, setErro] = useState("");
   const [busy, setBusy] = useState(false);
   const [magico, setMagico] = useState(null); // null | "enviando" | "enviado"
+  const [reset, setReset] = useState(null);   // null | "enviando" | "enviado"
 
   const up = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const redirect = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("redirect") || "/dossie") : "/dossie";
+  const redirect = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("redirect") || "/biblioteca") : "/biblioteca";
 
   async function enviar(e) {
     e.preventDefault();
@@ -35,11 +36,30 @@ export default function EntrarForm() {
     if (error) { setErro(error.message); setMagico(null); } else setMagico("enviado");
   }
 
+  async function recuperar() {
+    if (!f.email.includes("@")) { setErro("Digite seu e-mail acima primeiro."); return; }
+    setErro(""); setReset("enviando");
+    const sb = criarSupabaseBrowser();
+    const { error } = await sb.auth.resetPasswordForEmail(f.email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/auth/callback?redirect=/redefinir`,
+    });
+    if (error) { setErro(error.message); setReset(null); } else setReset("enviado");
+  }
+
   if (magico === "enviado") {
     return (
       <div>
         <div className="c-t">Selo enviado ✧</div>
         <p className="c-p">Confira o e-mail <strong>{f.email}</strong> e toque no link para entrar.</p>
+      </div>
+    );
+  }
+
+  if (reset === "enviado") {
+    return (
+      <div>
+        <div className="c-t">E-mail enviado ✧</div>
+        <p className="c-p">Enviamos um link para <strong>{f.email}</strong> — toque nele para criar uma nova senha. (Confira também o spam.)</p>
       </div>
     );
   }
@@ -81,6 +101,12 @@ export default function EntrarForm() {
       <button type="button" className="link-sutil" onClick={linkMagico} disabled={magico === "enviando"}>
         {magico === "enviando" ? "Enviando…" : "Prefiro entrar por link mágico"}
       </button>
+
+      {modo === "entrar" && (
+        <button type="button" className="link-sutil" onClick={recuperar} disabled={reset === "enviando"}>
+          {reset === "enviando" ? "Enviando…" : "Esqueci minha senha"}
+        </button>
+      )}
     </div>
   );
 }

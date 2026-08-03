@@ -5,8 +5,8 @@ import { criarSupabaseServer } from "@/lib/supabaseServer";
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const destinoBruto = searchParams.get("redirect") || "/dossie";
-  const destino = destinoBruto.startsWith("/") ? destinoBruto : "/dossie";
+  const destinoBruto = searchParams.get("redirect") || "/biblioteca";
+  const destino = destinoBruto.startsWith("/") ? destinoBruto : "/biblioteca";
 
   if (code) {
     const supabase = await criarSupabaseServer();

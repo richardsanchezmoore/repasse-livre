@@ -36,6 +36,12 @@ export async function GET(_req, { params }) {
   if (error || !file) return new Response("Falha ao obter o arquivo.", { status: 500 });
 
   const buf = Buffer.from(await file.arrayBuffer());
+  // Registra o download (cruzar com estorno: "pagou, baixou e pediu reembolso").
+  // Não loga admin (testes). Await pra não ser descartado no teardown do serverless.
+  if (!admin) {
+    try { await adm.from("corte_eventos").insert({ user_id: user.id, tipo: "pdf_baixado", referencia: chave }); }
+    catch (e) { console.error("[pdf] log falhou:", e?.message); }
+  }
   const nome = (chave.replace(/[^\w-]+/g, "-") || "material") + ".pdf";
   return new Response(buf, {
     headers: {
