@@ -378,9 +378,14 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         }
       } catch(e){ token = (String(Date.now()) + Math.random().toString(36).slice(2)); }
       var sck = 'claim_' + token;
+      // Produto Cakto POR DOMÍNIO (retorno tem que voltar ao mesmo domínio p/ auto-login).
+      var CAKTO_SLUG = { 'damasvirtuosas.com':'3fowby7' }, PADRAO = '39wc86g_1010439';
+      var host = location.hostname.replace(/^www\./,'');
+      var slug = CAKTO_SLUG[host] || PADRAO;
       document.querySelectorAll('a[data-cakto]').forEach(function(a){
         try {
           var u = new URL(a.getAttribute('href'), location.href);
+          u.pathname = '/' + slug;
           u.searchParams.set('sck', sck);
           a.setAttribute('href', u.toString());
         } catch(e){}
