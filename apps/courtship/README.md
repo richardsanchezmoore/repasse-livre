@@ -39,17 +39,20 @@ Deploy futuro = **projeto Vercel próprio** (subdomínio amigável US → futuro
 NEXT_PUBLIC_SUPABASE_URL        (mesmo do Repasse Livre)
 NEXT_PUBLIC_SUPABASE_ANON_KEY   (mesmo)
 SUPABASE_SERVICE_ROLE_KEY       (mesmo)
-LEMON_WEBHOOK_SECRET            (segredo do webhook no Lemon Squeezy)
+HOTMART_HOTTOK                 (token do webhook/postback da Hotmart)
 RESEND_API_KEY                  (conta Resend do brand US)
 CA_EMAIL_FROM                   (default: The Courtship Almanac <hello@courtshipalmanac.com>)
 CA_APP_URL                      (default: https://courtshipalmanac.com — trocar pelo subdomínio Vercel no início)
 ```
 
+## ★ PIVÔ 04/08: HOTMART (não Lemon Squeezy)
+LS aceita vendedor BR mas só paga via PayPal (taxa ~10%). **Hotmart paga em BRL direto no banco, sem taxa de saque** → escolhida pro teste. Webhook = **`/api/hotmart`** (valida HOTTOK; espelha o /api/cakto). O `/api/ls` fica no repo mas inativo. Claim de auto-login via **`sck`** (a landing seta `?sck=claim_TOKEN`, igual à Cakto).
+
 ## Pra LIGAR o funil (o que falta, precisa de você)
-1. **Lemon Squeezy**: criar loja + produto ($9). Pegar (a) a **URL de checkout** e (b) o **segredo do webhook**.
-   - Webhook LS → apontar pra `https://<subdominio>/api/ls`, eventos `order_created` + `order_refunded`.
-   - Redirect pós-compra do produto → `https://<subdominio>/welcome`.
+1. **Hotmart**: criar produto ($9–12), habilitar **vendas internacionais** + moeda **USD**, produto em inglês. Pegar (a) a **URL de checkout** (`pay.hotmart.com/...`) e (b) o **HOTTOK** do webhook.
+   - Webhook/Postback Hotmart → apontar pra `https://courtshipalmanac.vercel.app/api/hotmart`, eventos **PURCHASE_APPROVED** + **PURCHASE_REFUNDED**/**CHARGEBACK**.
    - Trocar `REPLACE-ME` na landing (`public/almanac/index.html`) e em `ca_config.plans.kit.checkout_url` pela URL real.
+   - Colar `HOTMART_HOTTOK` na Vercel.
 2. **Rodar a migration** `0061_ca_funil.sql` no Supabase (npm run migrar).
 3. **Vercel**: novo projeto, Root Directory = `apps/courtship`, colar as envs, subdomínio.
 4. **Resend**: verificar o domínio/remetente do brand US (ou usar o subdomínio inicial).

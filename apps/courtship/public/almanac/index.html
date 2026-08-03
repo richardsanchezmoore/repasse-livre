@@ -308,8 +308,8 @@
   </footer>
 
   <script>
-    // Auto-login bridge + InitiateCheckout. Lemon Squeezy leva dados custom via
-    // ?checkout[custom][claim]=TOKEN — o webhook amarra o token à conta; /welcome troca por sessão.
+    // Auto-login bridge + InitiateCheckout. Hotmart propaga o ?sck=claim_TOKEN pro webhook,
+    // que amarra o token à conta; /welcome troca por sessão (mesma ideia da Cakto no BR).
     (function(){
       var token;
       try {
@@ -317,7 +317,7 @@
         if(!token){ token = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (String(Date.now())+Math.random().toString(36).slice(2)); localStorage.setItem('ca_claim', token); }
       } catch(e){ token = (String(Date.now())+Math.random().toString(36).slice(2)); }
       document.querySelectorAll('a[data-checkout]').forEach(function(a){
-        try{ var u=new URL(a.getAttribute('href'),location.href); u.searchParams.set('checkout[custom][claim]', token); a.setAttribute('href',u.toString()); }catch(e){}
+        try{ var u=new URL(a.getAttribute('href'),location.href); u.searchParams.set('sck', 'claim_'+token); a.setAttribute('href',u.toString()); }catch(e){}
         a.addEventListener('click', function(){ try{ if(window.fbq) fbq('track','InitiateCheckout',{content_name:'The Courtship Almanac',value:9,currency:'USD'}); }catch(e){} });
       });
     })();
