@@ -79,7 +79,12 @@ export async function POST(req) {
   const tipo = secretsAssin.includes(segredo) || (produto && idAssin && String(produto) === String(idAssin)) ? "assinatura" : "kit";
 
   // aprovado/renovação → concede · reembolso/cancelamento → revoga · resto → ignora
-  const cancela = /(refund|estorn|reembol|cancel|chargeback|expired|dispute|revok|inadimpl|overdue|atras)/.test(evento);
+  // ⚠️ NÃO revogar kit pago por evento de tentativa não-paga: um PIX/boleto que EXPIRA
+  // (ou "cancel"/"overdue"/"atras") de uma tentativa da MESMA pessoa NÃO pode derrubar a
+  // compra que foi aprovada. Estorno/contestação revoga sempre; fim-de-ciclo revoga só assinatura.
+  const revogaSempre = /(refund|estorn|reembol|chargeback|charge_back|dispute|disputa|\bmed\b|revok)/.test(evento);
+  const revogaAssinatura = /(cancel|expir|overdue|atras|inadimpl|suspend|unpaid|delinq)/.test(evento);
+  const cancela = revogaSempre || (tipo === "assinatura" && revogaAssinatura);
   const concede = /(approv|aprovad|paid|pago|purchase_approved|complete|active|renov|renew|recur|recorren)/.test(evento);
 
   const user = await acharOuCriarUsuario(admin, email, nome);
