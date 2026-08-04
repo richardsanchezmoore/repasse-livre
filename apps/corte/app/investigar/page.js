@@ -21,8 +21,14 @@ export default async function InvestigarPage({ searchParams }) {
     const { data } = await admin.from("corte_quizzes").select("slug, titulo, dados").eq("slug", slug).eq("ativo", true).maybeSingle();
     row = data;
   } else {
-    const { data } = await admin.from("corte_quizzes").select("slug, titulo, dados").eq("ativo", true).order("atualizado_em", { ascending: false }).limit(1);
-    row = data?.[0] || null;
+    // raiz: escolha explícita do admin; senão, o ativo mais recente
+    const { data: raiz } = await admin.from("corte_quizzes").select("slug, titulo, dados").eq("raiz", true).maybeSingle();
+    if (raiz) {
+      row = raiz;
+    } else {
+      const { data } = await admin.from("corte_quizzes").select("slug, titulo, dados").eq("ativo", true).order("atualizado_em", { ascending: false }).limit(1);
+      row = data?.[0] || null;
+    }
   }
 
   let quiz = row ? { slug: row.slug, titulo: row.titulo, ...(row.dados || {}) } : null;

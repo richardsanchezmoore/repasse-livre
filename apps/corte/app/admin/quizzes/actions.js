@@ -76,3 +76,16 @@ export async function excluirQuiz(id) {
   await supabaseAdmin().from("corte_quizzes").delete().eq("id", id);
   refresh();
 }
+
+// Define qual quiz o /investigar serve sem ?q= (raiz). id vazio = nenhum (volta ao ativo mais recente).
+export async function definirQuizRaiz(id) {
+  await ctx();
+  const admin = supabaseAdmin();
+  await admin.from("corte_quizzes").update({ raiz: false }).eq("raiz", true);
+  if (id) {
+    const { error } = await admin.from("corte_quizzes").update({ raiz: true }).eq("id", id);
+    if (error) return { erro: error.message };
+  }
+  refresh();
+  return { ok: true };
+}

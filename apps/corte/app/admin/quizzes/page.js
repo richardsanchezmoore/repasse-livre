@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminQuizzesPage() {
   await exigirAdmin();
   const admin = supabaseAdmin();
-  const { data } = await admin.from("corte_quizzes").select("id, slug, titulo, ativo, dados").order("atualizado_em", { ascending: false });
+  const { data } = await admin.from("corte_quizzes").select("id, slug, titulo, ativo, raiz, dados").order("atualizado_em", { ascending: false });
 
   const h = await headers();
   const host = h.get("host") || "damasvirtuosas.com";

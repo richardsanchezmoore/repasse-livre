@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { novoQuiz, salvarQuiz, excluirQuiz, alternarAtivoQuiz } from "@/app/admin/quizzes/actions";
+import { novoQuiz, salvarQuiz, excluirQuiz, alternarAtivoQuiz, definirQuizRaiz } from "@/app/admin/quizzes/actions";
 
 const FAIXA_CLS = [
   { v: "green", t: "🟢 Bom (Cavalheiro)" },
@@ -119,8 +119,18 @@ export default function ConstrutorQuizzes({ quizzes, baseUrl }) {
   }
 
   // ── LISTA ─────────────────────────────────────────────────────────────────
+  const raizId = quizzes.find((q) => q.raiz)?.id || "";
   return (
     <div>
+      <div className="card" style={{ marginBottom: 14, display: "grid", gap: 6 }}>
+        <label className="fld-l">★ Quiz padrão na raiz <code>/investigar</code> (sem <code>?q=</code>)</label>
+        <select className="fld" value={raizId} disabled={busy} onChange={(e) => acao(() => definirQuizRaiz(e.target.value))}>
+          <option value="">— nenhum (usa o ativo mais recente) —</option>
+          {quizzes.map((q) => <option key={q.id} value={q.id}>{q.titulo}{q.ativo ? "" : " (inativo)"}</option>)}
+        </select>
+        <p className="opt">É o quiz que abre quando o anúncio aponta pro <code>/investigar</code> puro.</p>
+      </div>
+
       <button type="button" className="chip" disabled={busy} onClick={() => acao(novoQuiz)}>＋ Novo quiz</button>
       <div className="shelf" style={{ marginTop: 12 }}>
         {quizzes.map((q) => {
@@ -130,7 +140,9 @@ export default function ConstrutorQuizzes({ quizzes, baseUrl }) {
             <div key={q.id} className="memb">
               <div className="memb-top">
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="memb-nome">{q.titulo}{q.ativo && <span className="tag" style={{ marginLeft: 6, background: "#2f6b48", color: "#fff" }}>ATIVO</span>}</div>
+                  <div className="memb-nome">{q.titulo}
+                    {q.raiz && <span className="tag" style={{ marginLeft: 6, background: "var(--gold)", color: "#2a1710" }}>★ RAIZ</span>}
+                    {q.ativo && <span className="tag" style={{ marginLeft: 6, background: "#2f6b48", color: "#fff" }}>ATIVO</span>}</div>
                   <div className="memb-email">{nQ} pergunta(s) · <code>{q.slug}</code></div>
                 </div>
               </div>
