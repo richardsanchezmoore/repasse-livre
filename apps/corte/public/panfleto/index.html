@@ -33,10 +33,9 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
 
 <style>
   :root{
-    --azul:#c6d4e1; --azul-deep:#3f5670; --creme:#2b1218; --creme-2:#3a1c24;
-    --gold:#c69b4a; --gold-2:#d8b06a; --gold-soft:#e6d3a3;
-    --wine:#7c2b37; --wine-2:#61202a; --wine-t:#e6a6b1; --line:rgba(201,158,78,.22);
-    --ink:#f2e4cf; --ink-soft:#c7b498;
+    --azul:#c6d4e1; --azul-deep:#3f5670; --creme:#fbf6ea; --creme-2:#f3e8ce;
+    --gold:#b0873f; --gold-2:#cba85b; --gold-soft:#e6d3a3;
+    --wine:#7c2b37; --wine-2:#61202a; --ink:#2c2833; --ink-soft:#544d59;
     --disp:'Playfair Display',Georgia,serif;
     --serif:'Merriweather',Georgia,serif;
     --fancy:'Playfair Display',Georgia,serif;
@@ -46,8 +45,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{font-family:var(--serif);color:var(--ink);line-height:1.65;
-    background:radial-gradient(1200px 600px at 50% -10%, #3a1620 0%, transparent 60%),
-      linear-gradient(180deg,#1e0d13 0%,#160a0f 45%,#1e0d13 100%);background-attachment:fixed}
+    background:radial-gradient(1200px 600px at 50% -10%, #f6f1e6 0%, transparent 60%),
+      linear-gradient(180deg,#f3ead6 0%,#efe4cc 40%,#f6f1e6 100%);background-attachment:fixed}
   .wrap{max-width:880px;margin:0 auto;padding:0 20px}
   section{padding:clamp(22px,3.4vw,38px) 0}
   .kicker{font:700 12px/1 var(--ui);letter-spacing:.30em;text-transform:uppercase;color:var(--gold)}
@@ -190,18 +189,6 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .wpp-flutuante{position:fixed;right:clamp(16px,3vw,24px);bottom:clamp(84px,14vw,96px);z-index:210;display:inline-flex;align-items:center;gap:9px;padding:12px 18px;font:700 14px var(--ui);color:#fff;background:#25d366;border-radius:999px;text-decoration:none;box-shadow:0 10px 26px -8px rgba(37,211,102,.55),0 3px 10px -4px rgba(0,0,0,.35);transition:transform .15s}
   .wpp-flutuante:hover{background:#1fbe5a;transform:translateY(-2px)}
   @media(max-width:560px){.wpp-flutuante{padding:13px;gap:0}.wpp-flutuante-texto{display:none}}
-
-  /* ===================== TEMA VINHO (dark — landing principal) ===================== */
-  .pcard,.kitem,.faq details,.scard,.wcard,.decoder li,.checks.checks-row li{background:linear-gradient(165deg,#2c1319,#231015);border-color:var(--line)}
-  .offer,.turn-box{background:linear-gradient(160deg,#2c1319,#231015);border-color:var(--gold)}
-  .idea,.how{background:linear-gradient(160deg,#3a1620,#241016);border-color:var(--gold)}
-  .decoder li{border-left-color:var(--gold)}
-  /* "vinho como TEXTO" clareia p/ contraste no escuro */
-  em,h1.head em,.sec-head h2 em,.pcard .pt,.kitem h3,.turn-box .big-idea,.big-price,.from s,.urgency,.scard .shead,.faq summary,footer .sign,.kit-strip li,.quote-big,.pain .said,.decoder .diz,.pain .close,.lead b{color:var(--wine-t)}
-  .subhead b{color:var(--gold-2)}
-  .stack .it,.scard .quote{color:var(--ink)}
-  .stack .it s,.from,.parcela,.offer .note,.hero-reassure,.cta-note{color:var(--ink-soft)}
-  .guarantee{background:#15382a;border-color:#2f6b48;color:#bfe6d0}
 </style>
 </head>
 <body>
