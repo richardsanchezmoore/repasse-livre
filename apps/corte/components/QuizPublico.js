@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { faixaDoTotal } from "@/lib/quiz";
 
 /** Funil público: roda o quiz (do banco) e, pra revelar o Veredito, pede
@@ -20,12 +20,41 @@ export default function QuizPublico({ quiz }) {
 
   const total = resp.reduce((a, b) => a + (b || 0), 0);
 
+  // ── funil interno (visita + quiz_fim), com id anônimo p/ contar distintos ──
+  const vidRef = useRef(null);
+  const fimRef = useRef(false);
+  function getVid() {
+    if (vidRef.current) return vidRef.current;
+    try {
+      let v = localStorage.getItem("dv_vid");
+      if (!v) { v = (crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(16).slice(2)); localStorage.setItem("dv_vid", v); }
+      vidRef.current = v; return v;
+    } catch { return null; }
+  }
+  function logEvento(tipo) {
+    try {
+      fetch("/api/evento", {
+        method: "POST", headers: { "content-type": "application/json" }, keepalive: true,
+        body: JSON.stringify({ tipo, vid: getVid(), quiz_slug: SLUG }),
+      });
+    } catch { /* best-effort */ }
+  }
+  useEffect(() => { logEvento("visita"); /* uma vez por carregamento */ // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function escolher(p) {
     const novo = [...resp];
     novo[idx] = p;
     setResp(novo);
     if (idx < QUESTOES.length - 1) setIdx(idx + 1);
-    else setFase("gate");
+    else {
+      setFase("gate");
+      if (!fimRef.current) {
+        fimRef.current = true;
+        logEvento("quiz_fim");
+        try { if (window.fbq) window.fbq("trackCustom", "QuizCompleto", { content_name: quiz?.titulo || "Veredito" }); } catch { /* pixel opcional */ }
+      }
+    }
   }
 
   async function revelar(e) {
