@@ -48,7 +48,14 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
 
       <section className="card" style={{ marginTop: 14 }}>
         <div className="c-k">🍵 O Salão (grupo das assinantes)</div>
+        <p className="c-p" style={{ marginBottom: 4 }}>Grupo <strong>privado</strong>, só liberado a quem assina (na página <code>/salao</code>).</p>
         <Campo label="Link do grupo de WhatsApp" val={p.salao_whatsapp} onChange={(v) => setP({ ...p, salao_whatsapp: v })} ph="https://chat.whatsapp.com/…" />
+      </section>
+
+      <section className="card" style={{ marginTop: 14 }}>
+        <div className="c-k">💬 A Comunidade (grupo dos leads do quiz)</div>
+        <p className="c-p" style={{ marginBottom: 4 }}>Grupo <strong>aberto</strong>, mostrado no fim do quiz <code>/investigar</code>. Se deixar em branco, usa o link do Salão acima. <strong>Dica:</strong> use um grupo <strong>diferente</strong> do Salão — senão o link do grupo pago fica exposto de graça.</p>
+        <Campo label="Link do grupo de WhatsApp" val={p.comunidade_whatsapp} onChange={(v) => setP({ ...p, comunidade_whatsapp: v })} ph="https://chat.whatsapp.com/…" />
       </section>
 
       <section className="card" style={{ marginTop: 14 }}>

@@ -4,12 +4,12 @@ import { faixaDoTotal } from "@/lib/quiz";
 
 /** Funil público: roda o quiz (do banco) e, pra revelar o Veredito, pede
  *  e-mail + WhatsApp (lead). Depois do Veredito, upsell pro Kit. Sem login. */
-export default function QuizPublico({ quiz }) {
+export default function QuizPublico({ quiz, comunidadeUrl }) {
   const QUESTOES = quiz?.questoes || [];
   const MAX = quiz?.max || QUESTOES.reduce((a, q) => a + Math.max(...(q.opcoes || []).map((o) => o.p || 0), 0), 0);
   const FAIXAS = quiz?.faixas || [];
   const SLUG = quiz?.slug || null;
-  const COMUNIDADE = process.env.NEXT_PUBLIC_CORTE_COMUNIDADE_URL || "";
+  const COMUNIDADE = comunidadeUrl || ""; // vem do painel (corte_config.planos), editável sem redeploy
 
   const [fase, setFase] = useState("quiz"); // quiz | gate | fim
   const [idx, setIdx] = useState(0);

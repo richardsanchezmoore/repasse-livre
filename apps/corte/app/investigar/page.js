@@ -36,5 +36,10 @@ export default async function InvestigarPage({ searchParams }) {
     quiz = { slug: DEFAULT_SLUG, titulo: QUIZ.titulo, lead: QUIZ.lead, max: QUIZ.max, questoes: QUIZ.questoes, faixas: QUIZ.faixas };
   }
 
-  return <QuizPublico quiz={quiz} />;
+  // Link da comunidade (botão no Veredito): campo próprio no painel, com fallback
+  // pro link do Salão que já estiver preenchido — nada de env/redeploy.
+  const { data: cfg } = await admin.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
+  const comunidadeUrl = cfg?.valor?.comunidade_whatsapp || cfg?.valor?.salao_whatsapp || "";
+
+  return <QuizPublico quiz={quiz} comunidadeUrl={comunidadeUrl} />;
 }
