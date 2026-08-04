@@ -1,5 +1,6 @@
 import { exigirAdmin } from "@/lib/admin";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import CopiarWhatsapps from "@/components/CopiarWhatsapps";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,13 @@ export default async function AdminLeadsPage() {
   const lista = data || [];
   const porFaixa = { green: 0, amber: 0, red: 0 };
   for (const l of lista) if (porFaixa[l.quiz_faixa] != null) porFaixa[l.quiz_faixa]++;
+
+  // WhatsApp normalizados (+55…, únicos) p/ copiar e adicionar ao grupo manualmente
+  const numeros = [...new Set(
+    lista.map((l) => (l.whatsapp || "").replace(/\D/g, ""))
+      .filter((d) => d.length >= 10)
+      .map((d) => "+" + (d.startsWith("55") ? d : "55" + d))
+  )];
 
   // funil interno (visitas → concluíram quiz → WhatsApp)
   const { data: fr } = await admin.rpc("corte_funil_resumo");
@@ -53,6 +61,11 @@ export default async function AdminLeadsPage() {
         <p className="opt" style={{ fontSize: 11.5 }}>
           O buraco entre <b>Concluíram</b> e <b>WhatsApp</b> é quem viu o Veredito mas não deixou o número. Contagem por visitante único (dedupa recarregamentos).
         </p>
+      </div>
+
+      <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <CopiarWhatsapps numeros={numeros} />
+        <span className="opt" style={{ fontSize: 11.5 }}>Um por linha (+55…) — cole ao adicionar ao grupo.</span>
       </div>
 
       <div className="shelf" style={{ marginTop: 16 }}>
