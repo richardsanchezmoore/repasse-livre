@@ -1,8 +1,7 @@
 :root{
-  --azul:#c6d4e1; --azul-deep:#3f5670; --creme:#2b1218; --creme-2:#3a1c24;
-  --gold:#c69b4a; --gold-2:#d8b06a; --gold-soft:#e6d3a3;
-  --wine:#7c2b37; --wine-2:#61202a; --wine-t:#e6a6b1; --line:rgba(201,158,78,.22);
-  --ink:#f2e4cf; --ink-soft:#c7b498;
+  --azul:#c6d4e1; --azul-deep:#3f5670; --creme:#fbf6ea; --creme-2:#f4ead0;
+  --gold:#b0873f; --gold-2:#cba85b; --gold-soft:#e6d3a3;
+  --wine:#7c2b37; --wine-2:#61202a; --ink:#2c2833; --ink-soft:#5a5361;
   --disp:'Playfair Display',Georgia,serif;
   /* corpo de leitura (80%): Merriweather — desenhada p/ tela, alta legibilidade no mobile */
   --serif:'Merriweather',Georgia,serif;
@@ -17,8 +16,8 @@ html,body{height:100%}
 body{
   font-family:var(--serif); color:var(--ink); line-height:1.6;
   background:
-    radial-gradient(900px 520px at 50% -8%, #3a1620 0%, transparent 58%),
-    linear-gradient(180deg,#1e0d13 0%,#160a0f 45%,#1e0d13 100%);
+    radial-gradient(900px 500px at 50% -8%, #eaf1f8 0%, transparent 55%),
+    linear-gradient(180deg,#e6eef7 0%,#dfe8f2 45%,#eaf1f8 100%);
   background-attachment:fixed; min-height:100dvh;
   -webkit-tap-highlight-color:transparent;
 }
@@ -393,50 +392,12 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
   display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:0 14px 30px -14px rgba(176,135,63,.7);margin-bottom:6px}
 .fx-celebra-p{font:500 16px/1.5 var(--serif);color:var(--ink-soft);max-width:300px;margin-bottom:6px}
 
-/* ===================== TEMA VINHO (dark — app inteiro) =====================
-   Repinta as superfícies claras hardcoded p/ tons de vinho/noite, mantendo
-   a estrutura original. Os tokens (--ink/--creme/etc.) já foram invertidos. */
-/* superfícies (cards, listas, campos) */
-.card,.row,.livro,.lp-bene{background:linear-gradient(165deg,#2c1319,#231015);border-color:var(--line)}
-.card.hero,.add-etapa,.fx-selo{background:linear-gradient(160deg,#3a1620,#281016);border-color:var(--gold)}
-.card.dark{background:linear-gradient(160deg,#5a2331,#33121a);border-color:var(--gold)}
-.tile{background:rgba(255,255,255,.04);border-color:var(--line)}
-.adm-campo,.cf,.regra-card,.memb,.ic-pop,.inst-sheet-card{background:#2c1319;border-color:var(--line)}
-.adm-etapa,.add-campo{background:rgba(255,255,255,.03);border-color:var(--line)}
-.mini,.ic-btn,.opt-chip,.sld output{background:rgba(255,255,255,.05);border-color:var(--line)}
-.chip,.tag.ghost{background:rgba(255,255,255,.06);border-color:var(--line)}
-.ic-cell:hover{background:rgba(255,255,255,.07);border-color:var(--line)}
-/* campos de texto */
-.fld{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--ink)}
-.fld:focus{background:rgba(255,255,255,.09);border-color:var(--gold)}
-.fld::placeholder{color:#93826c}
-/* barras fixas translúcidas */
-.nav,.fx-nav{background:rgba(24,11,16,.92);border-color:var(--line)}
-.adm-top{background:rgba(24,11,16,.95)}
-.adm-tabs{background:rgba(24,11,16,.9);border-color:var(--line)}
-/* opções do quiz / dossiê */
-.fx-opt{background:#2c1319;border-color:var(--line);color:var(--ink)}
-.fx-opt:hover{border-color:var(--gold)}
-/* emblemas azuis → vinho */
-.row .ri,.dz-emb,.fx-emb{background:linear-gradient(160deg,#5a2331,#37141d)}
-.ld-diag{background:linear-gradient(180deg,#4a1c26,#33121a);border-color:var(--gold)}
-/* glows claros → vinho */
-.lp-hero{background:radial-gradient(700px 300px at 50% -10%,#3a1620 0%,transparent 60%)}
-/* "vinho como TEXTO" precisa clarear no escuro p/ ter contraste */
-.h-title em,.lp-title em,.sec-h,.c-t em,.tile .tt,.row .rt,.fld-l,.cap-h,.memb-nome,
-.regra-pts,.adm-eh h2,.ic-lbl,.lp-bt,.leitura h1,.leitura h2,.fx-nome,.fx-slval,
-.inst-sheet-h,.link-sutil,.mini.danger,.fld-err,.tag,.ld-tab th,.ld-tab td:last-child,
-.leitura strong{color:var(--wine-t)}
-.ld-verse{color:#f2c2c9}
-.leitura blockquote{background:rgba(255,255,255,.04)}
-.ld-tab tr:nth-child(even) td{background:rgba(255,255,255,.03)}
-
 /* ---- opções CURTAS do quiz público (chips que avançam rápido) ---- */
 .qopts{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 .qopt{flex:1 1 auto;min-width:calc(50% - 6px);text-align:center;font:600 16.5px/1.25 var(--serif);color:var(--ink);
-  background:#2c1319;border:1.5px solid var(--line);border-radius:14px;padding:20px 16px;cursor:pointer;
-  box-shadow:0 6px 16px -12px rgba(0,0,0,.5);transition:transform .1s,border-color .14s,background .14s,box-shadow .14s}
+  background:#fff;border:1.5px solid var(--gold-soft);border-radius:14px;padding:20px 16px;cursor:pointer;
+  box-shadow:0 6px 16px -12px rgba(44,40,51,.35);transition:transform .1s,border-color .14s,background .14s,box-shadow .14s}
 .qopt:focus{outline:none}
-@media (hover:hover){.qopt:hover{border-color:var(--gold);box-shadow:0 10px 22px -12px rgba(124,43,55,.4)}}
+@media (hover:hover){.qopt:hover{border-color:var(--gold);box-shadow:0 10px 22px -12px rgba(124,43,55,.3)}}
 .qopt:active{transform:scale(.97)}
 .qopt.on{border-color:var(--gold-2);background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd}
