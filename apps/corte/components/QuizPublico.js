@@ -9,11 +9,12 @@ export default function QuizPublico({ quiz }) {
   const MAX = quiz?.max || QUESTOES.reduce((a, q) => a + Math.max(...(q.opcoes || []).map((o) => o.p || 0), 0), 0);
   const FAIXAS = quiz?.faixas || [];
   const SLUG = quiz?.slug || null;
+  const COMUNIDADE = process.env.NEXT_PUBLIC_CORTE_COMUNIDADE_URL || "";
 
   const [fase, setFase] = useState("quiz"); // quiz | gate | fim
   const [idx, setIdx] = useState(0);
   const [resp, setResp] = useState([]);
-  const [lead, setLead] = useState({ email: "", whatsapp: "" });
+  const [whatsapp, setWhatsapp] = useState("");
   const [erro, setErro] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -30,16 +31,14 @@ export default function QuizPublico({ quiz }) {
   async function revelar(e) {
     e.preventDefault();
     setErro("");
-    const email = lead.email.trim().toLowerCase();
-    const whats = lead.whatsapp.replace(/[^\d+]/g, "");
-    if (!email.includes("@")) { setErro("Confirme o seu melhor e-mail."); return; }
+    const whats = whatsapp.replace(/[^\d+]/g, "");
     if (whats.replace(/\D/g, "").length < 10) { setErro("Informe o WhatsApp com DDD."); return; }
     setBusy(true);
     const f = faixaDoTotal(total, FAIXAS);
     try {
       await fetch("/api/lead", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, whatsapp: whats, total, faixa: f?.cls, quiz_slug: SLUG }),
+        body: JSON.stringify({ whatsapp: whats, total, faixa: f?.cls, quiz_slug: SLUG }),
       });
     } catch { /* não trava a UX */ }
     try { if (window.fbq) window.fbq("track", "Lead", { content_name: quiz?.titulo || "Veredito" }); } catch { /* pixel opcional */ }
@@ -62,6 +61,12 @@ export default function QuizPublico({ quiz }) {
             <h2>{f?.titulo}</h2>
             <p>{f?.texto}</p>
           </div>
+          {COMUNIDADE && (
+            <a href={COMUNIDADE} target="_blank" rel="noreferrer" className="pill"
+              style={{ width: "100%", justifyContent: "center", marginTop: 16, background: "linear-gradient(180deg,#1f8a5b,#136b43)", borderColor: "#37b481" }}>
+              💬 Entrar na comunidade das Damas →
+            </a>
+          )}
           <div className="card" style={{ marginTop: 18, textAlign: "center" }}>
             <div className="c-k">Isto foram só {QUESTOES.length} perguntas ✦</div>
             <div className="c-t" style={{ marginBottom: 6 }}>Quer investigar a fundo?</div>
@@ -83,18 +88,16 @@ export default function QuizPublico({ quiz }) {
           <div style={{ textAlign: "center" }}>
             <div className="fx-eyebrow">◈ O seu Veredito está pronto ◈</div>
             <h1 className="fx-q" style={{ marginBottom: 6 }}>Para onde envio o <em>seu Veredito</em>?</h1>
-            <p className="c-p" style={{ maxWidth: 420, margin: "0 auto 16px" }}>Revele o resultado agora — e receba também dicas de discernimento no seu WhatsApp.</p>
+            <p className="c-p" style={{ maxWidth: 420, margin: "0 auto 16px" }}>Revele o resultado agora — e receba acesso à nossa comunidade com dicas de discernimento.</p>
           </div>
           <form onSubmit={revelar} className="card" style={{ display: "grid", gap: 10 }}>
-            <input className="fld" type="email" value={lead.email} placeholder="Seu melhor e-mail" autoComplete="email" required
-              onChange={(e) => setLead({ ...lead, email: e.target.value })} />
-            <input className="fld" type="tel" value={lead.whatsapp} placeholder="WhatsApp (com DDD)" autoComplete="tel" required
-              onChange={(e) => setLead({ ...lead, whatsapp: e.target.value })} />
+            <input className="fld" type="tel" value={whatsapp} placeholder="WhatsApp (com DDD)" autoComplete="tel" inputMode="tel" required
+              onChange={(e) => setWhatsapp(e.target.value)} />
             {erro && <p className="fld-err">{erro}</p>}
             <button className="pill" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center" }}>
               {busy ? "Revelando…" : "🔮 Revelar o meu Veredito →"}
             </button>
-            <p className="opt" style={{ fontSize: 12 }}>Nada de spam. Você pode sair quando quiser.</p>
+            <p className="opt" style={{ fontSize: 12 }}>É rápido e sem spam — só o essencial pra você entrar na comunidade.</p>
           </form>
         </div>
       </main>

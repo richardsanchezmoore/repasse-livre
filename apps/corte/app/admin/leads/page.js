@@ -26,7 +26,7 @@ export default async function AdminLeadsPage() {
           const digits = (l.whatsapp || "").replace(/\D/g, "");
           const wa = digits ? (digits.startsWith("55") ? digits : "55" + digits) : "";
           return (
-            <div key={l.email} className="memb">
+            <div key={l.whatsapp || l.email} className="memb">
               <div className="memb-top">
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="memb-nome">
@@ -34,7 +34,7 @@ export default async function AdminLeadsPage() {
                     {l.quiz_total != null && <span className="tag" style={{ marginLeft: 6 }}>{l.quiz_total} pts</span>}
                     {l.virou_membro && <span className="tag" style={{ marginLeft: 6, background: "#2f6b48", color: "#fff" }}>MEMBRO</span>}
                   </div>
-                  <div className="memb-email">{l.email}</div>
+                  <div className="memb-email">💬 {l.whatsapp || "—"}{l.email ? ` · ${l.email}` : ""}</div>
                 </div>
                 <div className="memb-dos" style={{ fontSize: 12, whiteSpace: "nowrap" }}>
                   {new Date(l.criado_em).toLocaleDateString("pt-BR")}
