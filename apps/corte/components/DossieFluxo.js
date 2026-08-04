@@ -74,11 +74,12 @@ export default function DossieFluxo({ dossie, esquema, valoresIniciais, regras, 
   const noFim = step.tipo === "veredito";
   const setVal = (id, v) => setValores((o) => ({ ...o, [id]: v }));
   function flash() { setSalvo(true); setTimeout(() => setSalvo(false), 1400); }
-  async function salvar(id, v) { await salvarUmaResposta(dossie.id, id, v ?? null); flash(); }
+  // Salva em BACKGROUND — NÃO bloqueia a troca de pergunta (fim da "travada").
+  function salvar(id, v) { salvarUmaResposta(dossie.id, id, v ?? null).then(flash).catch(() => {}); }
   const avancar = () => setIdx((i) => Math.min(i + 1, steps.length - 1));
   const voltar = () => setIdx((i) => Math.max(i - 1, 0));
-  async function continuar(campo) { await salvar(campo.id, valores[campo.id]); avancar(); }
-  async function escolher(campo, v) { setVal(campo.id, v); await salvar(campo.id, v); avancar(); }
+  function continuar(campo) { salvar(campo.id, valores[campo.id]); avancar(); }
+  function escolher(campo, v) { setVal(campo.id, v); salvar(campo.id, v); avancar(); }
 
   const veredito = noFim ? avaliarVeredito({ valores, regras, faixas }) : null;
   const pct = totalCampos ? Math.round((totalResp / totalCampos) * 100) : 0;
