@@ -104,7 +104,7 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
             <p className="c-p" style={{ marginBottom: 14 }}>
               O <b>Kit de Discernimento</b> traz os <b>12 tipos</b> a reconhecer, o <b>Dossiê</b> pra investigar o seu pretendente de verdade e o <b>Veredito completo</b> — no seu celular.
             </p>
-            <a href="/panfleto" className="pill" style={{ width: "100%", justifyContent: "center" }}>👑 Conhecer o Kit completo →</a>
+            <a href="/panfleto" className="pill" style={{ width: "100%", justifyContent: "center" }}>👑 Acessar o Kit completo →</a>
           </div>
         </div>
       </main>
@@ -153,7 +153,7 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
       <div className="fx-scroll">
         <div className="qopts">
           {(q.opcoes || []).map((o, i) => (
-            <button type="button" key={i} className="qopt" onClick={() => escolher(o.p)}>{o.t}</button>
+            <button type="button" key={idx + "-" + i} className="qopt" onClick={(e) => { e.currentTarget.blur(); escolher(o.p); }}>{o.t}</button>
           ))}
         </div>
       </div>
