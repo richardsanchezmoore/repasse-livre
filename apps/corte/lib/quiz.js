@@ -48,6 +48,9 @@ export const QUIZ = {
   ],
 };
 
-export function faixaDoTotal(total) {
-  return QUIZ.faixas.find((f) => total >= f.min) || QUIZ.faixas[QUIZ.faixas.length - 1];
+/** Faixa do resultado. Aceita faixas dinâmicas (quiz do banco); ordena por min desc. */
+export function faixaDoTotal(total, faixas = QUIZ.faixas) {
+  const list = (Array.isArray(faixas) && faixas.length ? faixas : QUIZ.faixas)
+    .slice().sort((a, b) => Number(b.min) - Number(a.min));
+  return list.find((f) => total >= Number(f.min)) || list[list.length - 1];
 }

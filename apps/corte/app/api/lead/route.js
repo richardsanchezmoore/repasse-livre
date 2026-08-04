@@ -14,6 +14,7 @@ export async function POST(req) {
   const whatsapp = String(body?.whatsapp || "").replace(/[^\d+]/g, "").slice(0, 20);
   const total = Number.isFinite(+body?.total) ? Math.trunc(+body.total) : null;
   const faixa = ["green", "amber", "red"].includes(body?.faixa) ? body.faixa : null;
+  const quiz_slug = String(body?.quiz_slug || "").slice(0, 80) || null;
 
   if (!email.includes("@") || whatsapp.replace(/\D/g, "").length < 10) {
     return NextResponse.json({ ok: false, erro: "dados incompletos" }, { status: 400 });
@@ -22,7 +23,7 @@ export async function POST(req) {
   try {
     const admin = supabaseAdmin();
     await admin.from("corte_leads").upsert(
-      { email, whatsapp, quiz_total: total, quiz_faixa: faixa, origem: "investigar", atualizado_em: new Date().toISOString() },
+      { email, whatsapp, quiz_total: total, quiz_faixa: faixa, quiz_slug, origem: "investigar", atualizado_em: new Date().toISOString() },
       { onConflict: "email" }
     );
   } catch (e) {
