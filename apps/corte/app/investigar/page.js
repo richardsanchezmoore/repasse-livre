@@ -39,7 +39,9 @@ export default async function InvestigarPage({ searchParams }) {
   // Link da comunidade (botão no Veredito): campo próprio no painel, com fallback
   // pro link do Salão que já estiver preenchido — nada de env/redeploy.
   const { data: cfg } = await admin.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
-  const comunidadeUrl = cfg?.valor?.comunidade_whatsapp || cfg?.valor?.salao_whatsapp || "";
+  const planosCfg = cfg?.valor || {};
+  const comunidadeUrl = planosCfg.comunidade_whatsapp || planosCfg.salao_whatsapp || "";
+  const mostrarComunidade = !!planosCfg.mostrar_comunidade_veredito; // desligado = foco só na landing
 
-  return <QuizPublico quiz={quiz} comunidadeUrl={comunidadeUrl} />;
+  return <QuizPublico quiz={quiz} comunidadeUrl={comunidadeUrl} mostrarComunidade={mostrarComunidade} />;
 }

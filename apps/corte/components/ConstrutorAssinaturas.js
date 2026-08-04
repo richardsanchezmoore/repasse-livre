@@ -54,8 +54,13 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
 
       <section className="card" style={{ marginTop: 14 }}>
         <div className="c-k">💬 A Comunidade (grupo dos leads do quiz)</div>
-        <p className="c-p" style={{ marginBottom: 4 }}>Grupo <strong>aberto</strong>, mostrado no fim do quiz <code>/investigar</code>. Se deixar em branco, usa o link do Salão acima. <strong>Dica:</strong> use um grupo <strong>diferente</strong> do Salão — senão o link do grupo pago fica exposto de graça.</p>
+        <p className="c-p" style={{ marginBottom: 4 }}>Grupo <strong>aberto</strong> dos leads do quiz. Se deixar em branco, usa o link do Salão. <strong>Dica:</strong> use um grupo <strong>diferente</strong> do Salão — senão o link do grupo pago fica exposto de graça.</p>
         <Campo label="Link do grupo de WhatsApp" val={p.comunidade_whatsapp} onChange={(v) => setP({ ...p, comunidade_whatsapp: v })} ph="https://chat.whatsapp.com/…" />
+        <p className="c-p" style={{ margin: "10px 0 4px" }}>Mostrar o botão "Entrar na comunidade" no fim do quiz? <strong>Desligado</strong> = foco total na landing (Kit); você adiciona os números ao grupo <strong>manualmente</strong> (aba Leads).</p>
+        <button type="button" className={"chip" + (p.mostrar_comunidade_veredito ? " on" : "")} style={{ marginTop: 4 }}
+          onClick={() => setP({ ...p, mostrar_comunidade_veredito: !p.mostrar_comunidade_veredito })}>
+          {p.mostrar_comunidade_veredito ? "🟢 Botão aparece no Veredito" : "⚪ Oculto — foco na landing (recomendado agora)"}
+        </button>
       </section>
 
       <section className="card" style={{ marginTop: 14 }}>

@@ -4,12 +4,14 @@ import { faixaDoTotal } from "@/lib/quiz";
 
 /** Funil público: roda o quiz (do banco) e, pra revelar o Veredito, pede
  *  e-mail + WhatsApp (lead). Depois do Veredito, upsell pro Kit. Sem login. */
-export default function QuizPublico({ quiz, comunidadeUrl }) {
+export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) {
   const QUESTOES = quiz?.questoes || [];
   const MAX = quiz?.max || QUESTOES.reduce((a, q) => a + Math.max(...(q.opcoes || []).map((o) => o.p || 0), 0), 0);
   const FAIXAS = quiz?.faixas || [];
   const SLUG = quiz?.slug || null;
-  const COMUNIDADE = comunidadeUrl || ""; // vem do painel (corte_config.planos), editável sem redeploy
+  // Botão da comunidade no Veredito: só aparece se ligado no painel. Desligado = foco
+  // total na landing (Kit); o WhatsApp já foi captado e a entrada no grupo é manual.
+  const COMUNIDADE = mostrarComunidade ? (comunidadeUrl || "") : "";
 
   const [fase, setFase] = useState("quiz"); // quiz | gate | fim
   const [idx, setIdx] = useState(0);
