@@ -15,6 +15,7 @@ export default function ConstrutorQuizzes({ quizzes, baseUrl }) {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(null);
   const [msg, setMsg] = useState("");
+  const [raizMsg, setRaizMsg] = useState("");
 
   async function acao(fn) { setBusy(true); try { const r = await fn(); if (r?.erro) alert(r.erro); router.refresh(); return r; } finally { setBusy(false); } }
 
@@ -123,12 +124,14 @@ export default function ConstrutorQuizzes({ quizzes, baseUrl }) {
   return (
     <div>
       <div className="card" style={{ marginBottom: 14, display: "grid", gap: 6 }}>
-        <label className="fld-l">★ Quiz padrão na raiz <code>/investigar</code> (sem <code>?q=</code>)</label>
-        <select className="fld" value={raizId} disabled={busy} onChange={(e) => acao(() => definirQuizRaiz(e.target.value))}>
+        <label className="fld-l">★ Quiz padrão na raiz <code>/investigar</code> (sem <code>?q=</code>)
+          {raizMsg && <span style={{ marginLeft: 8, color: "#7fd6a0", fontWeight: 700 }}>{raizMsg}</span>}</label>
+        <select className="fld" value={raizId} disabled={busy}
+          onChange={async (e) => { setRaizMsg(""); await acao(() => definirQuizRaiz(e.target.value)); setRaizMsg("✓ Salvo automaticamente"); }}>
           <option value="">— nenhum (usa o ativo mais recente) —</option>
           {quizzes.map((q) => <option key={q.id} value={q.id}>{q.titulo}{q.ativo ? "" : " (inativo)"}</option>)}
         </select>
-        <p className="opt">É o quiz que abre quando o anúncio aponta pro <code>/investigar</code> puro.</p>
+        <p className="opt">Salva sozinho ao escolher (sem botão) — é o quiz que abre quando o anúncio aponta pro <code>/investigar</code> puro.</p>
       </div>
 
       <button type="button" className="chip" disabled={busy} onClick={() => acao(novoQuiz)}>＋ Novo quiz</button>
