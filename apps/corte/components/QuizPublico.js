@@ -118,8 +118,8 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
         <div className="fx-scroll" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ textAlign: "center" }}>
             <div className="fx-eyebrow">◈ O seu Veredito está pronto ◈</div>
-            <h1 className="fx-q" style={{ marginBottom: 6 }}>Para onde envio o <em>seu Veredito</em>?</h1>
-            <p className="c-p" style={{ maxWidth: 420, margin: "0 auto 16px" }}>Revele o resultado agora — e receba acesso à nossa comunidade com dicas de discernimento.</p>
+            <h1 className="fx-q" style={{ marginBottom: 6 }}>Revele o <em>resultado</em> agora</h1>
+            <p className="c-p" style={{ maxWidth: 430, margin: "0 auto 16px" }}>E ainda receba <b>GRATUITAMENTE</b> o Guia “Verde ou Vermelho?” além do acesso à nossa comunidade de discernimento.</p>
           </div>
           <form onSubmit={revelar} className="card" style={{ display: "grid", gap: 10 }}>
             <input className="fld" type="tel" value={whatsapp} placeholder="WhatsApp (com DDD)" autoComplete="tel" inputMode="tel" required
@@ -151,9 +151,9 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
         <h1 className="fx-q">{q.t}</h1>
       </div>
       <div className="fx-scroll">
-        <div className="fx-opts">
+        <div className="qopts">
           {(q.opcoes || []).map((o, i) => (
-            <button type="button" key={i} className="fx-opt" onClick={() => escolher(o.p)}>{o.t}</button>
+            <button type="button" key={i} className="qopt" onClick={() => escolher(o.p)}>{o.t}</button>
           ))}
         </div>
       </div>

@@ -430,3 +430,12 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .ld-verse{color:#f2c2c9}
 .leitura blockquote{background:rgba(255,255,255,.04)}
 .ld-tab tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+
+/* ---- opções CURTAS do quiz público (chips que avançam rápido) ---- */
+.qopts{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.qopt{flex:1 1 auto;min-width:calc(50% - 6px);text-align:center;font:600 16.5px/1.25 var(--serif);color:var(--ink);
+  background:#2c1319;border:1.5px solid var(--line);border-radius:14px;padding:20px 16px;cursor:pointer;
+  box-shadow:0 6px 16px -12px rgba(0,0,0,.5);transition:transform .1s,border-color .14s,background .14s,box-shadow .14s}
+.qopt:hover{border-color:var(--gold);box-shadow:0 10px 22px -12px rgba(124,43,55,.4)}
+.qopt:active{transform:scale(.97)}
+.qopt.on{border-color:var(--gold-2);background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd}
