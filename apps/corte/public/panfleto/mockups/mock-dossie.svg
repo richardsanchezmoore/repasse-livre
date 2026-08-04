@@ -8,28 +8,61 @@
   <rect x="18" y="18" width="354" height="764" rx="36" fill="url(#scr)"/>
   <clipPath id="clip"><rect x="18" y="18" width="354" height="764" rx="36"/></clipPath>
   <g clip-path="url(#clip)">
+    <!-- header -->
     <rect x="18" y="18" width="354" height="60" fill="url(#hdr)"/>
     <rect x="18" y="76.5" width="354" height="1.5" fill="#c69b4a"/>
     <text x="195" y="53" text-anchor="middle" fill="#d8b06a" font-size="14" letter-spacing="4" font-weight="bold">✦ DAMAS VIRTUOSAS ✦</text>
-    <rect x="34" y="98" width="60" height="7" rx="3.5" fill="#c69b4a"/>
-    <rect x="100" y="98" width="60" height="7" rx="3.5" fill="#c69b4a"/>
-    <rect x="166" y="98" width="60" height="7" rx="3.5" fill="#7c2b37"/>
-    <rect x="232" y="98" width="60" height="7" rx="3.5" fill="#c69b4a" fill-opacity=".2"/>
-    <rect x="298" y="98" width="58" height="7" rx="3.5" fill="#c69b4a" fill-opacity=".2"/>
-    <text x="34" y="140" fill="#c69b4a" font-size="11.5" letter-spacing="2.4" font-weight="bold">◈ O VEREDITO REAL · PERGUNTA 3 ◈</text>
-    <text x="34" y="177" fill="#f2e4cf" font-size="23" font-weight="bold">Quando você discorda</text>
-    <text x="34" y="206" fill="#f2e4cf" font-size="23" font-weight="bold">dele, como ele reage?</text>
-    <rect x="34" y="234" width="322" height="72" rx="15" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.5"/>
-    <text x="52" y="264" fill="#fdf3dd" font-size="15">Ouve com paciência e</text>
-    <text x="52" y="286" fill="#fdf3dd" font-size="15">busca o entendimento.</text>
-    <rect x="34" y="318" width="322" height="72" rx="15" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22" stroke-width="1.5"/>
-    <text x="52" y="348" fill="#f2e4cf" font-size="15">Fica em silêncio ou</text>
-    <text x="52" y="370" fill="#f2e4cf" font-size="15">muda de assunto.</text>
-    <rect x="34" y="402" width="322" height="72" rx="15" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22" stroke-width="1.5"/>
-    <text x="52" y="432" fill="#f2e4cf" font-size="15">Se irrita e inverte a</text>
-    <text x="52" y="454" fill="#f2e4cf" font-size="15">culpa pra cima de você.</text>
-    <rect x="18" y="726" width="354" height="56" fill="#180b10"/>
-    <rect x="18" y="726" width="354" height="1.5" fill="#c69b4a" fill-opacity=".22"/>
-    <text x="195" y="759" text-anchor="middle" fill="#c7b498" font-size="12" letter-spacing="1">toque para responder</text>
+    <!-- título -->
+    <text x="34" y="104" fill="#c69b4a" font-size="11.5" letter-spacing="2.4" font-weight="bold">◈ O DOSSIÊ DA DAMA ◈</text>
+    <text x="34" y="130" fill="#f2e4cf" font-size="20" font-weight="bold">Investigando o pretendente</text>
+    <text x="34" y="150" fill="#c7b498" font-size="12.5">Marque o que você já observou nele.</text>
+
+    <!-- Q1 -->
+    <text x="34" y="182" fill="#e6a6b1" font-size="13" font-weight="bold">Quando você discorda, como ele reage?</text>
+    <rect x="34" y="192" width="100" height="38" rx="11" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/><text x="84" y="216" text-anchor="middle" fill="#fdf3dd" font-size="12.5">Ouve</text>
+    <rect x="144" y="192" width="100" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="194" y="216" text-anchor="middle" fill="#f2e4cf" font-size="12.5">Se cala</text>
+    <rect x="254" y="192" width="102" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="305" y="216" text-anchor="middle" fill="#f2e4cf" font-size="12.5">Se irrita</text>
+
+    <!-- Q2 -->
+    <text x="34" y="264" fill="#e6a6b1" font-size="13" font-weight="bold">Ele cumpre o que promete?</text>
+    <rect x="34" y="274" width="100" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="84" y="298" text-anchor="middle" fill="#f2e4cf" font-size="12.5">Sempre</text>
+    <rect x="144" y="274" width="100" height="38" rx="11" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/><text x="194" y="298" text-anchor="middle" fill="#fdf3dd" font-size="12.5">Às vezes</text>
+    <rect x="254" y="274" width="102" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="305" y="298" text-anchor="middle" fill="#f2e4cf" font-size="12.5">Nunca</text>
+
+    <!-- Q3 -->
+    <text x="34" y="346" fill="#e6a6b1" font-size="13" font-weight="bold">A vida financeira e de trabalho dele?</text>
+    <rect x="34" y="356" width="100" height="38" rx="11" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/><text x="84" y="380" text-anchor="middle" fill="#fdf3dd" font-size="12">Honrado</text>
+    <rect x="144" y="356" width="100" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="194" y="380" text-anchor="middle" fill="#f2e4cf" font-size="12">Instável</text>
+    <rect x="254" y="356" width="102" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="305" y="380" text-anchor="middle" fill="#f2e4cf" font-size="12">Escorado</text>
+
+    <!-- Q4 -->
+    <text x="34" y="428" fill="#e6a6b1" font-size="13" font-weight="bold">Como ele trata a mãe dele?</text>
+    <rect x="34" y="438" width="100" height="38" rx="11" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/><text x="84" y="462" text-anchor="middle" fill="#fdf3dd" font-size="11.5">Com honra</text>
+    <rect x="144" y="438" width="100" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="194" y="462" text-anchor="middle" fill="#f2e4cf" font-size="12">Distante</text>
+    <rect x="254" y="438" width="102" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="305" y="462" text-anchor="middle" fill="#f2e4cf" font-size="12">Desprezo</text>
+
+    <!-- Q5 -->
+    <text x="34" y="510" fill="#e6a6b1" font-size="13" font-weight="bold">A fé dele é de intimidade ou vitrine?</text>
+    <rect x="34" y="520" width="100" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="84" y="544" text-anchor="middle" fill="#f2e4cf" font-size="12.5">De raiz</text>
+    <rect x="144" y="520" width="100" height="38" rx="11" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/><text x="194" y="544" text-anchor="middle" fill="#fdf3dd" font-size="12">De culto</text>
+    <rect x="254" y="520" width="102" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="305" y="544" text-anchor="middle" fill="#f2e4cf" font-size="11.5">Vitrine</text>
+
+    <!-- Q6 -->
+    <text x="34" y="592" fill="#e6a6b1" font-size="13" font-weight="bold">Ele te apresenta à vida dele?</text>
+    <rect x="34" y="602" width="100" height="38" rx="11" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/><text x="84" y="626" text-anchor="middle" fill="#fdf3dd" font-size="11">Com orgulho</text>
+    <rect x="144" y="602" width="100" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="194" y="626" text-anchor="middle" fill="#f2e4cf" font-size="12">A alguns</text>
+    <rect x="254" y="602" width="102" height="38" rx="11" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/><text x="305" y="626" text-anchor="middle" fill="#f2e4cf" font-size="11.5">Me esconde</text>
+
+    <!-- barra de progresso do dossiê -->
+    <text x="34" y="672" fill="#c7b498" font-size="11.5">Dossiê 60% completo</text>
+    <rect x="34" y="680" width="322" height="8" rx="4" fill="#c69b4a" fill-opacity=".15"/>
+    <rect x="34" y="680" width="193" height="8" rx="4" fill="#c69b4a"/>
+
+    <!-- nav inferior -->
+    <rect x="18" y="708" width="354" height="74" fill="#180b10"/>
+    <rect x="18" y="708" width="354" height="1.5" fill="#c69b4a" fill-opacity=".22"/>
+    <text x="46" y="750" fill="#c7b498" font-size="13">‹ Voltar</text>
+    <rect x="196" y="724" width="160" height="44" rx="13" fill="url(#sel)" stroke="#d8b06a" stroke-width="1.3"/>
+    <text x="276" y="751" text-anchor="middle" fill="#fdf3dd" font-size="14.5" font-weight="bold">Continuar ›</text>
   </g>
 </svg>
