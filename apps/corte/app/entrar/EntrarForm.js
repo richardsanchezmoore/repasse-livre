@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { criarSupabaseBrowser } from "@/lib/supabaseBrowser";
-import { criarConta, entrarComSenha } from "./actions";
+import { criarConta, entrarComSenha, enviarLinkRecuperacao } from "./actions";
 
 export default function EntrarForm() {
   const [modo, setModo] = useState("entrar"); // entrar | criar
@@ -39,11 +39,11 @@ export default function EntrarForm() {
   async function recuperar() {
     if (!f.email.includes("@")) { setErro("Digite seu e-mail acima primeiro."); return; }
     setErro(""); setReset("enviando");
-    const sb = criarSupabaseBrowser();
-    const { error } = await sb.auth.resetPasswordForEmail(f.email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/auth/callback?redirect=/redefinir`,
-    });
-    if (error) { setErro(error.message); setReset(null); } else setReset("enviado");
+    try {
+      // Desacoplado do Supabase: a nossa action gera o token e manda o e-mail branded (Resend).
+      await enviarLinkRecuperacao({ email: f.email.trim().toLowerCase(), origin: window.location.origin });
+      setReset("enviado");
+    } catch (e) { setErro("Não consegui enviar agora. Tente de novo."); setReset(null); }
   }
 
   if (magico === "enviado") {

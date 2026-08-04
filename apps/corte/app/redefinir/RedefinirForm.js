@@ -11,9 +11,20 @@ export default function RedefinirForm() {
   const up = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   useEffect(() => {
-    // O /auth/callback já trocou o código do link por sessão antes de cair aqui.
     const sb = criarSupabaseBrowser();
-    sb.auth.getUser().then(({ data }) => setPronto(!!data.user));
+    (async () => {
+      // Link do e-mail traz ?th=<token de recuperação> — troca por sessão aqui.
+      let th = null;
+      try { th = new URLSearchParams(window.location.search).get("th"); } catch { /* sem query */ }
+      if (th) {
+        const { error } = await sb.auth.verifyOtp({ token_hash: th, type: "recovery" });
+        setPronto(!error);
+        return;
+      }
+      // Fallback: já tem sessão (ex.: veio por outro caminho).
+      const { data } = await sb.auth.getUser();
+      setPronto(!!data.user);
+    })();
   }, []);
 
   async function salvar(e) {

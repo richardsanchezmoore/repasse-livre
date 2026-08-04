@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { enviarEmailReset } from "@/lib/emailAcesso";
 
 function destino(red) {
   return typeof red === "string" && red.startsWith("/") ? red : "/biblioteca";
@@ -34,6 +35,35 @@ export async function criarConta({ nome, email, senha, confirma, redirect: red }
   const { error: e2 } = await sb.auth.signInWithPassword({ email, password: senha });
   if (e2) return { erro: "Conta criada, mas o login automático falhou. Tente entrar." };
   redirect(destino(red));
+}
+
+/** Recuperação de senha DESACOPLADA do Supabase: gera o token de recuperação
+ *  (generateLink, sem disparar e-mail) e manda o link pela NOSSA Resend (branded).
+ *  Assim NÃO usamos o template compartilhado do Supabase (que afetaria o Repasse Livre).
+ *  Sempre retorna {ok:true} — não vaza se o e-mail existe ou não. */
+export async function enviarLinkRecuperacao({ email, origin }) {
+  email = String(email || "").trim().toLowerCase();
+  const base = String(origin || "").replace(/\/+$/, "");
+  const site = base.startsWith("http") ? base : "https://damasvirtuosas.com";
+  if (!email.includes("@")) return { ok: true };
+
+  const admin = supabaseAdmin();
+  let user = null, pagina = 1;
+  while (pagina <= 10 && !user) {
+    const { data } = await admin.auth.admin.listUsers({ page: pagina, perPage: 1000 });
+    const users = data?.users || [];
+    user = users.find((u) => (u.email || "").toLowerCase() === email);
+    if (users.length < 1000) break;
+    pagina++;
+  }
+  if (!user) return { ok: true }; // silencioso (não confirma se existe)
+
+  const { data, error } = await admin.auth.admin.generateLink({ type: "recovery", email });
+  const th = data?.properties?.hashed_token;
+  if (error || !th) return { ok: true };
+  const link = `${site}/redefinir?th=${encodeURIComponent(th)}`;
+  await enviarEmailReset({ email, link });
+  return { ok: true };
 }
 
 /** Login com e-mail e senha. */
