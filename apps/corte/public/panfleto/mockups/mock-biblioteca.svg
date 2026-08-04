@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 800" width="390" height="800" font-family="Georgia,'Times New Roman',serif">
+  <defs>
+    <linearGradient id="scr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e0d13"/><stop offset="1" stop-color="#160a0f"/></linearGradient>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a1218"/><stop offset=".55" stop-color="#7c2b37"/><stop offset="1" stop-color="#4a1620"/></linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a2331"/><stop offset="1" stop-color="#37141d"/></linearGradient>
+  </defs>
+  <rect x="6" y="6" width="378" height="788" rx="46" fill="#0d0609" stroke="#2a2130" stroke-width="2"/>
+  <rect x="18" y="18" width="354" height="764" rx="36" fill="url(#scr)"/>
+  <clipPath id="clip"><rect x="18" y="18" width="354" height="764" rx="36"/></clipPath>
+  <g clip-path="url(#clip)">
+    <rect x="18" y="18" width="354" height="60" fill="url(#hdr)"/>
+    <rect x="18" y="76.5" width="354" height="1.5" fill="#c69b4a"/>
+    <text x="195" y="53" text-anchor="middle" fill="#d8b06a" font-size="14" letter-spacing="4" font-weight="bold">✦ DAMAS VIRTUOSAS ✦</text>
+    <text x="34" y="112" fill="#c69b4a" font-size="11.5" letter-spacing="2.4" font-weight="bold">◈ A SUA BIBLIOTECA ◈</text>
+
+    <!-- item template: card + tile + title + subtitle + arrow -->
+    <g>
+      <rect x="34" y="128" width="322" height="76" rx="14" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/>
+      <rect x="48" y="144" width="44" height="44" rx="11" fill="url(#tile)"/>
+      <text x="70" y="173" text-anchor="middle" fill="#e6a6b1" font-size="20">✦</text>
+      <text x="104" y="160" fill="#e6a6b1" font-size="16.5" font-weight="bold">O Panfleto Secreto do Altar</text>
+      <text x="104" y="182" fill="#c7b498" font-size="12.5">Os 12 perfis a evitar</text>
+      <text x="340" y="172" text-anchor="middle" fill="#c69b4a" font-size="18" font-weight="bold">›</text>
+    </g>
+    <g>
+      <rect x="34" y="216" width="322" height="76" rx="14" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/>
+      <rect x="48" y="232" width="44" height="44" rx="11" fill="url(#tile)"/>
+      <text x="70" y="261" text-anchor="middle" fill="#e6a6b1" font-size="19">♛</text>
+      <text x="104" y="248" fill="#e6a6b1" font-size="16.5" font-weight="bold">O Cavalheiro que Vale o Altar</text>
+      <text x="104" y="270" fill="#c7b498" font-size="12.5">Bônus · o contramodelo</text>
+      <text x="340" y="260" text-anchor="middle" fill="#c69b4a" font-size="18" font-weight="bold">›</text>
+    </g>
+    <g>
+      <rect x="34" y="304" width="322" height="76" rx="14" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/>
+      <rect x="48" y="320" width="44" height="44" rx="11" fill="url(#tile)"/>
+      <text x="70" y="349" text-anchor="middle" fill="#e6a6b1" font-size="18">✉</text>
+      <text x="104" y="336" fill="#e6a6b1" font-size="16.5" font-weight="bold">Cartas Entre Nós</text>
+      <text x="104" y="358" fill="#c7b498" font-size="12.5">Bônus · 24 perguntas</text>
+      <text x="340" y="348" text-anchor="middle" fill="#c69b4a" font-size="18" font-weight="bold">›</text>
+    </g>
+    <g>
+      <rect x="34" y="392" width="322" height="76" rx="14" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/>
+      <rect x="48" y="408" width="44" height="44" rx="11" fill="url(#tile)"/>
+      <text x="70" y="437" text-anchor="middle" fill="#e6a6b1" font-size="18">⚑</text>
+      <text x="104" y="424" fill="#e6a6b1" font-size="16.5" font-weight="bold">Guia “Verde ou Vermelho?”</text>
+      <text x="104" y="446" fill="#c7b498" font-size="12.5">Bônus · red flags × sinais</text>
+      <text x="340" y="436" text-anchor="middle" fill="#c69b4a" font-size="18" font-weight="bold">›</text>
+    </g>
+    <g>
+      <rect x="34" y="480" width="322" height="76" rx="14" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/>
+      <rect x="48" y="496" width="44" height="44" rx="11" fill="url(#tile)"/>
+      <text x="70" y="525" text-anchor="middle" fill="#e6a6b1" font-size="18">✧</text>
+      <text x="104" y="512" fill="#e6a6b1" font-size="16.5" font-weight="bold">Wallpapers “Mulher de Valor”</text>
+      <text x="104" y="534" fill="#c7b498" font-size="12.5">Bônus · versículos de identidade</text>
+      <text x="340" y="524" text-anchor="middle" fill="#c69b4a" font-size="18" font-weight="bold">›</text>
+    </g>
+    <g>
+      <rect x="34" y="568" width="322" height="76" rx="14" fill="#2c1319" stroke="#c69b4a" stroke-opacity=".22"/>
+      <rect x="48" y="584" width="44" height="44" rx="11" fill="url(#tile)"/>
+      <text x="70" y="613" text-anchor="middle" fill="#e6a6b1" font-size="18">◈</text>
+      <text x="104" y="600" fill="#e6a6b1" font-size="16.5" font-weight="bold">O Diário da Dama</text>
+      <text x="104" y="622" fill="#c7b498" font-size="12.5">Bônus · 7 noites de journaling</text>
+      <text x="340" y="612" text-anchor="middle" fill="#c69b4a" font-size="18" font-weight="bold">›</text>
+    </g>
+
+    <rect x="18" y="726" width="354" height="56" fill="#180b10"/>
+    <rect x="18" y="726" width="354" height="1.5" fill="#c69b4a" fill-opacity=".22"/>
+    <text x="195" y="759" text-anchor="middle" fill="#c7b498" font-size="12" letter-spacing="1">a sua temporada, na palma da mão</text>
+  </g>
+</svg>
