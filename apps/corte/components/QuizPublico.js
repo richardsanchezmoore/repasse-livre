@@ -121,6 +121,7 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
             <h1 className="fx-q" style={{ marginBottom: 6 }}>Revele o <em>resultado</em> agora</h1>
             <p className="c-p" style={{ maxWidth: 430, margin: "0 auto 16px" }}>E ainda receba <b>GRATUITAMENTE</b> o Guia “Verde ou Vermelho?” além do acesso à nossa comunidade de discernimento.</p>
           </div>
+          <img className="qz-img qz-img-final" src="/panfleto/imagens/capa-3d.png" alt="" />
           <form onSubmit={revelar} className="card" style={{ display: "grid", gap: 10 }}>
             <input className="fld" type="tel" value={whatsapp} placeholder="WhatsApp (com DDD)" autoComplete="tel" inputMode="tel" required
               onChange={(e) => setWhatsapp(e.target.value)} />
@@ -137,6 +138,8 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
 
   // ── QUIZ ──────────────────────────────────────────────────────────────────
   const q = QUESTOES[idx];
+  // ilustração do panfleto por etapa (cicla as 12 cenas) — prende a atenção até o fim
+  const ilustra = `/panfleto/imagens/cena${(idx % 12) + 1}.jpg`;
   return (
     <main className="screen fx">
       <div className="fx-top">
@@ -151,6 +154,7 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
         <h1 className="fx-q">{q.t}</h1>
       </div>
       <div className="fx-scroll">
+        <img className="qz-img" src={ilustra} alt="" loading="eager" />
         <div className="qopts">
           {(q.opcoes || []).map((o, i) => (
             <button type="button" key={idx + "-" + i} className="qopt" onClick={(e) => { e.currentTarget.blur(); escolher(o.p); }}>{o.t}</button>
