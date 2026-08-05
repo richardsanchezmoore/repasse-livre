@@ -278,7 +278,7 @@ Senão, "modulo": null.
 
 FORMATO — responda SOMENTE com JSON válido: { "resposta": "...", "modulo": "cozinha|casa|filhos|financas|null", "acao": "texto curto do botão ou null" }. Português do Brasil. NUNCA invente números.`;
 
-export async function conversar({ pergunta, familia }) {
+export async function conversar({ pergunta, familia, historico }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return { ok: false, erro: "A Marta está sem acesso agora." };
   const p = String(pergunta || "").trim().slice(0, 800);
@@ -287,10 +287,18 @@ export async function conversar({ pergunta, familia }) {
     const ctx = familia
       ? { nome_mae: familia.nome_mae || null, filhos: (familia.filhos || []).map((f) => ({ idade: f?.idade ?? null })), restricoes: familia.restricoes || null }
       : null;
+    // memória: últimos turnos como contexto (ela lembra o que já falaram)
+    const msgs = [];
+    for (const m of (Array.isArray(historico) ? historico : []).slice(-6)) {
+      msgs.push({ role: m?.papel === "marta" ? "assistant" : "user", content: String(m?.texto || "").slice(0, 500) });
+    }
+    while (msgs.length && msgs[0].role === "assistant") msgs.shift(); // precisa começar com 'user'
+    msgs.push({ role: "user", content: JSON.stringify({ pergunta: p, familia: ctx }) });
+
     const resp = await fetch(API, {
       method: "POST",
       headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: MODELO, max_tokens: 700, system: SYSTEM_FALA, messages: [{ role: "user", content: JSON.stringify({ pergunta: p, familia: ctx }) }] }),
+      body: JSON.stringify({ model: MODELO, max_tokens: 700, system: SYSTEM_FALA, messages: msgs }),
     });
     if (!resp.ok) { console.error("[marta/fala] API", resp.status); return { ok: false, erro: "A Marta não conseguiu responder agora." }; }
     const data = await resp.json();
@@ -301,5 +309,37 @@ export async function conversar({ pergunta, familia }) {
   } catch (e) {
     console.error("[marta/fala] falhou:", e?.message);
     return { ok: false, erro: "A Marta tropeçou agora. Tente novamente." };
+  }
+}
+
+// ─── DEVOCIONAL DE 1 MINUTO ──────────────────────────────────────────────────
+const SYSTEM_DEV = `Você é a Marta, escrevendo um devocional CURTÍSSIMO (1 minuto) para uma mãe cristã brasileira, aplicado à vida do lar e da família. Tom acolhedor e prático.
+
+IMPORTANTE: NÃO transcreva o texto do versículo (direitos autorais). Dê apenas a REFERÊNCIA (ex.: "Salmos 127:1") — ela abre a própria Bíblia. Sua reflexão deve ser ORIGINAL, sua, com suas palavras.
+
+FORMATO — SOMENTE JSON válido: { "tema": "2-3 palavras", "referencia": "Livro cap:vers", "reflexao": "2 a 3 frases originais aplicando ao lar/maternidade/casamento", "oracao": "uma oração curta de 1 frase" }. Português do Brasil.`;
+
+export async function gerarDevocional() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+  try {
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: MODELO, max_tokens: 500, system: SYSTEM_DEV, messages: [{ role: "user", content: "Escreva o devocional de hoje." }] }),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    const d = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    if (!d || !d.reflexao) return null;
+    return {
+      tema: String(d.tema || "Palavra de hoje"),
+      referencia: String(d.referencia || ""),
+      reflexao: String(d.reflexao),
+      oracao: String(d.oracao || ""),
+    };
+  } catch (e) {
+    console.error("[marta/dev] falhou:", e?.message);
+    return null;
   }
 }

@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { contexto } from "@/lib/membro";
+import { criarSupabaseServer } from "@/lib/supabaseServer";
 import { sair } from "@/app/entrar/actions";
 import { resumoHoje } from "@/lib/hoje";
 import HojeCard from "@/components/HojeCard";
 import FalaComMarta from "@/components/FalaComMarta";
+import { devocionalDeHoje } from "@/lib/devocional";
+import DevocionalCard from "@/components/DevocionalCard";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Marta — a sua ajudante do lar" };
@@ -21,6 +24,13 @@ export default async function Inicio() {
   if (user && !familia) redirect("/comecar");
   const nome = familia?.nome_mae || user?.user_metadata?.nome || "";
   const hoje = user ? await resumoHoje(user.id) : null;
+  const dev = await devocionalDeHoje();
+  let conversaInicial = [];
+  if (user) {
+    const sb = await criarSupabaseServer();
+    const { data } = await sb.from("lar_conversa").select("mensagens").eq("user_id", user.id).maybeSingle();
+    conversaInicial = Array.isArray(data?.mensagens) ? data.mensagens : [];
+  }
 
   return (
     <main className="screen">
@@ -35,9 +45,11 @@ export default async function Inicio() {
         </div>
       </div>
 
+      <DevocionalCard dev={dev} />
+
       {hoje && <HojeCard hoje={hoje} />}
 
-      <FalaComMarta />
+      <FalaComMarta historicoInicial={conversaInicial} />
 
       {!user && <Link href="/cozinha" className="btn" style={{ textDecoration: "none" }}>🍳 Montar o cardápio da semana</Link>}
 
