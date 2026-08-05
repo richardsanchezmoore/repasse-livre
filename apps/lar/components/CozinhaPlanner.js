@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
 import { salvarCardapio } from "@/app/cozinha/actions";
+import { Stepper, ChipsMulti } from "@/components/ui";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -91,22 +92,19 @@ export default function CozinhaPlanner({ logado = false, familia = null }) {
           <div className="card">
             <div className="field">
               <label>Quantas pessoas em casa?</label>
-              <div className="row">
-                <input className="inp" type="number" min="1" max="15" value={tamanho}
-                  onChange={(e) => setTamanho(Math.max(1, Math.min(15, Number(e.target.value) || 1)))} />
-              </div>
+              <Stepper value={tamanho} onChange={setTamanho} min={1} max={15} />
             </div>
 
             <div className="field">
-              <label>Alguma restrição ou alergia? <span className="hint">(a Marta nunca vai usar esses ingredientes)</span></label>
-              <input className="inp" value={restricoes} onChange={(e) => setRestricoes(e.target.value)}
-                placeholder="Ex.: sem lactose, alergia a amendoim…" />
+              <label>Alguma restrição ou alergia? <span className="hint">(eu nunca uso esses ingredientes)</span></label>
+              <ChipsMulti onChange={setRestricoes} outroLabel="Outra"
+                opcoes={["Sem lactose", "Sem glúten", "Vegetariana", "Sem porco", "Diabetes", "Alergia a amendoim"]} />
             </div>
 
             <div className="field">
-              <label>O que você já tem em casa? <span className="hint">(opcional — eu aproveito)</span></label>
-              <textarea className="inp" value={ingredientes} onChange={(e) => setIngredientes(e.target.value)}
-                placeholder="Ex.: frango, arroz, ovos, cenoura, batata…" />
+              <label>O que você já tem em casa? <span className="hint">(toque no que tiver — eu aproveito)</span></label>
+              <ChipsMulti onChange={setIngredientes} outroLabel="Outro"
+                opcoes={["Frango", "Carne", "Ovos", "Arroz", "Feijão", "Batata", "Macarrão", "Legumes", "Peixe", "Linguiça"]} />
             </div>
 
             <div className="field">

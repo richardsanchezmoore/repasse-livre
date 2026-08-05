@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { salvarFamilia } from "@/app/comecar/actions";
+import { Stepper, ChipsMulti } from "@/components/ui";
 
 export default function OnboardingForm({ inicial }) {
   const i = inicial || {};
@@ -57,7 +58,8 @@ export default function OnboardingForm({ inicial }) {
       <div className="card">
         <div className="field">
           <label>Alguma restrição ou alergia na família? <span className="hint">(nunca vou usar esses ingredientes)</span></label>
-          <input className="inp" value={restricoes} onChange={(e) => setRestricoes(e.target.value)} placeholder="Ex.: sem lactose, alergia a amendoim…" />
+          <ChipsMulti onChange={setRestricoes} outroLabel="Outra"
+            opcoes={["Sem lactose", "Sem glúten", "Vegetariana", "Sem porco", "Diabetes", "Alergia a amendoim"]} />
         </div>
         <div className="field" style={{ marginBottom: 0 }}>
           <label>Você trabalha fora?</label>

@@ -2,11 +2,14 @@
 import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
 import { salvarRotina } from "@/app/casa/actions";
+import { Stepper, ChipsMulti } from "@/components/ui";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function CasaPlanner({ logado = false, salva = null }) {
-  const [comodos, setComodos] = useState("");
+  const [quartos, setQuartos] = useState(2);
+  const [banheiros, setBanheiros] = useState(1);
+  const [areas, setAreas] = useState("");
   const [ajudaMarido, setAjudaMarido] = useState(true);
   const [tempo, setTempo] = useState("normal");
   const [busy, setBusy] = useState(false);
@@ -22,6 +25,7 @@ export default function CasaPlanner({ logado = false, salva = null }) {
   async function montar() {
     setErro(""); setBusy(true); setRes(null);
     try {
+      const comodos = `${quartos} ${quartos === 1 ? "quarto" : "quartos"}, ${banheiros} ${banheiros === 1 ? "banheiro" : "banheiros"}${areas ? ", " + areas : ""}`;
       const r = await fetch(BASE + "/api/marta/casa", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ comodos, ajudaMarido, tempo }),
@@ -68,8 +72,16 @@ export default function CasaPlanner({ logado = false, salva = null }) {
           </div>
           <div className="card">
             <div className="field">
-              <label>Como é a sua casa? <span className="hint">(cômodos principais)</span></label>
-              <input className="inp" value={comodos} onChange={(e) => setComodos(e.target.value)} placeholder="Ex.: sala, cozinha, 2 banheiros, 3 quartos, área" />
+              <label>Quantos quartos e banheiros?</label>
+              <div className="row" style={{ gap: 16 }}>
+                <div style={{ flex: "none" }}><div className="hint" style={{ marginBottom: 5 }}>Quartos</div><Stepper value={quartos} onChange={setQuartos} min={1} max={8} /></div>
+                <div style={{ flex: "none" }}><div className="hint" style={{ marginBottom: 5 }}>Banheiros</div><Stepper value={banheiros} onChange={setBanheiros} min={1} max={6} /></div>
+              </div>
+            </div>
+            <div className="field">
+              <label>Quais áreas a casa tem?</label>
+              <ChipsMulti onChange={setAreas} outroLabel="Outra"
+                opcoes={["Sala", "Cozinha", "Área de serviço", "Quintal", "Escritório", "Varanda", "Garagem"]} />
             </div>
             <div className="field">
               <label>O marido ajuda nas tarefas?</label>
