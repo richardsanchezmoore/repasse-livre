@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { faixaDoTotal } from "@/lib/quiz";
+import { validarTelefoneBR, formatarTelefoneBR, soDigitos } from "@/lib/validacao";
 
 /** Funil público: roda o quiz (do banco) e, pra revelar o Veredito, pede
  *  e-mail + WhatsApp (lead). Depois do Veredito, upsell pro Kit. Sem login. */
@@ -62,8 +63,8 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
   async function revelar(e) {
     e.preventDefault();
     setErro("");
-    const whats = whatsapp.replace(/[^\d+]/g, "");
-    if (whats.replace(/\D/g, "").length < 10) { setErro("Informe o WhatsApp com DDD."); return; }
+    if (!validarTelefoneBR(whatsapp)) { setErro("Informe um celular válido com DDD (ex: (11) 99999-9999)."); return; }
+    const whats = soDigitos(whatsapp);
     setBusy(true);
     const f = faixaDoTotal(total, FAIXAS);
     try {
@@ -123,8 +124,8 @@ export default function QuizPublico({ quiz, comunidadeUrl, mostrarComunidade }) 
           </div>
           <img className="qz-img qz-img-final" src="/panfleto/imagens/quiz/capa.webp" alt="" />
           <form onSubmit={revelar} className="card" style={{ display: "grid", gap: 10 }}>
-            <input className="fld" type="tel" value={whatsapp} placeholder="WhatsApp (com DDD)" autoComplete="tel" inputMode="tel" required
-              onChange={(e) => setWhatsapp(e.target.value)} />
+            <input className="fld" type="tel" value={whatsapp} placeholder="WhatsApp — (11) 99999-9999" autoComplete="tel" inputMode="tel" required maxLength={16}
+              onChange={(e) => setWhatsapp(formatarTelefoneBR(e.target.value))} />
             {erro && <p className="fld-err">{erro}</p>}
             <button className="pill" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center" }}>
               {busy ? "Revelando…" : "🔮 Revelar o meu Veredito →"}
