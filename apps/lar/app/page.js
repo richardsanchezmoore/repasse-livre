@@ -4,6 +4,7 @@ import { contexto } from "@/lib/membro";
 import { sair } from "@/app/entrar/actions";
 import { resumoHoje } from "@/lib/hoje";
 import HojeCard from "@/components/HojeCard";
+import FalaComMarta from "@/components/FalaComMarta";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Marta — a sua ajudante do lar" };
@@ -35,6 +36,8 @@ export default async function Inicio() {
       </div>
 
       {hoje && <HojeCard hoje={hoje} />}
+
+      <FalaComMarta />
 
       {!user && <Link href="/cozinha" className="btn" style={{ textDecoration: "none" }}>🍳 Montar o cardápio da semana</Link>}
 

@@ -149,3 +149,10 @@ textarea.inp{resize:vertical;min-height:56px}
 .hoje-t{font-weight:700;font-size:15.5px;line-height:1.25}
 .hoje-d{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
 .hoje-go{margin-left:auto;color:var(--clay);font:800 20px var(--ui);flex:none}
+
+/* Fala com a Marta */
+.fala-in{display:flex;gap:8px;align-items:stretch}
+.fala-in .inp{flex:1}
+.fala-send{flex:none;width:52px;border:none;border-radius:11px;background:linear-gradient(180deg,var(--clay),var(--clay-deep));color:#fff;font-size:17px;cursor:pointer;display:grid;place-items:center;box-shadow:0 8px 18px -10px rgba(157,74,48,.6)}
+.fala-send:disabled{opacity:.6}
+.fala-send:active{transform:scale(.96)}

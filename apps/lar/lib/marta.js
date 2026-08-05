@@ -262,3 +262,44 @@ export async function palavraFinancas({ renda, dizimo, gastos, sobra }) {
     return { ok: false };
   }
 }
+
+// ─── FALA COM A MARTA (assistente única — entende e roteia) ──────────────────
+const MODULOS_VALIDOS = ["cozinha", "casa", "filhos", "financas"];
+const SYSTEM_FALA = `Você é a Marta, a assistente do lar de uma família cristã brasileira — calorosa, prática e sábia, como uma mulher experiente que já criou os filhos. A mãe pode te perguntar QUALQUER coisa do dia a dia: refeições, limpeza, filhos, casamento, finanças da casa, cansaço, fé.
+
+Responda com carinho e MUITO objetiva — 2 a 4 frases, direto ao que ajuda. Se ela estiver desabafando, ACOLHA primeiro, depois dê um passo prático. Pode ter um toque de fé natural (sem forçar; NÃO transcreva versículos longos, no máximo uma referência curta).
+
+Se a pergunta se encaixa num módulo do app, sugira ir pra lá:
+- refeições/cardápio/o que cozinhar → "cozinha"
+- limpeza/rotina/organizar a casa → "casa"
+- filhos/educação/virtudes/comportamento → "filhos"
+- contas/dinheiro/orçamento → "financas"
+Senão, "modulo": null.
+
+FORMATO — responda SOMENTE com JSON válido: { "resposta": "...", "modulo": "cozinha|casa|filhos|financas|null", "acao": "texto curto do botão ou null" }. Português do Brasil. NUNCA invente números.`;
+
+export async function conversar({ pergunta, familia }) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false, erro: "A Marta está sem acesso agora." };
+  const p = String(pergunta || "").trim().slice(0, 800);
+  if (!p) return { ok: false, erro: "Me conta o que você precisa. 💛" };
+  try {
+    const ctx = familia
+      ? { nome_mae: familia.nome_mae || null, filhos: (familia.filhos || []).map((f) => ({ idade: f?.idade ?? null })), restricoes: familia.restricoes || null }
+      : null;
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: MODELO, max_tokens: 700, system: SYSTEM_FALA, messages: [{ role: "user", content: JSON.stringify({ pergunta: p, familia: ctx }) }] }),
+    });
+    if (!resp.ok) { console.error("[marta/fala] API", resp.status); return { ok: false, erro: "A Marta não conseguiu responder agora." }; }
+    const data = await resp.json();
+    const d = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    if (!d || !d.resposta) return { ok: false, erro: "Não entendi bem agora. Pode tentar de novo?" };
+    const modulo = MODULOS_VALIDOS.includes(d.modulo) ? d.modulo : null;
+    return { ok: true, resposta: String(d.resposta), modulo, acao: modulo && d.acao ? String(d.acao) : null };
+  } catch (e) {
+    console.error("[marta/fala] falhou:", e?.message);
+    return { ok: false, erro: "A Marta tropeçou agora. Tente novamente." };
+  }
+}
