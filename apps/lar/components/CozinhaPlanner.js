@@ -48,7 +48,7 @@ export default function CozinhaPlanner() {
   async function montar() {
     setErro(""); setBusy(true); setRes(null);
     try {
-      const r = await fetch("/api/marta/cardapio", {
+      const r = await fetch((process.env.NEXT_PUBLIC_BASE_PATH || "") + "/api/marta/cardapio", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ tamanho, restricoes, ingredientes, dias, tempo }),
       });
