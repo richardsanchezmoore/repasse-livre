@@ -1,12 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
+import { salvarCardapio } from "@/app/cozinha/actions";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function CozinhaPlanner() {
-  const [tamanho, setTamanho] = useState(4);
-  const [restricoes, setRestricoes] = useState("");
+export default function CozinhaPlanner({ logado = false, familia = null }) {
+  const [tamanho, setTamanho] = useState(familia?.filhos?.length ? familia.filhos.length + 2 : 4);
+  const [restricoes, setRestricoes] = useState(familia?.restricoes || "");
+  const [salvando, setSalvando] = useState(false);
+  const [salvo, setSalvo] = useState(false);
   const [ingredientes, setIngredientes] = useState("");
   const [dias, setDias] = useState(["Segunda", "Terça", "Quarta", "Quinta", "Sexta"]);
   const [tempo, setTempo] = useState("rapido");
@@ -56,10 +60,19 @@ export default function CozinhaPlanner() {
       if (!d.ok) { setErro(d.erro || "Não consegui montar agora. Tente de novo."); return; }
       // reordena os dias na ordem da semana
       d.dias?.sort?.((a, b) => DIAS.indexOf(a.dia) - DIAS.indexOf(b.dia));
-      setRes(d); setComprados({});
+      setRes(d); setComprados({}); setSalvo(false);
     } catch {
       setErro("Sem conexão com a Marta agora. Tente novamente.");
     } finally { setBusy(false); }
+  }
+
+  async function salvar() {
+    if (!res || salvando || salvo) return;
+    setSalvando(true);
+    try {
+      const r = await salvarCardapio({ dias: res.dias, recado: res.recado, lista: res.lista });
+      if (r?.ok) setSalvo(true); else alert(r?.erro || "Não consegui salvar agora.");
+    } finally { setSalvando(false); }
   }
 
   // agrupa a lista por seção
@@ -182,9 +195,18 @@ export default function CozinhaPlanner() {
             ))}
           </div>
 
+          {logado ? (
+            <button className="btn" onClick={salvar} disabled={salvando || salvo}>
+              {salvo ? "✓ Semana salva na sua conta" : salvando ? "Salvando…" : "💾 Salvar esta semana"}
+            </button>
+          ) : (
+            <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</a>
+          )}
           <button className="btn ghost" onClick={() => setRes(null)}>↺ Montar outra semana</button>
           <p className="muted" style={{ textAlign: "center" }}>
-            Gostou? Em breve você vai poder <b>salvar</b>, receber toda semana e deixar a Marta cuidar da casa inteira. 💛
+            {logado
+              ? "Suas semanas ficam guardadas aqui. Vou cuidar da casa inteira com você. 💛"
+              : "Crie sua conta pra guardar o cardápio e me deixar cuidar da casa com você. 💛"}
           </p>
         </>
       )}
