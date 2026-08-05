@@ -1,16 +1,25 @@
 "use client";
 import { useState } from "react";
+import { salvarPlacar } from "@/app/filhos/actions";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const META = 12; // estrelas p/ liberar a 1ª recompensa
 
-export default function FilhosBoard({ filhosIniciais }) {
+export default function FilhosBoard({ logado = false, filhosIniciais, salva = null }) {
   const temFamilia = Array.isArray(filhosIniciais) && filhosIniciais.length > 0;
   const [filhos, setFilhos] = useState(temFamilia ? filhosIniciais : [{ nome: "", idade: "" }]);
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState("");
-  const [res, setRes] = useState(null);
-  const [estrelas, setEstrelas] = useState({}); // chave "ci-hi" -> bool
+  const [res, setRes] = useState(salva?.dados || null);
+  const [estrelas, setEstrelas] = useState(salva?.marcados || {}); // chave "ci-hi" -> bool
+
+  function toggle(chave) {
+    setEstrelas((e) => {
+      const novo = { ...e, [chave]: !e[chave] };
+      if (logado) salvarPlacar({ dados: res, marcados: novo, estrelas: Object.values(novo).filter(Boolean).length });
+      return novo;
+    });
+  }
 
   const setF = (i, c, v) => setFilhos((cur) => cur.map((f, j) => (j === i ? { ...f, [c]: v } : f)));
   const add = () => setFilhos((c) => [...c, { nome: "", idade: "" }]);
@@ -25,7 +34,8 @@ export default function FilhosBoard({ filhosIniciais }) {
       });
       const d = await r.json();
       if (!d.ok) { setErro(d.erro || "Não consegui montar agora."); return; }
-      setRes(d);
+      setRes(d); setEstrelas({});
+      if (logado) salvarPlacar({ dados: d, marcados: {}, estrelas: 0 });
     } catch { setErro("Sem conexão com a Marta agora."); }
     finally { setBusy(false); }
   }
@@ -82,7 +92,7 @@ export default function FilhosBoard({ filhosIniciais }) {
                 const chave = ci + "-" + hi;
                 const on = !!estrelas[chave];
                 return (
-                  <div key={hi} className={"item" + (on ? " done" : "")} onClick={() => setEstrelas((e) => ({ ...e, [chave]: !e[chave] }))}>
+                  <div key={hi} className={"item" + (on ? " done" : "")} onClick={() => toggle(chave)}>
                     <span className="box">{on ? "⭐" : ""}</span><span className="nm">{h}</span>
                   </div>
                 );
@@ -103,7 +113,9 @@ export default function FilhosBoard({ filhosIniciais }) {
           )}
 
           <button className="btn ghost" onClick={() => setRes(null)}>↺ Refazer</button>
-          <p className="muted" style={{ textAlign: "center" }}>Em breve o placar fica salvo e conta os dias — por ora, é o pontapé pra vocês começarem hoje. 💛</p>
+          {logado
+            ? <p className="muted" style={{ textAlign: "center" }}>As estrelas ficam salvas e zeram toda segunda — recomeço leve. 💛</p>
+            : <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra guardar o placar</a>}
         </>
       )}
     </div>

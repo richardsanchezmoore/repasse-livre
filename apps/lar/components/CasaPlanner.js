@@ -1,18 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
+import { salvarRotina } from "@/app/casa/actions";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function CasaPlanner() {
+export default function CasaPlanner({ logado = false, salva = null }) {
   const [comodos, setComodos] = useState("");
   const [ajudaMarido, setAjudaMarido] = useState(true);
   const [tempo, setTempo] = useState("normal");
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState("");
-  const [res, setRes] = useState(null);
+  const [res, setRes] = useState(salva || null);
   const [falando, setFalando] = useState(false);
   const [temVoz, setTemVoz] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [salvo, setSalvo] = useState(!!salva);
 
   useEffect(() => { setTemVoz(vozDisponivel()); return () => pararFala(); }, []);
 
@@ -25,9 +28,19 @@ export default function CasaPlanner() {
       });
       const d = await r.json();
       if (!d.ok) { setErro(d.erro || "Não consegui montar agora."); return; }
-      setRes(d);
+      setRes(d); setSalvo(false);
     } catch { setErro("Sem conexão com a Marta agora."); }
     finally { setBusy(false); }
+  }
+
+  async function salvar() {
+    if (!res || salvando || salvo) return;
+    setSalvando(true);
+    try {
+      const { diarias, semana, resgate, recado } = res;
+      const r = await salvarRotina({ diarias, semana, resgate, recado });
+      if (r?.ok) setSalvo(true); else alert(r?.erro || "Não consegui salvar agora.");
+    } finally { setSalvando(false); }
   }
 
   function montarFala() {
@@ -128,7 +141,14 @@ export default function CasaPlanner() {
             </div>
           )}
 
-          <button className="btn ghost" onClick={() => setRes(null)}>↺ Montar de novo</button>
+          {logado ? (
+            <button className="btn" onClick={salvar} disabled={salvando || salvo}>
+              {salvo ? "✓ Rotina salva" : salvando ? "Salvando…" : "💾 Salvar esta rotina"}
+            </button>
+          ) : (
+            <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</a>
+          )}
+          <button className="btn ghost" onClick={() => { setRes(null); setSalvo(false); }}>↺ Montar de novo</button>
         </>
       )}
     </div>
