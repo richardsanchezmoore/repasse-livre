@@ -16,6 +16,11 @@ import Anthropic from "@anthropic-ai/sdk";
 const MODELO = process.env.SEO_TEXTO_MODELO?.trim() || "claude-haiku-4-5";
 const SUPORTA_EFFORT = !MODELO.startsWith("claude-haiku"); // Haiku 4.5 recusa output_config.effort (400)
 
+// ⛔ KILL-SWITCH (05/08/2026): LLM DESACOPLADA por padrão pra zerar o consumo de API do
+// Repasse Livre. A página de categoria cai no TEMPLATE determinístico (seoTexto.ts) — segue
+// funcional, só sem a prosa da LLM. REATIVAR: RL_LLM_ATIVA=true no ambiente. Idem parecerLLM.ts.
+const LLM_ATIVA = process.env.RL_LLM_ATIVA === "true";
+
 export type TipoSeo = "cidade" | "estado" | "marca" | "modelo";
 
 export interface ContextoSeo {
@@ -68,7 +73,7 @@ export function fingerprintSeo(ctx: ContextoSeo): string {
 
 export async function gerarSeoTextoLLM(ctx: ContextoSeo): Promise<string | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || !LLM_ATIVA) return null; // ⛔ desacoplada — ver LLM_ATIVA no topo do arquivo
 
   try {
     const client = new Anthropic({ apiKey });

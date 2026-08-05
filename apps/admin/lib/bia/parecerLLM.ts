@@ -26,6 +26,13 @@ const MODELO = process.env.COPILOTO_MODELO?.trim() || "claude-haiku-4-5";
 // O Haiku 4.5 NÃO aceita output_config.effort (400). Opus/Sonnet aceitam.
 const SUPORTA_EFFORT = !MODELO.startsWith("claude-haiku");
 
+// ⛔ KILL-SWITCH (05/08/2026): a LLM está DESACOPLADA por padrão pra ZERAR o consumo de
+// API Anthropic do Repasse Livre (600+ oportunidades/dia, sem caixa entrando no projeto).
+// O Copiloto segue 100% FUNCIONAL com o parecer DETERMINÍSTICO (montarParecer/factSheet.ts)
+// — só perde a "resenha" em prosa da LLM. REATIVAR quando houver saldo: defina no ambiente
+// RL_LLM_ATIVA=true (não precisa mexer no código). Mesmo switch em seoTextoLLM.ts.
+const LLM_ATIVA = process.env.RL_LLM_ATIVA === "true";
+
 const SYSTEM = `Você é o Copiloto de Compra do Repasse Livre: um consultor automotivo experiente que avalia anúncios de carros usados aplicando a régua de especialistas com anos de atuação no mercado. Sua função é escrever um PARECER curto e instrutivo para um comprador leigo, a partir de um material de fatos JÁ VALIDADOS.
 
 REGRAS INVIOLÁVEIS:
@@ -76,7 +83,7 @@ export function fingerprintParecer(fs: FactSheet, ctx: ContextoParecer): string 
  */
 export async function gerarParecerLLM(fs: FactSheet, ctx: ContextoParecer): Promise<string | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || !LLM_ATIVA) return null; // ⛔ desacoplada — ver LLM_ATIVA no topo do arquivo
 
   try {
     const client = new Anthropic({ apiKey });
