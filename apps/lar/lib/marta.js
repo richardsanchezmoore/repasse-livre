@@ -184,3 +184,51 @@ export async function planejarRotinaCasa(entrada) {
     return { ok: false, erro: "A Marta tropeçou agora. Tente novamente em instantes." };
   }
 }
+
+// ─── MÓDULO FILHOS & VIRTUDES ────────────────────────────────────────────────
+const SYSTEM_FILHOS = `Você é a Marta, assistente do lar de uma família cristã brasileira. Você ajuda a mãe a formar o CARÁTER dos filhos com leveza — hábitos e virtudes adequados à IDADE de cada criança, e um placar em que os pontos viram EXPERIÊNCIAS EM FAMÍLIA (nunca mais tempo de tela, nunca dinheiro).
+
+PRINCÍPIOS:
+- Para cada criança: uma VIRTUDE-foco e 3 hábitos concretos e observáveis, próprios da idade (criança pequena: guardar brinquedos, obedecer de primeira; maior: ler longe das telas, ajudar em casa, dizer a verdade).
+- Um dos hábitos de cada criança deve reduzir tela (ex.: "ler 15 min longe do celular", "brincar lá fora").
+- Recompensas: 4 a 6 ideias de experiências em FAMÍLIA e de baixo custo (piquenique, escolher o filme da noite, fazer bolo com a mãe, passeio no parque). Coletivas de preferência.
+- Pode citar um princípio bíblico curto por criança como REFERÊNCIA (ex.: "Efésios 6:1"), sem transcrever versículo longo.
+
+FORMATO — responda SOMENTE com JSON válido:
+{
+  "criancas": [ { "nome": "...", "idade": 8, "virtude": "Honestidade", "habitos": ["...", "...", "..."], "principio": "Provérbios 22:6" } ],
+  "recompensas": ["...", "..."],
+  "recado": "uma frase curta e calorosa (toque de fé, sem forçar)."
+}
+Português do Brasil. Use SOMENTE as crianças informadas.`;
+
+export async function sugerirVirtudes({ filhos }) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false, erro: "Marta ainda está sem acesso (configure ANTHROPIC_API_KEY)." };
+  const lista = (Array.isArray(filhos) ? filhos : [])
+    .map((f) => ({ nome: String(f?.nome || "").trim(), idade: f?.idade != null ? Number(f.idade) : null }))
+    .filter((f) => f.nome || f.idade != null);
+  if (!lista.length) return { ok: false, erro: "Me diga o nome e a idade de pelo menos uma criança." };
+  try {
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: MODELO, max_tokens: 2500, system: SYSTEM_FILHOS, messages: [{ role: "user", content: JSON.stringify({ criancas: lista }) }] }),
+    });
+    if (!resp.ok) { console.error("[marta/filhos] API", resp.status); return { ok: false, erro: "A Marta não conseguiu responder agora." }; }
+    const data = await resp.json();
+    const dados = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    if (!dados || !Array.isArray(dados.criancas) || !dados.criancas.length) {
+      return { ok: false, erro: "Não consegui montar agora. Tente de novo." };
+    }
+    return {
+      ok: true,
+      criancas: dados.criancas,
+      recompensas: Array.isArray(dados.recompensas) ? dados.recompensas : [],
+      recado: typeof dados.recado === "string" ? dados.recado : "",
+    };
+  } catch (e) {
+    console.error("[marta/filhos] falhou:", e?.message);
+    return { ok: false, erro: "A Marta tropeçou agora. Tente novamente em instantes." };
+  }
+}
