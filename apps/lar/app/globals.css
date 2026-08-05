@@ -164,6 +164,13 @@ textarea.inp{resize:vertical;min-height:56px}
 .thread{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;max-height:56vh;overflow-y:auto;padding:2px}
 .bubble-u{align-self:flex-end;max-width:86%;background:linear-gradient(180deg,var(--clay),var(--clay-deep));color:#fff;border-radius:15px 15px 5px 15px;padding:10px 14px;font-size:14.5px;line-height:1.4}
 
+/* Skeleton (shimmer) — feedback instantâneo na troca de tela */
+.sk{position:relative;overflow:hidden;background:var(--surface-2);border-radius:14px}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:skshine 1.3s infinite}
+@keyframes skshine{100%{transform:translateX(100%)}}
+@media (prefers-color-scheme: dark){.sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent)}}
+
 /* Devocional de 1 minuto (linha única, expansível) */
 .devoc{background:linear-gradient(160deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-left:4px solid var(--sage);border-radius:0 16px 16px 0;padding:12px 14px}
 .devoc-bar{display:flex;align-items:center;gap:10px;cursor:pointer}

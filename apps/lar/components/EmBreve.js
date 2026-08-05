@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function EmBreve({ ic, titulo, texto }) {
   return (
     <main className="screen">
@@ -7,7 +9,7 @@ export default function EmBreve({ ic, titulo, texto }) {
           <b>{ic} {titulo}</b> está a caminho. {texto} Enquanto isso, deixa eu te ajudar na <b>Cozinha</b> — é onde eu já estou pronta. 💛
         </div>
       </div>
-      <a href="/cozinha" className="btn" style={{ marginTop: 16 }}>🍳 Ir para a Cozinha</a>
+      <Link href="/cozinha" className="btn" style={{ marginTop: 16, textDecoration: "none" }}>🍳 Ir para a Cozinha</Link>
     </main>
   );
 }

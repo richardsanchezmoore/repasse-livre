@@ -1,11 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
 import { salvarRotina } from "@/app/casa/actions";
 import { Stepper, ChipsMulti } from "@/components/ui";
 import CompartilharWhats from "@/components/CompartilharWhats";
-
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function CasaPlanner({ logado = false, salva = null, familia = null }) {
   const [quartos, setQuartos] = useState(2);
@@ -179,10 +178,10 @@ export default function CasaPlanner({ logado = false, salva = null, familia = nu
               {salvo ? "✓ Rotina salva" : salvando ? "Salvando…" : "💾 Salvar esta rotina"}
             </button>
           ) : (
-            <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</a>
+            <Link href="/entrar" className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</Link>
           )}
           <button className="btn ghost" onClick={() => { setRes(null); setSalvo(false); }}>↺ Montar de novo</button>
-          <a href={BASE + "/"} className="btn ghost" style={{ textDecoration: "none" }}>🏠 Voltar pro início · falar com a Marta</a>
+          <Link href="/" prefetch className="btn ghost" style={{ textDecoration: "none" }}>🏠 Voltar pro início · falar com a Marta</Link>
         </>
       )}
     </div>

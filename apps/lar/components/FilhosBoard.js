@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { salvarPlacar } from "@/app/filhos/actions";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -115,7 +116,7 @@ export default function FilhosBoard({ logado = false, filhosIniciais, salva = nu
           <button className="btn ghost" onClick={() => setRes(null)}>↺ Refazer</button>
           {logado
             ? <p className="muted" style={{ textAlign: "center" }}>As estrelas ficam salvas e zeram toda segunda — recomeço leve. 💛</p>
-            : <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra guardar o placar</a>}
+            : <Link href="/entrar" className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra guardar o placar</Link>}
         </>
       )}
     </div>

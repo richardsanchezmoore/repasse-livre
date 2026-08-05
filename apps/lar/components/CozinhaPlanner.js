@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
+import Link from "next/link";
 import { salvarCardapio } from "@/app/cozinha/actions";
 import { Stepper, ChipsMulti } from "@/components/ui";
 import CompartilharWhats from "@/components/CompartilharWhats";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function CozinhaPlanner({ logado = false, familia = null }) {
   const [tamanho, setTamanho] = useState(familia?.filhos?.length ? familia.filhos.length + 2 : 4);
@@ -220,10 +220,10 @@ export default function CozinhaPlanner({ logado = false, familia = null }) {
               {salvo ? "✓ Semana salva na sua conta" : salvando ? "Salvando…" : "💾 Salvar esta semana"}
             </button>
           ) : (
-            <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</a>
+            <Link href="/entrar" className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</Link>
           )}
           <button className="btn ghost" onClick={() => setRes(null)}>↺ Montar outra semana</button>
-          <a href={BASE + "/"} className="btn ghost" style={{ textDecoration: "none" }}>🏠 Voltar pro início · falar com a Marta</a>
+          <Link href="/" prefetch className="btn ghost" style={{ textDecoration: "none" }}>🏠 Voltar pro início · falar com a Marta</Link>
         </>
       )}
     </div>
