@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
 import { salvarRotina } from "@/app/casa/actions";
 import { Stepper, ChipsMulti } from "@/components/ui";
+import CompartilharWhats from "@/components/CompartilharWhats";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function CasaPlanner({ logado = false, salva = null }) {
+export default function CasaPlanner({ logado = false, salva = null, familia = null }) {
   const [quartos, setQuartos] = useState(2);
   const [banheiros, setBanheiros] = useState(1);
   const [areas, setAreas] = useState("");
@@ -60,6 +61,24 @@ export default function CasaPlanner({ logado = false, salva = null }) {
   function ouvir() {
     if (falando) { pararFala(); setFalando(false); return; }
     falar(montarFala(), { onInicio: () => setFalando(true), onFim: () => setFalando(false) });
+  }
+
+  // Texto pra mandar no WhatsApp (dividir as tarefas com marido e filhos).
+  function montarTextoWhats() {
+    if (!res) return "";
+    const L = ["🧹 *Rotina da casa* — pela Marta"];
+    if (res.diarias?.length) {
+      L.push("", "*Todo dia (rapidinho):*");
+      res.diarias.forEach((t) => L.push(`• ${t.tarefa}${t.quem ? ` — ${t.quem}` : ""}`));
+    }
+    if (res.semana?.length) {
+      L.push("", "*Faxina da semana:*");
+      res.semana.forEach((s) => {
+        L.push(`*${s.dia}* — ${s.foco}`);
+        (s.tarefas || []).forEach((t) => L.push(`• ${t.tarefa}${t.quem ? ` — ${t.quem}` : ""}`));
+      });
+    }
+    return L.join("\n");
   }
 
   return (
@@ -153,6 +172,8 @@ export default function CasaPlanner({ logado = false, salva = null }) {
             </div>
           )}
 
+          <CompartilharWhats texto={montarTextoWhats()} familia={familia} logado={logado} label="Enviar tarefas no WhatsApp" />
+
           {logado ? (
             <button className="btn" onClick={salvar} disabled={salvando || salvo}>
               {salvo ? "✓ Rotina salva" : salvando ? "Salvando…" : "💾 Salvar esta rotina"}
@@ -161,6 +182,7 @@ export default function CasaPlanner({ logado = false, salva = null }) {
             <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</a>
           )}
           <button className="btn ghost" onClick={() => { setRes(null); setSalvo(false); }}>↺ Montar de novo</button>
+          <a href={BASE + "/"} className="btn ghost" style={{ textDecoration: "none" }}>🏠 Voltar pro início · falar com a Marta</a>
         </>
       )}
     </div>

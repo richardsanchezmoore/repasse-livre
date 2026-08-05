@@ -45,11 +45,11 @@ export default async function Inicio() {
         </div>
       </div>
 
+      <FalaComMarta historicoInicial={conversaInicial} />
+
       <DevocionalCard dev={dev} />
 
       {hoje && <HojeCard hoje={hoje} />}
-
-      <FalaComMarta historicoInicial={conversaInicial} />
 
       {!user && <Link href="/cozinha" className="btn" style={{ textDecoration: "none" }}>🍳 Montar o cardápio da semana</Link>}
 

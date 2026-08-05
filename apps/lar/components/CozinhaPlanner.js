@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
 import { salvarCardapio } from "@/app/cozinha/actions";
 import { Stepper, ChipsMulti } from "@/components/ui";
+import CompartilharWhats from "@/components/CompartilharWhats";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -48,6 +49,25 @@ export default function CozinhaPlanner({ logado = false, familia = null }) {
   function ouvir() {
     if (falando) { pararFala(); setFalando(false); return; }
     falar(montarFala(), { onInicio: () => setFalando(true), onFim: () => setFalando(false) });
+  }
+
+  // Texto pra mandar no WhatsApp (cardápio + lista) — pra dividir com a família.
+  function montarTextoWhats() {
+    if (!res) return "";
+    const L = ["🍽️ *Cardápio da semana* — pela Marta", ""];
+    for (const d of res.dias || []) {
+      const linha = [];
+      if (d.almoco?.nome) linha.push(`Almoço: ${d.almoco.nome}`);
+      if (d.jantar?.nome) linha.push(`Jantar: ${d.jantar.nome}`);
+      if (linha.length) L.push(`*${d.dia}* — ${linha.join(" · ")}`);
+    }
+    if (res.lista?.length) {
+      L.push("", "🛒 *Lista de compras*");
+      const bySec = {};
+      for (const it of res.lista) (bySec[it.secao] = bySec[it.secao] || []).push(it.qtd ? `${it.item} (${it.qtd})` : it.item);
+      for (const [sec, itens] of Object.entries(bySec)) L.push(`_${sec}_: ${itens.join(", ")}`);
+    }
+    return L.join("\n");
   }
 
   async function montar() {
@@ -193,6 +213,8 @@ export default function CozinhaPlanner({ logado = false, familia = null }) {
             ))}
           </div>
 
+          <CompartilharWhats texto={montarTextoWhats()} familia={familia} logado={logado} label="Enviar cardápio no WhatsApp" />
+
           {logado ? (
             <button className="btn" onClick={salvar} disabled={salvando || salvo}>
               {salvo ? "✓ Semana salva na sua conta" : salvando ? "Salvando…" : "💾 Salvar esta semana"}
@@ -201,11 +223,7 @@ export default function CozinhaPlanner({ logado = false, familia = null }) {
             <a href={BASE + "/entrar"} className="btn" style={{ textDecoration: "none" }}>💾 Criar conta pra salvar</a>
           )}
           <button className="btn ghost" onClick={() => setRes(null)}>↺ Montar outra semana</button>
-          <p className="muted" style={{ textAlign: "center" }}>
-            {logado
-              ? "Suas semanas ficam guardadas aqui. Vou cuidar da casa inteira com você. 💛"
-              : "Crie sua conta pra guardar o cardápio e me deixar cuidar da casa com você. 💛"}
-          </p>
+          <a href={BASE + "/"} className="btn ghost" style={{ textDecoration: "none" }}>🏠 Voltar pro início · falar com a Marta</a>
         </>
       )}
     </div>
