@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { falar, pararFala, vozDisponivel } from "@/lib/falar";
+import { sttServidorDisponivel, webSpeechDisponivel, iniciarGravacao, transcrever, ouvirWebSpeech } from "@/lib/ouvir";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const HREF = { cozinha: "/cozinha", casa: "/casa", filhos: "/filhos", financas: "/financas" };
@@ -20,8 +21,51 @@ export default function FalaComMarta({ historicoInicial = [] }) {
   const [erro, setErro] = useState("");
   const [falandoIdx, setFalandoIdx] = useState(-1);
   const [temVoz, setTemVoz] = useState(false);
+  const [modoVoz, setModoVoz] = useState(null); // 'server' | 'webspeech' | null
+  const [gravando, setGravando] = useState(false);
+  const [transcrevendo, setTranscrevendo] = useState(false);
+  const gravRef = useRef(null);
 
   useEffect(() => { setTemVoz(vozDisponivel()); return () => pararFala(); }, []);
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      if (await sttServidorDisponivel()) { if (vivo) setModoVoz("server"); return; }
+      if (webSpeechDisponivel()) { if (vivo) setModoVoz("webspeech"); }
+    })();
+    return () => { vivo = false; };
+  }, []);
+
+  // Microfone: 'webspeech' escuta ao vivo; 'server' grava e manda pro Whisper.
+  async function toggleMic() {
+    if (busy || transcrevendo) return;
+    setErro("");
+    if (modoVoz === "webspeech") {
+      if (gravando) { try { gravRef.current?.stop?.(); } catch {} setGravando(false); return; }
+      pararFala();
+      const rec = ouvirWebSpeech({
+        onTexto: (txt) => { if (txt) perguntar(txt); },
+        onFim: () => setGravando(false),
+        onErro: () => { setGravando(false); setErro("Não consegui te ouvir. Tente de novo."); },
+      });
+      if (rec) { gravRef.current = rec; setGravando(true); }
+      return;
+    }
+    // modo server (Whisper)
+    if (!gravando) {
+      try { gravRef.current = await iniciarGravacao(); setGravando(true); pararFala(); }
+      catch { setErro("Preciso da sua permissão pro microfone."); }
+      return;
+    }
+    setGravando(false); setTranscrevendo(true);
+    try {
+      const blob = await gravRef.current.parar();
+      const d = await transcrever(blob);
+      if (d?.ok && d.texto) perguntar(d.texto);
+      else setErro("Não consegui entender o áudio. Tente de novo.");
+    } catch { setErro("Não consegui gravar agora."); }
+    finally { setTranscrevendo(false); }
+  }
 
   async function perguntar(texto) {
     const q = (texto ?? pergunta).trim();
@@ -74,11 +118,19 @@ export default function FalaComMarta({ historicoInicial = [] }) {
       <div className="fala-in">
         <input className="inp" value={pergunta} onChange={(e) => setPergunta(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") perguntar(); }}
-          placeholder="Pergunte à Marta…" />
+          placeholder={gravando ? "Estou te ouvindo…" : transcrevendo ? "Entendendo o que você disse…" : "Pergunte à Marta…"} />
+        {modoVoz && (
+          <button type="button" className={"fala-mic" + (gravando ? " rec" : "")} onClick={toggleMic}
+            disabled={busy || transcrevendo} aria-label={gravando ? "parar de ouvir" : "falar com a Marta"}
+            title={gravando ? "Toque pra parar" : "Falar em vez de digitar"}>
+            {transcrevendo ? <span className="spin" style={{ width: 18, height: 18, borderWidth: 2 }} /> : gravando ? "■" : "🎤"}
+          </button>
+        )}
         <button className="fala-send" onClick={() => perguntar()} disabled={busy} aria-label="perguntar">
           {busy ? <span className="spin" style={{ width: 18, height: 18, borderWidth: 2 }} /> : "➤"}
         </button>
       </div>
+      {gravando && <p className="opt" style={{ margin: "8px 2px 0", color: "var(--clay)" }}>🔴 Ouvindo… toque no ■ pra eu responder.</p>}
 
       {thread.length === 0 && !busy && (
         <div className="chips" style={{ marginTop: 10 }}>
