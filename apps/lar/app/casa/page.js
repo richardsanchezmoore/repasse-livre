@@ -1,5 +1,14 @@
-import EmBreve from "@/components/EmBreve";
+import CasaPlanner from "@/components/CasaPlanner";
+
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Ordem da Casa · Marta" };
+
 export default function Casa() {
-  return <EmBreve ic="🧹" titulo="Ordem da Casa" texto="Rotinas por cômodo e a divisão justa das tarefas entre todos — sem você precisar cobrar." />;
+  return (
+    <main className="screen">
+      <div className="eyebrow">🧹 Ordem da Casa</div>
+      <h1 className="h">Uma casa em ordem, <span style={{ color: "var(--clay)" }}>sem se matar</span></h1>
+      <CasaPlanner />
+    </main>
+  );
 }

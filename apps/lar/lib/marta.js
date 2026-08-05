@@ -124,3 +124,63 @@ export async function planejarCardapio(entrada) {
     return { ok: false, erro: "A Marta tropeçou agora. Tente novamente em instantes." };
   }
 }
+
+// ─── MÓDULO ORDEM DA CASA ────────────────────────────────────────────────────
+const SYSTEM_CASA = `Você é a Marta, assistente do lar de uma família cristã brasileira. Você monta uma ROTINA DE LIMPEZA leve e sustentável — a "faxina rotativa": um foco por dia, não a casa inteira todo dia. E você distribui as tarefas com justiça entre TODOS (a mãe não faz tudo sozinha), respeitando a idade das crianças.
+
+PRINCÍPIOS:
+- Diárias: pouquíssimas e rápidas (camas, louça, uma arrumada geral).
+- Semana: cada dia tem UM foco (ex.: segunda cozinha, terça banheiros, quarta quartos…), com 1 a 3 tarefas.
+- Distribua "quem" entre: "Você", "Marido" (se houver ajuda) e as crianças pelo nome/idade (tarefas adequadas à idade — criança pequena guarda brinquedos, maior ajuda na louça).
+- Inclua um "Plano de Resgate": 3 a 5 microtarefas pra desafogar a casa em ~30 minutos quando bate o caos.
+
+FORMATO — responda SOMENTE com JSON válido:
+{
+  "diarias": [ { "tarefa": "...", "quem": "..." } ],
+  "semana": [ { "dia": "Segunda", "foco": "Cozinha", "tarefas": [ { "tarefa": "...", "quem": "..." } ] } ],
+  "resgate": [ { "tarefa": "...", "minutos": 10 } ],
+  "recado": "uma frase curta e calorosa (pode ter um toque de fé, sem forçar)."
+}
+Português do Brasil. Não invente membros da família além dos informados.`;
+
+function materialCasa({ familia, comodos, ajudaMarido, tempo }) {
+  const f = familia || {};
+  const filhos = Array.isArray(f.filhos) ? f.filhos : [];
+  return {
+    comodos: (comodos || "").trim() || "casa comum (sala, cozinha, banheiros, quartos)",
+    quem_ajuda: { marido: !!ajudaMarido, filhos: filhos.map((c) => ({ nome: c?.nome || null, idade: c?.idade ?? null })) },
+    trabalha_fora: !!f.trabalha_fora,
+    tempo_por_dia: tempo === "pouco" ? "pouco tempo por dia" : "consigo uma boa janela por dia",
+  };
+}
+
+export async function planejarRotinaCasa(entrada) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false, erro: "Marta ainda está sem acesso (configure ANTHROPIC_API_KEY)." };
+  try {
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: MODELO, max_tokens: 3000, system: SYSTEM_CASA,
+        messages: [{ role: "user", content: JSON.stringify(materialCasa(entrada)) }],
+      }),
+    });
+    if (!resp.ok) { console.error("[marta/casa] API", resp.status); return { ok: false, erro: "A Marta não conseguiu responder agora." }; }
+    const data = await resp.json();
+    const dados = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    if (!dados || (!Array.isArray(dados.semana) && !Array.isArray(dados.diarias))) {
+      return { ok: false, erro: "Não consegui montar a rotina agora. Tente de novo." };
+    }
+    return {
+      ok: true,
+      diarias: Array.isArray(dados.diarias) ? dados.diarias : [],
+      semana: Array.isArray(dados.semana) ? dados.semana : [],
+      resgate: Array.isArray(dados.resgate) ? dados.resgate : [],
+      recado: typeof dados.recado === "string" ? dados.recado : "",
+    };
+  } catch (e) {
+    console.error("[marta/casa] falhou:", e?.message);
+    return { ok: false, erro: "A Marta tropeçou agora. Tente novamente em instantes." };
+  }
+}
