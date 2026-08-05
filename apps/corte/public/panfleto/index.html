@@ -101,13 +101,13 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .lead.mut{color:var(--ink-soft)}
   .quote-big{font:italic 600 clamp(19px,3vw,26px)/1.4 var(--fancy);color:var(--wine);text-align:center;max-width:640px;margin:8px auto}
 
-  /* big idea escura */
-  .idea{background:linear-gradient(180deg,#3f5670,#2c3d52);color:#eef3f8;border-radius:16px;padding:clamp(26px,5vw,50px);border:1px solid var(--gold)}
-  .idea h2{font:700 clamp(22px,3.6vw,30px)/1.2 var(--disp);color:#fff;text-align:center;margin-bottom:16px}
+  /* big idea (creme — padrão premium, igual à "virada") */
+  .idea{background:linear-gradient(180deg,#fbf6ea,#f3e8ce);color:var(--ink);border-radius:16px;padding:clamp(26px,5vw,50px);border:1px solid var(--gold)}
+  .idea h2{font:700 clamp(22px,3.6vw,30px)/1.2 var(--disp);color:var(--wine);text-align:center;margin-bottom:16px}
   .idea .types{list-style:none;max-width:560px;margin:0 auto;display:grid;gap:9px}
-  .idea .types li{font:400 16.5px/1.5 var(--serif);padding-left:30px;position:relative;color:#e4ebf3}
-  .idea .types li::before{content:"❧";position:absolute;left:2px;color:var(--gold-2)}
-  .idea .end{text-align:center;font:italic 600 18px var(--fancy);color:var(--gold-2);margin-top:20px}
+  .idea .types li{font:400 16.5px/1.5 var(--serif);padding-left:30px;position:relative;color:var(--ink)}
+  .idea .types li::before{content:"❧";position:absolute;left:2px;color:var(--gold)}
+  .idea .end{text-align:center;font:italic 600 18px var(--fancy);color:var(--wine);margin-top:20px}
 
   /* dor */
   .pain p{font:400 clamp(16px,2vw,18px)/1.7 var(--serif);color:var(--ink);margin-bottom:14px}
@@ -160,6 +160,8 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .from s{color:var(--wine);margin:0 5px}
   .big-price{font:900 clamp(52px,11vw,74px)/1 var(--disp);color:var(--wine);margin:4px 0 2px}
   .big-price small{font-size:.34em;font-weight:700;vertical-align:super}.big-price .c{font-size:.5em}
+  .pix{display:flex;align-items:center;justify-content:center;gap:8px;font:700 14.5px var(--ui);color:#0a8f6e;margin:8px 0 2px}
+  .pix svg{flex:none}
   .parcela{font:600 14px var(--ui);color:var(--ink-soft);margin-bottom:6px}
   .offer .note{font:400 14px var(--serif);color:var(--ink-soft);margin-bottom:16px}
   .guarantee{display:inline-flex;align-items:center;gap:9px;background:#e9f1ec;border:1px solid #b7cfc1;border-radius:40px;padding:9px 20px;font:600 13.5px var(--ui);color:#2f4f43;margin-top:16px}
@@ -220,7 +222,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
     <section>
       <div class="idea frame">
         <h2>Muito antes dos apps de namoro…</h2>
-        <p class="lead" style="color:#eef3f8;text-align:center;max-width:560px;margin:0 auto 18px">A Bíblia já ensinava a observar o <em style="color:#e9c877">caráter</em>. Os tipos continuam os mesmos:</p>
+        <p class="lead" style="text-align:center;max-width:560px;margin:0 auto 18px">A Bíblia já ensinava a observar o <em>caráter</em>. Os tipos continuam os mesmos:</p>
         <ul class="types">
           <li>O sedutor, cheio de palavras e vazio de atitudes.</li>
           <li>O preguiçoso, de grandes sonhos e pouca disposição.</li>
@@ -332,6 +334,7 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
         </div>
         <p class="from">Se vendidos separados, <s>R$ 249</s>. Hoje, o Kit completo por</p>
         <div class="big-price"><small>R$</small> 27<span class="c">,90</span></div>
+        <p class="pix"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="5.5" width="13" height="13" rx="3.2" transform="rotate(45 12 12)" fill="#0a8f6e"/><rect x="9.4" y="9.4" width="5.2" height="5.2" rx="1.3" transform="rotate(45 12 12)" fill="#eafaf5"/></svg> Pagamento facilitado por PIX</p>
         <p class="parcela">à vista ou em até 3x no cartão</p>
         <p class="note">Pagamento único · sem mensalidade · sem precisar baixar app · acesso imediato</p>
         <a class="cta pulse" data-cakto href="https://pay.cakto.com.br/39wc86g_1010439">
