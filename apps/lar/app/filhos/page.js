@@ -2,7 +2,7 @@ import FilhosBoard from "@/components/FilhosBoard";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Filhos & Virtudes · Marta" };
+export const metadata = { title: "Família & Virtudes · Marta" };
 
 function segundaDaSemana() {
   const d = new Date();
@@ -33,7 +33,7 @@ export default async function Filhos() {
   }
   return (
     <main className="screen">
-      <div className="eyebrow">🧒 Filhos & Virtudes</div>
+      <div className="eyebrow">🧒 Família & Virtudes</div>
       <h1 className="h">Formar o <span style={{ color: "var(--clay)" }}>caráter</span>, com leveza</h1>
       <FilhosBoard logado={!!auth?.user} filhosIniciais={familiaFilhos} salva={salva} />
     </main>

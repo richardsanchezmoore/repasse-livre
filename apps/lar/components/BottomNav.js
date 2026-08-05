@@ -6,7 +6,7 @@ const ITENS = [
   { href: "/", ic: "🏠", label: "Início" },
   { href: "/cozinha", ic: "🍳", label: "Cozinha" },
   { href: "/casa", ic: "🧹", label: "Casa" },
-  { href: "/filhos", ic: "🧒", label: "Filhos" },
+  { href: "/filhos", ic: "🧒", label: "Família" },
 ];
 
 export default function BottomNav() {
