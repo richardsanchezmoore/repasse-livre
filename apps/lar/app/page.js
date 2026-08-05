@@ -49,7 +49,7 @@ export default async function Inicio() {
 
       <DevocionalCard dev={dev} />
 
-      {hoje && <HojeCard hoje={hoje} />}
+      {hoje && <HojeCard hoje={hoje} familia={familia} />}
 
       {!user && <Link href="/cozinha" className="btn" style={{ textDecoration: "none" }}>🍳 Montar o cardápio da semana</Link>}
 
@@ -73,9 +73,10 @@ export default async function Inicio() {
       <p className="muted" style={{ textAlign: "center", marginTop: 2 }}>Feito pra dar <b>menos ruído</b>, não mais tela. ✦</p>
 
       {user ? (
-        <form action={sair} style={{ textAlign: "center" }}>
-          <button type="submit" className="chip" style={{ marginTop: 4 }}>Sair da conta</button>
-        </form>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 4 }}>
+          <Link href="/comecar" className="chip" style={{ textDecoration: "none" }}>👪 Minha família</Link>
+          <form action={sair}><button type="submit" className="chip">Sair da conta</button></form>
+        </div>
       ) : (
         <Link href="/entrar" className="btn ghost" style={{ textDecoration: "none" }}>Entrar ou criar conta</Link>
       )}

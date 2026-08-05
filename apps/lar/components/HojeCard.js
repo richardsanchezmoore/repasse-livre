@@ -1,8 +1,16 @@
 import Link from "next/link";
+import CompartilharWhats from "@/components/CompartilharWhats";
 
 /** O "centro de comando": o dia da usuária cruzando todos os módulos. */
-export default function HojeCard({ hoje }) {
+export default function HojeCard({ hoje, familia = null }) {
   const { dia, refeicao, limpeza, placar } = hoje;
+
+  // Texto do dia pra mandar pra família num toque (só monta se tiver algo).
+  const linhas = [`☀️ *Hoje, ${String(dia).toLowerCase()}*`];
+  if (refeicao?.almoco) linhas.push(`🍽️ Almoço: ${refeicao.almoco}${refeicao.jantar ? ` · Jantar: ${refeicao.jantar}` : ""}`);
+  if (limpeza?.foco) linhas.push(`🧹 Faxina: ${limpeza.foco}${limpeza.tarefas?.length ? ` (${limpeza.tarefas.slice(0, 3).join(", ")})` : ""}`);
+  const textoHoje = linhas.length > 1 ? linhas.join("\n") : "";
+
   return (
     <div className="hoje">
       <div className="hoje-h">☀️ Hoje, {String(dia).toLowerCase()}</div>
@@ -52,6 +60,12 @@ export default function HojeCard({ hoje }) {
           </div>
           <span className="hoje-go">›</span>
         </Link>
+      )}
+
+      {textoHoje && (
+        <div style={{ marginTop: 12 }}>
+          <CompartilharWhats texto={textoHoje} familia={familia} logado label="Enviar o dia no WhatsApp" />
+        </div>
       )}
     </div>
   );

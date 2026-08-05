@@ -16,7 +16,9 @@ export async function resumoHoje(userId) {
   const dia = nomeDeHoje();
 
   const [c, r, p] = await Promise.all([
-    sb.from("lar_cardapio").select("dados").eq("user_id", userId).eq("inicio_semana", semana).maybeSingle(),
+    // Último cardápio salvo (não só o da semana atual) — o cardápio "expira" por semana,
+    // a rotina não; sem isso o almoço sumia da home enquanto a faxina continuava aparecendo.
+    sb.from("lar_cardapio").select("dados").eq("user_id", userId).order("inicio_semana", { ascending: false }).limit(1).maybeSingle(),
     sb.from("lar_rotina").select("dados").eq("user_id", userId).maybeSingle(),
     sb.from("lar_placar").select("dados, estrelas, semana").eq("user_id", userId).maybeSingle(),
   ]);

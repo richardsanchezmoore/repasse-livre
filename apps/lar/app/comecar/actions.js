@@ -3,6 +3,13 @@
 import { redirect } from "next/navigation";
 import { criarSupabaseServer } from "@/lib/supabaseServer";
 
+/** Normaliza um WhatsApp BR pra "55DDDNUMERO" (ou null se curto demais). */
+function normWhats(v) {
+  const d = String(v || "").replace(/\D/g, "");
+  if (d.length < 10) return null;
+  return d.startsWith("55") ? d : "55" + d;
+}
+
 /** Salva o perfil da família (a base que a Marta usa pra personalizar tudo). */
 export async function salvarFamilia(dados) {
   const sb = await criarSupabaseServer();
@@ -11,14 +18,30 @@ export async function salvarFamilia(dados) {
   if (!user) return { erro: "Sessão expirada. Entre de novo." };
 
   const filhos = (Array.isArray(dados?.filhos) ? dados.filhos : [])
-    .map((f) => ({ nome: String(f?.nome || "").trim(), idade: f?.idade != null ? Number(f.idade) : null }))
+    .map((f) => {
+      const wa = normWhats(f?.whatsapp);
+      return { nome: String(f?.nome || "").trim(), idade: f?.idade != null ? Number(f.idade) : null, ...(wa ? { whatsapp: wa } : {}) };
+    })
     .filter((f) => f.nome || f.idade != null)
     .slice(0, 12);
+
+  const maridoNome = String(dados?.marido_nome || "").trim() || null;
+  const maridoWhats = normWhats(dados?.marido_whatsapp);
+
+  // Contatos do one-tap: mescla os já salvos (adicionados na mão) com marido + filhos.
+  const { data: fam } = await sb.from("lar_familia").select("contatos").eq("user_id", user.id).maybeSingle();
+  const mapa = new Map((Array.isArray(fam?.contatos) ? fam.contatos : []).map((c) => [c.whatsapp, c]));
+  if (maridoWhats) mapa.set(maridoWhats, { nome: maridoNome || "Marido", whatsapp: maridoWhats, papel: "marido" });
+  for (const f of filhos) if (f.whatsapp) mapa.set(f.whatsapp, { nome: f.nome || "Filho(a)", whatsapp: f.whatsapp, papel: "filho" });
+  const contatos = [...mapa.values()].slice(0, 20);
 
   const linha = {
     user_id: user.id,
     nome_mae: String(dados?.nome_mae || "").trim() || null,
+    marido_nome: maridoNome,
+    marido_whatsapp: maridoWhats,
     filhos,
+    contatos,
     comodos: dados?.comodos != null ? Number(dados.comodos) : null,
     trabalha_fora: !!dados?.trabalha_fora,
     restricoes: String(dados?.restricoes || "").trim() || null,
