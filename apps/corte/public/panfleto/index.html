@@ -191,6 +191,36 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
   .wpp-flutuante{position:fixed;right:clamp(16px,3vw,24px);bottom:clamp(84px,14vw,96px);z-index:210;display:inline-flex;align-items:center;gap:9px;padding:12px 18px;font:700 14px var(--ui);color:#fff;background:#25d366;border-radius:999px;text-decoration:none;box-shadow:0 10px 26px -8px rgba(37,211,102,.55),0 3px 10px -4px rgba(0,0,0,.35);transition:transform .15s}
   .wpp-flutuante:hover{background:#1fbe5a;transform:translateY(-2px)}
   @media(max-width:560px){.wpp-flutuante{padding:13px;gap:0}.wpp-flutuante-texto{display:none}}
+
+  /* ── Pré-checkout (pop-up: capta contato antes de abrir a Cakto) ── */
+  .pcheck{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center}
+  .pcheck.open{display:flex}
+  @media(min-width:620px){.pcheck{align-items:center}}
+  .pcheck-bg{position:absolute;inset:0;background:rgba(44,40,51,.62);backdrop-filter:blur(3px);animation:pcFade .2s ease}
+  @keyframes pcFade{from{opacity:0}to{opacity:1}}
+  .pcheck-box{position:relative;width:100%;max-width:440px;background:linear-gradient(180deg,#fbf6ea,#f3e8ce);
+    border:1px solid var(--gold);border-radius:18px 18px 0 0;padding:26px 22px 22px;
+    box-shadow:0 -18px 50px -18px rgba(44,40,51,.6);animation:pcUp .26s cubic-bezier(.2,.9,.3,1)}
+  @media(min-width:620px){.pcheck-box{border-radius:18px;animation:pcPop .26s cubic-bezier(.2,.9,.3,1)}}
+  @keyframes pcUp{from{transform:translateY(40px);opacity:.4}to{transform:translateY(0);opacity:1}}
+  @keyframes pcPop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+  .pcheck-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:1px solid var(--gold-soft);
+    background:rgba(255,255,255,.6);color:var(--ink-soft);font:400 22px/1 var(--ui);cursor:pointer;display:grid;place-items:center}
+  .pcheck-k{font:700 11px var(--ui);letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+  .pcheck-box h3{font:700 clamp(23px,6vw,28px) var(--disp);color:var(--wine);margin:6px 0 4px}
+  .pcheck-sub{font:400 14px/1.5 var(--serif);color:var(--ink-soft);margin-bottom:16px}
+  .pcheck-box label{display:block;font:700 12.5px var(--ui);color:var(--ink);margin:12px 0 5px}
+  .pcheck-box input{width:100%;font:400 16px var(--ui);color:var(--ink);background:#fff;
+    border:1px solid var(--gold-soft);border-radius:10px;padding:13px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
+  .pcheck-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(176,135,63,.18)}
+  .pcheck-err{min-height:0;font:600 13px var(--ui);color:var(--wine);margin:8px 0 0}
+  .pcheck-err:empty{display:none}
+  .pcheck-go{width:100%;margin-top:16px;background:linear-gradient(180deg,var(--wine),var(--wine-2));color:#fdf3dd;
+    font:800 15.5px var(--ui);text-transform:uppercase;letter-spacing:.02em;border:1px solid var(--gold-2);border-radius:10px;
+    padding:16px 18px;cursor:pointer;transition:transform .15s,opacity .15s}
+  .pcheck-go:active{transform:scale(.99)}
+  .pcheck-go[disabled]{opacity:.7;cursor:default}
+  .pcheck-safe{font:600 12px var(--ui);color:#2f6b48;text-align:center;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}
 </style>
 </head>
 <body>
@@ -381,8 +411,30 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
 
     <a href="https://wa.me/554831980305?text=Oi!%20Fiquei%20com%20uma%20d%C3%BAvida%20sobre%20o%20Panfleto%20Secreto%20do%20Altar%3A%20" target="_blank" rel="noreferrer" class="wpp-flutuante" style="display:none" aria-label="Tirar duvida no WhatsApp"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.42 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.002-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg><span class="wpp-flutuante-texto">Dúvida? Chame no WhatsApp</span></a>
 
+  <!-- Pré-checkout: pop-up que capta contato antes de abrir a Cakto -->
+  <div id="pcheck" class="pcheck" aria-hidden="true">
+    <div class="pcheck-bg" data-pc-close></div>
+    <div class="pcheck-box" role="dialog" aria-modal="true" aria-labelledby="pcheck-t">
+      <button type="button" class="pcheck-x" data-pc-close aria-label="Fechar">×</button>
+      <div class="pcheck-k">✦ Falta só um passo ✦</div>
+      <h3 id="pcheck-t">Garanta o seu Kit.</h3>
+      <p class="pcheck-sub">Preencha seus dados para continuar. O pagamento abre no próximo passo já com tudo preenchido.</p>
+      <form id="pcheck-f" novalidate>
+        <label for="pc-nome">Nome completo</label>
+        <input id="pc-nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome completo" required>
+        <label for="pc-email">E-mail</label>
+        <input id="pc-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="voce@email.com" required>
+        <label for="pc-whats">WhatsApp</label>
+        <input id="pc-whats" name="whatsapp" type="tel" autocomplete="tel" inputmode="tel" placeholder="(11) 99999-9999" required>
+        <p class="pcheck-err" id="pcheck-err"></p>
+        <button class="pcheck-go" type="submit">Continuar para o pagamento →</button>
+        <p class="pcheck-safe">🛡️ Pagamento finalizado no checkout seguro da Cakto.</p>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // Auto-login (mesmo domínio): claim + sck + InitiateCheckout
+    // Auto-login (mesmo domínio) + PRÉ-CHECKOUT (pop-up capta contato antes da Cakto)
     (function(){
       var token;
       try {
@@ -395,9 +447,66 @@ src="https://www.facebook.com/tr?id=1013277894836851&ev=PageView&noscript=1"/></
       var CAKTO_SLUG={ 'damasvirtuosas.com':'3fowby7' }, PADRAO='39wc86g_1010439';
       var host=location.hostname.replace(/^www\./,'');
       var slug=CAKTO_SLUG[host]||PADRAO;
+
+      // id anônimo (mesma chave do quiz) p/ ligar visita→checkout do mesmo aparelho
+      var vid; try{ vid=localStorage.getItem('dv_vid'); if(!vid){ vid=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(String(Date.now())+Math.random().toString(16).slice(2)); localStorage.setItem('dv_vid',vid); } }catch(e){ vid=null; }
+
+      var modal=document.getElementById('pcheck'),
+          form=document.getElementById('pcheck-f'),
+          erro=document.getElementById('pcheck-err'),
+          btn=form&&form.querySelector('.pcheck-go'),
+          destino='';   // URL final da Cakto (já com slug+sck)
+
+      function abrir(url){
+        destino=url;
+        if(!modal){ location.href=url; return; }   // fallback: sem modal, vai direto
+        modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+        var n=document.getElementById('pc-nome'); if(n) setTimeout(function(){ try{ n.focus(); }catch(e){} }, 90);
+        try{ if(window.fbq) fbq('track','InitiateCheckout',{content_name:'Panfleto Secreto do Altar',value:27.90,currency:'BRL'}); }catch(e){}
+      }
+      function fechar(){ if(!modal) return; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); if(btn){ btn.disabled=false; btn.textContent='Continuar para o pagamento →'; } }
+
+      // CTAs: reescreve a URL (slug+sck) e, no clique, abre o pop-up (sem sair da página)
       document.querySelectorAll('a[data-cakto]').forEach(function(a){
         try{ var u=new URL(a.getAttribute('href'),location.href); u.pathname='/'+slug; u.searchParams.set('sck',sck); a.setAttribute('href',u.toString()); }catch(e){}
-        a.addEventListener('click', function(){ try{ if(window.fbq) fbq('track','InitiateCheckout',{content_name:'Panfleto Secreto do Altar',value:27.90,currency:'BRL'}); }catch(e){} });
+        a.addEventListener('click', function(e){ e.preventDefault(); abrir(a.getAttribute('href')); });
+      });
+
+      if(modal){
+        modal.querySelectorAll('[data-pc-close]').forEach(function(el){ el.addEventListener('click', fechar); });
+        document.addEventListener('keydown', function(e){ if(e.key==='Escape' && modal.classList.contains('open')) fechar(); });
+      }
+
+      if(form) form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(erro) erro.textContent='';
+        var nome=((document.getElementById('pc-nome')||{}).value||'');
+        var email=((document.getElementById('pc-email')||{}).value||'').trim();
+        var whats=((document.getElementById('pc-whats')||{}).value||'');
+        var dig=whats.replace(/\D/g,'');
+        if(nome.trim().length<2){ if(erro) erro.textContent='Digite o seu nome.'; return; }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ if(erro) erro.textContent='Confira o seu e-mail.'; return; }
+        if(dig.length<10){ if(erro) erro.textContent='Informe o WhatsApp com DDD.'; return; }
+        if(btn){ btn.disabled=true; btn.textContent='Abrindo o pagamento…'; }
+
+        // Cakto já preenchida: name / email / confirmEmail / phone (com 55)
+        var fone = dig.indexOf('55')===0 ? dig : '55'+dig;
+        var alvo=destino;
+        try{ var u2=new URL(destino,location.href);
+          u2.searchParams.set('name',nome.trim());
+          u2.searchParams.set('email',email);
+          u2.searchParams.set('confirmEmail',email);
+          u2.searchParams.set('phone',fone);
+          alvo=u2.toString();
+        }catch(e){}
+
+        // salva o lead pra nós (best-effort) e segue mesmo que demore — não perder a venda
+        var seguiu=false; function go(){ if(seguiu) return; seguiu=true; location.href=alvo; }
+        try{
+          fetch('/api/checkout',{ method:'POST', keepalive:true, headers:{'content-type':'application/json'},
+            body: JSON.stringify({ nome:nome.trim(), email:email, whatsapp:dig, vid:vid }) }).then(go).catch(go);
+        }catch(e){ go(); }
+        setTimeout(go, 1500);
       });
     })();
     // Preço do admin (sem hardcode)

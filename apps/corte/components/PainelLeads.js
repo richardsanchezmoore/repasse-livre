@@ -52,8 +52,9 @@ function LogLista({ log }) {
   );
 }
 
-export default function PainelLeads({ kpi, numeros, leads, visita, conclu }) {
+export default function PainelLeads({ kpi, numeros, leads, visita, conclu, checkout }) {
   const [tab, setTab] = useState("whats");
+  const chk = checkout || { total: 0, hoje: 0, compraram: 0, abandonaram: 0, porHora: Array(24).fill(0), cards: [] };
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -81,12 +82,72 @@ export default function PainelLeads({ kpi, numeros, leads, visita, conclu }) {
         </div>
       </div>
 
+      {/* Checkout (pré-Cakto) — o que antes ficava às cegas */}
+      <div className="card" style={{ display: "grid", gap: 10, marginTop: 12 }}>
+        <div className="c-k">🛒 Checkout (pré-Cakto · total · hoje)</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, textAlign: "center" }}>
+          {[
+            { lbl: "Iniciaram", v: chk.total, h: chk.hoje, ic: "🛒" },
+            { lbl: "Compraram", v: chk.compraram, ic: "👑" },
+            { lbl: "Abandonaram", v: chk.abandonaram, ic: "⏳" },
+          ].map((k) => (
+            <div key={k.lbl} style={{ background: "rgba(255,255,255,.05)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 6px" }}>
+              <div style={{ fontSize: 18 }}>{k.ic}</div>
+              <div style={{ font: "900 24px var(--disp)", color: "var(--gold-2)" }}>{k.v}</div>
+              <div className="opt" style={{ fontSize: 11 }}>{k.lbl}</div>
+              {k.h != null && <div className="opt" style={{ fontSize: 10.5, opacity: .8 }}>hoje: {k.h}</div>}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          <span className="tag" style={{ background: "#2f6b48", color: "#fff" }}>Conversão: {kpi.pComprou}% do checkout</span>
+          {chk.abandonaram > 0 && <span className="tag" style={{ background: "var(--wine)", color: "#fdf3dd" }}>👉 {chk.abandonaram} pra cobrar no Whats</span>}
+        </div>
+      </div>
+
       {/* Abas */}
       <div className="seg" style={{ marginTop: 16 }}>
         <button type="button" className={tab === "whats" ? "on" : ""} onClick={() => setTab("whats")}>💬 WhatsApp ({leads.cards.length})</button>
+        <button type="button" className={tab === "checkout" ? "on" : ""} onClick={() => setTab("checkout")}>🛒 Checkout ({chk.total})</button>
         <button type="button" className={tab === "visita" ? "on" : ""} onClick={() => setTab("visita")}>👀 Log Visita ({visita.total})</button>
         <button type="button" className={tab === "conclu" ? "on" : ""} onClick={() => setTab("conclu")}>✅ Concluíram ({conclu.total})</button>
       </div>
+
+      {tab === "checkout" && (
+        <div style={{ marginTop: 12 }}>
+          <Histo porHora={chk.porHora} />
+          <p className="opt" style={{ margin: "0 0 10px" }}>Quem preencheu o pop-up e foi pro pagamento. <b style={{ color: "var(--wine)" }}>Sem selo “Comprou” = abandonou</b> — chame no Whats pra fechar.</p>
+          <div className="shelf">
+            {chk.cards.map((c, i) => {
+              const digits = (c.wa || "").replace(/\D/g, "");
+              const wa = digits ? (digits.startsWith("55") ? digits : "55" + digits) : "";
+              const msg = encodeURIComponent(`Oi${c.nome ? " " + c.nome.split(" ")[0] : ""}! Vi que você começou a garantir o seu Kit de Discernimento 💛 Ficou alguma dúvida? Posso te ajudar a finalizar por aqui.`);
+              return (
+                <div key={i} className="memb">
+                  <div className="memb-top">
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div className="memb-nome">
+                        {c.nome || "— sem nome"}
+                        {c.membro
+                          ? <span className="tag" style={{ marginLeft: 6, background: "#2f6b48", color: "#fff" }}>👑 COMPROU</span>
+                          : <span className="tag" style={{ marginLeft: 6, background: "var(--wine)", color: "#fdf3dd" }}>⏳ abandonou</span>}
+                      </div>
+                      <div className="memb-email">💬 {c.wa || "—"}{c.email ? <span className="opt"> · {c.email}</span> : null}</div>
+                    </div>
+                    <div className="memb-dos" style={{ fontSize: 12, whiteSpace: "nowrap" }}>🕐 {c.quando}</div>
+                  </div>
+                  {wa && !c.membro && (
+                    <div className="memb-chips">
+                      <a className="chip" href={`https://wa.me/${wa}?text=${msg}`} target="_blank" rel="noreferrer" title="Cobrar no WhatsApp">💬 Cobrar no Whats →</a>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {chk.cards.length === 0 && <p className="muted" style={{ textAlign: "left" }}>Nenhum checkout iniciado ainda — aparece quando alguém clicar em comprar na <code>/panfleto</code>. 🛒</p>}
+          </div>
+        </div>
+      )}
 
       {tab === "whats" && (
         <div style={{ marginTop: 12 }}>

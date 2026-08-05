@@ -30,3 +30,24 @@ export async function salvarFamilia(dados) {
   if (error) return { erro: error.message };
   redirect("/");
 }
+
+/** Salva um contato da família (nome + WhatsApp) para o "Enviar no WhatsApp". */
+export async function salvarContato({ nome, whatsapp }) {
+  const sb = await criarSupabaseServer();
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth?.user) return { erro: "Entre na sua conta pra salvar contatos." };
+  const dig = String(whatsapp || "").replace(/\D/g, "");
+  if (dig.length < 10) return { erro: "Informe o WhatsApp com DDD." };
+  const num = dig.startsWith("55") ? dig : "55" + dig;
+  const nomeT = String(nome || "").trim() || "Contato";
+
+  const { data: fam } = await sb.from("lar_familia").select("contatos").eq("user_id", auth.user.id).maybeSingle();
+  const contatos = Array.isArray(fam?.contatos) ? fam.contatos : [];
+  if (!contatos.some((c) => c.whatsapp === num)) contatos.push({ nome: nomeT, whatsapp: num });
+
+  const { error } = await sb.from("lar_familia")
+    .update({ contatos: contatos.slice(0, 12), atualizado_em: new Date().toISOString() })
+    .eq("user_id", auth.user.id);
+  if (error) return { erro: error.message };
+  return { ok: true, contatos };
+}
