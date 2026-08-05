@@ -232,3 +232,33 @@ export async function sugerirVirtudes({ filhos }) {
     return { ok: false, erro: "A Marta tropeçou agora. Tente novamente em instantes." };
   }
 }
+
+// ─── MÓDULO FINANÇAS DO LAR ──────────────────────────────────────────────────
+// Os NÚMEROS são calculados em código (no cliente). A LLM só escreve a palavra de
+// ânimo e 2-3 dicas práticas, SEM inventar valor (recebe os números já prontos).
+const SYSTEM_FIN = `Você é a Marta, assistente do lar de uma família cristã brasileira, ajudando com as finanças da casa com serenidade e fé. Você recebe os NÚMEROS já calculados (renda, dízimo, gastos, sobra) e escreve: uma frase curta e acolhedora + 2 a 3 dicas práticas e realistas de economia doméstica. NUNCA invente ou recalcule números; use os que recebeu. Se a sobra for negativa, seja gentil e prática (onde cortar), sem julgar. Tom de conselheira cristã, leve.
+
+FORMATO — SOMENTE JSON válido: { "recado": "...", "dicas": ["...", "...", "..."] }. Português do Brasil.`;
+
+export async function palavraFinancas({ renda, dizimo, gastos, sobra }) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false };
+  try {
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: MODELO, max_tokens: 600, system: SYSTEM_FIN,
+        messages: [{ role: "user", content: JSON.stringify({ renda, dizimo, total_gastos: gastos, sobra }) }],
+      }),
+    });
+    if (!resp.ok) return { ok: false };
+    const data = await resp.json();
+    const d = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    if (!d) return { ok: false };
+    return { ok: true, recado: typeof d.recado === "string" ? d.recado : "", dicas: Array.isArray(d.dicas) ? d.dicas : [] };
+  } catch (e) {
+    console.error("[marta/fin] falhou:", e?.message);
+    return { ok: false };
+  }
+}

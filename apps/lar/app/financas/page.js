@@ -1,5 +1,14 @@
-import EmBreve from "@/components/EmBreve";
+import FinancasTool from "@/components/FinancasTool";
+
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Finanças do Lar · Marta" };
+
 export default function Financas() {
-  return <EmBreve ic="💰" titulo="Finanças do Lar" texto="As contas da casa organizadas com simplicidade — pra sobrar paz no fim do mês." />;
+  return (
+    <main className="screen">
+      <div className="eyebrow">💰 Finanças do Lar</div>
+      <h1 className="h">As contas da casa, <span style={{ color: "var(--clay)" }}>com paz</span></h1>
+      <FinancasTool />
+    </main>
+  );
 }

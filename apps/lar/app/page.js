@@ -10,7 +10,7 @@ const MODULOS = [
   { href: "/cozinha", ic: "🍳", t: "Cozinha", d: "Cardápio da semana + lista de compras", viva: true },
   { href: "/casa", ic: "🧹", t: "Ordem da Casa", d: "Rotinas e tarefas de cada um", viva: true },
   { href: "/filhos", ic: "🧒", t: "Filhos & Virtudes", d: "Hábitos e recompensas em família", viva: true },
-  { href: "/financas", ic: "💰", t: "Finanças do Lar", d: "As contas da casa sob controle", viva: false },
+  { href: "/financas", ic: "💰", t: "Finanças do Lar", d: "As contas da casa, com paz", viva: true },
 ];
 
 export default async function Inicio() {
