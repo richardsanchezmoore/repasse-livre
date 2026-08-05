@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { contexto } from "@/lib/membro";
 import { sair } from "@/app/entrar/actions";
+import { resumoHoje } from "@/lib/hoje";
+import HojeCard from "@/components/HojeCard";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Marta — a sua ajudante do lar" };
@@ -17,6 +19,7 @@ export default async function Inicio() {
   const { user, familia } = await contexto();
   if (user && !familia) redirect("/comecar");
   const nome = familia?.nome_mae || user?.user_metadata?.nome || "";
+  const hoje = user ? await resumoHoje(user.id) : null;
 
   return (
     <main className="screen">
@@ -24,14 +27,16 @@ export default async function Inicio() {
         <div className="av">M</div>
         <div className="msg">
           {user ? (
-            <>Que bom te ver{nome ? `, ${nome}` : ""}! 💛 Vamos cuidar do lar hoje? Pode começar pela pergunta que aperta todo dia: <b>“o que vou fazer pra comer?”</b></>
+            <>Que bom te ver{nome ? `, ${nome}` : ""}! 💛 Dei uma olhada em tudo — aqui está o seu dia.</>
           ) : (
             <>Oi, querida! Eu sou a <b>Marta</b> — vim te ajudar a cuidar do seu lar sem virar bagunça na cabeça. Vamos começar pela cozinha?</>
           )}
         </div>
       </div>
 
-      <Link href="/cozinha" className="btn" style={{ textDecoration: "none" }}>🍳 Montar o cardápio da semana</Link>
+      {hoje && <HojeCard hoje={hoje} />}
+
+      {!user && <Link href="/cozinha" className="btn" style={{ textDecoration: "none" }}>🍳 Montar o cardápio da semana</Link>}
 
       <div>
         <div className="eyebrow" style={{ marginBottom: 10 }}>O seu lar, por partes</div>

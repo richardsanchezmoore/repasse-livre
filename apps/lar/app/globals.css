@@ -137,3 +137,15 @@ textarea.inp{resize:vertical;min-height:56px}
 .stepper button{width:38px;height:38px;border-radius:9px;border:none;background:var(--surface-2);color:var(--clay);font:800 20px var(--ui);cursor:pointer;display:grid;place-items:center;line-height:1}
 .stepper button:active{transform:scale(.93)}
 .stepper .val{min-width:44px;text-align:center;font:800 18px var(--ui)}
+
+/* Dashboard "Hoje" — centro de comando */
+.hoje{background:linear-gradient(160deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 14px 30px -22px rgba(80,50,30,.4)}
+.hoje-h{font:800 13px var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--clay);margin:2px 2px 12px}
+.hoje-row{display:flex;align-items:center;gap:12px;padding:11px 8px;border-top:1px solid var(--line);border-radius:10px}
+.hoje-row:first-of-type{border-top:0}
+.hoje-row:active{background:var(--surface-2)}
+.hoje-ic{font-size:24px;flex:none;width:30px;text-align:center}
+.hoje-body{min-width:0;flex:1}
+.hoje-t{font-weight:700;font-size:15.5px;line-height:1.25}
+.hoje-d{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.hoje-go{margin-left:auto;color:var(--clay);font:800 20px var(--ui);flex:none}
