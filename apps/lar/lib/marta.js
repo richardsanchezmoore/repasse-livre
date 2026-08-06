@@ -264,7 +264,7 @@ export async function palavraFinancas({ renda, dizimo, gastos, sobra }) {
 }
 
 // ─── FALA COM A MARTA (assistente única — entende e roteia) ──────────────────
-const MODULOS_VALIDOS = ["cozinha", "casa", "filhos", "financas"];
+const MODULOS_VALIDOS = ["cozinha", "casa", "filhos", "financas", "jogos"];
 const SYSTEM_FALA = `Você é a Marta, a assistente do lar de uma família cristã brasileira — calorosa, prática e sábia, como uma mulher experiente que já criou os filhos. A mãe pode te perguntar QUALQUER coisa do dia a dia: refeições, limpeza, filhos, casamento, finanças da casa, cansaço, fé.
 
 Responda com carinho e MUITO objetiva — 2 a 4 frases, direto ao que ajuda. Se ela estiver desabafando, ACOLHA primeiro, depois dê um passo prático. Pode ter um toque de fé natural (sem forçar; NÃO transcreva versículos longos, no máximo uma referência curta).
@@ -274,6 +274,7 @@ Se a pergunta se encaixa num módulo do app, sugira ir pra lá:
 - limpeza/rotina/organizar a casa → "casa"
 - filhos/educação/virtudes/comportamento → "filhos"
 - contas/dinheiro/orçamento → "financas"
+- brincar/jogo/quiz/diversão/entreter as crianças/atividade em família → "jogos"
 Senão, "modulo": null.
 
 FORMATO — responda SOMENTE com JSON válido: { "resposta": "...", "modulo": "cozinha|casa|filhos|financas|null", "acao": "texto curto do botão ou null" }. Português do Brasil. NUNCA invente números.`;
@@ -341,5 +342,106 @@ export async function gerarDevocional() {
   } catch (e) {
     console.error("[marta/dev] falhou:", e?.message);
     return null;
+  }
+}
+
+// ─── ENTRETENIMENTO ──────────────────────────────────────────────────────────
+// Jogo de fé em família: quiz bíblico (rejogável) + brincadeira SEM TELA pra fazerem
+// juntos. Retém e vira aquisição (compartilha no WhatsApp). Copyright: perguntas sobre
+// FATOS/personagens/histórias; explicações originais; referência (livro cap), NUNCA o
+// texto do versículo.
+const SYSTEM_JOGO = `Você é a Marta, assistente do lar de uma família cristã brasileira. Você cria um QUIZ BÍBLICO divertido pra família jogar junto.
+
+PRINCÍPIOS:
+- Perguntas sobre FATOS, personagens, histórias e ensinamentos da Bíblia (quem fez o quê, ordem dos acontecimentos, parábolas, milagres, virtudes). Nada de polêmica teológica/denominacional.
+- Ajuste ao nível e à faixa: crianças = histórias conhecidas (Arca de Noé, Davi e Golias, Jonas, Natal); adultos = mais detalhe.
+- Cada pergunta tem 4 alternativas e UMA correta ("correta" = índice 0 a 3). As erradas devem ser plausíveis, não absurdas.
+- "explica": 1 frase curta e calorosa, em SUAS PALAVRAS, do porquê. Pode citar a referência (ex.: "Gênesis 6"), mas NUNCA transcreva o texto do versículo.
+- Variedade: não repita o mesmo personagem/história nas perguntas.
+
+FORMATO — responda SOMENTE com JSON válido (sem markdown):
+{ "perguntas": [ { "pergunta": "...", "opcoes": ["...","...","...","..."], "correta": 0, "explica": "..." } ], "recado": "frase curta e animada da Marta pra começar o jogo" }
+Português do Brasil.`;
+
+const TEMAS_JOGO = ["Antigo Testamento", "Novo Testamento", "Mulheres da Bíblia", "Provérbios e sabedoria", "Milagres de Jesus", "Histórias para crianças", "Geral"];
+
+export async function jogoBiblico({ tema, nivel, faixa, n } = {}) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false, erro: "A Marta está sem acesso agora." };
+  const qtd = Math.min(Math.max(Number(n) || 5, 3), 8);
+  const temaOk = TEMAS_JOGO.includes(tema) ? tema : "Geral";
+  const nivelOk = ["facil", "medio", "dificil"].includes(nivel) ? nivel : "medio";
+  const faixaOk = ["criancas", "familia", "adultos"].includes(faixa) ? faixa : "familia";
+  try {
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: MODELO, max_tokens: 2200, system: SYSTEM_JOGO,
+        messages: [{ role: "user", content: JSON.stringify({ tema: temaOk, nivel: nivelOk, faixa: faixaOk, quantidade: qtd }) }],
+      }),
+    });
+    if (!resp.ok) { console.error("[marta/jogo] API", resp.status); return { ok: false, erro: "A Marta não conseguiu criar o quiz agora." }; }
+    const data = await resp.json();
+    const d = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    const perguntas = (Array.isArray(d?.perguntas) ? d.perguntas : [])
+      .map((q) => ({
+        pergunta: String(q?.pergunta || "").trim(),
+        opcoes: (Array.isArray(q?.opcoes) ? q.opcoes : []).map((o) => String(o || "").trim()).filter(Boolean).slice(0, 4),
+        correta: Number.isInteger(q?.correta) ? q.correta : 0,
+        explica: String(q?.explica || "").trim(),
+      }))
+      .filter((q) => q.pergunta && q.opcoes.length === 4 && q.correta >= 0 && q.correta < 4);
+    if (!perguntas.length) return { ok: false, erro: "Não consegui montar o quiz agora. Tente de novo." };
+    return { ok: true, perguntas, recado: String(d?.recado || "Vamos brincar e aprender juntas? 💛") };
+  } catch (e) {
+    console.error("[marta/jogo] falhou:", e?.message);
+    return { ok: false, erro: "A Marta tropeçou agora. Tente novamente." };
+  }
+}
+
+const SYSTEM_BRINCA = `Você é a Marta, assistente do lar de uma família cristã brasileira. Você sugere UMA brincadeira em família, cristã e SEM TELA, pra fazerem juntos hoje.
+
+PRINCÍPIOS:
+- Simples, dentro de casa ou no quintal, com materiais que toda casa tem (papel, caneta, objetos comuns) — ou nenhum. Nada de comprar coisas.
+- Adequada às idades dos filhos informados; que TODOS participem (inclusive o pai/marido).
+- Ligada de forma leve a um valor ou história bíblica (ex.: mímica de histórias da Bíblia, caça ao tesouro com pistas de virtudes, roda de gratidão na mesa).
+- Objetivo: unir a família e reduzir tela.
+- Cite uma referência bíblica curta (livro cap) ligada ao valor, SEM transcrever o versículo.
+
+FORMATO — responda SOMENTE com JSON válido:
+{ "titulo": "...", "duracao": "~20 min", "materiais": ["..."], "comoJogar": ["passo 1", "passo 2", "passo 3"], "valor": "Gratidão", "referencia": "Salmos 100", "recado": "frase curta e calorosa" }
+"materiais" pode ser ["nenhum"]. Português do Brasil.`;
+
+export async function brincadeiraFamilia({ familia, tempo } = {}) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false, erro: "A Marta está sem acesso agora." };
+  try {
+    const idades = (familia?.filhos || []).map((f) => f?.idade).filter((x) => x != null);
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: MODELO, max_tokens: 900, system: SYSTEM_BRINCA,
+        messages: [{ role: "user", content: JSON.stringify({ idades_dos_filhos: idades.length ? idades : "não informado", tempo: tempo === "rapido" ? "rapidinha (~10 min)" : "uma boa brincadeira (~25 min)" }) }],
+      }),
+    });
+    if (!resp.ok) { console.error("[marta/brincadeira] API", resp.status); return { ok: false, erro: "A Marta não conseguiu sugerir agora." }; }
+    const data = await resp.json();
+    const d = parseJSON(data?.content?.find?.((b) => b.type === "text")?.text || "");
+    if (!d?.titulo || !Array.isArray(d?.comoJogar) || !d.comoJogar.length) return { ok: false, erro: "Não consegui pensar numa agora. Tente de novo." };
+    return {
+      ok: true,
+      titulo: String(d.titulo),
+      duracao: String(d.duracao || ""),
+      materiais: (Array.isArray(d.materiais) ? d.materiais : []).map((m) => String(m)).filter(Boolean),
+      comoJogar: d.comoJogar.map((p) => String(p)).filter(Boolean),
+      valor: String(d.valor || ""),
+      referencia: String(d.referencia || ""),
+      recado: String(d.recado || ""),
+    };
+  } catch (e) {
+    console.error("[marta/brincadeira] falhou:", e?.message);
+    return { ok: false, erro: "A Marta tropeçou agora. Tente novamente." };
   }
 }

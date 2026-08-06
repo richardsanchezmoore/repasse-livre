@@ -17,6 +17,7 @@ const MODULOS = [
   { href: "/casa", ic: "🧹", t: "Ordem da Casa", d: "Rotinas e tarefas de cada um", viva: true },
   { href: "/filhos", ic: "🧒", t: "Família & Virtudes", d: "Hábitos e recompensas em família", viva: true },
   { href: "/financas", ic: "💰", t: "Finanças do Lar", d: "As contas da casa, com paz", viva: true },
+  { href: "/jogos", ic: "🎲", t: "Entretenimento", d: "Quiz bíblico e brincadeiras em família", viva: true },
 ];
 
 export default async function Inicio() {

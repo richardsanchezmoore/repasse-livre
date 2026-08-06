@@ -190,3 +190,31 @@ textarea.inp{resize:vertical;min-height:56px}
 .wshare-row{display:flex;flex-wrap:wrap;gap:8px}
 .wshare-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .wshare-add .inp{flex:1;min-width:130px}
+
+/* Entretenimento — Quiz bíblico */
+.qz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.qz-passo{font:700 12px var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.qz-placar{font:800 14px var(--ui);color:var(--sage-deep)}
+.qz-bar{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.qz-bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--clay),var(--clay-deep));border-radius:99px;transition:width .3s}
+.qz-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--ink);font:600 15px var(--ui);transition:border-color .12s,background .12s}
+.qz-opt:not(:disabled):active{transform:scale(.995)}
+.qz-opt .qz-letra{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--clay);font:800 13px var(--ui)}
+.qz-opt .qz-txt{flex:1}
+.qz-opt .qz-mark{flex:none;font-size:17px;font-weight:800}
+.qz-opt.certo{background:rgba(78,138,95,.12);border-color:var(--ok)}
+.qz-opt.certo .qz-letra{background:var(--ok);color:#fff}
+.qz-opt.certo .qz-mark{color:var(--ok)}
+.qz-opt.errado{background:rgba(194,59,52,.10);border-color:#c23b34}
+.qz-opt.errado .qz-letra{background:#c23b34;color:#fff}
+.qz-opt.errado .qz-mark{color:#c23b34}
+.qz-opt.off{opacity:.55}
+.qz-explica{margin-top:12px;padding:11px 13px;background:var(--surface-2);border-radius:10px;font:400 14.5px/1.5 var(--ui);color:var(--ink-soft)}
+.qz-fim{text-align:center;background:linear-gradient(160deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:16px;padding:24px 18px}
+.qz-fim-emoji{font-size:44px;line-height:1}
+.qz-fim-score{font:900 40px var(--ui);color:var(--clay);margin-top:6px}
+.qz-fim-score span{font-size:22px;color:var(--ink-soft)}
+.qz-fim-tier{font:800 18px var(--ui);color:var(--ink);margin-top:2px}
+.qz-passos{margin:0;padding-left:20px;display:grid;gap:9px}
+.qz-passos li{font:400 15.5px/1.5 var(--ui);color:var(--ink)}
