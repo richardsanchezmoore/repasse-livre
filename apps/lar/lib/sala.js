@@ -38,10 +38,33 @@ export async function rodaPorSlug(slug) {
 export async function mensagensRecentes(rodaId, limite = 60) {
   const sb = await criarSupabaseServer();
   const { data } = await sb.from("lar_sala_mensagens")
-    .select("id, user_id, tipo, texto, midia_path, responde_a, anonimo, autor_apelido, autor_avatar, criado_em")
+    .select("id, user_id, tipo, texto, midia_path, responde_a, anonimo, autor_apelido, autor_avatar, destaque, criado_em")
     .eq("roda_id", rodaId).eq("status", "ativo")
     .order("criado_em", { ascending: false }).limit(limite);
   return (data || []).reverse();
+}
+
+/** Busca mensagens por texto (nas rodas). Filtra bloqueadas. */
+export async function buscarMensagens(q, bloqueados = []) {
+  const termo = String(q || "").trim();
+  if (termo.length < 2) return [];
+  const sb = await criarSupabaseServer();
+  const { data } = await sb.from("lar_sala_mensagens")
+    .select("id, user_id, roda_id, texto, anonimo, autor_apelido, autor_avatar, criado_em")
+    .eq("status", "ativo").ilike("texto", `%${termo.replace(/[%_]/g, "")}%`)
+    .order("criado_em", { ascending: false }).limit(40);
+  const bloq = new Set(bloqueados);
+  return (data || []).filter((m) => !bloq.has(m.user_id));
+}
+
+/** Mensagens em destaque (curadoria da Marta) — vitrine da home. */
+export async function destaquesRecentes(limite = 6) {
+  const sb = await criarSupabaseServer();
+  const { data } = await sb.from("lar_sala_mensagens")
+    .select("id, roda_id, texto, midia_path, anonimo, autor_apelido, autor_avatar, destaque_em")
+    .eq("status", "ativo").eq("destaque", true)
+    .order("destaque_em", { ascending: false }).limit(limite);
+  return data || [];
 }
 
 /** Nº de avisos não lidos (pro badge). */

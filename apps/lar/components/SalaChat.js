@@ -2,13 +2,14 @@
 import { useState, useEffect, useRef } from "react";
 import { criarSupabaseBrowser } from "@/lib/supabaseBrowser";
 import { enviarMensagem, reagir, denunciar, bloquear } from "@/app/sala/actions";
+import { destacarMensagem } from "@/app/admin/sala/actions";
 import { comprimirImagem } from "@/lib/imagem";
 import SalaMidia from "@/components/SalaMidia";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const REACOES = { curtir: "❤️", amem: "🙌", abraco: "🫂", oro: "🙏" };
 
-export default function SalaChat({ roda, userId, mensagensIniciais = [], bloqueados = [], starter = "" }) {
+export default function SalaChat({ roda, userId, mensagensIniciais = [], bloqueados = [], starter = "", podeDestacar = false }) {
   const bloq = useRef(new Set(bloqueados));
   const [msgs, setMsgs] = useState(() => (mensagensIniciais || []).filter((m) => !bloq.current.has(m.user_id)));
   const [texto, setTexto] = useState("");
@@ -105,6 +106,11 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
     setMsgs((cur) => cur.filter((m) => m.user_id !== uid));
     await bloquear({ bloqueadoId: uid });
   }
+  async function tocarDestacar(id, on) {
+    setMenu(null);
+    setMsgs((cur) => cur.map((m) => (m.id === id ? { ...m, destaque: on } : m)));
+    await destacarMensagem(id, on);
+  }
 
   const mapa = new Map(msgs.map((m) => [m.id, m]));
 
@@ -125,7 +131,8 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
           return (
             <div key={m.id} className={"sala-msg" + (minha ? " minha" : "")}>
               {!minha && <div className="sala-av">{m.autor_avatar || "🌸"}</div>}
-              <div className="sala-bolha">
+              <div className={"sala-bolha" + (m.destaque ? " destacada" : "")}>
+                {m.destaque && <div className="sala-destaque-tag">⭐ Destaque da Marta</div>}
                 {!minha && <div className="sala-nome">{nome}{m.anonimo ? " · anônima" : ""}</div>}
                 {resp && <div className="sala-resp">↩︎ {resp.autor_apelido || "Uma irmã"}: {String(resp.texto || "").slice(0, 60)}</div>}
                 {m.midia_path && <SalaMidia path={m.midia_path} />}
@@ -139,6 +146,7 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
                 {menu === m.id && (
                   <div className="sala-menu">
                     {Object.entries(REACOES).map(([k, e]) => <button key={k} onClick={() => tocarReacao(m.id, k)}>{e}</button>)}
+                    {podeDestacar && <button onClick={() => tocarDestacar(m.id, !m.destaque)}>{m.destaque ? "✩ Tirar" : "⭐ Destacar"}</button>}
                     <button onClick={() => tocarDenunciar(m.id)}>⚠️ Denunciar</button>
                     {!minha && <button onClick={() => tocarBloquear(m.user_id)}>🚫 Bloquear</button>}
                   </div>

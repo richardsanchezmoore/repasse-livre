@@ -28,7 +28,8 @@ export default async function RodaPage({ params }) {
           <div className="muted" style={{ fontSize: 12 }}>{roda.descricao}</div>
         </div>
       </div>
-      <SalaChat roda={roda} userId={user.id} mensagensIniciais={mensagens} bloqueados={bloqueados} starter={starterDaRoda(roda.slug)} />
+      <SalaChat roda={roda} userId={user.id} mensagensIniciais={mensagens} bloqueados={bloqueados}
+        starter={starterDaRoda(roda.slug)} podeDestacar={["moderadora", "admin"].includes(perfil.papel)} />
     </main>
   );
 }

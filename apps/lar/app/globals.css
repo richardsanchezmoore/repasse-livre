@@ -199,6 +199,16 @@ textarea.inp{resize:vertical;min-height:56px}
 .sala-banner-d{font-size:12.5px;opacity:.92;line-height:1.4}
 .sala-banner .hoje-go{color:#fff}
 
+/* A Sala — destaques (curadoria da Marta) */
+.destaques{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.destaques::-webkit-scrollbar{display:none}
+.destaque-card{flex:0 0 78%;max-width:300px;background:linear-gradient(160deg,#fff8ec,var(--surface-2));border:1px solid var(--warn);border-left:4px solid var(--warn);border-radius:0 12px 12px 0;padding:12px 14px}
+.destaque-txt{font-size:14px;line-height:1.45;color:var(--ink)}
+.sala-destaque-tag{font:800 10.5px var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--warn);margin-bottom:4px}
+.sala-bolha.destacada{border:1px solid var(--warn);box-shadow:0 0 0 2px rgba(192,138,46,.12)}
+.sala-msg.minha .sala-bolha.destacada{border:1px solid var(--warn)}
+.sala-msg.minha .sala-destaque-tag{color:#ffe9b8}
+
 /* A Sala — avisos (notificações) */
 .aviso-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--clay);color:#fff;font:800 11px var(--ui);vertical-align:middle}
 .aviso{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}

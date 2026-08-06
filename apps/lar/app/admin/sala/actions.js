@@ -35,3 +35,11 @@ export async function desbanirAutora(userId) {
   await supabaseAdmin().from("lar_sala_perfil").update({ banido: false }).eq("user_id", userId);
   return { ok: true };
 }
+
+/** Destaca (ou tira o destaque de) uma mensagem — curadoria da Marta. */
+export async function destacarMensagem(id, on) {
+  if (!await guarda()) return { erro: "Sem permissão." };
+  await supabaseAdmin().from("lar_sala_mensagens")
+    .update({ destaque: !!on, destaque_em: on ? new Date().toISOString() : null }).eq("id", id);
+  return { ok: true };
+}
