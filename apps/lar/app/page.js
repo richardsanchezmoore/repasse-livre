@@ -14,6 +14,7 @@ export const metadata = { title: "Marta — a sua ajudante do lar" };
 
 const MODULOS = [
   { href: "/agenda", ic: "📅", t: "Agenda da Casa", d: "Os compromissos da família, com a cor de cada um", viva: true },
+  { href: "/listas", ic: "📝", t: "Listas & Lembretes", d: "A família marca junto pelo link + o que não esquecer", viva: true },
   { href: "/cozinha", ic: "🍳", t: "Cozinha", d: "Cardápio da semana + lista de compras", viva: true },
   { href: "/casa", ic: "🧹", t: "Ordem da Casa", d: "Rotinas e tarefas de cada um", viva: true },
   { href: "/filhos", ic: "🧒", t: "Família & Virtudes", d: "Hábitos e recompensas em família", viva: true },

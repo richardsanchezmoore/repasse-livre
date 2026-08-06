@@ -3,11 +3,12 @@ import CompartilharWhats from "@/components/CompartilharWhats";
 
 /** O "centro de comando": o dia da usuária cruzando todos os módulos. */
 export default function HojeCard({ hoje, familia = null }) {
-  const { dia, refeicao, limpeza, placar, agenda } = hoje;
+  const { dia, refeicao, limpeza, placar, agenda, lembretes } = hoje;
 
   // Texto do dia pra mandar pra família num toque (só monta se tiver algo).
   const linhas = [`☀️ *Hoje, ${String(dia).toLowerCase()}*`];
   if (agenda?.length) linhas.push(...agenda.map((e) => `📅 ${e.hora ? e.hora + " " : ""}${e.titulo}${e.quem ? ` — ${e.quem}` : ""}`));
+  if (lembretes?.length) linhas.push(...lembretes.map((t) => `🔔 ${t}`));
   if (refeicao?.almoco) linhas.push(`🍽️ Almoço: ${refeicao.almoco}${refeicao.jantar ? ` · Jantar: ${refeicao.jantar}` : ""}`);
   if (limpeza?.foco) linhas.push(`🧹 Faxina: ${limpeza.foco}${limpeza.tarefas?.length ? ` (${limpeza.tarefas.slice(0, 3).join(", ")})` : ""}`);
   const textoHoje = linhas.length > 1 ? linhas.join("\n") : "";
@@ -22,6 +23,17 @@ export default function HojeCard({ hoje, familia = null }) {
           <div className="hoje-body">
             <div className="hoje-t">{agenda[0].hora ? agenda[0].hora + " · " : ""}{agenda[0].titulo}</div>
             <div className="hoje-d">{agenda[0].quem ? agenda[0].quem : "compromisso de hoje"}{agenda.length > 1 ? ` · +${agenda.length - 1}` : ""}</div>
+          </div>
+          <span className="hoje-go">›</span>
+        </Link>
+      )}
+
+      {lembretes?.length > 0 && (
+        <Link href="/listas" className="hoje-row">
+          <span className="hoje-ic">🔔</span>
+          <div className="hoje-body">
+            <div className="hoje-t">{lembretes[0]}</div>
+            <div className="hoje-d">Não esquecer{lembretes.length > 1 ? ` · +${lembretes.length - 1}` : ""}</div>
           </div>
           <span className="hoje-go">›</span>
         </Link>

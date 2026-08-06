@@ -1,5 +1,6 @@
 import { criarSupabaseServer } from "./supabaseServer";
 import { eventosDeHoje } from "./agenda";
+import { lembretesDeHoje } from "./listas";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 export function nomeDeHoje() { return DIAS[(new Date().getDay() + 6) % 7]; }
@@ -38,6 +39,7 @@ export async function resumoHoje(userId) {
 
   const evs = await eventosDeHoje(userId);
   const agenda = evs.map((e) => ({ titulo: e.titulo, hora: e.hora ? e.hora.slice(0, 5) : null, quem: e.quem || null, cor: e.cor || null }));
+  const lembretes = (await lembretesDeHoje(userId)).map((l) => l.texto);
 
-  return { dia, refeicao, limpeza, diarias, placar, agenda, temAlgo: !!(refeicao || limpeza || placar || agenda.length) };
+  return { dia, refeicao, limpeza, diarias, placar, agenda, lembretes, temAlgo: !!(refeicao || limpeza || placar || agenda.length || lembretes.length) };
 }
