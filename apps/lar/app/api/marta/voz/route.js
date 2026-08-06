@@ -58,7 +58,7 @@ async function sintetizar({ provedor, key, voz, modelo, texto }) {
     if (!r.ok) throw new Error("eleven " + r.status + " " + (await r.text()).slice(0, 150));
     return Buffer.from(await r.arrayBuffer());
   }
-  const v = voz || "shimmer";
+  const v = voz || "coral"; // voz feminina calorosa (padrão da Marta)
   const m = modelo || "gpt-4o-mini-tts";
   const r = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
