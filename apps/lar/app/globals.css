@@ -199,6 +199,15 @@ textarea.inp{resize:vertical;min-height:56px}
 .sala-banner-d{font-size:12.5px;opacity:.92;line-height:1.4}
 .sala-banner .hoje-go{color:#fff}
 
+/* Casa estilo Sweepy (faxina) */
+.fx-tarefa{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sage);border-radius:0 11px 11px 0;padding:10px 12px}
+.fx-check{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--sage);background:transparent;color:transparent;font-size:15px;cursor:pointer;display:grid;place-items:center;line-height:1}
+.fx-check:active{background:var(--ok);border-color:var(--ok);color:#fff}
+.fx-nome{font-size:14.5px;font-weight:600;line-height:1.3}
+.fx-comodo{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;cursor:pointer;padding:13px 14px;text-align:left;color:var(--ink)}
+.fx-bola{flex:none;width:14px;height:14px;border-radius:50%}
+.fx-comodo-nome{flex:1;font:700 15.5px var(--ui)}
+
 /* Listas & Lembretes */
 .lista-item{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:15px}
 .lista-item.feito{opacity:.62}
