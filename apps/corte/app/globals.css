@@ -34,6 +34,11 @@ a{color:inherit;text-decoration:none}
 .top .brand{font:700 12.5px/1 var(--ui);letter-spacing:.3em;text-transform:uppercase;color:var(--gold-2)}
 
 .screen{padding:18px 18px 8px}
+/* Skeleton (shimmer) — feedback instantâneo na troca de tela */
+.sk{position:relative;overflow:hidden;background:var(--creme-2);border-radius:14px}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:skshine 1.3s infinite}
+@keyframes skshine{100%{transform:translateX(100%)}}
 
 /* ---- textos ---- */
 .eyebrow{font:700 11px/1 var(--ui);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
