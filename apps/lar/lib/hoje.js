@@ -1,4 +1,5 @@
 import { criarSupabaseServer } from "./supabaseServer";
+import { eventosDeHoje } from "./agenda";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 export function nomeDeHoje() { return DIAS[(new Date().getDay() + 6) % 7]; }
@@ -35,5 +36,8 @@ export async function resumoHoje(userId) {
     ? { estrelas: p.data.semana === semana ? (p.data.estrelas || 0) : 0, criancas: nCriancas, meta: 12 }
     : null;
 
-  return { dia, refeicao, limpeza, diarias, placar, temAlgo: !!(refeicao || limpeza || placar) };
+  const evs = await eventosDeHoje(userId);
+  const agenda = evs.map((e) => ({ titulo: e.titulo, hora: e.hora ? e.hora.slice(0, 5) : null, quem: e.quem || null, cor: e.cor || null }));
+
+  return { dia, refeicao, limpeza, diarias, placar, agenda, temAlgo: !!(refeicao || limpeza || placar || agenda.length) };
 }

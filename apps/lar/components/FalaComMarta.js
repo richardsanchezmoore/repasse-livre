@@ -5,7 +5,7 @@ import { falar, pararFala, vozDisponivel } from "@/lib/falar";
 import { sttServidorDisponivel, webSpeechDisponivel, iniciarGravacao, transcrever, ouvirWebSpeech } from "@/lib/ouvir";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const HREF = { cozinha: "/cozinha", casa: "/casa", filhos: "/filhos", financas: "/financas", jogos: "/jogos" };
+const HREF = { cozinha: "/cozinha", casa: "/casa", filhos: "/filhos", financas: "/financas", jogos: "/jogos", agenda: "/agenda" };
 const SUGESTOES = [
   "Tenho frango e batata, o que faço pro jantar?",
   "A casa tá um caos, por onde começo?",
