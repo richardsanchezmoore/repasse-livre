@@ -25,13 +25,14 @@ function _hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + 
 
 let _audio = null;
 
-async function _falarPremium(texto, { onInicio, onFim } = {}) {
-  const chave = _hash(texto);
+async function _falarPremium(texto, { onInicio, onFim, contexto } = {}) {
+  const ctx = contexto === "devocional" ? "devocional" : "geral";
+  const chave = ctx + ":" + _hash(texto);
   let url = _cache.get(chave);
   if (!url) {
     const r = await fetch(BASE + "/api/marta/voz", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ texto }),
+      body: JSON.stringify({ texto, contexto: ctx }),
     });
     const tipo = r.headers.get("content-type") || "";
     if (!r.ok || !tipo.includes("audio")) throw new Error("sem audio premium");

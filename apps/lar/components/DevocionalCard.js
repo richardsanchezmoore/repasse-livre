@@ -15,7 +15,7 @@ export default function DevocionalCard({ dev }) {
     e?.stopPropagation?.();
     if (falando) { pararFala(); setFalando(false); return; }
     const t = [dev.reflexao, dev.oracao].filter(Boolean).join(" ");
-    falar(t, { onInicio: () => setFalando(true), onFim: () => setFalando(false) });
+    falar(t, { contexto: "devocional", onInicio: () => setFalando(true), onFim: () => setFalando(false) });
   }
 
   return (
