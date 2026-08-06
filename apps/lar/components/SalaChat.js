@@ -2,7 +2,10 @@
 import { useState, useEffect, useRef } from "react";
 import { criarSupabaseBrowser } from "@/lib/supabaseBrowser";
 import { enviarMensagem, reagir, denunciar, bloquear } from "@/app/sala/actions";
+import { comprimirImagem } from "@/lib/imagem";
+import SalaMidia from "@/components/SalaMidia";
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const REACOES = { curtir: "❤️", amem: "🙌", abraco: "🫂", oro: "🙏" };
 
 export default function SalaChat({ roda, userId, mensagensIniciais = [], bloqueados = [] }) {
@@ -15,6 +18,8 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
   const [erro, setErro] = useState("");
   const [menu, setMenu] = useState(null); // id da msg com menu aberto
   const [reagi, setReagi] = useState({}); // id -> tipo (minha reação local)
+  const [anexo, setAnexo] = useState(null); // { blob, url } imagem pendente
+  const fileRef = useRef(null);
   const fimRef = useRef(null);
   const vistos = useRef(new Set(msgs.map((m) => m.id)));
 
@@ -40,23 +45,45 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
     return () => { sb.removeChannel(canal); };
   }, [roda.id]);
 
+  async function escolherFoto(e) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f || !f.type.startsWith("image/")) return;
+    setErro("");
+    try {
+      const blob = await comprimirImagem(f);
+      setAnexo({ blob, url: URL.createObjectURL(blob) });
+    } catch { setErro("Não consegui preparar a foto."); }
+  }
+  function tirarFoto() { if (anexo?.url) URL.revokeObjectURL(anexo.url); setAnexo(null); }
+
   async function enviar() {
     const t = texto.trim();
-    if (!t || enviando) return;
+    if ((!t && !anexo) || enviando) return;
     setErro(""); setEnviando(true);
-    const r = await enviarMensagem({ rodaId: roda.id, texto: t, anonimo, respondeA: respondendo?.id || null });
-    setEnviando(false);
-    if (r?.erro) { setErro(r.erro); return; }
-    // append otimista (o realtime dedupa pelo id)
-    if (r.id && !vistos.current.has(r.id)) {
-      vistos.current.add(r.id);
-      setMsgs((cur) => [...cur, {
-        id: r.id, user_id: userId, texto: t, anonimo,
-        autor_apelido: anonimo ? null : "Você", autor_avatar: anonimo ? "🌸" : "💛",
-        responde_a: respondendo?.id || null, criado_em: r.criado_em || new Date().toISOString(),
-      }]);
-    }
-    setTexto(""); setRespondendo(null); rolar();
+    try {
+      let midiaPath = null, midiaMime = null;
+      if (anexo) {
+        const fd = new FormData();
+        fd.append("imagem", anexo.blob, "foto.webp");
+        fd.append("roda", roda.slug || "geral");
+        const up = await fetch(BASE + "/api/sala/midia", { method: "POST", body: fd }).then((x) => x.json()).catch(() => null);
+        if (!up?.ok) { setErro(up?.erro || "Não consegui enviar a foto."); return; }
+        midiaPath = up.path; midiaMime = up.mime;
+      }
+      const r = await enviarMensagem({ rodaId: roda.id, texto: t, anonimo, respondeA: respondendo?.id || null, midiaPath, midiaMime });
+      if (r?.erro) { setErro(r.erro); return; }
+      if (r.id && !vistos.current.has(r.id)) {
+        vistos.current.add(r.id);
+        setMsgs((cur) => [...cur, {
+          id: r.id, user_id: userId, texto: t || null, anonimo,
+          tipo: midiaPath ? "imagem" : "texto", midia_path: midiaPath,
+          autor_apelido: anonimo ? null : "Você", autor_avatar: anonimo ? "🌸" : "💛",
+          responde_a: respondendo?.id || null, criado_em: r.criado_em || new Date().toISOString(),
+        }]);
+      }
+      setTexto(""); setRespondendo(null); tirarFoto(); rolar();
+    } finally { setEnviando(false); }
   }
 
   async function tocarReacao(id, tipo) {
@@ -94,7 +121,8 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
               <div className="sala-bolha">
                 {!minha && <div className="sala-nome">{nome}{m.anonimo ? " · anônima" : ""}</div>}
                 {resp && <div className="sala-resp">↩︎ {resp.autor_apelido || "Uma irmã"}: {String(resp.texto || "").slice(0, 60)}</div>}
-                <div className="sala-txt">{m.texto}</div>
+                {m.midia_path && <SalaMidia path={m.midia_path} />}
+                {m.texto && <div className="sala-txt">{m.texto}</div>}
                 <div className="sala-acoes">
                   <button onClick={() => setMenu(menu === m.id ? null : m.id)} aria-label="ações">⋯</button>
                   <button onClick={() => setRespondendo(m)} aria-label="responder">↩︎</button>
@@ -123,12 +151,21 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
           </div>
         )}
         {erro && <p className="erro" style={{ margin: "0 12px 6px" }}>{erro}</p>}
+        {anexo && (
+          <div className="sala-anexo">
+            <img src={anexo.url} alt="" />
+            <span className="muted">Foto pronta pra enviar</span>
+            <button onClick={tirarFoto} aria-label="remover foto">✕</button>
+          </div>
+        )}
         <div className="sala-compositor">
           <button type="button" className={"sala-anon" + (anonimo ? " on" : "")} onClick={() => setAnonimo((v) => !v)}
             title="Postar como irmã (anônima)">{anonimo ? "🌸" : "🙂"}</button>
+          <button type="button" className="sala-anon" onClick={() => fileRef.current?.click()} title="Enviar foto">📎</button>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={escolherFoto} />
           <input className="inp" value={texto} placeholder={anonimo ? "Como irmã (anônima)…" : "Escreva na roda…"}
             onChange={(e) => setTexto(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") enviar(); }} />
-          <button className="sala-enviar" onClick={enviar} disabled={enviando} aria-label="enviar">➤</button>
+          <button className="sala-enviar" onClick={enviar} disabled={enviando} aria-label="enviar">{enviando ? "…" : "➤"}</button>
         </div>
       </div>
     </div>

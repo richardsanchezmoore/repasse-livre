@@ -24,17 +24,19 @@ export async function garantirPerfil({ apelido, avatar }) {
   return { ok: true };
 }
 
-/** Envia uma mensagem na roda (texto). Snapshot do autor protege o anonimato. */
-export async function enviarMensagem({ rodaId, texto, anonimo, respondeA }) {
+const TTL_MIDIA_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
+
+/** Envia uma mensagem na roda (texto e/ou imagem). Snapshot do autor protege o anonimato. */
+export async function enviarMensagem({ rodaId, texto, anonimo, respondeA, midiaPath, midiaMime }) {
   const sb = await criarSupabaseServer();
   const { data: auth } = await sb.auth.getUser();
   const user = auth?.user;
   if (!user) return { erro: "Sessão expirada. Entre de novo." };
 
   const t = String(texto || "").trim().slice(0, 2000);
-  if (!t) return { erro: "Escreva algo. 💛" };
-  const aviso = checarTexto(t);
-  if (aviso) return { erro: aviso };
+  const temMidia = !!midiaPath;
+  if (!t && !temMidia) return { erro: "Escreva algo ou envie uma foto. 💛" };
+  if (t) { const aviso = checarTexto(t); if (aviso) return { erro: aviso }; }
 
   const { data: perfil } = await sb.from("lar_sala_perfil").select("apelido, avatar, banido").eq("user_id", user.id).maybeSingle();
   if (!perfil) return { erro: "Complete o seu perfil da Sala primeiro." };
@@ -44,8 +46,11 @@ export async function enviarMensagem({ rodaId, texto, anonimo, respondeA }) {
   const linha = {
     roda_id: rodaId,
     user_id: user.id,
-    tipo: "texto",
-    texto: t,
+    tipo: temMidia ? "imagem" : "texto",
+    texto: t || null,
+    midia_path: temMidia ? String(midiaPath) : null,
+    midia_mime: temMidia ? String(midiaMime || "image/webp") : null,
+    midia_expira_em: temMidia ? new Date(Date.now() + TTL_MIDIA_MS).toISOString() : null,
     responde_a: respondeA || null,
     anonimo: anon,
     // snapshot: se anônimo, NÃO grava o apelido real (vira "Uma irmã")

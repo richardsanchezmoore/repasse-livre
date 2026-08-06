@@ -227,6 +227,12 @@ textarea.inp{resize:vertical;min-height:56px}
 .sala-anon{flex:none;width:44px;height:44px;border-radius:11px;border:1.5px solid var(--line);background:var(--surface-2);font-size:18px;cursor:pointer}
 .sala-anon.on{border-color:var(--clay);background:rgba(189,95,66,.12)}
 .sala-enviar{flex:none;width:48px;height:44px;border:none;border-radius:11px;background:linear-gradient(180deg,var(--clay),var(--clay-deep));color:#fff;font-size:16px;cursor:pointer}
+.sala-midia-img{max-width:220px;max-height:280px;width:auto;border-radius:10px;display:block;margin-bottom:4px}
+.sala-midia-off{font-size:12.5px;color:var(--ink-soft);background:var(--surface-2);border-radius:8px;padding:14px 16px;text-align:center;margin-bottom:4px}
+.sala-midia-load{display:grid;place-items:center;width:120px;height:96px;background:var(--surface-2);border-radius:10px;margin-bottom:4px}
+.sala-anexo{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.sala-anexo img{width:44px;height:44px;object-fit:cover;border-radius:8px}
+.sala-anexo button{margin-left:auto;background:none;border:none;cursor:pointer;font-size:15px;color:var(--ink-soft)}
 
 /* Entretenimento — Quiz bíblico */
 .qz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
