@@ -26,6 +26,9 @@ export default async function Sala() {
       <div className="eyebrow">💬 A Sala</div>
       <h1 className="h">Oi, {perfil.apelido} 💛</h1>
       <p className="sub">Escolha uma roda pra conversar com outras mães e esposas.</p>
+      {["moderadora", "admin"].includes(perfil.papel) && (
+        <Link href="/admin/sala" className="chip" style={{ textDecoration: "none", alignSelf: "flex-start" }}>🛡️ Moderar a Sala</Link>
+      )}
       <div style={{ display: "grid", gap: 12, marginTop: 10 }}>
         {rodas.map((r) => (
           <Link key={r.id} href={`/sala/${r.slug}`} className="mod on" style={{ textDecoration: "none" }}>
