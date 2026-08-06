@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 const ITENS = [
   { href: "/", ic: "🏠", label: "Início" },
+  { href: "/sala", ic: "💬", label: "Sala" },
   { href: "/cozinha", ic: "🍳", label: "Cozinha" },
   { href: "/casa", ic: "🧹", label: "Casa" },
   { href: "/filhos", ic: "🧒", label: "Família" },

@@ -191,6 +191,43 @@ textarea.inp{resize:vertical;min-height:56px}
 .wshare-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .wshare-add .inp{flex:1;min-width:130px}
 
+/* A Sala — banner na home */
+.sala-banner{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;
+  background:linear-gradient(150deg,var(--sage),var(--sage-deep));color:#fff;box-shadow:0 12px 26px -14px rgba(88,106,79,.7)}
+.sala-banner-ic{font-size:26px;flex:none}
+.sala-banner-t{font:800 15.5px var(--ui)}
+.sala-banner-d{font-size:12.5px;opacity:.92;line-height:1.4}
+.sala-banner .hoje-go{color:#fff}
+
+/* A Sala — chat */
+.sala-tela{padding:0}
+.sala-topo{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.sala-voltar{font-size:28px;color:var(--clay);text-decoration:none;line-height:1;flex:none}
+.sala-titulo{font:800 16px var(--ui);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sala-chat{display:flex;flex-direction:column}
+.sala-stream{display:flex;flex-direction:column;gap:10px;padding:14px 12px 96px}
+.sala-msg{display:flex;gap:8px;align-items:flex-end;max-width:88%}
+.sala-msg.minha{align-self:flex-end;flex-direction:row-reverse}
+.sala-av{width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:16px;flex:none}
+.sala-bolha{background:var(--surface);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:8px 11px;position:relative}
+.sala-msg.minha .sala-bolha{background:linear-gradient(180deg,var(--clay),var(--clay-deep));color:#fff;border:none;border-radius:14px 14px 4px 14px}
+.sala-nome{font:800 12px var(--ui);color:var(--sage-deep);margin-bottom:2px}
+.sala-resp{font-size:12px;opacity:.75;border-left:2px solid currentColor;padding-left:6px;margin-bottom:4px}
+.sala-txt{font-size:14.5px;line-height:1.4;white-space:pre-wrap;word-break:break-word}
+.sala-acoes{display:flex;gap:8px;margin-top:4px;opacity:.65}
+.sala-acoes button{background:none;border:none;cursor:pointer;font-size:13px;color:inherit;padding:0;line-height:1}
+.sala-acoes button.on{opacity:1;transform:scale(1.15)}
+.sala-menu{position:absolute;bottom:100%;right:0;margin-bottom:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 20px -8px rgba(0,0,0,.3);display:flex;flex-wrap:wrap;gap:4px;padding:6px;z-index:6;max-width:220px}
+.sala-menu button{background:var(--surface-2);border:none;border-radius:7px;padding:5px 8px;font-size:14px;cursor:pointer;color:var(--ink);white-space:nowrap}
+.sala-rodape{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:560px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));z-index:15;background:var(--surface);border-top:1px solid var(--line)}
+.sala-respondendo{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:8px 12px;background:var(--surface-2)}
+.sala-respondendo button{margin-left:auto;background:none;border:none;cursor:pointer;font-size:14px}
+.sala-compositor{display:flex;gap:8px;align-items:center;padding:10px 12px}
+.sala-compositor .inp{flex:1}
+.sala-anon{flex:none;width:44px;height:44px;border-radius:11px;border:1.5px solid var(--line);background:var(--surface-2);font-size:18px;cursor:pointer}
+.sala-anon.on{border-color:var(--clay);background:rgba(189,95,66,.12)}
+.sala-enviar{flex:none;width:48px;height:44px;border:none;border-radius:11px;background:linear-gradient(180deg,var(--clay),var(--clay-deep));color:#fff;font-size:16px;cursor:pointer}
+
 /* Entretenimento — Quiz bíblico */
 .qz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .qz-passo{font:700 12px var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}

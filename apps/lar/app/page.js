@@ -48,6 +48,17 @@ export default async function Inicio() {
 
       <FalaComMarta historicoInicial={conversaInicial} />
 
+      {user && (
+        <Link href="/sala" className="sala-banner" style={{ textDecoration: "none" }}>
+          <div className="sala-banner-ic">💬</div>
+          <div>
+            <div className="sala-banner-t">A Sala — nossa irmandade</div>
+            <div className="sala-banner-d">Converse com outras mães e esposas · receitas, filhos, fé e desabafo</div>
+          </div>
+          <span className="hoje-go" style={{ marginLeft: "auto" }}>›</span>
+        </Link>
+      )}
+
       <DevocionalCard dev={dev} />
 
       {hoje && <HojeCard hoje={hoje} familia={familia} />}
