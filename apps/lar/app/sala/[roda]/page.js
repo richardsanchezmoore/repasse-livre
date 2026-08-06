@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { contextoSala, rodaPorSlug, mensagensRecentes, bloqueadosDe } from "@/lib/sala";
+import { starterDaRoda } from "@/lib/salaStarters";
 import SalaChat from "@/components/SalaChat";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function RodaPage({ params }) {
           <div className="muted" style={{ fontSize: 12 }}>{roda.descricao}</div>
         </div>
       </div>
-      <SalaChat roda={roda} userId={user.id} mensagensIniciais={mensagens} bloqueados={bloqueados} />
+      <SalaChat roda={roda} userId={user.id} mensagensIniciais={mensagens} bloqueados={bloqueados} starter={starterDaRoda(roda.slug)} />
     </main>
   );
 }

@@ -8,7 +8,7 @@ import SalaMidia from "@/components/SalaMidia";
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const REACOES = { curtir: "❤️", amem: "🙌", abraco: "🫂", oro: "🙏" };
 
-export default function SalaChat({ roda, userId, mensagensIniciais = [], bloqueados = [] }) {
+export default function SalaChat({ roda, userId, mensagensIniciais = [], bloqueados = [], starter = "" }) {
   const bloq = useRef(new Set(bloqueados));
   const [msgs, setMsgs] = useState(() => (mensagensIniciais || []).filter((m) => !bloq.current.has(m.user_id)));
   const [texto, setTexto] = useState("");
@@ -20,6 +20,7 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
   const [reagi, setReagi] = useState({}); // id -> tipo (minha reação local)
   const [anexo, setAnexo] = useState(null); // { blob, url } imagem pendente
   const fileRef = useRef(null);
+  const inputRef = useRef(null);
   const fimRef = useRef(null);
   const vistos = useRef(new Set(msgs.map((m) => m.id)));
 
@@ -110,7 +111,13 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
   return (
     <div className="sala-chat">
       <div className="sala-stream">
-        {msgs.length === 0 && <p className="muted" style={{ textAlign: "center", marginTop: 20 }}>Seja a primeira a puxar conversa nesta roda 💛</p>}
+        {starter && (
+          <button type="button" className="sala-starter" onClick={() => inputRef.current?.focus()}>
+            <span className="sala-starter-av">M</span>
+            <span className="sala-starter-txt"><b>Marta abriu a roda:</b> {starter}</span>
+          </button>
+        )}
+        {msgs.length === 0 && <p className="muted" style={{ textAlign: "center", marginTop: 8 }}>Seja a primeira a responder 💛</p>}
         {msgs.map((m) => {
           const minha = m.user_id === userId;
           const nome = m.autor_apelido || "Uma irmã";
@@ -163,7 +170,7 @@ export default function SalaChat({ roda, userId, mensagensIniciais = [], bloquea
             title="Postar como irmã (anônima)">{anonimo ? "🌸" : "🙂"}</button>
           <button type="button" className="sala-anon" onClick={() => fileRef.current?.click()} title="Enviar foto">📎</button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={escolherFoto} />
-          <input className="inp" value={texto} placeholder={anonimo ? "Como irmã (anônima)…" : "Escreva na roda…"}
+          <input ref={inputRef} className="inp" value={texto} placeholder={anonimo ? "Como irmã (anônima)…" : "Escreva na roda…"}
             onChange={(e) => setTexto(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") enviar(); }} />
           <button className="sala-enviar" onClick={enviar} disabled={enviando} aria-label="enviar">{enviando ? "…" : "➤"}</button>
         </div>
