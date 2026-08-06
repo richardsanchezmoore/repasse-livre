@@ -63,7 +63,7 @@ async function sintetizar({ provedor, key, voz, modelo, texto }) {
     return Buffer.from(await r.arrayBuffer());
   }
   if (provedor === "google") {
-    const v = voz || "pt-BR-Chirp3-HD-Sulafat"; // trocar por VOZ_ID (testar Laomedeia/Sulafat/Vindemiatrix)
+    const v = voz || "pt-BR-Standard-C"; // padrão barato (~$4/1M) e agradável; trocar por VOZ_ID
     const lang = (v.match(/^[a-z]{2}-[A-Z]{2}/) || ["pt-BR"])[0];
     const r = await fetch("https://texttospeech.googleapis.com/v1/text:synthesize?key=" + encodeURIComponent(key), {
       method: "POST",
@@ -101,6 +101,8 @@ export async function POST(req) {
 
   const cfg = resolver(contexto);
   if (!cfg) return NextResponse.json({ ok: false, semChave: true });
+  // Voz padrão do Google por contexto (quando não veio por env): C no geral, D no devocional.
+  if (cfg.provedor === "google" && !cfg.voz) cfg.voz = contexto === "devocional" ? "pt-BR-Standard-D" : "pt-BR-Standard-C";
 
   // Devocional: 1 áudio por dia pra TODAS (cache em lar_config).
   if (contexto === "devocional") {
