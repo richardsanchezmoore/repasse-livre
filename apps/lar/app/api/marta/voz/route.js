@@ -15,34 +15,38 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 function chaveDe(provedor) {
-  return provedor === "elevenlabs"
-    ? (process.env.ELEVENLABS_API_KEY || "").trim()
-    : (process.env.VOZ_API_KEY || process.env.OPENAI_API_KEY || "").trim();
+  if (provedor === "elevenlabs") return (process.env.ELEVENLABS_API_KEY || "").trim();
+  if (provedor === "google") return (process.env.GOOGLE_TTS_API_KEY || process.env.GOOGLE_API_KEY || "").trim();
+  return (process.env.VOZ_API_KEY || process.env.OPENAI_API_KEY || "").trim(); // openai
 }
+
+// Se faltar a chave do provedor preferido, cai no primeiro daqui que tiver chave.
+const ORDEM_FALLBACK = ["google", "openai", "elevenlabs"];
 
 function preferido(contexto) {
   if (contexto === "devocional") {
     return {
-      provedor: (process.env.VOZ_DEVOCIONAL_PROVEDOR || "elevenlabs").trim().toLowerCase(),
+      // No começo o Google atende tudo; depois é só pôr VOZ_DEVOCIONAL_PROVEDOR=elevenlabs.
+      provedor: (process.env.VOZ_DEVOCIONAL_PROVEDOR || "google").trim().toLowerCase(),
       voz: (process.env.VOZ_DEVOCIONAL_ID || "").trim(),
       modelo: (process.env.VOZ_DEVOCIONAL_MODELO || "").trim(),
     };
   }
   return {
-    provedor: (process.env.VOZ_PROVEDOR || "openai").trim().toLowerCase(),
+    provedor: (process.env.VOZ_PROVEDOR || "google").trim().toLowerCase(),
     voz: (process.env.VOZ_ID || "").trim(),
     modelo: (process.env.VOZ_MODELO || "").trim(),
   };
 }
 
-/** Resolve provedor+chave pro contexto; se faltar chave, tenta o outro provedor. */
+/** Resolve provedor+chave pro contexto; se faltar chave, cai no 1º provedor com chave. */
 function resolver(contexto) {
   const pref = preferido(contexto);
-  const key = chaveDe(pref.provedor);
-  if (key) return { ...pref, key };
-  const outro = pref.provedor === "elevenlabs" ? "openai" : "elevenlabs";
-  const outraKey = chaveDe(outro);
-  if (outraKey) return { provedor: outro, voz: "", modelo: "", key: outraKey };
+  if (chaveDe(pref.provedor)) return { ...pref, key: chaveDe(pref.provedor) };
+  for (const p of ORDEM_FALLBACK) {
+    const k = chaveDe(p);
+    if (k) return { provedor: p, voz: "", modelo: "", key: k };
+  }
   return null;
 }
 
@@ -57,6 +61,19 @@ async function sintetizar({ provedor, key, voz, modelo, texto }) {
     });
     if (!r.ok) throw new Error("eleven " + r.status + " " + (await r.text()).slice(0, 150));
     return Buffer.from(await r.arrayBuffer());
+  }
+  if (provedor === "google") {
+    const v = voz || "pt-BR-Chirp3-HD-Sulafat"; // trocar por VOZ_ID (testar Laomedeia/Sulafat/Vindemiatrix)
+    const lang = (v.match(/^[a-z]{2}-[A-Z]{2}/) || ["pt-BR"])[0];
+    const r = await fetch("https://texttospeech.googleapis.com/v1/text:synthesize?key=" + encodeURIComponent(key), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ input: { text: texto }, voice: { languageCode: lang, name: v }, audioConfig: { audioEncoding: "MP3" } }),
+    });
+    if (!r.ok) throw new Error("google " + r.status + " " + (await r.text()).slice(0, 150));
+    const d = await r.json();
+    if (!d?.audioContent) throw new Error("google sem audioContent");
+    return Buffer.from(d.audioContent, "base64");
   }
   const v = voz || "coral"; // voz feminina calorosa (padrão da Marta)
   const m = modelo || "gpt-4o-mini-tts";
@@ -73,8 +90,8 @@ const audioResp = (buf) =>
   new NextResponse(buf, { status: 200, headers: { "content-type": "audio/mpeg", "cache-control": "private, max-age=86400" } });
 
 export async function GET() {
-  const openai = !!chaveDe("openai"), elevenlabs = !!chaveDe("elevenlabs");
-  return NextResponse.json({ disponivel: openai || elevenlabs, openai, elevenlabs });
+  const openai = !!chaveDe("openai"), elevenlabs = !!chaveDe("elevenlabs"), google = !!chaveDe("google");
+  return NextResponse.json({ disponivel: openai || elevenlabs || google, openai, elevenlabs, google });
 }
 
 export async function POST(req) {
