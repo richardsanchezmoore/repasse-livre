@@ -1,0 +1,16 @@
+{
+  "name": "Marta — Lar & Família",
+  "short_name": "Marta",
+  "description": "A sua ajudante do lar: refeições, casa, filhos e finanças — com carinho e sabedoria.",
+  "start_url": "/lar/",
+  "scope": "/lar/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf6f0",
+  "theme_color": "#bd5f42",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/lar/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/lar/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
