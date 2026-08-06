@@ -16,9 +16,11 @@ const MODULOS = [
   { href: "/agenda", ic: "📅", t: "Agenda da Casa", d: "Os compromissos da família, com a cor de cada um", viva: true },
   { href: "/listas", ic: "📝", t: "Listas & Lembretes", d: "A família marca junto pelo link + o que não esquecer", viva: true },
   { href: "/cozinha", ic: "🍳", t: "Cozinha", d: "Cardápio da semana + lista de compras", viva: true },
+  { href: "/receitas", ic: "📒", t: "Caderno de Receitas", d: "As receitas da família, à mão", viva: true },
   { href: "/casa", ic: "🧹", t: "Ordem da Casa", d: "Rotinas e tarefas de cada um", viva: true },
   { href: "/filhos", ic: "🧒", t: "Família & Virtudes", d: "Hábitos e recompensas em família", viva: true },
   { href: "/financas", ic: "💰", t: "Finanças do Lar", d: "As contas da casa, com paz", viva: true },
+  { href: "/habitos", ic: "🌷", t: "Meus Hábitos", d: "Um cuidado com você — água, oração, um tempo seu", viva: true },
   { href: "/jogos", ic: "🎲", t: "Entretenimento", d: "Quiz bíblico e brincadeiras em família", viva: true },
 ];
 
