@@ -44,6 +44,24 @@ export async function mensagensRecentes(rodaId, limite = 60) {
   return (data || []).reverse();
 }
 
+/** Nº de avisos não lidos (pro badge). */
+export async function contarAvisos(userId) {
+  if (!userId) return 0;
+  const sb = await criarSupabaseServer();
+  const { count } = await sb.from("lar_sala_notif").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("lida", false);
+  return count || 0;
+}
+
+/** Lista os avisos da usuária (mais recentes primeiro). */
+export async function listarAvisos(userId, limite = 50) {
+  if (!userId) return [];
+  const sb = await criarSupabaseServer();
+  const { data } = await sb.from("lar_sala_notif")
+    .select("id, tipo, origem_apelido, preview, roda_slug, lida, criado_em")
+    .eq("user_id", userId).order("criado_em", { ascending: false }).limit(limite);
+  return data || [];
+}
+
 /** IDs que a usuária bloqueou (pra filtrar o conteúdo delas). */
 export async function bloqueadosDe(userId) {
   if (!userId) return [];

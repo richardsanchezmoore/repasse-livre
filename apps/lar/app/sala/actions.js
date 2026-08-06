@@ -90,6 +90,15 @@ export async function denunciar({ mensagemId, motivo }) {
   return { ok: true };
 }
 
+/** Marca todos os avisos da usuária como lidos (ao abrir a tela de avisos). */
+export async function marcarAvisosLidos() {
+  const sb = await criarSupabaseServer();
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth?.user) return { erro: "sessão" };
+  await sb.from("lar_sala_notif").update({ lida: true }).eq("user_id", auth.user.id).eq("lida", false);
+  return { ok: true };
+}
+
 /** Bloqueia uma usuária (filtra o conteúdo dela pra mim). */
 export async function bloquear({ bloqueadoId }) {
   const sb = await criarSupabaseServer();
