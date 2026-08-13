@@ -43,7 +43,17 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  // Blindagem: se o Supabase estiver lento/estrangulado (ex.: Disk IO no limite),
+  // NÃO deixamos o middleware travar e derrubar o site (504 MIDDLEWARE_INVOCATION_TIMEOUT).
+  // Corre contra um timeout curto; se estourar, segue sem renovar a sessão neste request.
+  try {
+    await Promise.race([
+      supabase.auth.getUser(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("supabase_timeout")), 2500)),
+    ]);
+  } catch {
+    /* banco lento/indisponível — a página renderiza; a sessão é renovada no próximo request */
+  }
 
   return response;
 }
