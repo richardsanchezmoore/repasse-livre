@@ -21,7 +21,7 @@ import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo, type Chave
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarTagsMarcas } from "@/lib/tags";
-import { caminhoMarca, urlMarca } from "@/lib/site";
+import { caminhoMarca, urlMarca, COLUNAS_CARTAO } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -145,7 +145,7 @@ export default async function PaginaLocalidade({
   const inicio = (pagina - 1) * ITENS_POR_PAGINA;
   const fim = inicio + ITENS_POR_PAGINA - 1;
 
-  let consulta = supabaseAdmin.from("opportunities").select("*", { count: "exact" }).eq("status", "aprovada");
+  let consulta = supabaseAdmin.from("opportunities").select(COLUNAS_CARTAO, { count: "exact" }).eq("status", "aprovada");
   if (contexto.filtroEstado) {
     consulta = consulta.eq("estado", contexto.filtroEstado);
   }
@@ -170,7 +170,7 @@ export default async function PaginaLocalidade({
     throw new Error(`Falha ao buscar oportunidades: ${error.message}`);
   }
 
-  const oportunidades = semParecer((data ?? []) as Oportunidade[]);
+  const oportunidades = semParecer((data ?? []) as unknown as Oportunidade[]);
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
   // Gate premium (mesmo critério do DiscoveriesBoard) — trava as ofertas gordas
   // também nas páginas SEO públicas, senão o funil vaza por aqui.

@@ -31,7 +31,7 @@ import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade } from "@/lib/site";
+import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade, COLUNAS_CARTAO } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -173,7 +173,7 @@ async function PaginaMarca({
 
   let consulta = supabaseAdmin
     .from("opportunities")
-    .select("*", { count: "exact" })
+    .select(COLUNAS_CARTAO, { count: "exact" })
     .eq("status", "aprovada")
     .eq("estado", localidade.filtroEstado)
     .ilike("veiculo", `${marcaResolvida.marca}%`);
@@ -195,7 +195,7 @@ async function PaginaMarca({
     throw new Error(`Falha ao buscar oportunidades da marca: ${error.message}`);
   }
 
-  const oportunidades = semParecer((data ?? []) as Oportunidade[]);
+  const oportunidades = semParecer((data ?? []) as unknown as Oportunidade[]);
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
   // Gate premium (mesmo critério do DiscoveriesBoard) — trava as ofertas gordas
   // também nesta página SEO pública, senão o funil vaza por aqui.

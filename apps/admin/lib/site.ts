@@ -3,6 +3,13 @@ import type { Oportunidade } from "./types";
 
 export const URL_BASE_SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://repasselivre.com").replace(/\/$/, "");
 
+// Colunas LEVES pras listagens/cards (páginas SEO). Evita ler as pesadas
+// (fotos_secundarias, descricao, atributos_olx, copiloto_parecer, opcionais…),
+// que inflam a tabela pra ~58MB e faziam a leitura por página estourar o Disk IO.
+// O OpportunityCard e caminhoOportunidade só usam estas.
+export const COLUNAS_CARTAO =
+  "id, fonte, link_origem, veiculo, versao, ano, cambio, cidade, estado, preco, fipe_valor, fipe_data_referencia, margem_percentual, classificacao, foto_principal, origem_tipo, status, data_captura, data_atualizacao, favorito, whatsapp, data_publicacao_origem, km, motivo_venda, nome_remetente, sinistro_leilao, data_ordenacao, anunciante_profissional, criado_por, fipe_codigo";
+
 type DadosUrlOportunidade = Pick<
   Oportunidade,
   "id" | "veiculo" | "versao" | "ano" | "cidade" | "estado" | "origem_tipo"

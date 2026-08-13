@@ -19,7 +19,7 @@ import { resolverLocalidade } from "@/lib/localidade";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { caminhoModelo, urlModelo } from "@/lib/site";
+import { caminhoModelo, urlModelo, COLUNAS_CARTAO } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -112,7 +112,7 @@ export default async function PaginaModeloRoute({
 
   let consulta = supabaseAdmin
     .from("opportunities")
-    .select("*", { count: "exact" })
+    .select(COLUNAS_CARTAO, { count: "exact" })
     .eq("status", "aprovada")
     .eq("estado", localidade.filtroEstado)
     .ilike("veiculo", `${resolvido.marca} ${resolvido.modelo}%`);
@@ -134,7 +134,7 @@ export default async function PaginaModeloRoute({
     throw new Error(`Falha ao buscar oportunidades do modelo: ${error.message}`);
   }
 
-  const oportunidades = semParecer((data ?? []) as Oportunidade[]);
+  const oportunidades = semParecer((data ?? []) as unknown as Oportunidade[]);
   const idsFavoritados = usuario ? await buscarIdsFavoritados(usuario.id) : new Set<string>();
   // Gate premium (mesmo critério do board/marca) — trava as ofertas gordas também
   // nesta página SEO pública, senão o funil vaza por aqui.
