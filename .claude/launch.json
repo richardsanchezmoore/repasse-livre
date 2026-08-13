@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "apps/admin"],
       "port": 3000
+    },
+    {
+      "name": "corte",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "apps/corte", "--", "-p", "3002"],
+      "port": 3002
     }
   ]
 }

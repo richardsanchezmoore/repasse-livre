@@ -410,3 +410,184 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .qz-img{display:block;width:100%;max-height:190px;object-fit:cover;object-position:center top;border-radius:14px;margin:0 0 12px;
   border:1px solid var(--gold-soft);box-shadow:0 12px 26px -18px rgba(44,40,51,.55)}
 .qz-img-final{max-height:250px;margin:4px 0 14px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PERLA · leitor editorial de descoberta (biblioteca/perla)
+   Reusa 100% os tokens da marca. Alterna "folhas" creme (leitura) com
+   páginas escuras full-bleed (capa, movimentos, peças, revelação).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.perla-main{padding:0}
+.perla{--vinho-esc:#3a1218;color:var(--ink);overflow:clip}
+.perla section,.perla header{position:relative}
+
+/* back flutuante sobre a capa */
+.perla-back{position:absolute;top:calc(12px + env(safe-area-inset-top));left:14px;z-index:5;
+  font:700 12px var(--ui);letter-spacing:.02em;color:#fdf3dd;background:rgba(44,18,24,.5);
+  backdrop-filter:blur(6px);border:1px solid rgba(230,211,163,.4);border-radius:99px;padding:8px 14px}
+
+/* eyebrow / rótulos */
+.perla-eyebrow{font:700 11px var(--ui);letter-spacing:.3em;text-transform:uppercase;color:var(--gold-2)}
+.perla-eyebrow.ouro{color:var(--gold-2)}
+.perla-rotulo{font:700 11.5px var(--ui);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  text-align:center;margin-bottom:18px}
+.perla-rotulo::after{content:"";display:block;width:44px;height:1px;background:var(--gold-soft);margin:12px auto 0}
+
+/* ── CAPA ───────────────────────────────────────────────────────────────── */
+.perla-capa{min-height:88vh;min-height:88dvh;display:flex;align-items:flex-end;
+  background-size:cover;background-position:center 30%}
+.perla-capa::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(28,12,18,.45) 0%,rgba(28,12,18,.15) 38%,rgba(28,12,18,.72) 78%,rgba(24,10,16,.94) 100%)}
+.perla-capa-v{position:relative;z-index:1;padding:30px 26px 38px;text-align:center;width:100%}
+.perla-titulo{font:900 clamp(30px,9vw,44px)/1.08 var(--disp);color:#fdf6e6;letter-spacing:-.01em;
+  text-wrap:balance;margin:12px 0 0;text-shadow:0 2px 24px rgba(0,0,0,.5)}
+.perla-capa-sub{font:italic 400 15.5px/1.55 var(--serif);color:#e9d9bd;max-width:340px;margin:14px auto 0}
+.perla-autora{font:400 30px var(--script);color:var(--gold-2);margin-top:16px}
+.perla-scroll{margin-top:14px;font-size:26px;color:var(--gold-2);animation:perlaBounce 1.8s ease-in-out infinite}
+@keyframes perlaBounce{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(6px);opacity:1}}
+
+/* ── FOLHAS DE LEITURA (carta / encontro) ───────────────────────────────── */
+.perla-carta{background:linear-gradient(180deg,var(--creme),#f7efd9);padding:clamp(30px,8vw,46px) clamp(22px,7vw,40px)}
+.perla-carta::before{content:"";position:absolute;inset:10px;border:1px solid rgba(176,135,63,.35);pointer-events:none}
+.perla-carta>*{position:relative}
+.perla-enc{background:var(--creme);padding:clamp(26px,7vw,40px) clamp(22px,7vw,34px);border-top:1px solid var(--gold-soft)}
+.perla-enc-img{display:block;width:100%;border-radius:4px;border:1px solid var(--gold);margin:0 0 20px;
+  box-shadow:0 18px 40px -26px rgba(44,40,51,.6)}
+.perla-enc-t{font:900 clamp(23px,6.4vw,30px)/1.12 var(--disp);color:var(--wine);text-wrap:balance;margin:0 0 8px}
+.perla-enc-k{font:italic 500 16px/1.5 var(--serif);color:var(--ink-soft);margin:0 0 18px}
+
+.perla-p{font:400 clamp(16px,4.3vw,17.5px)/1.82 var(--serif);color:var(--ink);margin:0 0 15px}
+.perla-mini{font:700 12px var(--ui);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+  text-align:center;margin:20px 0 10px}
+.perla-q{font:italic 500 clamp(19px,5.4vw,25px)/1.4 var(--disp);color:var(--wine);text-align:center;
+  text-wrap:balance;margin:24px auto;max-width:30ch}
+.perla-q::before{content:"❦";display:block;color:var(--gold);font-size:15px;font-style:normal;margin-bottom:12px}
+.perla-fala{background:var(--creme-2);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;
+  padding:16px 18px;margin:18px 0}
+.perla-fala p{font:italic 500 15.5px/1.62 var(--serif);color:var(--wine-2);margin:0}
+.perla-fala cite{display:block;font:600 12.5px var(--ui);font-style:normal;color:var(--ink-soft);
+  text-align:right;margin-top:10px;letter-spacing:.02em}
+.perla-assina{font:400 30px var(--script);color:var(--wine);text-align:right;margin-top:18px}
+
+/* selo entre encontros (frase-âncora) */
+.perla-selo{font:900 clamp(20px,6vw,26px)/1.2 var(--disp);color:var(--gold);text-align:center;
+  letter-spacing:.01em;margin:24px 0 4px;text-wrap:balance}
+
+/* ── MUNIÇÕES ───────────────────────────────────────────────────────────── */
+.perla-mun{background:linear-gradient(160deg,#fbf3df,#f3e6c6);border:1px solid var(--gold);border-radius:14px;
+  padding:16px 18px;margin:22px 0;box-shadow:0 14px 30px -22px rgba(124,43,55,.5)}
+.perla-mun-h{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--wine);margin-bottom:10px}
+.perla-mun ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.perla-mun li{font:600 15px/1.4 var(--serif);color:var(--ink);padding-left:22px;position:relative}
+.perla-mun li::before{content:"◆";position:absolute;left:0;top:1px;color:var(--gold);font-size:11px}
+
+/* ── MISSÃO (workbook) ──────────────────────────────────────────────────── */
+.perla-mis{background:linear-gradient(160deg,#4a1620,var(--wine-2));border:1px solid var(--gold-2);
+  border-radius:14px;padding:18px;margin:22px 0;color:#f6e8cf;box-shadow:0 16px 34px -22px rgba(58,14,24,.8)}
+.perla-mis-h{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);margin-bottom:8px}
+.perla-mis p{font:500 15.5px/1.6 var(--serif);color:#f3e6cd;margin:0 0 14px}
+.perla-mis-chk{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);
+  border:1px solid var(--gold-soft);border-radius:11px;padding:10px 14px;cursor:pointer;
+  font:700 13.5px var(--ui);color:#fdf3dd;transition:background .15s}
+.perla-mis-chk:hover{background:rgba(255,255,255,.16)}
+.perla-mis-chk .box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--gold-2);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#3a2410;background:transparent}
+.perla-mis.ok{border-color:#7bbf8f}
+.perla-mis.ok .perla-mis-chk{background:rgba(123,191,143,.16);border-color:#7bbf8f}
+.perla-mis.ok .box{background:var(--gold-2);border-color:var(--gold-2)}
+
+/* ── PÁGINAS ESCURAS: chave / capa de movimento / interlúdio ────────────── */
+.perla-chave,.perla-mov-capa,.perla-interludio{background-size:cover;background-position:center;
+  display:flex;align-items:center;min-height:78vh;min-height:78dvh}
+.perla-chave::before,.perla-mov-capa::before,.perla-interludio::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(24,10,16,.82),rgba(24,10,16,.62) 45%,rgba(24,10,16,.9))}
+.perla-chave-v,.perla-mov-v,.perla-interludio-v{position:relative;z-index:1;padding:40px 28px;width:100%;text-align:center}
+.perla-chave-v .perla-p{color:#f0e3c8;text-shadow:0 1px 12px rgba(0,0,0,.4)}
+.perla-chave-v .perla-q{color:var(--gold-2)}
+.perla-chave-v .perla-q::before{color:var(--gold-2)}
+.perla-chave-v .perla-eyebrow{margin-bottom:16px;display:block}
+
+.perla-mov-n{font:900 clamp(56px,20vw,96px)/1 var(--disp);color:var(--gold-2);opacity:.9;
+  text-shadow:0 2px 30px rgba(0,0,0,.5)}
+.perla-mov-nome{font:900 clamp(34px,10vw,52px)/1 var(--disp);color:#fdf6e6;letter-spacing:.02em;margin:6px 0 0;
+  text-transform:uppercase}
+.perla-mov-frase{font:italic 400 16.5px/1.55 var(--serif);color:#e9d9bd;max-width:330px;margin:16px auto 0;text-wrap:balance}
+.perla-mov-cont{font:700 10.5px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);
+  margin-top:22px;opacity:.85}
+
+.perla-interludio{min-height:72vh;min-height:72dvh}
+.perla-interludio-v p{font:900 clamp(24px,7vw,34px)/1.22 var(--disp);color:#fdf6e6;text-wrap:balance;
+  max-width:20ch;margin:0 auto 14px;text-shadow:0 2px 20px rgba(0,0,0,.55)}
+.perla-interludio-v p:last-child{font:italic 400 17px/1.5 var(--serif);color:var(--gold-2)}
+
+/* ── A PEÇA (descoberta da letra) ───────────────────────────────────────── */
+.perla-peca{background:radial-gradient(120% 90% at 50% 12%,#4a1620 0%,var(--vinho-esc) 55%,#160a10 100%);
+  padding:64px 28px;text-align:center;overflow:hidden}
+.perla-peca-tag{font:700 11px var(--ui);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.perla-peca-con{font:italic 400 16px/1.55 var(--serif);color:#e4d3b4;max-width:32ch;margin:0 auto 20px}
+.perla-peca-letra{font:900 clamp(120px,42vw,220px)/.9 var(--disp);color:var(--gold-2);
+  text-shadow:0 0 60px rgba(203,168,91,.4);opacity:0;transform:scale(.55);filter:blur(6px)}
+.perla-peca.revelada .perla-peca-letra{opacity:1;transform:scale(1);filter:blur(0);
+  transition:opacity 1s ease,transform 1.1s cubic-bezier(.2,.9,.2,1),filter 1s ease}
+.perla-peca-cmd{font:900 clamp(22px,6vw,30px) var(--disp);color:#fdf6e6;letter-spacing:.04em;
+  text-transform:uppercase;margin-top:6px}
+.perla-peca-frase{font:italic 500 clamp(17px,4.6vw,20px)/1.45 var(--serif);color:var(--gold-2);
+  max-width:28ch;margin:14px auto 0;text-wrap:balance}
+.perla-peca-nota{font:400 13.5px/1.6 var(--serif);color:#c9b48f;max-width:34ch;margin:18px auto 0}
+
+/* ── REVELAÇÃO / MONTAGEM ───────────────────────────────────────────────── */
+.perla-revela{background:linear-gradient(180deg,#160a10,var(--vinho-esc));padding:70px 28px;text-align:center}
+.perla-revela-antes{font:500 clamp(17px,4.8vw,20px)/1.5 var(--serif);color:#f0e3c8;max-width:28ch;margin:0 auto 10px}
+.perla-revela-chamada{font:700 12px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin:26px 0 8px}
+.perla-montagem{display:flex;justify-content:center;gap:clamp(8px,3vw,18px);margin:14px 0 8px}
+.perla-montagem span{font:900 clamp(40px,13vw,72px)/1 var(--disp);color:var(--gold-2);opacity:0;transform:translateY(18px) scale(.8)}
+.perla-montagem.on span{opacity:1;transform:none;transition:opacity .6s ease,transform .7s cubic-bezier(.2,.9,.2,1);
+  transition-delay:calc(var(--i) * .28s)}
+.perla-revela-depois{font:italic 500 16px/1.6 var(--serif);color:#e4d3b4;max-width:34ch;margin:22px auto 0}
+
+/* ── PERLA (o nome) ─────────────────────────────────────────────────────── */
+.perla-nome{background:radial-gradient(120% 80% at 50% 0%,#4a1620,#160a10 70%);padding:60px 26px 66px;text-align:center}
+.perla-nome-palavra{font:900 clamp(52px,18vw,92px)/1 var(--disp);color:var(--gold-2);letter-spacing:.14em;
+  text-shadow:0 0 50px rgba(203,168,91,.35);margin:0 0 8px}
+.perla-nome-palavra::after{content:"";display:block;width:60px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:18px auto 0}
+.perla-signi{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:30px auto 0;text-align:left}
+.perla-signi-row{display:flex;gap:16px;align-items:center;background:rgba(255,255,255,.05);
+  border:1px solid rgba(230,211,163,.24);border-radius:12px;padding:14px 16px}
+.perla-signi-l{font:900 34px var(--disp);color:var(--gold-2);flex:none;width:30px;text-align:center;line-height:1}
+.perla-signi-t{font:700 16px var(--disp);color:#fdf6e6;text-transform:uppercase;letter-spacing:.02em}
+.perla-signi-d{font:400 14px/1.4 var(--serif);color:#d7c6a4;margin-top:2px}
+.perla-seq{margin:34px auto 0;max-width:34ch}
+.perla-seq-t{font:900 clamp(20px,5.6vw,26px) var(--disp);color:#fdf6e6;margin-bottom:14px;text-wrap:balance}
+.perla-seq p{font:400 15px/1.7 var(--serif);color:#e4d3b4;margin:0}
+.perla-seq-fecho{color:var(--gold-2);margin-top:18px}
+.perla-seq-fecho::before{color:var(--gold-2)}
+.perla-manto{font:900 clamp(24px,7vw,34px)/1.2 var(--disp);color:var(--gold-2);letter-spacing:.02em;
+  margin-top:36px;text-wrap:balance}
+
+/* ── ENCERRAMENTO ───────────────────────────────────────────────────────── */
+.perla-fim{background:linear-gradient(180deg,#160a10,var(--wine-2));padding:64px 28px 90px;text-align:center}
+.perla-fim-linha{font:900 clamp(26px,7.4vw,38px)/1.18 var(--disp);color:#fdf6e6;text-wrap:balance;max-width:18ch;margin:0 auto}
+.perla-fim-rodape{font:italic 400 15px/1.6 var(--serif);color:var(--gold-2);max-width:34ch;margin:20px auto 0}
+
+/* ── RASTREADOR FLUTUANTE (a descoberta) ────────────────────────────────── */
+.perla-track{position:fixed;left:50%;transform:translateX(-50%);z-index:25;
+  bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);
+  display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:rgba(38,14,20,.86);backdrop-filter:blur(10px);border:1px solid var(--gold);border-radius:99px;
+  box-shadow:0 12px 30px -12px rgba(0,0,0,.6)}
+.perla-track-lbl{font:700 10px var(--ui);letter-spacing:.18em;text-transform:uppercase;color:var(--gold-2)}
+.perla-track.completo .perla-track-lbl{letter-spacing:.34em;color:var(--gold-2)}
+.perla-track-dots{display:flex;gap:6px}
+.perla-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:800 12px var(--disp);color:rgba(230,211,163,.55);
+  border:1px solid rgba(230,211,163,.4);background:rgba(255,255,255,.04);transition:all .4s cubic-bezier(.2,.9,.2,1)}
+.perla-dot.on{color:var(--wine-2);background:linear-gradient(180deg,var(--gold-2),var(--gold));border-color:var(--gold-2);
+  transform:scale(1.08);box-shadow:0 0 14px rgba(203,168,91,.6)}
+
+/* reduz movimento */
+@media (prefers-reduced-motion:reduce){
+  .perla-scroll{animation:none}
+  .perla-peca-letra{opacity:1;transform:none;filter:none;transition:none}
+  .perla-montagem span{opacity:1;transform:none;transition:none}
+  .perla-dot{transition:none}
+}
