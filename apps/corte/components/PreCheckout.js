@@ -31,7 +31,7 @@ function idLocal(chave) {
   } catch { return null; }
 }
 
-export default function PreCheckout({ url, onClose }) {
+export default function PreCheckout({ url, slug: slugProp = "", onClose }) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
@@ -61,7 +61,7 @@ export default function PreCheckout({ url, onClose }) {
     const sck = "claim_" + (idLocal("corte_claim") || "");
     const vid = idLocal("dv_vid");
     const host = location.hostname.replace(/^www\./, "");
-    const slug = CAKTO_SLUG[host] || PADRAO;
+    const slug = slugProp || CAKTO_SLUG[host] || PADRAO;
     const fone = dig.indexOf("55") === 0 ? dig : "55" + dig;
     let alvo = url;
     try {

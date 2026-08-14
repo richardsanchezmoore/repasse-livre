@@ -52,7 +52,9 @@ export async function POST(req) {
   const lista = (v) => (v || "").split(",").map((s) => s.trim()).filter(Boolean);
   const secretsKit = lista(process.env.CORTE_CAKTO_SECRET);
   const secretsAssin = lista(process.env.CORTE_CAKTO_SECRET_ASSINATURA);
-  const validos = [...secretsKit, ...secretsAssin];
+  // Produto PRINCIPAL do funil = só o livro (âncora). Os extras (kit) são order bump.
+  const secretsLivro = lista(process.env.CORTE_CAKTO_SECRET_LIVRO);
+  const validos = [...secretsKit, ...secretsAssin, ...secretsLivro];
   if (!validos.length || !segredo || !validos.includes(segredo)) {
     return NextResponse.json({ erro: "segredo inválido" }, { status: 401 });
   }
@@ -77,7 +79,10 @@ export async function POST(req) {
   const planos = cfg?.valor || {};
   // Tipo pelo SEGREDO (cada produto tem o seu) — fallback: ID de produto se preenchido.
   const idAssin = planos?.assinatura?.cakto_produto || "";
-  const tipo = secretsAssin.includes(segredo) || (produto && idAssin && String(produto) === String(idAssin)) ? "assinatura" : "kit";
+  const idLivro = planos?.livro?.cakto_produto || "";
+  let tipo = "kit";
+  if (secretsAssin.includes(segredo) || (produto && idAssin && String(produto) === String(idAssin))) tipo = "assinatura";
+  else if (secretsLivro.includes(segredo) || (produto && idLivro && String(produto) === String(idLivro))) tipo = "livro";
 
   // aprovado/renovação → concede · reembolso/cancelamento → revoga · resto → ignora
   const cancela = /(refund|estorn|reembol|cancel|chargeback|expired|dispute|revok|inadimpl|overdue|atras)/.test(evento);
@@ -101,15 +106,15 @@ export async function POST(req) {
     } catch (e) { console.error("[cakto] marcar lead comprador:", e?.message); }
 
     // Purchase → Meta CAPI (server-side). Valor: do payload, senão do preço do plano.
-    const precoPlano = tipo === "assinatura" ? planos?.assinatura?.preco : planos?.kit?.preco;
+    const precoPlano = planos?.[tipo]?.preco;
     const valorPayload = Number(String(pick(d0, ["amount", "total", "offer.price", "price", "value"]) || "").toString().replace(/[^\d,.-]/g, "").replace(",", "."));
     const valorPlano = Number(String(precoPlano || "").replace(/[^\d,.-]/g, "").replace(",", "."));
-    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : 27.9));
+    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : tipo === "livro" ? 37.9 : 17.9));
     // AWAIT (não fire-and-forget): no serverless a Vercel CONGELA a função assim que a
     // resposta sai e mata promessas pendentes — o fetch não completa e nem o .catch roda.
     // O try/catch garante que uma falha aqui não derruba a resposta 200 do webhook.
     try {
-      await enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : "Panfleto + Kit" });
+      await enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : tipo === "livro" ? "A Mulher que Ele Procura" : "Coleção da Corte" });
     } catch (e) { console.error("[cakto] capi falhou:", e?.message); }
     // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
     // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.

@@ -15,9 +15,13 @@ export default async function LandingMulher() {
   const sb = await criarSupabaseServer();
   const { data: cfg } = await sb.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
   const kit = cfg?.valor?.kit || {};
+  const livro = cfg?.valor?.livro || {};
+  // Produto principal = o LIVRO solo (order bump vende os extras). Enquanto o
+  // produto Cakto do livro não estiver configurado, cai no kit (não quebra o ar).
+  const prod = livro.cakto_url ? livro : kit;
   return (
     <main className="sw-main">
-      <FunilSwipe preco={kit.preco || "R$ 37,90"} url={kit.cakto_url || ""} />
+      <FunilSwipe preco={prod.preco || "R$ 37,90"} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} />
     </main>
   );
 }

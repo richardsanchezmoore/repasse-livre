@@ -38,7 +38,9 @@ export default async function PaginaPerla({ searchParams }) {
   if (!aberto) {
     const { data: cfg } = await sb.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
     const planos = cfg?.valor || {};
-    const plano = nivel === "assinatura" ? planos.assinatura : planos.kit;
+    const plano = nivel === "assinatura" ? planos.assinatura
+      : nivel === "livro" ? (planos.livro?.cakto_url ? planos.livro : planos.kit)
+      : planos.kit;
     const url = plano?.cakto_url || "";
     return (
       <main className="screen">

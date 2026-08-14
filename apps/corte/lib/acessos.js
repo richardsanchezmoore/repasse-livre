@@ -16,7 +16,11 @@ export async function acessosDaUsuaria(client, userId) {
 export function temAcesso(acessos, nivelMaterial) {
   if (nivelMaterial === "livre") return true;
   if (nivelMaterial === "assinatura") return acessos.has("assinatura");
-  // 'kit' (padrão): liberado por Kit OU por assinatura
+  // 'livro' (obra âncora, vendida solo): liberado pelo próprio 'livro', E TAMBÉM
+  // por quem tem kit ou assinatura (hierarquia assinatura > kit > livro).
+  if (nivelMaterial === "livro") return acessos.has("livro") || acessos.has("kit") || acessos.has("assinatura");
+  // 'kit' (os extras — Boaz, Panfleto, Dossiê, Veredito, Diário): kit OU assinatura.
+  // NÃO é liberado só pelo 'livro' — é isso que permite vendê-los como order bump.
   return acessos.has("kit") || acessos.has("assinatura");
 }
 

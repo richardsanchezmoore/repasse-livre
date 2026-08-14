@@ -164,7 +164,7 @@ function LadyChat({ onDone }) {
 
 const TOTAL = 3;
 
-export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
+export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
   const [showCheck, setShowCheck] = useState(false);
   const avancar = () => setStep((s) => Math.min(TOTAL - 1, s + 1));
@@ -244,7 +244,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
         </>
       )}
 
-      {showCheck && url && <PreCheckout url={url} onClose={() => setShowCheck(false)} />}
+      {showCheck && url && <PreCheckout url={url} slug={slug} onClose={() => setShowCheck(false)} />}
     </div>
   );
 }
