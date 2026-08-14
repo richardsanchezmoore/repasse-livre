@@ -861,3 +861,23 @@ body.sw-fs .app{padding-bottom:0;max-width:560px}
   .sw-card,.ldy-msg{animation:none}
   .ldy-typing span{animation:none;opacity:.6}
 }
+
+/* ── PRÉ-CHECKOUT (pop-box) ────────────────────────────────────────────────── */
+.pc-overlay{position:fixed;inset:0;z-index:80;background:rgba(20,8,14,.6);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-end;justify-content:center;animation:instFade .18s ease}
+@media (min-width:560px){.pc-overlay{align-items:center}}
+.pc-box{position:relative;width:100%;max-width:460px;background:linear-gradient(180deg,var(--creme),#f7efd9);
+  border:1px solid var(--gold);border-radius:20px 20px 0 0;padding:24px 22px calc(22px + env(safe-area-inset-bottom));
+  box-shadow:0 -12px 40px rgba(0,0,0,.4);animation:instUp .24s cubic-bezier(.2,.8,.2,1)}
+@media (min-width:560px){.pc-box{border-radius:18px}}
+.pc-x{position:absolute;top:12px;right:14px;border:none;background:transparent;font:400 26px var(--ui);color:var(--ink-soft);cursor:pointer;line-height:1}
+.pc-h{font:900 20px var(--disp);color:var(--wine);text-align:center}
+.pc-sub{font:400 13.5px var(--serif);color:var(--ink-soft);text-align:center;margin:4px 0 16px}
+.pc-in{width:100%;font:500 16px var(--serif);color:var(--ink);background:#fff;border:1px solid var(--gold-soft);
+  border-radius:11px;padding:13px 14px;outline:none;-webkit-appearance:none;appearance:none;margin-bottom:10px}
+.pc-in:focus{border-color:var(--gold)}
+.pc-err{font:600 13px var(--serif);color:var(--wine);margin:2px 0 10px;text-align:center}
+.pc-go{width:100%;border:none;cursor:pointer;border-radius:12px;padding:15px 18px;margin-top:4px;
+  font:800 15.5px var(--ui);color:#fff;background:linear-gradient(180deg,var(--wine),var(--wine-2));border:1px solid var(--gold-2)}
+.pc-go:disabled{opacity:.7;cursor:default}
+.pc-safe{font:500 11.5px/1.4 var(--ui);color:var(--ink-soft);text-align:center;margin-top:12px}

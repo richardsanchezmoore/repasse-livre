@@ -11,7 +11,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState } from "react";
-import BotaoCompra from "@/components/BotaoCompra";
+import PreCheckout from "@/components/PreCheckout";
+
+// dispara evento no Pixel da Meta (no-op se o fbq não carregou)
+function trackFb(evento, dados, tipo = "track") {
+  try { if (typeof window !== "undefined" && window.fbq) window.fbq(tipo, evento, dados); } catch {}
+}
+const VALOR = 37.9;
+const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
 // Rosto oficial da Lady: quando existir, aponte para "/livro/lady.webp".
 const LADY_FOTO = "";
@@ -142,12 +149,23 @@ const TOTAL = 6;
 
 export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
   const [step, setStep] = useState(0);
+  const [showCheck, setShowCheck] = useState(false);
   const avancar = () => setStep((s) => Math.min(TOTAL - 1, s + 1));
 
   useEffect(() => {
     document.body.classList.add("sw-fs");
     return () => document.body.classList.remove("sw-fs");
   }, []);
+
+  // ViewContent ao entrar no funil (Meta: quem começou a jornada)
+  useEffect(() => { trackFb("ViewContent", { content_name: CONTEUDO, content_category: "funil", value: VALOR, currency: "BRL" }); }, []);
+  // marca cada card (drop-off por etapa no Meta)
+  useEffect(() => { trackFb("FunilPasso", { passo: step + 1 }, "trackCustom"); }, [step]);
+
+  function abrirCheckout() {
+    trackFb("InitiateCheckout", { content_name: CONTEUDO, value: VALOR, currency: "BRL" });
+    setShowCheck(true);
+  }
 
   return (
     <div className="sw">
@@ -232,7 +250,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
               <div className="sw-oferta-d">A jornada completa, no seu celular. No caminho, uma descoberta muda como o homem certo enxerga você — e ela só existe lá dentro.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato · vitalício</small></div>
               {url ? (
-                <BotaoCompra url={url} className="pill">Quero descobrir →</BotaoCompra>
+                <button type="button" className="pill" onClick={abrirCheckout}>Quero descobrir →</button>
               ) : (
                 <span className="pill" style={{ opacity: 0.6, display: "inline-block" }}>Em breve</span>
               )}
@@ -241,6 +259,8 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
           </div>
         </>
       )}
+
+      {showCheck && url && <PreCheckout url={url} onClose={() => setShowCheck(false)} />}
     </div>
   );
 }
