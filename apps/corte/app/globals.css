@@ -600,6 +600,10 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
    ═══════════════════════════════════════════════════════════════════════════ */
 .funil-main{padding:0}
 .funil{overflow:clip}
+/* CRÍTICO: as seções reusam classes .perla cujo ::before é absolute;inset:0.
+   Sem posicionar a seção, esse overlay escapa até o .app (relative) e vira um
+   véu escuro sobre a página inteira. Espelha a regra que o .perla já tem. */
+.funil section,.funil header{position:relative}
 
 /* micro-diagnóstico — folha creme, afirmações tocáveis */
 .funil-diag{background:var(--creme);padding:clamp(30px,8vw,46px) clamp(22px,7vw,34px);border-top:1px solid var(--gold-soft)}
