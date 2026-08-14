@@ -764,3 +764,96 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 
 /* fecho */
 .lpm-lady{font:400 28px var(--script);color:var(--gold-2);text-align:center;margin-top:22px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SWIPE-FUNNEL /mulher — experiência em cards full-screen (VSL-like) com o
+   posicionamento Tipo 4 + a sessão com A Lady (chat scripted on-rails).
+   body.sw-fs esconde o chrome do app (TopBar/BottomNav) p/ imersão total.
+   ═══════════════════════════════════════════════════════════════════════════ */
+body.sw-fs .top,body.sw-fs .nav{display:none!important}
+body.sw-fs .app{padding-bottom:0;max-width:560px}
+.sw{min-height:100dvh;display:flex;flex-direction:column;background:
+  radial-gradient(120% 70% at 50% -5%,#4a1620 0%,#2a0e16 45%,#160a10 100%);color:#f3e6cd}
+.sw-prog{display:flex;gap:5px;padding:calc(12px + env(safe-area-inset-top)) 18px 4px}
+.sw-prog i{flex:1;height:3px;border-radius:99px;background:rgba(230,211,163,.22)}
+.sw-prog i.on{background:linear-gradient(90deg,var(--gold),var(--gold-2))}
+.sw-card{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 26px 20px;
+  animation:swIn .5s cubic-bezier(.2,.9,.2,1)}
+@keyframes swIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sw-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-2);margin-bottom:16px;text-align:center}
+.sw-h{font:900 clamp(27px,7.6vw,38px)/1.14 var(--disp);color:#fdf6e6;text-wrap:balance;text-align:center;margin:0 auto;max-width:18ch}
+.sw-h em{font-style:italic;color:var(--gold-2)}
+.sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:16px auto 0}
+.sw-q{font:italic 500 clamp(19px,5.4vw,24px)/1.4 var(--disp);color:var(--gold-2);text-align:center;text-wrap:balance;max-width:24ch;margin:20px auto 0}
+
+/* rodapé de avanço */
+.sw-foot{flex:none;padding:14px 26px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px}
+.sw-btn{width:100%;max-width:360px;border:none;cursor:pointer;border-radius:14px;padding:16px 22px;
+  font:800 15.5px var(--ui);color:#fff;background:linear-gradient(180deg,var(--wine),var(--wine-2));
+  border:1px solid var(--gold-2);box-shadow:0 14px 30px -12px rgba(97,32,42,.7);transition:transform .12s}
+.sw-btn.ouro{background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;border-color:var(--gold-soft)}
+.sw-btn:active{transform:scale(.99)}
+.sw-hint{font:600 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:rgba(230,211,163,.6)}
+
+/* card 2 — os 3 caminhos */
+.sw-caminhos{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:22px auto 0;width:100%}
+.sw-caminho{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.05);
+  border:1px solid rgba(230,211,163,.24);border-radius:14px;padding:15px 16px}
+.sw-caminho .nn{font:900 22px var(--disp);color:var(--gold-2);flex:none;width:28px;text-align:center}
+.sw-caminho-t{font:700 15.5px var(--disp);color:#fdf6e6}
+.sw-caminho-d{font:400 13.5px/1.45 var(--serif);color:#c9b48f;margin-top:2px}
+
+/* card 3 — Tipo 4 / conceitos */
+.sw-selo4{font:900 clamp(52px,16vw,84px)/1 var(--disp);color:var(--gold-2);text-align:center;text-shadow:0 0 46px rgba(203,168,91,.4)}
+.sw-selo4 small{display:block;font:700 12px var(--ui);letter-spacing:.3em;color:var(--gold);margin-top:6px}
+.sw-conceitos{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:420px;margin:22px auto 0}
+.sw-conceito{font:700 13px var(--ui);letter-spacing:.02em;color:#f3e6cd;background:rgba(255,255,255,.06);
+  border:1px solid rgba(230,211,163,.3);border-radius:99px;padding:9px 15px}
+
+/* card 4 — exemplos */
+.sw-exemplos{display:flex;flex-direction:column;gap:12px;max-width:420px;margin:20px auto 0;width:100%}
+.sw-exemplo{background:rgba(255,255,255,.05);border-left:3px solid var(--gold);border-radius:0 12px 12px 0;
+  padding:14px 16px;font:400 15px/1.55 var(--serif);color:#e9d9bd}
+.sw-exemplo b{color:#fdf6e6;font-weight:600}
+
+/* ── A SESSÃO COM A LADY (chat scripted) ──────────────────────────────────── */
+.ldy{flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,#0d1418,#0a0f12);min-height:0}
+.ldy-top{flex:none;display:flex;align-items:center;gap:11px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+  background:linear-gradient(90deg,#3a1218,var(--wine) 60%);border-bottom:1px solid var(--gold)}
+.ldy-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(160deg,#f7edd4,#efe0be);
+  display:flex;align-items:center;justify-content:center;font:900 18px var(--disp);color:var(--wine);flex:none}
+.ldy-nome{font:700 15px var(--disp);color:#fdf6e6;line-height:1.1}
+.ldy-status{font:600 11px var(--ui);color:#a9d6b0}
+.ldy-thread{flex:1;overflow-y:auto;padding:18px 14px 8px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch}
+.ldy-msg{max-width:82%;padding:11px 14px;border-radius:16px;font:400 15px/1.5 var(--serif);
+  animation:swIn .35s ease;word-wrap:break-word}
+.ldy-msg.lady{align-self:flex-start;background:#20303a;color:#f0e6d4;border-bottom-left-radius:5px}
+.ldy-msg.eu{align-self:flex-end;background:linear-gradient(160deg,#8a6a2e,#6f5423);color:#fff;border-bottom-right-radius:5px}
+.ldy-msg em{font-style:italic;color:var(--gold-2)}
+.ldy-typing{align-self:flex-start;display:flex;gap:4px;padding:13px 15px;background:#20303a;border-radius:16px;border-bottom-left-radius:5px}
+.ldy-typing span{width:7px;height:7px;border-radius:50%;background:#7d8f98;animation:ldyBlink 1.2s infinite}
+.ldy-typing span:nth-child(2){animation-delay:.2s}.ldy-typing span:nth-child(3){animation-delay:.4s}
+@keyframes ldyBlink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.ldy-opts{flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 14px calc(16px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,transparent,#0a0f12 30%)}
+.ldy-opt{width:100%;text-align:center;cursor:pointer;border:1px solid var(--gold-2);border-radius:22px;
+  padding:13px 16px;font:700 14.5px var(--ui);color:var(--gold-2);background:rgba(203,168,91,.08);transition:background .14s,transform .1s}
+.ldy-opt:hover{background:rgba(203,168,91,.16)}
+.ldy-opt:active{transform:scale(.99)}
+.ldy-opt.cta{background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;border-color:var(--gold-soft)}
+
+/* card final — oferta */
+.sw-oferta-card{max-width:400px;margin:18px auto 0;width:100%;background:linear-gradient(165deg,var(--creme),#f5ecd6);
+  border:1px solid var(--gold);border-radius:18px;padding:24px 22px;text-align:center;color:var(--ink);box-shadow:0 24px 54px -28px rgba(0,0,0,.7)}
+.sw-oferta-card .ic{font-size:32px}
+.sw-oferta-t{font:900 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 10px}
+.sw-oferta-d{font:400 14px/1.55 var(--serif);color:var(--ink-soft);margin:0 0 14px}
+.sw-preco{font:900 44px var(--disp);color:var(--wine);line-height:1}
+.sw-preco small{display:block;font:600 12px var(--ui);color:var(--ink-soft);margin-top:5px}
+.sw-oferta-card .pill{width:100%;margin-top:16px}
+.sw-reassure{font:500 12px/1.5 var(--ui);color:var(--ink-soft);margin-top:12px}
+
+@media (prefers-reduced-motion:reduce){
+  .sw-card,.ldy-msg{animation:none}
+  .ldy-typing span{animation:none;opacity:.6}
+}
