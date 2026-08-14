@@ -591,3 +591,71 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
   .perla-montagem span{opacity:1;transform:none;transition:none}
   .perla-dot{transition:none}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FUNIL "PERLA antes do PERLA" (/descobrir) — experiência de venda que É uma
+   continuação da conversa com A Lady. Reusa componentes .perla (mesma marca)
+   + peças próprias: micro-diagnóstico, porta do segredo (teaser mascarado),
+   oferta que não parece oferta.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.funil-main{padding:0}
+.funil{overflow:clip}
+
+/* micro-diagnóstico — folha creme, afirmações tocáveis */
+.funil-diag{background:var(--creme);padding:clamp(30px,8vw,46px) clamp(22px,7vw,34px);border-top:1px solid var(--gold-soft)}
+.funil-diag-h{font:900 clamp(23px,6.2vw,29px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:0 0 6px}
+.funil-diag-sub{font:italic 500 15.5px/1.5 var(--serif);color:var(--ink-soft);margin:0 0 20px}
+.funil-chips{display:flex;flex-direction:column;gap:11px}
+.funil-chip{display:flex;align-items:center;gap:13px;text-align:left;width:100%;cursor:pointer;
+  background:#fff;border:1.5px solid var(--gold-soft);border-radius:14px;padding:15px 16px;
+  font:500 15.5px/1.4 var(--serif);color:var(--ink);box-shadow:0 6px 16px -13px rgba(44,40,51,.4);
+  transition:transform .1s,border-color .14s,background .14s,box-shadow .14s}
+.funil-chip:hover{border-color:var(--gold)}
+.funil-chip:active{transform:scale(.99)}
+.funil-chip .mk{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;font:800 13px var(--ui);color:transparent;transition:all .18s}
+.funil-chip.on{border-color:var(--wine);background:linear-gradient(180deg,#fff,#fbf1e0)}
+.funil-chip.on .mk{background:var(--wine);border-color:var(--wine);color:#fdf3dd}
+.funil-reflexo{margin-top:20px;background:linear-gradient(160deg,#4a6079,#2c3d52);border:1px solid var(--gold);
+  border-radius:14px;padding:18px;color:#f3e8ce;text-align:center;
+  opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s}
+.funil-reflexo.on{opacity:1;transform:none}
+.funil-reflexo p{font:500 16px/1.6 var(--serif);color:#eaddc0;margin:0}
+.funil-reflexo em{font-style:italic;color:var(--gold-2)}
+.funil-diag-cta{display:block;width:100%;margin-top:16px;cursor:pointer;border:none;
+  font:800 14.5px var(--ui);color:var(--wine);background:transparent;padding:12px;
+  text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--gold)}
+.funil-diag-cta:disabled{opacity:.4;cursor:default;text-decoration:none}
+
+/* a porta do segredo — página escura, teaser mascarado P·?·?·?·? */
+.funil-porta{background:radial-gradient(120% 90% at 50% 10%,#4a1620,#3a1218 55%,#160a10 100%);
+  padding:66px 28px;text-align:center}
+.funil-porta .perla-q{color:var(--gold-2)}
+.funil-porta .perla-q::before{color:var(--gold-2)}
+.funil-porta-p{font:400 clamp(16px,4.4vw,18px)/1.75 var(--serif);color:#e9d9bd;max-width:34ch;margin:0 auto 16px}
+.funil-teaser{display:flex;justify-content:center;gap:10px;margin:26px 0 8px}
+.funil-teaser span{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:900 18px var(--disp);border:1px solid rgba(230,211,163,.45);background:rgba(255,255,255,.04)}
+.funil-teaser span.rev{color:var(--wine-2);background:linear-gradient(180deg,var(--gold-2),var(--gold));border-color:var(--gold-2);
+  box-shadow:0 0 16px rgba(203,168,91,.5)}
+.funil-teaser span.oc{color:rgba(230,211,163,.55)}
+.funil-porta-nota{font:italic 500 14px/1.55 var(--serif);color:#c9b48f;max-width:32ch;margin:14px auto 0}
+
+/* a oferta que não parece oferta */
+.funil-oferta{background:linear-gradient(180deg,#160a10,var(--wine-2));padding:56px 26px 70px;text-align:center}
+.funil-oferta-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.funil-oferta-p{font:400 16.5px/1.7 var(--serif);color:#ecdcbf;max-width:34ch;margin:0 auto 22px}
+.funil-card{max-width:400px;margin:0 auto;background:linear-gradient(165deg,var(--creme),#f5ecd6);
+  border:1px solid var(--gold);border-radius:18px;padding:26px 22px;box-shadow:0 26px 60px -30px rgba(0,0,0,.7)}
+.funil-card-ic{font-size:34px;line-height:1}
+.funil-card-t{font:900 clamp(21px,5.6vw,26px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 10px}
+.funil-card-d{font:400 14.5px/1.6 var(--serif);color:var(--ink-soft);margin:0 0 18px}
+.funil-preco{font:900 40px var(--disp);color:var(--wine);line-height:1}
+.funil-preco small{display:block;font:600 12px var(--ui);letter-spacing:.06em;color:var(--ink-soft);margin-top:4px;text-transform:none}
+.funil-card .pill{margin-top:18px;width:100%}
+.funil-reassure{font:500 12.5px/1.5 var(--ui);color:var(--ink-soft);margin-top:12px}
+.funil-oferta-lady{font:400 26px var(--script);color:var(--gold-2);margin-top:26px}
+
+@media (prefers-reduced-motion:reduce){
+  .funil-reflexo{transition:none}
+}
