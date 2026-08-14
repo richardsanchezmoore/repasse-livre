@@ -771,8 +771,12 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
    body.sw-fs esconde o chrome do app (TopBar/BottomNav) p/ imersão total.
    ═══════════════════════════════════════════════════════════════════════════ */
 body.sw-fs .top,body.sw-fs .nav{display:none!important}
-body.sw-fs .app{padding-bottom:0;max-width:560px}
-.sw{min-height:100dvh;display:flex;flex-direction:column;background:
+/* trava a tela na viewport: só as áreas internas (.sw-card.rola / .ldy-thread)
+   rolam. Assim o cabeçalho do chat fica fixo (estilo WhatsApp) e o auto-scroll
+   funciona (quem rola passa a ser o thread, não a página). */
+body.sw-fs{overflow:hidden}
+body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
+.sw{height:100dvh;display:flex;flex-direction:column;background:
   radial-gradient(120% 70% at 50% -5%,#4a1620 0%,#2a0e16 45%,#160a10 100%);color:#f3e6cd}
 .sw-prog{display:flex;gap:5px;padding:calc(12px + env(safe-area-inset-top)) 18px 4px}
 .sw-prog i{flex:1;height:3px;border-radius:99px;background:rgba(230,211,163,.22)}
