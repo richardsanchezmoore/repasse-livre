@@ -242,8 +242,15 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
 
       {step === 5 && (
         <>
-          <div className="sw-card" key="c5">
-            <div className="sw-eyebrow">Do outro lado da porta</div>
+          <div className="sw-card rola" key="c5">
+            <div className="sw-eyebrow">Quem já atravessou a porta</div>
+            <div className="sw-deps">
+              {["dep5", "dep2", "dep4", "dep6", "dep7"].map((d) => (
+                <div key={d} className="sw-depcard">
+                  <img src={`/panfleto/depoimentos/${d}.jpg`} alt="Depoimento de uma leitora" loading="lazy" />
+                </div>
+              ))}
+            </div>
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
