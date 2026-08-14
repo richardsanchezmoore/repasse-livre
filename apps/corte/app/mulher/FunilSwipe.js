@@ -1,18 +1,18 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FunilSwipe — a landing principal: 7 passos full-screen (VSL-like).
-//  6 cards de copy (Tipo 4 / Elegância Prática) + a SESSÃO COM A LADY (chat
-//  scripted on-rails) entre o card 5 e a oferta.
+//  FunilSwipe — a landing principal. Estrutura enxuta: GANCHO → CONVERSA COM A
+//  LADY (chat scripted, o corpo do funil) → OFERTA.
 //
-//  RÉGUA DE COPY: entregar o RESULTADO (desejo), esconder o método. Mistério ≠ vago.
-//  Instrumentação: ViewContent · FunilPasso + /api/evento (drop-off) · InitiateCheckout.
+//  O chat é uma "escadinha": pergunta → reconhecimento → pequena tensão →
+//  resposta → nova pergunta. ~4 interações reais e a Lady assume a condução.
+//  O Tipo 4 (Elegância Prática) NASCE da conversa — não é apresentado como card.
+//  Instrumentação: ViewContent · FunilPasso + /api/evento · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState } from "react";
 import PreCheckout from "@/components/PreCheckout";
 
-// Rosto oficial da Lady no cabeçalho do chat.
 const LADY_FOTO = "/livro/lady.webp";
 
 function trackFb(evento, dados, tipo = "track") {
@@ -21,37 +21,70 @@ function trackFb(evento, dados, tipo = "track") {
 const VALOR = 37.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
-const CAMINHOS = [
-  ["01", "Esperar", "“Uma hora alguém aparece.”"],
-  ["02", "Melhorar", "“Cuide de você. Aumente a autoestima. Fique mais bonita.”"],
-  ["03", "Fazer joguinho", "“Não demonstre demais. Deixe ele correr atrás.”"],
+// ── roteiro do chat (escadinha; on-rails) ───────────────────────────────────
+const Q2 = "Deixa eu te perguntar outra coisa: quando você conhece alguém de quem realmente gosta, você costuma…";
+const Q2_OPTS = [
+  { t: "Demonstrar logo que gostei", to: "quebra" },
+  { t: "Ficar com medo de demonstrar demais", to: "quebra" },
+  { t: "Esperar ele tomar a iniciativa", to: "quebra" },
+  { t: "Nunca sei o que fazer 😂", to: "quebra" },
 ];
 
-// ── roteiro do chat da Lady (on-rails; determinístico) ──────────────────────
 const CHAT = {
+  // 1 — identificação emocional
   start: {
-    lady: ["Oi, querida. Que bom que você chegou até aqui. 🤍", "Antes de eu te mostrar uma coisa, posso te fazer uma pergunta?"],
-    opts: [{ t: "Pode, sim", to: "q1" }],
-  },
-  q1: {
-    lady: ["Quando você pensa na sua vida amorosa hoje, o que mais pesa?"],
-    opts: [
-      { t: "Sinto que ninguém aparece", to: "r_aparece" },
-      { t: "Apareço, mas não sou notada", to: "r_notada" },
-      { t: "Começo e não sei manter", to: "r_manter" },
-      { t: "Tenho medo de escolher errado", to: "r_escolher" },
-    ],
-  },
-  r_aparece: { lady: ["Eu entendo. E olha… quase nunca é porque falta algo em você. Na maioria das vezes, é só que a sua rotina não está criando encontros novos."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
-  r_notada: { lady: ["Sei bem. Muitas vezes a mulher está ali, presente — mas, sem perceber, comunica “não se aproxime”. E dá para mudar isso sem virar outra pessoa."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
-  r_manter: { lady: ["Isso é mais comum do que você imagina. Aproximar é uma coisa; transformar em conexão é outra — e é algo que se aprende."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
-  r_escolher: { lady: ["Esse cuidado é sinal de sabedoria. A boa notícia é que dá para aprender a observar e a escolher, em vez de só torcer para não errar."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
-  fecho: {
     lady: [
-      "É exatamente sobre isso a Elegância Prática — e eu reuni tudo numa obra curta, para você ler no celular em uns 30 minutos.",
-      "No meio do caminho existe uma descoberta que muda como o homem certo enxerga você — e eu não consigo te entregar isso aqui. Só lá dentro. Quer que eu te mostre?",
+      "Oi, querida. Que bom que você chegou. ❤️",
+      "Antes de eu te mostrar uma coisa, quero te fazer uma pergunta.",
+      "Quando você pensa na sua vida amorosa hoje, o que mais te incomoda?",
     ],
-    opts: [{ t: "Sim, quero descobrir ✨", cta: true, to: "__done" }],
+    opts: [
+      { t: "Ninguém aparece", to: "rec_a" },
+      { t: "Só encontro quem não quer nada sério", to: "rec_b" },
+      { t: "Quando eu gosto, parece que faço demais", to: "rec_c" },
+      { t: "É tudo isso 😅", to: "rec_d" },
+    ],
+  },
+  // 2 — reconhecimento (coerente com a resposta) → mesma segunda pergunta
+  rec_a: { lady: ["Eu entendo. E sabe o que é curioso? Muitas mulheres acham que o problema é simplesmente “não estar conhecendo ninguém”.", "Mas nem sempre é isso. Às vezes a questão está no que acontece quando alguém aparece.", Q2], opts: Q2_OPTS },
+  rec_b: { lady: ["Eu te entendo — e isso cansa. Só que nem sempre é só sobre os homens que aparecem.", "Muita coisa se decide no que fica visível (e no que não fica) já nos primeiros momentos. Isso muda quem se aproxima… e como.", Q2], opts: Q2_OPTS },
+  rec_c: { lady: ["Que bom que você percebe isso — muita gente nem repara. E olha: gostar nunca é o problema.", "O problema começa quando a gente entrega o controle da situação sem perceber. E isso tem conserto, mais simples do que parece.", Q2], opts: Q2_OPTS },
+  rec_d: { lady: ["Haha, respira. 🤍 Se você marcou essa, eu já gosto de você — é honesta.", "E a boa notícia: esses três parecem problemas diferentes, mas têm a mesma raiz. Quando você entende a raiz, eles começam a mudar juntos.", Q2], opts: Q2_OPTS },
+  // 3 — quebra de crença (a Lady ensina)
+  quebra: {
+    lady: [
+      "Olha… presta atenção nisso, porque aqui começa a ficar interessante.",
+      "Você provavelmente já ouviu que precisa esperar o homem certo, melhorar a autoestima, ou aprender uns joguinhos pra fazer ele correr atrás.",
+      "Só que tem um problema: nada disso explica uma pergunta muito mais importante — por que algumas mulheres são percebidas de uma maneira diferente?",
+    ],
+    opts: [{ t: "Como assim?", to: "quarto" }],
+  },
+  // 4 — o quarto caminho / Elegância Prática nasce aqui
+  quarto: {
+    lady: [
+      "É exatamente isso que eu quero te mostrar. Não é sobre ser mais bonita. Nem sobre fazer um homem correr atrás. E muito menos sobre fingir desinteresse.",
+      "É sobre uma coisa que acontece antes de tudo isso: o que você transmite. O jeito que fala, o que demonstra, o que aceita, como reage quando gosta, como se posiciona. Tudo isso comunica algo — mesmo quando você não percebe.",
+      "Foi observando isso que eu comecei a chamar esse jeito diferente de se relacionar de uma coisa simples: Elegância Prática. Não é virar outra mulher — é aprender a conduzir melhor aquilo que você já é.",
+    ],
+    opts: [{ t: "Quero entender melhor", to: "exemplo" }],
+  },
+  // 5 — mostra que é aplicável (microexemplo)
+  exemplo: {
+    lady: [
+      "Vou te dar um exemplo. Imagine que você conheceu um homem e gostou dele.",
+      "Uma mulher pensa: “preciso mostrar logo que gostei, pra ele não perder o interesse.” Outra pensa: “preciso fingir que não estou nem aí, pra ele correr atrás.”",
+      "E existe uma terceira maneira: demonstrar interesse sem entregar o controle. Ser receptiva sem se colocar à disposição. Mostrar que gostou sem fazer todo o trabalho da relação sozinha. Percebe a diferença?",
+    ],
+    opts: [{ t: "Agora entendi", to: "transicao" }],
+  },
+  // 6 — transição para o produto
+  transicao: {
+    lady: [
+      "E isso foi só um exemplo. Porque essa mesma lógica aparece em como você conversa, coloca limites, reage quando alguém se afasta e até escolhe quem merece continuar perto de você.",
+      "Foi por isso que eu organizei tudo numa jornada — pra você não precisar descobrir sozinha, na tentativa e erro.",
+      "Chama “Como se Tornar a Mulher que Ele Procura”. Eu coloquei ali o caminho completo — e você pode começar agora. 🤍",
+    ],
+    opts: [{ t: "Quero descobrir →", cta: true, to: "__done" }],
   },
 };
 
@@ -74,13 +107,13 @@ function LadyChat({ onDone }) {
       if (idx >= n.lady.length) { setShowOpts(true); return; }
       const msg = n.lady[idx];
       setTyping(true);
-      const dly = 650 + Math.min(msg.length * 16, 1500);
+      const dly = 600 + Math.min(msg.length * 15, 1600);
       timers.push(setTimeout(() => {
         if (cancelled) return;
         setTyping(false);
         setMsgs((m) => [...m, { who: "lady", text: msg }]);
         idx += 1;
-        timers.push(setTimeout(step, 320));
+        timers.push(setTimeout(step, 300));
       }, dly));
     };
     step();
@@ -129,7 +162,7 @@ function LadyChat({ onDone }) {
   );
 }
 
-const TOTAL = 7;
+const TOTAL = 3;
 
 export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
   const [step, setStep] = useState(0);
@@ -162,7 +195,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
         ))}
       </div>
 
-      {/* CARD 1 — o gancho */}
+      {/* GANCHO */}
       {step === 0 && (
         <>
           <div className="sw-card rola" key="c0">
@@ -175,89 +208,18 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
           </div>
           <div className="sw-foot">
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
-            <span className="sw-hint">leva cerca de 2 minutos</span>
+            <span className="sw-hint">leva 2 minutinhos</span>
           </div>
         </>
       )}
 
-      {/* CARD 2 — os 3 caminhos + a 4ª maneira */}
-      {step === 1 && (
-        <>
-          <div className="sw-card rola" key="c1">
-            <div className="sw-eyebrow">O que te ensinaram</div>
-            <h2 className="sw-h">Talvez você já tenha tentado de tudo</h2>
-            <p className="sw-p">Ou pelo menos aquilo que ensinaram você a fazer.</p>
-            <div className="sw-caminhos">
-              {CAMINHOS.map(([n, t, d]) => (
-                <div key={n} className="sw-caminho">
-                  <span className="nn">{n}</span>
-                  <div>
-                    <div className="sw-caminho-t">{t}</div>
-                    <div className="sw-caminho-d">{d}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="sw-p">Só que tem um problema: <b>nada disso explica por que algumas mulheres são percebidas de um jeito tão diferente.</b></p>
-            <p className="sw-q">Existe uma quarta maneira de olhar para tudo isso.</p>
-          </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero saber qual</button></div>
-        </>
-      )}
+      {/* CONVERSA COM A LADY */}
+      {step === 1 && <LadyChat onDone={() => setStep(2)} />}
 
-      {/* CARD 3 — o que você transmite sem perceber */}
+      {/* OFERTA */}
       {step === 2 && (
         <>
           <div className="sw-card rola" key="c2">
-            <div className="sw-eyebrow">A verdade incômoda</div>
-            <h2 className="sw-h">Talvez não esteja faltando nada em você</h2>
-            <p className="sw-p">Você pode se cuidar, ter autoestima, ser bonita, ser uma mulher interessante. <b>E ainda assim</b> sentir que os homens que você gostaria não chegam — ou chegam, mas a história nunca vai para onde você queria.</p>
-            <p className="sw-p">Isso acontece porque existe uma coisa que quase ninguém ensina uma mulher a observar:</p>
-            <p className="sw-q">o que ela transmite sem perceber.</p>
-            <p className="sw-p">O jeito que você fala. O jeito que responde. O que demonstra. O que aceita. O que faz quando realmente gosta de alguém. <b>Tudo isso fala</b> — mesmo quando você não diz uma palavra.</p>
-          </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero entender isso</button></div>
-        </>
-      )}
-
-      {/* CARD 4 — a diferença: Elegância Prática */}
-      {step === 3 && (
-        <>
-          <div className="sw-card rola" key="c3">
-            <div className="sw-eyebrow">A quarta maneira</div>
-            <h2 className="sw-h">Agora deixa eu te mostrar onde está a diferença</h2>
-            <p className="sw-p">Não é sobre fingir. Não é sobre manipular. E muito menos sobre fazer alguém correr atrás de você.</p>
-            <p className="sw-p"><b>É sobre aprender a se posicionar de um jeito diferente:</b> saber o que mostrar, o que falar, quando avançar, quando parar. E fazer tudo isso sem deixar de ser você.</p>
-            <div className="sw-selo4">IV<small>Elegância Prática</small></div>
-            <p className="sw-p">É quando você aprende a participar da sua própria história — em vez de ficar apenas esperando para ver o que acontece.</p>
-          </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Como isso funciona?</button></div>
-        </>
-      )}
-
-      {/* CARD 5 — a ponte */}
-      {step === 4 && (
-        <>
-          <div className="sw-card rola" key="c4">
-            <div className="sw-eyebrow">O que eu mais quero que você entenda</div>
-            <h2 className="sw-h">Você não precisa fazer um homem gostar de você</h2>
-            <p className="sw-p"><b>Você precisa aprender a perceber melhor quem combina com você — e a mostrar quem você é para que a conexão certa possa acontecer.</b></p>
-            <p className="sw-p">Porque sim: existem homens que querem um relacionamento sério. Homens que também estão cansados de relações rasas. O problema é que você pode passar por essas pessoas sem que uma conexão realmente aconteça.</p>
-            <p className="sw-p">E muitas vezes não é porque você não é interessante.</p>
-            <p className="sw-q">É porque ninguém ensinou você a olhar para essa parte da dinâmica.</p>
-            <p className="sw-p">Foi por isso que eu criei essa jornada.</p>
-          </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero conhecer</button></div>
-        </>
-      )}
-
-      {/* SESSÃO COM A LADY (chat) */}
-      {step === 5 && <LadyChat onDone={() => setStep(6)} />}
-
-      {/* CARD 6 — a oferta */}
-      {step === 6 && (
-        <>
-          <div className="sw-card rola" key="c6">
             <div className="sw-eyebrow">Quem já atravessou a porta</div>
             <div className="sw-deps">
               {["dep5", "dep2", "dep4", "dep6", "dep7"].map((d) => (
