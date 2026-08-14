@@ -663,3 +663,104 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 @media (prefers-reduced-motion:reduce){
   .funil-reflexo{transition:none}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDING /mulher — página de venda "de respeito" (estrutura clássica de
+   conversão), na estética da marca. Auto-contida (.lpm), sem depender de .perla.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.lpm-main{padding:0}
+/* header + section posicionados: contém o ::before do hero (senão vira véu). */
+.lpm section,.lpm header{position:relative}
+.lpm-cta-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.lpm .pill{width:100%;max-width:340px;padding:16px 22px;font-size:15.5px}
+.lpm-trust{font:600 12px/1.5 var(--ui);color:var(--ink-soft);text-align:center;letter-spacing:.01em}
+.lpm-trust.claro{color:#e6d3a3}
+
+/* hero */
+.lpm-hero{min-height:92dvh;display:flex;align-items:flex-end;background-size:cover;background-position:center 25%}
+.lpm-hero::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(28,12,18,.5) 0%,rgba(28,12,18,.2) 30%,rgba(24,10,16,.78) 74%,rgba(20,8,14,.96) 100%)}
+.lpm-hero-v{position:relative;z-index:1;padding:28px 22px 34px;text-align:center;width:100%}
+.lpm-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-2);margin-bottom:14px}
+.lpm-h1{font:900 clamp(29px,8.4vw,42px)/1.08 var(--disp);color:#fdf6e6;letter-spacing:-.01em;text-wrap:balance;
+  margin:0 0 12px;text-shadow:0 2px 24px rgba(0,0,0,.5)}
+.lpm-h1 em{font-style:italic;color:var(--gold-2)}
+.lpm-sub{font:400 16px/1.6 var(--serif);color:#e9d9bd;max-width:34ch;margin:0 auto 22px;text-wrap:balance}
+.lpm-scroll{margin-top:16px;font-size:24px;color:var(--gold-2);animation:perlaBounce 1.8s ease-in-out infinite}
+
+/* seções */
+.lpm-sec{padding:clamp(34px,9vw,52px) clamp(22px,7vw,34px)}
+.lpm-sec.creme{background:linear-gradient(180deg,var(--creme),#f7efd9)}
+.lpm-sec.tint{background:linear-gradient(180deg,#f4ead0,#efe0be)}
+.lpm-sec.escura{background:radial-gradient(120% 80% at 50% 0%,#4a1620,#160a10 75%)}
+.lpm-kicker{font:700 11px var(--ui);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:10px}
+.lpm-h2{font:900 clamp(24px,6.4vw,32px)/1.15 var(--disp);color:var(--wine);text-align:center;text-wrap:balance;margin:0 auto 16px;max-width:20ch}
+.lpm-sec.escura .lpm-h2{color:#fdf6e6}
+.lpm-sec.escura .lpm-kicker{color:var(--gold-2)}
+.lpm-lead{font:400 clamp(16px,4.3vw,17.5px)/1.75 var(--serif);color:var(--ink);text-align:center;max-width:40ch;margin:0 auto 14px}
+.lpm-lead.claro{color:#ecdcbf}
+.lpm-em{font:italic 500 clamp(18px,5vw,22px)/1.4 var(--disp);color:var(--wine);text-align:center;text-wrap:balance;
+  max-width:26ch;margin:18px auto}
+.lpm-em::before{content:"❦";display:block;color:var(--gold);font-size:14px;font-style:normal;margin-bottom:10px}
+.lpm-sec.escura .lpm-em{color:var(--gold-2)}
+.lpm-divisor{border:none;text-align:center;margin:8px 0}
+.lpm-divisor::before{content:"❦";color:var(--gold);font-size:15px}
+
+/* método — 5 movimentos numerados */
+.lpm-passos{display:flex;flex-direction:column;gap:12px;max-width:460px;margin:22px auto 0}
+.lpm-passo{display:flex;gap:15px;align-items:flex-start;background:#fff;border:1px solid var(--gold-soft);
+  border-radius:15px;padding:16px 17px;box-shadow:0 12px 28px -22px rgba(44,40,51,.55)}
+.lpm-passo-n{flex:none;width:34px;height:34px;border-radius:50%;background:linear-gradient(160deg,#4a6079,#2c3d52);
+  color:var(--gold-soft);display:flex;align-items:center;justify-content:center;font:900 15px var(--disp)}
+.lpm-passo-t{font:700 17px var(--disp);color:var(--wine)}
+.lpm-passo-d{font:400 14.5px/1.55 var(--serif);color:var(--ink-soft);margin-top:2px}
+
+/* o que está incluído — stack de oferta */
+.lpm-stack{max-width:440px;margin:20px auto 0;background:linear-gradient(165deg,var(--creme),#f5ecd6);
+  border:1px solid var(--gold);border-radius:16px;padding:20px;box-shadow:0 20px 44px -28px rgba(44,40,51,.6)}
+.lpm-item{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px dashed var(--gold-soft)}
+.lpm-item:last-child{border-bottom:none}
+.lpm-item .ck{flex:none;color:var(--gold);font-size:17px;line-height:1.3}
+.lpm-item-t{font:700 15px var(--serif);color:var(--ink)}
+.lpm-item-t small{display:block;font:500 13px var(--ui);color:var(--ink-soft);margin-top:2px;font-weight:400}
+.lpm-item.bonus .lpm-item-t{color:var(--wine)}
+.lpm-tagbonus{font:700 9.5px var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--wine);
+  background:var(--creme-2);border:1px solid var(--gold-soft);border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+
+/* para quem é / não é */
+.lpm-quem{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:460px;margin:20px auto 0}
+.lpm-quem-col{background:#fff;border:1px solid var(--gold-soft);border-radius:14px;padding:16px 15px}
+.lpm-quem-col.nao{background:rgba(124,43,55,.05)}
+.lpm-quem-h{font:700 12px var(--ui);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.lpm-quem-col.sim .lpm-quem-h{color:#3f8f5b}
+.lpm-quem-col.nao .lpm-quem-h{color:var(--wine)}
+.lpm-quem ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.lpm-quem li{font:500 13.5px/1.4 var(--serif);color:var(--ink);padding-left:18px;position:relative}
+.lpm-quem-col.sim li::before{content:"✓";position:absolute;left:0;color:#3f8f5b;font-weight:700}
+.lpm-quem-col.nao li::before{content:"✕";position:absolute;left:0;color:var(--wine);font-weight:700}
+
+/* oferta / preço */
+.lpm-precocard{max-width:400px;margin:0 auto;background:linear-gradient(165deg,var(--creme),#f5ecd6);
+  border:1px solid var(--gold);border-radius:18px;padding:26px 22px;text-align:center;box-shadow:0 24px 54px -30px rgba(0,0,0,.6)}
+.lpm-precocard .ic{font-size:32px}
+.lpm-precocard-t{font:900 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 12px}
+.lpm-preco{font:900 46px var(--disp);color:var(--wine);line-height:1}
+.lpm-preco-de{font:500 14px var(--serif);color:var(--ink-soft);text-decoration:line-through;margin-bottom:2px}
+.lpm-preco small{display:block;font:600 12px var(--ui);letter-spacing:.05em;color:var(--ink-soft);margin-top:5px}
+.lpm-precocard .pill{margin:18px auto 0}
+.lpm-garantia{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;
+  font:500 12.5px/1.4 var(--ui);color:var(--ink-soft)}
+.lpm-garantia .sel{font-size:20px}
+
+/* faq */
+.lpm-faq{max-width:460px;margin:18px auto 0;display:flex;flex-direction:column;gap:10px}
+.lpm-faq details{background:#fff;border:1px solid var(--gold-soft);border-radius:12px;overflow:hidden}
+.lpm-faq summary{list-style:none;cursor:pointer;padding:14px 16px;font:700 14.5px var(--serif);color:var(--wine);
+  display:flex;justify-content:space-between;align-items:center;gap:10px}
+.lpm-faq summary::-webkit-details-marker{display:none}
+.lpm-faq summary::after{content:"+";font:700 20px var(--ui);color:var(--gold);flex:none}
+.lpm-faq details[open] summary::after{content:"–"}
+.lpm-faq p{padding:0 16px 15px;font:400 14px/1.6 var(--serif);color:var(--ink-soft);margin:0}
+
+/* fecho */
+.lpm-lady{font:400 28px var(--script);color:var(--gold-2);text-align:center;margin-top:22px}
