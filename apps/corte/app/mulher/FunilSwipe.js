@@ -3,19 +3,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  FunilSwipe — a landing principal: experiência em cards full-screen (VSL-like)
 //  com o posicionamento TIPO 4 (Elegância Prática) e a SESSÃO COM A LADY (chat
-//  scripted on-rails; IA entra numa fase 2). Não vende o livro de cara — vende a
-//  descoberta de que ela procurava no lugar errado. NUNCA mostra a sigla PERLA.
+//  scripted on-rails; IA entra numa fase 2).
+//
+//  RÉGUA DE COPY: intensidade + curiosidade. Entregar o RESULTADO (desejo),
+//  NUNCA o método. Nada de listar os 5 conceitos — isso mata a curiosidade.
+//  Mistério ≠ vago: a frase promete um resultado concreto e esconde o "como".
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState } from "react";
 import BotaoCompra from "@/components/BotaoCompra";
 
+// Rosto oficial da Lady: quando existir, aponte para "/livro/lady.webp".
+const LADY_FOTO = "";
+
 const CAMINHOS = [
-  ["01", "Espere", "Ore, confie e aguarde o tempo certo."],
-  ["02", "Melhore-se", "Autoestima, aparência, seja a sua melhor versão."],
-  ["03", "Aprenda os jogos", "Técnicas, estratégias, faça-o correr atrás."],
+  ["01", "Esperar", "“Ore, confie e aguarde o tempo certo.”"],
+  ["02", "Melhorar-se", "“Aumente a autoestima, cuide da aparência.”"],
+  ["03", "Os joguinhos", "“Faça-o correr atrás. Suma. Provoque.”"],
 ];
-const CONCEITOS = ["Presença", "Expressão", "Revelação", "Linguagem", "Ação"];
 
 // ── roteiro do chat da Lady (on-rails; determinístico) ──────────────────────
 const CHAT = {
@@ -38,22 +43,22 @@ const CHAT = {
   r_escolher: { lady: ["Esse cuidado é sinal de sabedoria. A boa notícia é que dá para aprender a observar e a escolher, em vez de só torcer para não errar."], opts: [{ t: "Faz sentido…", to: "ponte" }] },
   ponte: {
     lady: [
-      "Deixa eu te contar uma coisa. Existem basicamente três caminhos que ensinam a mulher sobre amor: esperar em oração, melhorar a autoestima, ou os joguinhos de sedução.",
-      "Nenhum deles conversa por inteiro com uma mulher de fé que também quer agir.",
+      "Deixa eu te contar uma coisa. Existem três caminhos que ensinam a mulher sobre amor: esperar em oração, melhorar a autoestima, ou os joguinhos de sedução.",
+      "Nenhum deles funcionou pra você por inteiro, né? Existe um quarto — e quase ninguém fala sobre ele.",
     ],
-    opts: [{ t: "E existe outro?", to: "tipo4" }],
+    opts: [{ t: "Qual é o quarto?", to: "tipo4" }],
   },
   tipo4: {
     lady: [
-      "Existe. Eu chamo de Elegância Prática: fé sem passividade, presença sem desespero, discernimento sem joguinho.",
-      "Por trás disso há um método — mas ele não se explica numa conversa. Ele se descobre, peça por peça.",
+      "Eu chamo de Elegância Prática. Não é esperar, não é fingir, não é manipular. É saber, na prática, o que faz um homem de valor perceber uma mulher — e passar direto por outra.",
+      "Por trás disso existe um método. Mas ele não se explica numa conversa: ele se descobre, peça por peça.",
     ],
-    opts: [{ t: "Como assim, se descobre?", to: "fecho" }],
+    opts: [{ t: "E como eu descubro?", to: "fecho" }],
   },
   fecho: {
     lady: [
       "Eu reuni tudo numa obra curta, para você ler no celular em uns 30 minutos.",
-      "No meio do caminho existe uma descoberta que conecta tudo — e que eu não conseguiria te entregar aqui. Quer que eu te mostre?",
+      "No meio do caminho existe uma descoberta que muda como o homem certo enxerga você — e eu não consigo te entregar isso aqui. Só lá dentro. Quer que eu te mostre?",
     ],
     opts: [{ t: "Sim, quero descobrir ✨", cta: true, to: "__done" }],
   },
@@ -66,7 +71,6 @@ function LadyChat({ onDone }) {
   const [showOpts, setShowOpts] = useState(false);
   const threadRef = useRef(null);
 
-  // toca as falas da Lady da vez, uma a uma, com "digitando…".
   useEffect(() => {
     const n = CHAT[node];
     if (!n) return;
@@ -107,10 +111,10 @@ function LadyChat({ onDone }) {
   return (
     <div className="ldy">
       <div className="ldy-top">
-        <div className="ldy-av">L</div>
-        <div>
+        <div className="ldy-av">{LADY_FOTO ? <img src={LADY_FOTO} alt="A Lady" /> : "L"}</div>
+        <div className="ldy-id">
           <div className="ldy-nome">A Lady</div>
-          <div className="ldy-status">● sua mentora da Temporada</div>
+          <div className="ldy-status"><i></i> online</div>
         </div>
       </div>
       <div className="ldy-thread" ref={threadRef}>
@@ -140,7 +144,6 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
   const [step, setStep] = useState(0);
   const avancar = () => setStep((s) => Math.min(TOTAL - 1, s + 1));
 
-  // Imersão total: esconde TopBar/BottomNav enquanto o funil está montado.
   useEffect(() => {
     document.body.classList.add("sw-fs");
     return () => document.body.classList.remove("sw-fs");
@@ -158,12 +161,12 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
         <>
           <div className="sw-card" key="c0">
             <div className="sw-eyebrow">Damas Virtuosas</div>
-            <h1 className="sw-h">Talvez você esteja procurando respostas no <em>lugar errado</em>.</h1>
-            <p className="sw-p">Ninguém te ensinou o que fazer enquanto o homem certo não aparece. Existe um caminho diferente — e leva 2 minutos para você entender.</p>
+            <h1 className="sw-h">Por que um homem de valor percebe <em>uma</em> mulher — e passa direto por outra?</h1>
+            <p className="sw-p">A resposta não é beleza. Não é sorte. E não é esperar. É algo que pouquíssimas mulheres aprenderam a fazer.</p>
           </div>
           <div className="sw-foot">
-            <button className="sw-btn" onClick={avancar}>Começar</button>
-            <span className="sw-hint">toque para começar</span>
+            <button className="sw-btn" onClick={avancar}>Quero entender</button>
+            <span className="sw-hint">leva 2 minutos</span>
           </div>
         </>
       )}
@@ -171,8 +174,8 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
       {step === 1 && (
         <>
           <div className="sw-card" key="c1">
-            <div className="sw-eyebrow">O que você já conhece</div>
-            <h2 className="sw-h">Três caminhos de sempre</h2>
+            <div className="sw-eyebrow">O que te ensinaram até hoje</div>
+            <h2 className="sw-h">Três caminhos — e por que nenhum funcionou</h2>
             <div className="sw-caminhos">
               {CAMINHOS.map(([n, t, d]) => (
                 <div key={n} className="sw-caminho">
@@ -184,9 +187,9 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
                 </div>
               ))}
             </div>
-            <p className="sw-q">E se existisse um quarto?</p>
+            <p className="sw-q">E se o certo fosse um quarto caminho?</p>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Existe um quarto caminho?</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Existe um quarto?</button></div>
         </>
       )}
 
@@ -195,27 +198,25 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
           <div className="sw-card" key="c2">
             <div className="sw-eyebrow">A lacuna</div>
             <div className="sw-selo4">IV<small>Elegância Prática</small></div>
-            <p className="sw-p">Não é esperar parada. Não é virar outra pessoa. Não é manipular ninguém. É aprender a participar da própria história — com fé, presença e discernimento.</p>
-            <div className="sw-conceitos">
-              {CONCEITOS.map((c) => <span key={c} className="sw-conceito">{c}</span>)}
-            </div>
+            <p className="sw-p">Não é esperar parada. Não é virar outra pessoa. Não é manipular ninguém. É aprender a participar da própria história.</p>
+            <p className="sw-q">Existe um método que, aplicado, leva você de <em>despercebida</em> a alvo dos homens de valor.</p>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Como isso funciona?</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Como assim, um método?</button></div>
         </>
       )}
 
       {step === 3 && (
         <>
           <div className="sw-card" key="c3">
-            <div className="sw-eyebrow">Na vida real</div>
-            <h2 className="sw-h">Pequenas mudanças, outro resultado</h2>
+            <div className="sw-eyebrow">Talvez você já intua</div>
+            <h2 className="sw-h">E se não fosse nada do que te disseram?</h2>
             <div className="sw-exemplos">
-              <div className="sw-exemplo">Talvez o problema não seja que ninguém se interesse. Talvez você não esteja <b>criando situações</b> onde esse interesse possa aparecer.</div>
-              <div className="sw-exemplo">Talvez você não precise aprender a ser <b>irresistível</b>. Talvez precise perceber o que a sua presença já está comunicando.</div>
-              <div className="sw-exemplo">Talvez não sejam joguinhos que faltam. Talvez seja <b>demonstrar interesse</b> sem carregar a aproximação inteira sozinha.</div>
+              <div className="sw-exemplo">Talvez não falte interesse. Falte <b>onde</b> esse interesse poderia te encontrar.</div>
+              <div className="sw-exemplo">Talvez você não precise ser irresistível. Só perceber o que a sua presença já <b>diz</b> — sem você notar.</div>
+              <div className="sw-exemplo">Talvez não sejam joguinhos. Seja saber <b>demonstrar</b> sem se entregar por inteiro.</div>
             </div>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero entender de verdade</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero conhecer o método</button></div>
         </>
       )}
 
@@ -228,7 +229,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
-              <div className="sw-oferta-d">A jornada completa no seu celular, com o Kit da Temporada como bônus. No caminho, uma descoberta conecta tudo — e você só vai encontrá-la lá dentro.</div>
+              <div className="sw-oferta-d">A jornada completa, no seu celular. No caminho, uma descoberta muda como o homem certo enxerga você — e ela só existe lá dentro.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato · vitalício</small></div>
               {url ? (
                 <BotaoCompra url={url} className="pill">Quero descobrir →</BotaoCompra>
