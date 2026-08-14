@@ -1,19 +1,20 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FunilSwipe — a landing principal: experiência em 6 cards full-screen (VSL-like)
-//  com o posicionamento TIPO 4 (Elegância Prática).
+//  FunilSwipe — a landing principal: 7 passos full-screen (VSL-like).
+//  6 cards de copy (Tipo 4 / Elegância Prática) + a SESSÃO COM A LADY (chat
+//  scripted on-rails) entre o card 5 e a oferta.
 //
-//  RÉGUA DE COPY: intensidade + curiosidade. Entregar o RESULTADO (desejo),
-//  NUNCA o método/os conceitos. Mistério ≠ vago.
-//  Instrumentação: ViewContent (entrada) · FunilPasso + /api/evento (drop-off por
-//  card) · InitiateCheckout (abre o pop-box). Purchase por CAPI no webhook Cakto.
+//  RÉGUA DE COPY: entregar o RESULTADO (desejo), esconder o método. Mistério ≠ vago.
+//  Instrumentação: ViewContent · FunilPasso + /api/evento (drop-off) · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PreCheckout from "@/components/PreCheckout";
 
-// dispara evento no Pixel da Meta (no-op se o fbq não carregou)
+// Rosto oficial da Lady no cabeçalho do chat.
+const LADY_FOTO = "/livro/lady.webp";
+
 function trackFb(evento, dados, tipo = "track") {
   try { if (typeof window !== "undefined" && window.fbq) window.fbq(tipo, evento, dados); } catch {}
 }
@@ -26,7 +27,109 @@ const CAMINHOS = [
   ["03", "Fazer joguinho", "“Não demonstre demais. Deixe ele correr atrás.”"],
 ];
 
-const TOTAL = 6;
+// ── roteiro do chat da Lady (on-rails; determinístico) ──────────────────────
+const CHAT = {
+  start: {
+    lady: ["Oi, querida. Que bom que você chegou até aqui. 🤍", "Antes de eu te mostrar uma coisa, posso te fazer uma pergunta?"],
+    opts: [{ t: "Pode, sim", to: "q1" }],
+  },
+  q1: {
+    lady: ["Quando você pensa na sua vida amorosa hoje, o que mais pesa?"],
+    opts: [
+      { t: "Sinto que ninguém aparece", to: "r_aparece" },
+      { t: "Apareço, mas não sou notada", to: "r_notada" },
+      { t: "Começo e não sei manter", to: "r_manter" },
+      { t: "Tenho medo de escolher errado", to: "r_escolher" },
+    ],
+  },
+  r_aparece: { lady: ["Eu entendo. E olha… quase nunca é porque falta algo em você. Na maioria das vezes, é só que a sua rotina não está criando encontros novos."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
+  r_notada: { lady: ["Sei bem. Muitas vezes a mulher está ali, presente — mas, sem perceber, comunica “não se aproxime”. E dá para mudar isso sem virar outra pessoa."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
+  r_manter: { lady: ["Isso é mais comum do que você imagina. Aproximar é uma coisa; transformar em conexão é outra — e é algo que se aprende."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
+  r_escolher: { lady: ["Esse cuidado é sinal de sabedoria. A boa notícia é que dá para aprender a observar e a escolher, em vez de só torcer para não errar."], opts: [{ t: "Faz sentido…", to: "fecho" }] },
+  fecho: {
+    lady: [
+      "É exatamente sobre isso a Elegância Prática — e eu reuni tudo numa obra curta, para você ler no celular em uns 30 minutos.",
+      "No meio do caminho existe uma descoberta que muda como o homem certo enxerga você — e eu não consigo te entregar isso aqui. Só lá dentro. Quer que eu te mostre?",
+    ],
+    opts: [{ t: "Sim, quero descobrir ✨", cta: true, to: "__done" }],
+  },
+};
+
+function LadyChat({ onDone }) {
+  const [node, setNode] = useState("start");
+  const [msgs, setMsgs] = useState([]);
+  const [typing, setTyping] = useState(false);
+  const [showOpts, setShowOpts] = useState(false);
+  const threadRef = useRef(null);
+
+  useEffect(() => {
+    const n = CHAT[node];
+    if (!n) return;
+    let cancelled = false;
+    let idx = 0;
+    const timers = [];
+    setShowOpts(false);
+    const step = () => {
+      if (cancelled) return;
+      if (idx >= n.lady.length) { setShowOpts(true); return; }
+      const msg = n.lady[idx];
+      setTyping(true);
+      const dly = 650 + Math.min(msg.length * 16, 1500);
+      timers.push(setTimeout(() => {
+        if (cancelled) return;
+        setTyping(false);
+        setMsgs((m) => [...m, { who: "lady", text: msg }]);
+        idx += 1;
+        timers.push(setTimeout(step, 320));
+      }, dly));
+    };
+    step();
+    return () => { cancelled = true; timers.forEach(clearTimeout); };
+  }, [node]);
+
+  useEffect(() => {
+    if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
+  }, [msgs, typing, showOpts]);
+
+  function pick(o) {
+    setMsgs((m) => [...m, { who: "eu", text: o.t }]);
+    setShowOpts(false);
+    if (o.to === "__done") { setTimeout(() => onDone(), 500); return; }
+    setTimeout(() => setNode(o.to), 350);
+  }
+
+  const opts = CHAT[node]?.opts || [];
+  return (
+    <div className="ldy">
+      <div className="ldy-top">
+        <div className="ldy-av">{LADY_FOTO ? <img src={LADY_FOTO} alt="A Lady" /> : "L"}</div>
+        <div className="ldy-id">
+          <div className="ldy-nome">A Lady</div>
+          <div className="ldy-status"><i></i> online</div>
+        </div>
+      </div>
+      <div className="ldy-thread" ref={threadRef}>
+        {msgs.map((m, i) => (
+          <div key={i} className={"ldy-msg " + (m.who === "lady" ? "lady" : "eu")}>{m.text}</div>
+        ))}
+        {typing && (
+          <div className="ldy-typing"><span></span><span></span><span></span></div>
+        )}
+      </div>
+      {showOpts && (
+        <div className="ldy-opts">
+          {opts.map((o, i) => (
+            <button key={i} type="button" className={"ldy-opt" + (o.cta ? " cta" : "")} onClick={() => pick(o)}>
+              {o.t}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TOTAL = 7;
 
 export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
   const [step, setStep] = useState(0);
@@ -38,9 +141,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
     return () => document.body.classList.remove("sw-fs");
   }, []);
 
-  // ViewContent ao entrar no funil (Meta: quem começou a jornada)
   useEffect(() => { trackFb("ViewContent", { content_name: CONTEUDO, content_category: "funil", value: VALOR, currency: "BRL" }); }, []);
-  // marca cada card: Pixel (drop-off no Meta) + interno (/api/evento → painel admin)
   useEffect(() => {
     trackFb("FunilPasso", { passo: step + 1 }, "trackCustom");
     let vid = null;
@@ -150,10 +251,13 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
         </>
       )}
 
+      {/* SESSÃO COM A LADY (chat) */}
+      {step === 5 && <LadyChat onDone={() => setStep(6)} />}
+
       {/* CARD 6 — a oferta */}
-      {step === 5 && (
+      {step === 6 && (
         <>
-          <div className="sw-card rola" key="c5">
+          <div className="sw-card rola" key="c6">
             <div className="sw-eyebrow">Quem já atravessou a porta</div>
             <div className="sw-deps">
               {["dep5", "dep2", "dep4", "dep6", "dep7"].map((d) => (
