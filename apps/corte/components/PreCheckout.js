@@ -73,6 +73,11 @@ export default function PreCheckout({ url, onClose }) {
       u.searchParams.set("confirmEmail", email.trim());
       u.searchParams.set("cpf", cpfD);
       u.searchParams.set("phone", fone);
+      // preserva a atribuição do anúncio (utm/fbclid/…) até a Cakto
+      try {
+        const entrada = new URLSearchParams(location.search);
+        ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid", "gclid", "ttclid", "src"].forEach((k) => { const v = entrada.get(k); if (v) u.searchParams.set(k, v); });
+      } catch {}
       alvo = u.toString();
     } catch {}
 

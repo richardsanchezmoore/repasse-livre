@@ -159,8 +159,13 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "" }) {
 
   // ViewContent ao entrar no funil (Meta: quem começou a jornada)
   useEffect(() => { trackFb("ViewContent", { content_name: CONTEUDO, content_category: "funil", value: VALOR, currency: "BRL" }); }, []);
-  // marca cada card (drop-off por etapa no Meta)
-  useEffect(() => { trackFb("FunilPasso", { passo: step + 1 }, "trackCustom"); }, [step]);
+  // marca cada card: Pixel (drop-off no Meta) + interno (/api/evento → painel admin)
+  useEffect(() => {
+    trackFb("FunilPasso", { passo: step + 1 }, "trackCustom");
+    let vid = null;
+    try { vid = localStorage.getItem("dv_vid"); if (!vid) { vid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2); localStorage.setItem("dv_vid", vid); } } catch {}
+    try { fetch("/api/evento", { method: "POST", keepalive: true, headers: { "content-type": "application/json" }, body: JSON.stringify({ tipo: "mulher_passo", passo: step + 1, vid }) }); } catch {}
+  }, [step]);
 
   function abrirCheckout() {
     trackFb("InitiateCheckout", { content_name: CONTEUDO, value: VALOR, currency: "BRL" });

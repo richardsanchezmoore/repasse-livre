@@ -94,6 +94,12 @@ export async function POST(req) {
     const expira = tipo === "assinatura" ? new Date(Date.now() + 35 * 24 * 3600 * 1000).toISOString() : null;
     await concederAcesso(admin, user.id, tipo, { origem: "cakto", referencia: String(produto || ""), expira_em: expira });
 
+    // Marca o lead como comprador (match por e-mail) — exclui da recuperação de
+    // abandono e alimenta o "compraram" do painel. Best-effort.
+    try {
+      await admin.from("corte_leads").update({ virou_membro: true, atualizado_em: new Date().toISOString() }).eq("email", email);
+    } catch (e) { console.error("[cakto] marcar lead comprador:", e?.message); }
+
     // Purchase → Meta CAPI (server-side). Valor: do payload, senão do preço do plano.
     const precoPlano = tipo === "assinatura" ? planos?.assinatura?.preco : planos?.kit?.preco;
     const valorPayload = Number(String(pick(d0, ["amount", "total", "offer.price", "price", "value"]) || "").toString().replace(/[^\d,.-]/g, "").replace(",", "."));
