@@ -13,11 +13,11 @@ export const metadata = {
 
 // Os 5 passos do MAPA (o PERLA continua sendo a descoberta dentro da obra).
 const PASSOS = [
-  { n: "01", t: "Presença", d: "Onde você está e como criar movimento." },
-  { n: "02", t: "Expressão", d: "O que sua presença comunica." },
-  { n: "03", t: "Revelação", d: "Como mostrar o suficiente para despertar curiosidade." },
-  { n: "04", t: "Linguagem", d: "Como transformar aproximação em conexão." },
-  { n: "05", t: "Ação", d: "Como observar, escolher e conduzir." },
+  { n: "01", t: "Presença", d: "Como se posicionar e ser percebida." },
+  { n: "02", t: "Expressão", d: "Como mostrar interesse." },
+  { n: "03", t: "Revelação", d: "Como despertar curiosidade e interesse." },
+  { n: "04", t: "Linguagem", d: "O que falar e como conduzir a conversa." },
+  { n: "05", t: "Ação", d: "Como agir quando o interesse é recíproco." },
 ];
 
 const MUDA = [
@@ -172,9 +172,10 @@ export default async function LandingMulherCarta() {
             <p className="lpm-precocard-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</p>
             <div className="lpm-preco">{preco}<small>pagamento único · acesso imediato</small></div>
             <ul className="lpm-recebe">
-              <li>Leitura leve de ~30 min, no seu celular</li>
-              <li>Acesso imediato e vitalício</li>
-              <li>7 dias de garantia</li>
+              <li>Acesso imediato</li>
+              <li>Acesso vitalício</li>
+              <li>Leitura de ~30 minutos</li>
+              <li>Garantia de 7 dias</li>
             </ul>
             <CTA url={url} preco={preco}>Quero o mapa</CTA>
             <div className="lpm-garantia"><span className="sel">🛡️</span> 7 dias de garantia — ou o seu dinheiro de volta.</div>

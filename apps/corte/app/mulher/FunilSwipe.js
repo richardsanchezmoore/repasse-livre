@@ -25,11 +25,11 @@ const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
 // Os 5 passos do MAPA (nomes visíveis; o PERLA como mecanismo fica na obra).
 const PASSOS = [
-  { n: "01", nome: "Presença", desc: "Onde você está e como criar movimento.", img: "/livro/cena4.webp" },
-  { n: "02", nome: "Expressão", desc: "O que a sua presença comunica.", img: "/livro/cena2.webp" },
-  { n: "03", nome: "Revelação", desc: "Como despertar curiosidade sem se entregar por inteiro.", img: "/livro/cena11.webp" },
-  { n: "04", nome: "Linguagem", desc: "Como transformar aproximação em conexão.", img: "/livro/cena5.webp" },
-  { n: "05", nome: "Ação", desc: "Como observar, escolher e conduzir.", img: "/livro/cena10.webp" },
+  { n: "01", nome: "Presença", desc: "Como se posicionar e ser percebida.", img: "/livro/thumb/cena4.webp" },
+  { n: "02", nome: "Expressão", desc: "Como mostrar interesse.", img: "/livro/thumb/cena2.webp" },
+  { n: "03", nome: "Revelação", desc: "Como despertar curiosidade e interesse.", img: "/livro/thumb/cena11.webp" },
+  { n: "04", nome: "Linguagem", desc: "O que falar e como conduzir a conversa.", img: "/livro/thumb/cena5.webp" },
+  { n: "05", nome: "Ação", desc: "Como agir quando o interesse é recíproco.", img: "/livro/thumb/cena10.webp" },
 ];
 
 // ── roteiro do chat (V6 — Helena; ponte, não aula) ──────────────────────────
@@ -99,11 +99,11 @@ const CHAT = {
     ],
     opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },
+  // Responde DIRETO à pergunta "E como eu faço isso?" (ponte pergunta→produto)
   encerramento: {
     lady: [
-      "Foi por isso que organizei tudo em um mapa.",
-      "São 5 passos para você entender o que fazer, despertar interesse e reconhecer quem realmente combina com você.",
-      "Agora deixa eu te mostrar.",
+      "É exatamente isso que você vai encontrar no mapa.",
+      "São 5 passos simples para você saber o que fazer em cada etapa.",
     ],
     opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
@@ -318,9 +318,10 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
               <div className="sw-oferta-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
               <ul className="sw-recebe">
-                <li>Leitura leve de ~30 min, no seu celular</li>
-                <li>Acesso imediato e vitalício</li>
-                <li>7 dias de garantia</li>
+                <li>Acesso imediato</li>
+                <li>Acesso vitalício</li>
+                <li>Leitura de ~30 minutos</li>
+                <li>Garantia de 7 dias</li>
               </ul>
               {url ? (
                 <button type="button" className="pill" onClick={abrirCheckout}>Quero o mapa →</button>
