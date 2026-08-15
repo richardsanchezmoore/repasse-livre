@@ -1,12 +1,12 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FunilSwipe — a landing principal. Estrutura enxuta: GANCHO → CONVERSA COM A
-//  LADY (chat scripted, o corpo do funil) → OFERTA.
+//  FunilSwipe — landing principal: GANCHO → CONVERSA COM A LADY → OFERTA.
 //
-//  O chat é uma "escadinha": pergunta → reconhecimento → pequena tensão →
-//  resposta → nova pergunta. ~4 interações reais e a Lady assume a condução.
-//  O Tipo 4 (Elegância Prática) NASCE da conversa — não é apresentado como card.
+//  Conversa V3 (9 etapas): a Lady é uma PERCEPTORA conduzindo uma aprendiz por
+//  pequenas descobertas. Linguagem simples, feminina, direta, segura — sem
+//  "talvez/eu acho/pode ser", sem "homem de valor", sem linguagem espiritual,
+//  sem "método" cedo. Funciona pra mulher totalmente solteira também.
 //  Instrumentação: ViewContent · FunilPasso + /api/evento · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -21,68 +21,99 @@ function trackFb(evento, dados, tipo = "track") {
 const VALOR = 37.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
-// ── roteiro do chat (escadinha; on-rails) ───────────────────────────────────
-const Q2 = "Deixa eu te perguntar outra coisa: quando você conhece alguém de quem realmente gosta, você costuma…";
-const Q2_OPTS = [
-  { t: "Demonstrar logo que gostei", to: "quebra" },
-  { t: "Ficar com medo de demonstrar demais", to: "quebra" },
-  { t: "Esperar ele tomar a iniciativa", to: "quebra" },
-  { t: "Nunca sei o que fazer 😂", to: "quebra" },
+// ── roteiro do chat (V3, escadinha; on-rails) ───────────────────────────────
+const E2 = "Entendi. Essas respostas parecem diferentes, mas têm uma coisa em comum: você quer viver uma relação, e ela não está chegando onde você gostaria. É justamente aí que eu quero começar.";
+const E2Q = "Quando você imagina a relação que gostaria de viver, o que mais faz falta hoje?";
+const E2_OPTS = [
+  { t: "Ter alguém", to: "virada" },
+  { t: "Ser valorizada", to: "virada" },
+  { t: "Encontrar alguém que queira algo sério", to: "virada" },
+  { t: "Sentir que existe reciprocidade", to: "virada" },
 ];
 
 const CHAT = {
-  // 1 — identificação emocional
+  // 1 — abertura
   start: {
     lady: [
-      "Oi, querida. Que bom que você chegou. ❤️",
-      "Antes de eu te mostrar uma coisa, quero te fazer uma pergunta.",
-      "Quando você pensa na sua vida amorosa hoje, o que mais te incomoda?",
+      "Oi, querida. ❤️",
+      "Antes de eu te mostrar uma coisa, quero entender onde você está hoje.",
+      "Quando você olha para a sua vida amorosa, o que mais te incomoda?",
     ],
     opts: [
-      { t: "Ninguém aparece", to: "rec_a" },
-      { t: "Só encontro quem não quer nada sério", to: "rec_b" },
-      { t: "Quando eu gosto, parece que faço demais", to: "rec_c" },
-      { t: "É tudo isso 😅", to: "rec_d" },
+      { t: "Não aparece ninguém", to: "rec_a" },
+      { t: "Conheço pessoas, mas nunca dá certo", to: "rec_b" },
+      { t: "Quando gosto, nunca acontece como eu queria", to: "rec_c" },
+      { t: "Estou cansada dessa situação", to: "rec_d" },
     ],
   },
-  // 2 — reconhecimento (coerente com a resposta) → mesma segunda pergunta
-  rec_a: { lady: ["Eu entendo. E sabe o que é curioso? Muitas mulheres acham que o problema é simplesmente “não estar conhecendo ninguém”.", "Mas nem sempre é isso. Às vezes a questão está no que acontece quando alguém aparece.", Q2], opts: Q2_OPTS },
-  rec_b: { lady: ["Eu te entendo — e isso cansa. Só que nem sempre é só sobre os homens que aparecem.", "Muita coisa se decide no que fica visível (e no que não fica) já nos primeiros momentos. Isso muda quem se aproxima… e como.", Q2], opts: Q2_OPTS },
-  rec_c: { lady: ["Que bom que você percebe isso — muita gente nem repara. E olha: gostar nunca é o problema.", "O problema começa quando a gente entrega o controle da situação sem perceber. E isso tem conserto, mais simples do que parece.", Q2], opts: Q2_OPTS },
-  rec_d: { lady: ["Haha, respira. 🤍 Se você marcou essa, eu já gosto de você — é honesta.", "E a boa notícia: esses três parecem problemas diferentes, mas têm a mesma raiz. Quando você entende a raiz, eles começam a mudar juntos.", Q2], opts: Q2_OPTS },
-  // 3 — quebra de crença (a Lady ensina)
-  quebra: {
+  // 2 — identificação (adapta à resposta e converge)
+  rec_a: { lady: ["Eu entendo. Sentir que ninguém aparece cansa — e mexe com a esperança da gente.", E2, E2Q], opts: E2_OPTS },
+  rec_b: { lady: ["Sei bem. Conhecer gente e nada engatar vai esvaziando a gente aos poucos.", E2, E2Q], opts: E2_OPTS },
+  rec_c: { lady: ["Entendo. Gostar e ver a história não ir para a frente dói de um jeito diferente.", E2, E2Q], opts: E2_OPTS },
+  rec_d: { lady: ["Eu te entendo. E é honesto admitir esse cansaço — a maioria finge que está tudo bem.", E2, E2Q], opts: E2_OPTS },
+  // 3 — primeira virada
+  virada: {
     lady: [
-      "Olha… presta atenção nisso, porque aqui começa a ficar interessante.",
-      "Você provavelmente já ouviu que precisa esperar o homem certo, melhorar a autoestima, ou aprender uns joguinhos pra fazer ele correr atrás.",
-      "Só que tem um problema: nada disso explica uma pergunta muito mais importante — por que algumas mulheres são percebidas de uma maneira diferente?",
+      "Entendi. Agora presta atenção numa coisa.",
+      "Você não precisa aprender a ser perfeita para viver uma boa relação. Também não precisa aprender a fazer alguém correr atrás de você. E só esperar a pessoa certa aparecer também não resolve tudo.",
+      "Existem coisas que você pode aprender sobre a maneira como se posiciona, se comunica e se relaciona. E o mais importante: isso começa muito antes de existir um relacionamento.",
     ],
-    opts: [{ t: "Como assim?", to: "quarto" }],
+    opts: [{ t: "Quero entender", to: "lacuna" }],
   },
-  // 4 — o quarto caminho / Elegância Prática nasce aqui
-  quarto: {
+  // 4 — a lacuna
+  lacuna: {
     lady: [
-      "É exatamente isso que eu quero te mostrar. Não é sobre ser mais bonita. Nem sobre fazer um homem correr atrás. E muito menos sobre fingir desinteresse.",
-      "É sobre uma coisa que acontece antes de tudo isso: o que você transmite. O jeito que fala, o que demonstra, o que aceita, como reage quando gosta, como se posiciona. Tudo isso comunica algo — mesmo quando você não percebe.",
-      "Foi observando isso que eu comecei a chamar esse jeito diferente de se relacionar de uma coisa simples: Elegância Prática. Não é virar outra mulher — é aprender a conduzir melhor aquilo que você já é.",
+      "Deixa eu te mostrar o que eu quero dizer. Você provavelmente já ouviu três tipos de conselho:",
+      "“Espere” — uma hora a pessoa certa aparece. “Melhore” — cuide de você, aumente a autoestima, seja a sua melhor versão. “Jogue” — demonstre menos, faça a outra pessoa correr atrás.",
+      "Tudo isso pode até parecer fazer sentido. Mas nada disso responde uma pergunta importante: o que você está transmitindo sem perceber?",
+      "O jeito que você fala. Como reage. O que demonstra. O que aceita. Como se posiciona. Tudo isso comunica alguma coisa — mesmo quando você não percebe.",
+    ],
+    opts: [{ t: "Como assim?", to: "descoberta" }],
+  },
+  // 5 — a descoberta (Elegância Prática)
+  descoberta: {
+    lady: [
+      "É aqui que eu quero que você preste atenção. Não é para você virar outra mulher. Não é para fingir desinteresse. Não é para manipular ninguém.",
+      "É aprender a se posicionar de um jeito diferente: saber o que mostrar, o que falar, quando avançar, quando parar. E continuar sendo você.",
+      "Foi observando isso que eu percebi que existe uma forma diferente de participar da própria vida amorosa. Eu chamo de Elegância Prática. Não é parecer perfeita, não é ser difícil, não é joguinho — é se posicionar sem deixar de ser você.",
     ],
     opts: [{ t: "Quero entender melhor", to: "exemplo" }],
   },
-  // 5 — mostra que é aplicável (microexemplo)
+  // 6 — na prática
   exemplo: {
     lady: [
-      "Vou te dar um exemplo. Imagine que você conheceu um homem e gostou dele.",
-      "Uma mulher pensa: “preciso mostrar logo que gostei, pra ele não perder o interesse.” Outra pensa: “preciso fingir que não estou nem aí, pra ele correr atrás.”",
-      "E existe uma terceira maneira: demonstrar interesse sem entregar o controle. Ser receptiva sem se colocar à disposição. Mostrar que gostou sem fazer todo o trabalho da relação sozinha. Percebe a diferença?",
+      "Vou te dar um exemplo simples. Imagine que você conhece alguém e percebe que está interessada.",
+      "Você pode pensar: “preciso mostrar que gostei, para ele não perder o interesse.” Ou: “preciso me segurar, para ele não achar que estou disponível demais.” As duas te colocam tentando controlar o que o outro vai pensar.",
+      "Existe uma terceira maneira: você demonstra interesse porque está realmente interessada. É receptiva, conversa, mostra que gostou — e continua vivendo a sua vida. Sem teatrinho, sem controlar cada reação, sem fazer sozinha o trabalho que era dos dois. Percebe a diferença?",
     ],
-    opts: [{ t: "Agora entendi", to: "transicao" }],
+    opts: [
+      { t: "Sim, agora entendi", to: "ampliacao" },
+      { t: "Nunca tinha pensado assim", to: "ampliacao" },
+    ],
   },
-  // 6 — transição para o produto
-  transicao: {
+  // 7 — ampliação + a virada de posição
+  ampliacao: {
     lady: [
-      "E isso foi só um exemplo. Porque essa mesma lógica aparece em como você conversa, coloca limites, reage quando alguém se afasta e até escolhe quem merece continuar perto de você.",
-      "Foi por isso que eu organizei tudo numa jornada — pra você não precisar descobrir sozinha, na tentativa e erro.",
-      "Chama “Como se Tornar a Mulher que Ele Procura”. Eu coloquei ali o caminho completo — e você pode começar agora. 🤍",
+      "E isso é só um exemplo. A mesma lógica aparece em muito mais coisas: em como você começa uma conversa, como demonstra interesse, como reage quando alguém se afasta, na hora de colocar um limite… e principalmente na hora de decidir se vale a pena continuar.",
+      "Porque existe uma virada importante quando você aprende isso. Você para de pensar “como faço essa pessoa gostar de mim?” e começa a pensar “o que essa relação está me mostrando?”.",
+      "Isso muda a posição que você ocupa. Você deixa de só esperar para ser escolhida — e começa a também escolher.",
+    ],
+    opts: [{ t: "Faz sentido…", to: "esperanca" }],
+  },
+  // 8 — esperança
+  esperanca: {
+    lady: [
+      "E deixa eu te contar outra coisa. Existem pessoas que querem exatamente o que você quer: companhia, carinho, parceria, construir algo de verdade.",
+      "Só que querer uma relação não basta. Você também precisa saber reconhecer uma boa conexão, se posicionar dentro dela e perceber quando existe reciprocidade. E ninguém ensina isso direito.",
+      "Foi por isso que eu organizei tudo isso em uma jornada.",
+    ],
+    opts: [{ t: "Me mostra", to: "oferta" }],
+  },
+  // 9 — transição para a oferta
+  oferta: {
+    lady: [
+      "Eu coloquei tudo isso em “Como se Tornar a Mulher que Ele Procura” — uma jornada prática para você entender o que transmite, como se posicionar, como se comunicar, como demonstrar interesse, e como parar de carregar sozinha uma relação que deveria ser dos dois.",
+      "Você não precisa virar outra mulher. Precisa aprender a enxergar algumas coisas que ninguém te mostrou. E é exatamente isso que eu quero te ensinar. 🤍",
     ],
     opts: [{ t: "Quero descobrir →", cta: true, to: "__done" }],
   },
@@ -107,7 +138,7 @@ function LadyChat({ onDone }) {
       if (idx >= n.lady.length) { setShowOpts(true); return; }
       const msg = n.lady[idx];
       setTyping(true);
-      const dly = 600 + Math.min(msg.length * 15, 1600);
+      const dly = 600 + Math.min(msg.length * 14, 1700);
       timers.push(setTimeout(() => {
         if (cancelled) return;
         setTyping(false);
@@ -231,7 +262,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
-              <div className="sw-oferta-d">Uma jornada prática para entender o que você transmite, como se comunica, como se posiciona — e como suas atitudes mudam a forma como uma relação começa e se desenvolve. Sem joguinhos, sem virar outra pessoa, sem ficar esperando.</div>
+              <div className="sw-oferta-d">Uma jornada prática para entender o que você transmite, como se posiciona, como se comunica, como demonstra interesse — e como parar de carregar sozinha uma relação que deveria ser dos dois.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
               {url ? (
                 <button type="button" className="pill" onClick={abrirCheckout}>Quero descobrir →</button>
