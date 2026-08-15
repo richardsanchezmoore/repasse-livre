@@ -106,9 +106,9 @@ const CHAT = {
   },
   encerramento: {
     lady: [
-      "Organizei essa descoberta em cinco passos. Cada um mostra uma parte diferente do caminho.",
-      "Não é sobre virar outra mulher. É sobre entender melhor o que você mostra, como agir e também como escolher.",
-      "Agora deixa eu te mostrar o que coloquei nesse mapa.",
+      "Foi por isso que organizei tudo em um mapa.",
+      "São 5 passos para você entender o que fazer, despertar interesse e reconhecer quem realmente combina com você.",
+      "Agora deixa eu te mostrar.",
     ],
     opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
@@ -188,7 +188,7 @@ function LadyChat({ onDone }) {
   );
 }
 
-const TOTAL = 4;
+const TOTAL = 5;
 
 export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
@@ -246,8 +246,8 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
         <>
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
-            <div className="sw-mapa-titulo">Agora deixa eu te mostrar o mapa</div>
-            <div className="sw-mapa-sub">5 passos para você entender o que fazer, despertar interesse e reconhecer quem realmente combina com você.</div>
+            <div className="sw-mapa-titulo">O Mapa das Mulheres</div>
+            <div className="sw-mapa-sub">5 passos para destravar seus relacionamentos.</div>
             <div className="sw-passos">
               {PASSOS.map((p) => (
                 <div key={p.n} className="sw-passo">
@@ -265,24 +265,23 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
               <p>Existe uma sequência. Primeiro você entende onde está. Depois, o que mostra. Depois, o que revela. Depois, como se conecta. E, por fim, como age e escolhe.</p>
             </div>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a jornada completa</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero ver o que muda →</button></div>
         </>
       )}
 
-      {/* OFERTA MATERIALIZADA — o que você recebe + transformação + preço */}
+      {/* O QUE MUDA PARA VOCÊ — benefício/transformação (progressão) + antes→depois */}
       {step === 3 && (
         <>
           <div className="sw-card rola" key="c3">
-            <div className="sw-inside">
-              <div className="sw-inside-h">O que você recebe</div>
-              <ul>
-                <li>O mapa completo dos 5 passos, explicado por dentro</li>
-                <li>Cenas e reflexões práticas para aplicar na sua vida</li>
-                <li>Como perceber quando o interesse vem dos dois lados</li>
-                <li>Leitura leve de ~30 minutos, no seu celular</li>
-                <li>Acesso imediato e vitalício</li>
-              </ul>
-            </div>
+            <div className="sw-eyebrow">A transformação</div>
+            <div className="sw-muda-h">O que muda para você</div>
+            <ul className="sw-muda">
+              <li>Vai entender o que trava seus relacionamentos.</li>
+              <li>Vai perceber o que sua presença comunica.</li>
+              <li>Vai saber despertar o interesse.</li>
+              <li>Vai reconhecer quando o interesse vem dos dois lados.</li>
+              <li>Vai começar a escolher — e não só esperar ser escolhida.</li>
+            </ul>
 
             <div className="sw-transform">
               <div className="sw-tr antes">
@@ -294,8 +293,16 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
                 <div className="sw-tr-t">“Esse homem combina com o que eu quero viver?”</div>
               </div>
             </div>
+          </div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a oferta →</button></div>
+        </>
+      )}
 
-            <div className="sw-deps" style={{ marginTop: 20 }}>
+      {/* OFERTA — vende o caminho; formato/garantia perto do checkout (não como título) */}
+      {step === 4 && (
+        <>
+          <div className="sw-card rola" key="c4">
+            <div className="sw-deps">
               {["dep5", "dep2", "dep4", "dep6", "dep7"].map((d) => (
                 <div key={d} className="sw-depcard">
                   <img src={`/panfleto/depoimentos/${d}.jpg`} alt="Depoimento de uma leitora" loading="lazy" />
@@ -306,14 +313,18 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
-              <div className="sw-oferta-d">O mapa completo para destravar seus relacionamentos e aprender uma nova forma de se colocar, se comunicar e escolher.</div>
+              <div className="sw-oferta-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
+              <ul className="sw-recebe">
+                <li>Leitura leve de ~30 min, no seu celular</li>
+                <li>Acesso imediato e vitalício</li>
+                <li>7 dias de garantia</li>
+              </ul>
               {url ? (
                 <button type="button" className="pill" onClick={abrirCheckout}>Quero o mapa →</button>
               ) : (
                 <span className="pill" style={{ opacity: 0.6, display: "inline-block" }}>Em breve</span>
               )}
-              <p className="sw-reassure">~30 minutos de leitura · 7 dias de garantia</p>
             </div>
           </div>
         </>
