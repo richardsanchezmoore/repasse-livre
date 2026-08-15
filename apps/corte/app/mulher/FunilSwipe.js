@@ -3,11 +3,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  FunilSwipe — landing principal: GANCHO → CONVERSA COM A LADY → OFERTA.
 //
-//  Conversa V4 REVISADA (10 etapas). Linguagem SIMPLES (falar como uma criança
-//  entenderia — ideia forte fica mais forte fácil de entender): "se colocar",
-//  "mostrar", "interesse dos dois lados", "fazer uma relação acontecer". Sem
-//  repetir ideia em frases próximas. Autoridade da Lady pela trajetória.
-//  Sem "homem de valor", sem "método"/PERLA no funil, sem joguinho como eixo.
+//  Conversa V4 (ritmo de WhatsApp real): Lady fala → mulher responde → Lady
+//  REAGE → conduz → mulher responde → descoberta. MÁX 3 opções por interação.
+//  Cada resposta gera reação. Linguagem simples ("se colocar", "mostrar",
+//  "interesse dos dois lados"). Autoridade da Lady pela trajetória. Sem
+//  "homem de valor", sem "método"/PERLA no funil, sem joguinho como eixo.
 //  Instrumentação: ViewContent · FunilPasso + /api/evento · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -22,90 +22,117 @@ function trackFb(evento, dados, tipo = "track") {
 const VALOR = 37.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
-// ── roteiro do chat (V4 revisada, 10 etapas; on-rails) ──────────────────────
-const Q1_OPTS = [
-  { t: "Encontrar alguém que queira algo sério", to: "identificacao" },
-  { t: "Ser valorizada", to: "identificacao" },
-  { t: "Ter alguém para dividir a vida", to: "identificacao" },
-  { t: "Sentir que sou importante para alguém", to: "identificacao" },
-  { t: "Tudo isso", to: "identificacao" },
+// ── roteiro do chat (V4, ritmo real; on-rails) ──────────────────────────────
+// 2ª pergunta (o que mais pesa) — vem depois da Lady reagir à 1ª resposta.
+const Q2 = "E hoje, o que mais pesa para você?";
+const Q2_OPTS = [
+  { t: "Não encontrar ninguém", to: "pesa" },
+  { t: "Encontrar, mas nunca dar certo", to: "pesa" },
+  { t: "Acabar sempre na mesma situação", to: "pesa" },
 ];
 
 const CHAT = {
-  // 1 — abertura
+  // início — Lady se apresenta e faz a 1ª pergunta (3 opções)
   start: {
     lady: [
-      "Oi, querida. ❤️",
-      "Agora deixa eu te fazer uma pergunta.",
-      "Quando você pensa no relacionamento que gostaria de viver, o que mais importa para você?",
+      "Oi, querida. ❤️ Que bom ter você aqui.",
+      "Quero entender uma coisa sobre você. Quando pensa no relacionamento que gostaria de viver, o que mais deseja?",
     ],
-    opts: Q1_OPTS,
+    opts: [
+      { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
+      { t: "Ser amada e valorizada", to: "rec_valor" },
+      { t: "Ter alguém para dividir a vida", to: "rec_dividir" },
+    ],
   },
-  // 2 — o que ela realmente quer
-  identificacao: {
+  // reações à 1ª resposta (cada uma termina com a 2ª pergunta)
+  rec_serio: {
     lady: [
-      "Entendi. E sabe o que eu percebi depois de ouvir muitas mulheres? As respostas mudam. Mas, no fundo, quase todas querem coisas muito parecidas: ser amadas, respeitadas e valorizadas.",
-      "Querem alguém que realmente queira estar ali. E não querem passar o tempo todo tentando descobrir: “será que ele gosta mesmo de mim?”.",
-      "Parece simples. Mas existe uma parte disso que quase ninguém ensina.",
+      "Eu entendo. ❤️ Porque quando você quer algo sério, não adianta encontrar alguém que só quer passar o tempo.",
+      "Você quer alguém que realmente queira estar ali. E é justamente aí que muita mulher acaba se confundindo.",
+      Q2,
     ],
-    opts: [{ t: "Quero entender", to: "virada" }],
+    opts: Q2_OPTS,
   },
-  // 3 — primeira virada
-  virada: {
+  rec_valor: {
+    lady: [
+      "Eu entendo. ❤️ Porque não adianta estar com alguém e continuar se sentindo sozinha.",
+      "Você se importa, se entrega, está presente… e também quer sentir que isso vem de volta. E é justamente aí que muita mulher acaba se confundindo.",
+      Q2,
+    ],
+    opts: Q2_OPTS,
+  },
+  rec_dividir: {
+    lady: [
+      "Eu entendo. ❤️ No fundo, não é simplesmente ter alguém.",
+      "É ter alguém que realmente queira estar ao seu lado. E existe uma grande diferença entre essas duas coisas.",
+      Q2,
+    ],
+    opts: Q2_OPTS,
+  },
+  // reação à 2ª resposta (converge)
+  pesa: {
+    lady: [
+      "Eu entendo. E sabe o que é interessante? Essas situações parecem diferentes.",
+      "Mas eu comecei a perceber que muitas mulheres chegavam ao mesmo ponto por caminhos diferentes. E isso me fez querer entender o que estava acontecendo.",
+    ],
+    opts: [{ t: "Quero saber", to: "descoberta1" }],
+  },
+  // primeira descoberta
+  descoberta1: {
     lady: [
       "Porque conhecer alguém é uma coisa. Fazer uma relação acontecer de verdade é outra.",
-      "Você pode conhecer pessoas, sair, conversar, se cuidar — fazer tudo aquilo que dizem que você deveria fazer. E ainda assim continuar sem viver a relação que procura.",
-      "Por quê? É essa pergunta que eu quero responder.",
+      "Você pode conhecer pessoas, sair, conversar, se cuidar — fazer tudo aquilo que dizem que você deveria fazer. E ainda assim não chegar ao relacionamento que procura.",
+      "Por quê? Foi justamente essa pergunta que comecei a investigar.",
     ],
     opts: [{ t: "Me mostra", to: "conselhos" }],
   },
-  // 4 — os três caminhos
+  // os conselhos que ela já ouviu
   conselhos: {
     lady: [
-      "Provavelmente você já ouviu alguns desses conselhos: “espere, uma hora a pessoa certa aparece”, “melhore, cuide de você, seja a sua melhor versão”, “faça ele correr atrás, não demonstre demais, não fique tão disponível”.",
+      "E provavelmente você já ouviu alguns desses conselhos: “espere, uma hora a pessoa certa aparece”, “melhore, cuide de você, seja a sua melhor versão”, “faça ele correr atrás, não demonstre demais, não fique tão disponível”.",
       "Você já deve ter ouvido pelo menos um deles. E alguns até parecem fazer sentido.",
       "Mas tem uma pergunta que quase ninguém faz: o que você está mostrando sem perceber?",
       "O jeito que você fala. O jeito que responde. O que demonstra. O que aceita. A forma como age. Tudo isso diz alguma coisa — mesmo quando você não percebe.",
     ],
     opts: [{ t: "Como assim?", to: "autoridade" }],
   },
-  // 5 — a experiência da Lady (autoridade pela trajetória)
+  // autoridade da Lady (trajetória)
   autoridade: {
     lady: [
       "É aqui que eu quero te contar uma coisa. Durante muito tempo, eu observei mulheres muito diferentes: idades diferentes, aparências diferentes, jeitos diferentes, histórias diferentes.",
       "Mas algumas dificuldades apareciam de novo e de novo. Algumas se doavam demais. Outras tinham medo de mostrar o que sentiam. Outras não sabiam como fazer uma relação avançar. E isso começou a me chamar atenção.",
       "Eu queria entender por quê. Foi então que comecei a estudar mais sobre comportamento, comunicação e relacionamentos. E quanto mais eu estudava, mais uma coisa ficava clara: não era só uma questão de beleza ou sorte. Existia algo acontecendo antes.",
     ],
-    opts: [{ t: "E o que você descobriu?", to: "descoberta" }],
+    opts: [{ t: "Quero saber mais", to: "elegancia" }],
   },
-  // 6 — a descoberta (Elegância Prática)
-  descoberta: {
+  // a descoberta da Elegância Prática
+  elegancia: {
     lady: [
       "E foi aí que comecei a enxergar tudo de outra maneira. Não estou falando para você manipular ninguém. Não estou falando para fazer joguinhos. E muito menos para virar outra pessoa.",
       "Estou falando de aprender a se colocar melhor: saber o que mostrar, o que falar, quando demonstrar, quando parar, perceber quando existe interesse dos dois lados. E, principalmente, não carregar sozinha uma relação que deveria ser construída por dois.",
       "Foi observando tudo isso que eu comecei a chamar essa forma diferente de se relacionar de Elegância Prática. É simples: é saber se colocar sem deixar de ser você.",
     ],
-    opts: [{ t: "Quero entender melhor", to: "exemplo" }],
+    opts: [{ t: "Quero entender", to: "exemplo" }],
   },
-  // 7 — na vida real (exemplo)
+  // exemplo prático
   exemplo: {
     lady: [
       "Vou te dar um exemplo. Imagine que você conheça alguém e goste dessa pessoa.",
       "Você pode pensar: “preciso mostrar bastante que gostei.” Ou: “preciso me segurar para não parecer disponível demais.” Percebe? Nos dois casos, você está tentando controlar o que a outra pessoa vai pensar.",
       "Existe uma terceira maneira: você mostra que gostou, conversa, é carinhosa, demonstra interesse — e continua vivendo a sua vida. Sem joguinho, sem fingir, sem controlar cada resposta, e sem fazer sozinha aquilo que deveria acontecer dos dois lados. Percebe a diferença?",
     ],
-    opts: [{ t: "Sim, agora entendi", to: "perspectiva" }],
+    opts: [{ t: "Sim, agora entendi", to: "grandevirada" }],
   },
-  // 8 — a virada (a pergunta muda)
-  perspectiva: {
+  // a grande virada
+  grandevirada: {
     lady: [
       "E isso não vale só para o começo. A mesma coisa aparece quando você conhece alguém, começa a conversar, percebe que está gostando, coloca um limite, sente que a outra pessoa está se afastando, ou precisa decidir se continua.",
       "Porque quando você começa a enxergar essas coisas, uma pergunta muda. Você deixa de pensar “como faço essa pessoa gostar de mim?” e começa a pensar “o que essa pessoa está me mostrando?”.",
       "Isso muda a sua posição. Você não fica apenas esperando para ser escolhida. Você também começa a escolher.",
     ],
-    opts: [{ t: "Faz sentido…", to: "esperanca" }],
+    opts: [{ t: "Quero aprender", to: "esperanca" }],
   },
-  // 9 — esperança
+  // esperança
   esperanca: {
     lady: [
       "E quero que você guarde uma coisa. Existem pessoas procurando o mesmo que você: querem companhia, carinho, parceria, construir uma vida a dois.",
@@ -114,7 +141,7 @@ const CHAT = {
     ],
     opts: [{ t: "Me mostra", to: "oferta" }],
   },
-  // 10 — oferta
+  // oferta
   oferta: {
     lady: [
       "Eu coloquei tudo isso em “Como se Tornar a Mulher que Ele Procura” — uma jornada prática para você aprender o que mostra sem perceber, como se colocar, como conversar, como mostrar interesse, como perceber quando existe interesse dos dois lados, e como parar de carregar sozinha uma relação que deveria ser construída por dois.",
