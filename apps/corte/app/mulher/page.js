@@ -6,9 +6,9 @@ import FunilSwipe from "./FunilSwipe";
 // (R$ 37,90). A versão clássica de landing vive em /mulher-carta (A/B).
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Você está procurando no lugar certo? · Damas Virtuosas",
+  title: "Por que você ainda não está vivendo o relacionamento que gostaria?",
   description:
-    "Existem três caminhos que ensinam a mulher sobre amor. Descobrimos um quarto. Uma experiência de descoberta com A Lady.",
+    "Existe uma parte da dinâmica dos relacionamentos que acontece antes mesmo de um relacionamento começar. Uma conversa com A Lady.",
 };
 
 export default async function LandingMulher() {

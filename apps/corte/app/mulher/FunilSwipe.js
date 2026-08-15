@@ -3,10 +3,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  FunilSwipe — landing principal: GANCHO → CONVERSA COM A LADY → OFERTA.
 //
-//  Conversa V3 (9 etapas): a Lady é uma PERCEPTORA conduzindo uma aprendiz por
-//  pequenas descobertas. Linguagem simples, feminina, direta, segura — sem
-//  "talvez/eu acho/pode ser", sem "homem de valor", sem linguagem espiritual,
-//  sem "método" cedo. Funciona pra mulher totalmente solteira também.
+//  Conversa V4 (10 etapas): a Lady é uma PERCEPTORA que observou→estudou→achou
+//  padrões→ensina. Autoridade pela trajetória (não títulos). Frase-mãe: "Por que
+//  você ainda não está vivendo o relacionamento que gostaria?". Foco no DESEJO
+//  presente (não no passado). Sem "talvez/eu acho" como persuasão, sem "homem de
+//  valor", sem linguagem espiritual/coach, sem "método"/PERLA no funil.
 //  Instrumentação: ViewContent · FunilPasso + /api/evento · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -21,14 +22,13 @@ function trackFb(evento, dados, tipo = "track") {
 const VALOR = 37.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
-// ── roteiro do chat (V3, escadinha; on-rails) ───────────────────────────────
-const E2 = "Entendi. Essas respostas parecem diferentes, mas têm uma coisa em comum: você quer viver uma relação, e ela não está chegando onde você gostaria. É justamente aí que eu quero começar.";
-const E2Q = "Quando você imagina a relação que gostaria de viver, o que mais faz falta hoje?";
-const E2_OPTS = [
-  { t: "Ter alguém", to: "virada" },
-  { t: "Ser valorizada", to: "virada" },
-  { t: "Encontrar alguém que queira algo sério", to: "virada" },
-  { t: "Sentir que existe reciprocidade", to: "virada" },
+// ── roteiro do chat (V4, 10 etapas; on-rails) ───────────────────────────────
+const Q1_OPTS = [
+  { t: "Encontrar alguém que queira algo sério", to: "identificacao" },
+  { t: "Ter reciprocidade", to: "identificacao" },
+  { t: "Me sentir valorizada", to: "identificacao" },
+  { t: "Ter alguém para dividir a vida", to: "identificacao" },
+  { t: "Tudo isso", to: "identificacao" },
 ];
 
 const CHAT = {
@@ -36,84 +36,81 @@ const CHAT = {
   start: {
     lady: [
       "Oi, querida. ❤️",
-      "Antes de eu te mostrar uma coisa, quero entender onde você está hoje.",
-      "Quando você olha para a sua vida amorosa, o que mais te incomoda?",
+      "Agora deixa eu te fazer uma pergunta.",
+      "Quando você pensa no relacionamento que gostaria de viver, o que mais importa para você?",
     ],
-    opts: [
-      { t: "Não aparece ninguém", to: "rec_a" },
-      { t: "Conheço pessoas, mas nunca dá certo", to: "rec_b" },
-      { t: "Quando gosto, nunca acontece como eu queria", to: "rec_c" },
-      { t: "Estou cansada dessa situação", to: "rec_d" },
-    ],
+    opts: Q1_OPTS,
   },
-  // 2 — identificação (adapta à resposta e converge)
-  rec_a: { lady: ["Eu entendo. Sentir que ninguém aparece cansa — e mexe com a esperança da gente.", E2, E2Q], opts: E2_OPTS },
-  rec_b: { lady: ["Sei bem. Conhecer gente e nada engatar vai esvaziando a gente aos poucos.", E2, E2Q], opts: E2_OPTS },
-  rec_c: { lady: ["Entendo. Gostar e ver a história não ir para a frente dói de um jeito diferente.", E2, E2Q], opts: E2_OPTS },
-  rec_d: { lady: ["Eu te entendo. E é honesto admitir esse cansaço — a maioria finge que está tudo bem.", E2, E2Q], opts: E2_OPTS },
-  // 3 — primeira virada
-  virada: {
+  // 2 + 3 — identificação + primeira virada
+  identificacao: {
     lady: [
-      "Entendi. Agora presta atenção numa coisa.",
-      "Você não precisa aprender a ser perfeita para viver uma boa relação. Também não precisa aprender a fazer alguém correr atrás de você. E só esperar a pessoa certa aparecer também não resolve tudo.",
-      "Existem coisas que você pode aprender sobre a maneira como se posiciona, se comunica e se relaciona. E o mais importante: isso começa muito antes de existir um relacionamento.",
+      "Entendi. E sabe o que eu percebi ao longo dos anos? As respostas mudam, mas no fundo muitas mulheres estão procurando a mesma coisa: uma relação em que não precisem ficar tentando convencer alguém a ficar.",
+      "Elas querem interesse. Querem reciprocidade. Querem sentir que existe vontade dos dois lados. Parece simples — mas existe uma parte dessa história que quase ninguém ensina.",
+      "Porque encontrar uma pessoa é uma coisa. Construir uma conexão que realmente tenha espaço para virar relacionamento é outra.",
+      "Você pode conhecer pessoas, sair, conversar, se cuidar — fazer tudo o que dizem que você deveria fazer — e ainda assim não chegar ao relacionamento que deseja. Por quê? É exatamente essa pergunta que eu quero responder.",
     ],
-    opts: [{ t: "Quero entender", to: "lacuna" }],
+    opts: [{ t: "Quero entender", to: "conselhos" }],
   },
-  // 4 — a lacuna
-  lacuna: {
+  // 4 — os conselhos que ela já ouviu
+  conselhos: {
     lady: [
-      "Deixa eu te mostrar o que eu quero dizer. Você provavelmente já ouviu três tipos de conselho:",
-      "“Espere” — uma hora a pessoa certa aparece. “Melhore” — cuide de você, aumente a autoestima, seja a sua melhor versão. “Jogue” — demonstre menos, faça a outra pessoa correr atrás.",
-      "Tudo isso pode até parecer fazer sentido. Mas nada disso responde uma pergunta importante: o que você está transmitindo sem perceber?",
-      "O jeito que você fala. Como reage. O que demonstra. O que aceita. Como se posiciona. Tudo isso comunica alguma coisa — mesmo quando você não percebe.",
+      "Provavelmente você já recebeu alguns desses conselhos: “uma hora a pessoa certa aparece”, “cuide de você e seja a sua melhor versão”, “não demonstre demais”, “deixe a outra pessoa correr atrás”, “não fique tão disponível”.",
+      "Alguns até fazem sentido. Mas existe uma pergunta que fica de fora: o que você está comunicando sem perceber?",
+      "Porque antes de existir um relacionamento, já existe uma percepção. O jeito que você fala. Como responde. O que demonstra. O que aceita. Como se posiciona. Tudo isso comunica — mesmo quando você não está tentando comunicar nada.",
     ],
-    opts: [{ t: "Como assim?", to: "descoberta" }],
+    opts: [{ t: "Como assim?", to: "autoridade" }],
   },
-  // 5 — a descoberta (Elegância Prática)
+  // 5 — autoridade da Lady (trajetória, não títulos)
+  autoridade: {
+    lady: [
+      "É justamente isso que começou a me chamar atenção. Durante muito tempo, eu observei mulheres completamente diferentes — idades, aparências, personalidades e histórias diferentes.",
+      "Mas algumas dificuldades apareciam de novo e de novo. Os padrões se repetiam. Isso me fez querer entender o que realmente estava acontecendo, e passei a aprofundar meus estudos sobre comportamento, comunicação e relacionamentos.",
+      "E quanto mais eu estudava, mais uma coisa ficava clara: não era simplesmente beleza, sorte ou encontrar a pessoa certa. Existia uma parte da dinâmica que acontecia antes.",
+    ],
+    opts: [{ t: "E o que você descobriu?", to: "descoberta" }],
+  },
+  // 6 — a descoberta (Elegância Prática)
   descoberta: {
     lady: [
-      "É aqui que eu quero que você preste atenção. Não é para você virar outra mulher. Não é para fingir desinteresse. Não é para manipular ninguém.",
-      "É aprender a se posicionar de um jeito diferente: saber o que mostrar, o que falar, quando avançar, quando parar. E continuar sendo você.",
-      "Foi observando isso que eu percebi que existe uma forma diferente de participar da própria vida amorosa. Eu chamo de Elegância Prática. Não é parecer perfeita, não é ser difícil, não é joguinho — é se posicionar sem deixar de ser você.",
+      "Foi aí que eu comecei a enxergar uma maneira diferente de olhar para tudo isso. Não é manipular alguém. Não é fazer joguinho. E não é para você virar outra mulher.",
+      "É aprender a se posicionar melhor: saber o que mostrar, o que falar, quando demonstrar, quando parar, reconhecer reciprocidade. E, principalmente, não precisar carregar sozinha uma relação que deveria ser construída por dois.",
+      "Foi observando tudo isso que eu comecei a chamar essa forma diferente de se relacionar de Elegância Prática. É simples: é saber se posicionar sem precisar deixar de ser você.",
     ],
     opts: [{ t: "Quero entender melhor", to: "exemplo" }],
   },
-  // 6 — na prática
+  // 7 — exemplo prático
   exemplo: {
     lady: [
-      "Vou te dar um exemplo simples. Imagine que você conhece alguém e percebe que está interessada.",
-      "Você pode pensar: “preciso mostrar que gostei, para ele não perder o interesse.” Ou: “preciso me segurar, para ele não achar que estou disponível demais.” As duas te colocam tentando controlar o que o outro vai pensar.",
-      "Existe uma terceira maneira: você demonstra interesse porque está realmente interessada. É receptiva, conversa, mostra que gostou — e continua vivendo a sua vida. Sem teatrinho, sem controlar cada reação, sem fazer sozinha o trabalho que era dos dois. Percebe a diferença?",
+      "Vou te dar um exemplo. Imagine que você conhece alguém e gosta dessa pessoa.",
+      "Você pode pensar: “preciso demonstrar bastante para ele perceber que estou interessada.” Ou: “preciso me segurar para não parecer disponível demais.” Percebe? Nos dois casos, você está tentando controlar a reação da outra pessoa.",
+      "Existe uma terceira maneira: você demonstra interesse porque realmente está interessada. É receptiva, conversa, mostra que gostou — e continua vivendo a sua vida. Sem joguinho, sem teatrinho, sem controlar cada resposta, e sem fazer sozinha aquilo que deveria acontecer dos dois lados.",
+      "Essa diferença parece pequena. Mas muda muita coisa.",
     ],
-    opts: [
-      { t: "Sim, agora entendi", to: "ampliacao" },
-      { t: "Nunca tinha pensado assim", to: "ampliacao" },
-    ],
+    opts: [{ t: "Agora eu entendi", to: "perspectiva" }],
   },
-  // 7 — ampliação + a virada de posição
-  ampliacao: {
+  // 8 — nova perspectiva
+  perspectiva: {
     lady: [
-      "E isso é só um exemplo. A mesma lógica aparece em muito mais coisas: em como você começa uma conversa, como demonstra interesse, como reage quando alguém se afasta, na hora de colocar um limite… e principalmente na hora de decidir se vale a pena continuar.",
-      "Porque existe uma virada importante quando você aprende isso. Você para de pensar “como faço essa pessoa gostar de mim?” e começa a pensar “o que essa relação está me mostrando?”.",
-      "Isso muda a posição que você ocupa. Você deixa de só esperar para ser escolhida — e começa a também escolher.",
+      "E isso não serve só para uma conversa. A mesma lógica aparece quando você conhece alguém, começa a conversar, demonstra interesse, percebe que está gostando, coloca um limite, percebe que a outra pessoa está se afastando, ou decide se continua ou não.",
+      "Porque existe uma mudança importante quando você começa a enxergar isso. Você para de pensar “como faço essa pessoa gostar de mim?” e começa a pensar “o que essa relação está me mostrando?”.",
+      "Você deixa de ficar apenas esperando para ser escolhida. Você também começa a escolher.",
     ],
     opts: [{ t: "Faz sentido…", to: "esperanca" }],
   },
-  // 8 — esperança
+  // 9 — esperança
   esperanca: {
     lady: [
-      "E deixa eu te contar outra coisa. Existem pessoas que querem exatamente o que você quer: companhia, carinho, parceria, construir algo de verdade.",
-      "Só que querer uma relação não basta. Você também precisa saber reconhecer uma boa conexão, se posicionar dentro dela e perceber quando existe reciprocidade. E ninguém ensina isso direito.",
+      "E existe uma coisa que eu quero que você guarde: existem pessoas procurando o mesmo tipo de relação que você. Pessoas que querem companhia, parceria, carinho, construir algo de verdade.",
+      "O que você precisa aprender não é fazer qualquer pessoa gostar de você. É reconhecer uma boa conexão, se posicionar dentro dela e perceber quando existe reciprocidade.",
       "Foi por isso que eu organizei tudo isso em uma jornada.",
     ],
     opts: [{ t: "Me mostra", to: "oferta" }],
   },
-  // 9 — transição para a oferta
+  // 10 — oferta
   oferta: {
     lady: [
-      "Eu coloquei tudo isso em “Como se Tornar a Mulher que Ele Procura” — uma jornada prática para você entender o que transmite, como se posicionar, como se comunicar, como demonstrar interesse, e como parar de carregar sozinha uma relação que deveria ser dos dois.",
-      "Você não precisa virar outra mulher. Precisa aprender a enxergar algumas coisas que ninguém te mostrou. E é exatamente isso que eu quero te ensinar. 🤍",
+      "Eu coloquei tudo isso em “Como se Tornar a Mulher que Ele Procura” — uma jornada prática para você entender o que transmite, como se posicionar, como se comunicar, como demonstrar interesse, como reconhecer reciprocidade, e como parar de carregar sozinha uma relação que deveria ser construída por dois.",
+      "Você não precisa virar outra mulher. Não precisa aprender joguinhos. Não precisa fingir desinteresse. Precisa aprender a enxergar algumas coisas que ninguém te ensinou a perceber. E é exatamente isso que eu quero te ensinar. 🤍",
     ],
     opts: [{ t: "Quero descobrir →", cta: true, to: "__done" }],
   },
@@ -226,20 +223,20 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
         ))}
       </div>
 
-      {/* GANCHO */}
+      {/* GANCHO (sem branding — só atenção → identificação → curiosidade) */}
       {step === 0 && (
         <>
           <div className="sw-card rola" key="c0">
-            <div className="sw-eyebrow">Damas Virtuosas</div>
-            <h1 className="sw-h">Por que ele percebe <em>uma</em> — e passa direto por outra?</h1>
-            <p className="sw-p">Você já se perguntou isso?</p>
-            <p className="sw-p">Duas mulheres podem ser bonitas. As duas podem ser interessantes. As duas podem querer um relacionamento. Mas, mesmo assim…</p>
-            <p className="sw-q">uma desperta interesse e a outra parece passar despercebida.</p>
-            <p className="sw-p">Por quê? A resposta pode ser bem diferente do que você imagina.</p>
+            <h1 className="sw-h">Por que você ainda não está vivendo o relacionamento que <em>gostaria</em>?</h1>
+            <p className="sw-p">Você pode querer algo simples. Alguém para dividir a vida. Uma relação com carinho, interesse e reciprocidade. Alguém que realmente queira estar ali.</p>
+            <p className="sw-p">Mas, por algum motivo, isso ainda não aconteceu do jeito que você gostaria. E você já deve ter se perguntado: <em>“o que está faltando?”</em></p>
+            <p className="sw-p">Foi essa pergunta que me fez começar a observar uma coisa: mulheres muito diferentes, com histórias completamente diferentes, enfrentando dificuldades muito parecidas.</p>
+            <p className="sw-q">E havia algo por trás disso que quase ninguém ensinava.</p>
+            <p className="sw-p">É isso que eu quero te mostrar.</p>
           </div>
           <div className="sw-foot">
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
-            <span className="sw-hint">leva 2 minutinhos</span>
+            <span className="sw-hint">leva cerca de 2 minutinhos</span>
           </div>
         </>
       )}
@@ -262,7 +259,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
-              <div className="sw-oferta-d">Uma jornada prática para entender o que você transmite, como se posiciona, como se comunica, como demonstra interesse — e como parar de carregar sozinha uma relação que deveria ser dos dois.</div>
+              <div className="sw-oferta-d">Uma jornada prática para entender o que você transmite, como se posiciona, como se comunica, como demonstra interesse, como reconhecer reciprocidade — e como parar de carregar sozinha uma relação que deveria ser construída por dois.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
               {url ? (
                 <button type="button" className="pill" onClick={abrirCheckout}>Quero descobrir →</button>
