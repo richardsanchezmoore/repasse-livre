@@ -266,7 +266,8 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
             <p className="sw-p">Você pode querer algo simples. Alguém para amar, cuidar e dividir a vida. Alguém que queira estar com você. Que te valorize.</p>
             <p className="sw-p">Mas, por algum motivo, isso ainda não aconteceu. E você já deve ter se perguntado:</p>
             <p className="sw-q">“O que está faltando?”</p>
-            <p className="sw-p">Foi essa pergunta que me fez observar uma coisa: mulheres muito diferentes vivendo as mesmas dificuldades. E foi aí que comecei a buscar as respostas.</p>
+            <p className="sw-p">Foi essa pergunta que me fez olhar mais de perto para a história de muitas mulheres.</p>
+            <p className="sw-q">E encontrei algo que se repetia.</p>
           </div>
           <div className="sw-foot">
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
