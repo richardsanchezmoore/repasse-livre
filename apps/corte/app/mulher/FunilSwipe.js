@@ -59,50 +59,45 @@ const CHAT = {
   rec_valor: { lady: ["Faz sentido. ❤️ Você quer estar com alguém e sentir que isso vem dos dois lados.", Q2], opts: Q2_OPTS },
   rec_dividir: { lady: ["Eu entendo o que você busca. ❤️ Ter alguém para compartilhar a vida muda muita coisa.", Q2], opts: Q2_OPTS },
 
+  // Acolhimento (COM A MULHER = suave); muda só a 1ª linha e converge p/ a MESMA
+  // investigação → descoberta → mapa (regra das ramificações, seção 19).
   r2_ninguem: {
-    lady: ["Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.", "E foi justamente esse tipo de situação que começou a me chamar atenção."],
+    lady: ["Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.", "E foi aí que comecei a investigar o que estava por trás disso."],
     opts: CONTINUA,
   },
   r2_frente: {
-    lady: ["Isso é frustrante. Parece que começa bem, mas em algum momento tudo para.", "Foi esse tipo de situação que me fez começar a observar mais de perto."],
+    lady: ["Isso é frustrante. Começa bem e, de repente, tudo para.", "E foi aí que comecei a investigar o que estava por trás disso."],
     opts: CONTINUA,
   },
   r2_machuco: {
-    lady: ["Essa parte dói. Você entra querendo que dê certo e acaba saindo machucada.", "Foi vendo isso se repetir que comecei a prestar atenção em algumas coisas."],
+    lady: ["Essa parte dói. Você entra querendo que dê certo e sai machucada.", "E foi aí que comecei a investigar o que estava por trás disso."],
     opts: CONTINUA,
   },
 
+  // SOBRE O MÉTODO = convicção. Sem perguntas retóricas, sem "muitas vezes/talvez".
   experiencia: {
     lady: [
-      "Sabe o que começou a me chamar atenção? Durante muito tempo, observei mulheres completamente diferentes.",
-      "Idades diferentes. Jeitos diferentes. Histórias diferentes. Algumas já tinham vivido muitos relacionamentos, outras quase nenhum.",
-      "Mas algumas dificuldades apareciam de novo. E eu queria entender por quê.",
+      "Durante muito tempo, observei mulheres completamente diferentes.",
+      "Idades diferentes. Jeitos diferentes. Histórias diferentes. Algumas já tinham vivido muitos relacionamentos. Outras, quase nenhum.",
+      "E foi aí que percebi: muitas enfrentavam as mesmas dificuldades.",
     ],
-    opts: [{ t: "O que você viu?", to: "autoridade" }],
-  },
-  autoridade: {
-    lady: [
-      "Quanto mais eu observava, mais perguntas apareciam. Por que algumas mulheres constroem uma conexão com mais facilidade? E outras, mesmo querendo muito, vivem as mesmas frustrações?",
-      "Foi isso que me levou a estudar de verdade comportamento, comunicação e relacionamentos.",
-      "E comecei a perceber alguns padrões.",
-    ],
-    opts: [{ t: "Que padrões?", to: "descoberta" }],
+    opts: [{ t: "O que você viu?", to: "descoberta" }],
   },
   descoberta: {
     lady: [
-      "Percebi uma coisa importante: muitas vezes, o que acontece nos relacionamentos começa antes do relacionamento.",
-      "Começa na forma como você se coloca. No que a sua presença mostra. No que você revela. Na maneira como conversa. E até em como reage quando começa a gostar de alguém.",
-      "Isso muda completamente a forma de olhar para os relacionamentos.",
+      "Foi isso que me levou a estudar comportamento, comunicação e relacionamentos.",
+      "E uma coisa ficou clara:",
+      "O que desperta um relacionamento começa antes do primeiro contato.",
     ],
-    opts: [{ t: "Como assim?", to: "ponte" }],
+    opts: [{ t: "Como assim?", to: "revelacao" }],
   },
-  ponte: {
+  revelacao: {
     lady: [
-      "Eu poderia passar horas te explicando cada uma dessas coisas.",
-      "Mas percebi que precisava organizar tudo de um jeito simples. Algo que você pudesse entender e aplicar.",
-      "Foi daí que nasceu o mapa.",
+      "Começa na forma como você se coloca.",
+      "No que sua presença mostra. No que você revela. E na forma como você se comunica.",
+      "É aí que muita coisa começa a mudar.",
     ],
-    opts: [{ t: "Que mapa?", to: "encerramento" }],
+    opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },
   encerramento: {
     lady: [
