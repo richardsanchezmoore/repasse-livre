@@ -891,6 +891,30 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .pc-go:disabled{opacity:.7;cursor:default}
 .pc-safe{font:500 11.5px/1.4 var(--ui);color:var(--ink-soft);text-align:center;margin-top:12px}
 
+/* ── MAPA (pós-chat) + materialização do entregável ─────────────────────── */
+.sw-mapa-titulo{font:900 clamp(22px,6vw,29px)/1.15 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
+.sw-mapa-sub{font:400 14px/1.5 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:9px auto 18px}
+.sw-passos{display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto;width:100%}
+.sw-passo{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:9px 11px}
+.sw-passo-img{width:56px;height:70px;object-fit:cover;border-radius:9px;border:1px solid rgba(230,211,163,.4);flex:none}
+.sw-passo-n{font:900 14px var(--disp);color:var(--gold-2);flex:none;width:20px;text-align:center}
+.sw-passo-nome{font:700 15.5px var(--disp);color:#fdf6e6;text-transform:uppercase;letter-spacing:.02em}
+.sw-passo-desc{font:400 12.5px/1.4 var(--serif);color:#c9b48f;margin-top:2px}
+.sw-seq{max-width:440px;margin:22px auto 0;text-align:center}
+.sw-seq-t{font:900 clamp(18px,5vw,23px) var(--disp);color:var(--gold-2);text-wrap:balance;margin-bottom:8px}
+.sw-seq p{font:400 14px/1.65 var(--serif);color:#e4d3b4;max-width:36ch;margin:0 auto}
+.sw-inside{max-width:440px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:15px 16px}
+.sw-inside-h{font:700 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);margin-bottom:11px}
+.sw-inside ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.sw-inside li{font:500 14px/1.4 var(--serif);color:#f0e3c8;padding-left:22px;position:relative}
+.sw-inside li::before{content:"✦";position:absolute;left:0;color:var(--gold-2)}
+.sw-transform{max-width:440px;margin:18px auto 0;display:flex;flex-direction:column;gap:9px}
+.sw-tr{background:rgba(255,255,255,.04);border-radius:12px;padding:12px 15px;border-left:3px solid}
+.sw-tr.antes{border-color:#8a6a2e}
+.sw-tr.depois{border-color:var(--gold-2)}
+.sw-tr-l{font:700 10px var(--ui);letter-spacing:.16em;text-transform:uppercase;color:#c9b48f;margin-bottom:4px}
+.sw-tr-t{font:italic 500 15.5px/1.4 var(--disp);color:#fdf6e6}
+
 /* prova social no swipe (prints de depoimento reaproveitados do /panfleto) */
 .sw-card.rola{justify-content:flex-start;overflow-y:auto}
 .sw-deps{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 10px;margin:6px 0 20px;

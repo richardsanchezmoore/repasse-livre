@@ -1,14 +1,14 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FunilSwipe — landing principal: GANCHO → CONVERSA COM A LADY → OFERTA.
+//  FunilSwipe — landing principal (V6): CARD 1 (promessa) → CHAT (Helena/Lady)
+//  → O MAPA (5 passos visuais) → OFERTA MATERIALIZADA.
 //
-//  V5 (impulso vindo do Meta): Card 1 TANGÍVEL (mostrar o bolo, não a receita) e
-//  curto (cabe no iPhone 14 sem rolar). Conversa natural, RITMO AGRUPADO (2-3
-//  frases por bolha quando é uma ideia só — nada de picotar demais). Reações
-//  variadas. A descoberta ("você pode estar querendo uma coisa e mostrando
-//  outra") e o exemplo concreto ANTES de nomear a Elegância Prática. Linguagem
-//  de criança de 10 anos entender. Sem "método"/PERLA no funil.
+//  Estratégia: o CHAT é uma PONTE (identificação → acolhimento → autoridade da
+//  Helena → curiosidade). Não ensina, não dá exemplo específico, não aprofunda
+//  Elegância Prática, não revela PERLA. A VENDA acontece quando o MAPA (5 passos)
+//  e o entregável ficam tangíveis. "O chat faz querer saber; o mapa faz querer ter."
+//  Autoridade da Helena pela trajetória (observou→estudou→padrões→organizou).
 //  Instrumentação: ViewContent · FunilPasso + /api/evento · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -23,20 +23,30 @@ function trackFb(evento, dados, tipo = "track") {
 const VALOR = 37.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
-// ── roteiro do chat (V5; on-rails) ──────────────────────────────────────────
+// Os 5 passos do MAPA (nomes visíveis; o PERLA como mecanismo fica na obra).
+const PASSOS = [
+  { n: "01", nome: "Presença", desc: "Onde você está e como criar movimento.", img: "/livro/cena4.webp" },
+  { n: "02", nome: "Expressão", desc: "O que a sua presença comunica.", img: "/livro/cena2.webp" },
+  { n: "03", nome: "Revelação", desc: "Como despertar curiosidade sem se entregar por inteiro.", img: "/livro/cena11.webp" },
+  { n: "04", nome: "Linguagem", desc: "Como transformar aproximação em conexão.", img: "/livro/cena5.webp" },
+  { n: "05", nome: "Ação", desc: "Como observar, escolher e conduzir.", img: "/livro/cena10.webp" },
+];
+
+// ── roteiro do chat (V6 — Helena; ponte, não aula) ──────────────────────────
 const Q2 = "E como estão as coisas hoje?";
 const Q2_OPTS = [
   { t: "Não aparece ninguém", to: "r2_ninguem" },
   { t: "Aparece, mas não vai para frente", to: "r2_frente" },
   { t: "Eu acabo me machucando", to: "r2_machuco" },
 ];
-const AO_QUE = [{ t: "O quê?", to: "descoberta" }];
+const CONTINUA = [{ t: "Me conta", to: "experiencia" }];
 
 const CHAT = {
   start: {
     lady: [
-      "Oi, querida. ❤️",
-      "Quero entender uma coisa sobre você. Quando pensa no relacionamento que gostaria de viver, o que mais deseja?",
+      "Oi, querida. ❤️ Eu sou a Helena — mas aqui pode me chamar de Lady.",
+      "Quero te conhecer um pouco antes de te mostrar uma coisa.",
+      "Quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
     ],
     opts: [
       { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
@@ -45,112 +55,62 @@ const CHAT = {
     ],
   },
 
-  rec_serio: { lady: ["Entendi. ❤️ Você quer alguém que queira o mesmo que você.", Q2], opts: Q2_OPTS },
-  rec_valor: { lady: ["Faz sentido. ❤️ Você quer estar com alguém e se sentir realmente importante para essa pessoa.", Q2], opts: Q2_OPTS },
-  rec_dividir: { lady: ["Entendi. ❤️ No fundo, você quer alguém que realmente queira estar ao seu lado.", Q2], opts: Q2_OPTS },
+  rec_serio: { lady: ["Entendi. ❤️ Você quer alguém que esteja buscando o mesmo que você.", Q2], opts: Q2_OPTS },
+  rec_valor: { lady: ["Faz sentido. ❤️ Você quer estar com alguém e sentir que isso vem dos dois lados.", Q2], opts: Q2_OPTS },
+  rec_dividir: { lady: ["Eu entendo o que você busca. ❤️ Ter alguém para compartilhar a vida muda muita coisa.", Q2], opts: Q2_OPTS },
 
   r2_ninguem: {
-    lady: ["É difícil querer viver algo e não encontrar ninguém que pareça querer o mesmo.", "Sabe o que começou a me chamar atenção?"],
-    opts: AO_QUE,
+    lady: ["Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.", "E foi justamente esse tipo de situação que começou a me chamar atenção."],
+    opts: CONTINUA,
   },
   r2_frente: {
-    lady: ["Isso acontece com mais mulheres do que você imagina. Às vezes existe interesse, mas a história simplesmente não avança.", "E foi aí que comecei a prestar atenção em uma coisa."],
-    opts: AO_QUE,
+    lady: ["Isso é frustrante. Parece que começa bem, mas em algum momento tudo para.", "Foi esse tipo de situação que me fez começar a observar mais de perto."],
+    opts: CONTINUA,
   },
   r2_machuco: {
-    lady: ["Essa parte dói mesmo. Você se entrega e espera que o outro faça o mesmo.", "E foi aí que comecei a prestar atenção em uma coisa."],
-    opts: AO_QUE,
+    lady: ["Essa parte dói. Você entra querendo que dê certo e acaba saindo machucada.", "Foi vendo isso se repetir que comecei a prestar atenção em algumas coisas."],
+    opts: CONTINUA,
   },
 
-  // Card 3 — a descoberta
-  descoberta: {
+  experiencia: {
     lady: [
-      "Você pode estar querendo uma coisa — e mostrando outra.",
-      "E a outra pessoa reage ao que vê. Não ao que você sente por dentro.",
+      "Sabe o que começou a me chamar atenção? Durante muito tempo, observei mulheres completamente diferentes.",
+      "Idades diferentes. Jeitos diferentes. Histórias diferentes. Algumas já tinham vivido muitos relacionamentos, outras quase nenhum.",
+      "Mas algumas dificuldades apareciam de novo. E eu queria entender por quê.",
     ],
-    opts: [{ t: "Como assim?", to: "explica" }],
+    opts: [{ t: "O que você viu?", to: "autoridade" }],
   },
-  explica: {
-    lady: [
-      "Você pode querer um relacionamento sério. Pode querer alguém presente. Pode querer carinho.",
-      "Mas algumas atitudes podem passar outra mensagem.",
-    ],
-    opts: [{ t: "Me conta mais", to: "autoridade" }],
-  },
-
-  // Card 4 — autoridade (trajetória)
   autoridade: {
     lady: [
-      "Sabe o que mais me chamou atenção? Eu comecei a perceber que mulheres muito diferentes passavam pelas mesmas dificuldades.",
-      "Idades diferentes. Jeitos diferentes. Histórias diferentes. Mas algumas coisas se repetiam.",
-      "Foi aí que comecei a estudar esse assunto de verdade.",
+      "Quanto mais eu observava, mais perguntas apareciam. Por que algumas mulheres constroem uma conexão com mais facilidade? E outras, mesmo querendo muito, vivem as mesmas frustrações?",
+      "Foi isso que me levou a estudar de verdade comportamento, comunicação e relacionamentos.",
+      "E comecei a perceber alguns padrões.",
     ],
-    opts: [{ t: "O que se repetia?", to: "repetia" }],
+    opts: [{ t: "Que padrões?", to: "descoberta" }],
   },
-  repetia: {
+  descoberta: {
     lady: [
-      "Algumas se entregavam demais. Outras tinham medo de mostrar o que sentiam. Outras não sabiam quando insistir e quando parar.",
-      "E foi aí que comecei a enxergar os relacionamentos de outra maneira.",
+      "Percebi uma coisa importante: muitas vezes, o que acontece nos relacionamentos começa antes do relacionamento.",
+      "Começa na forma como você se coloca. No que a sua presença mostra. No que você revela. Na maneira como conversa. E até em como reage quando começa a gostar de alguém.",
+      "Isso muda completamente a forma de olhar para os relacionamentos.",
     ],
-    opts: [{ t: "Me dá um exemplo", to: "exemplo" }],
+    opts: [{ t: "Como assim?", to: "ponte" }],
   },
-
-  // Card 5 — exemplo concreto
-  exemplo: {
+  ponte: {
     lady: [
-      "Você começa a conversar com alguém. A conversa é boa, você gosta dele, e ele também demonstra interesse.",
-      "No outro dia, ele some.",
-      "Aí você pode pensar: “vou mandar outra mensagem, vou puxar assunto, preciso fazer essa conversa continuar.”",
-      "Ou o contrário: “agora não respondo, vou demorar, preciso mostrar que não estou disponível.”",
-      "Nos dois casos, você está tentando controlar o que ele vai pensar. Mas existe uma terceira forma.",
-      "Nenhum dos dois.",
+      "Eu poderia passar horas te explicando cada uma dessas coisas.",
+      "Mas percebi que precisava organizar tudo de um jeito simples. Algo que você pudesse entender e aplicar.",
+      "Foi daí que nasceu o mapa.",
     ],
-    opts: [{ t: "Qual?", to: "terceiravia" }],
+    opts: [{ t: "Que mapa?", to: "encerramento" }],
   },
-  terceiravia: {
+  encerramento: {
     lady: [
-      "Você pode gostar dele. Pode responder quando ele falar. Pode demonstrar que gostou da conversa.",
-      "Mas não precisa fazer a conversa acontecer sozinha.",
-      "Se ele quiser continuar, ele também vai participar. Se não participar, você já tem uma resposta.",
+      "Organizei essa descoberta em cinco passos. Cada um mostra uma parte diferente do caminho.",
+      "Não é sobre virar outra mulher. É sobre entender melhor o que você mostra, como agir e também como escolher.",
+      "Agora deixa eu te mostrar o que coloquei nesse mapa.",
     ],
-    opts: [{ t: "Faz sentido", to: "nomeia" }],
-  },
-  nomeia: {
-    lady: [
-      "É disso que eu falo quando digo Elegância Prática.",
-      "Não é ficar parada esperando. Não é fazer joguinho. E não é correr atrás.",
-      "É participar sem carregar tudo sozinha. É saber se colocar sem deixar de ser você.",
-    ],
-    opts: [{ t: "E onde mais isso aparece?", to: "grandevirada" }],
-  },
-
-  // Card 6 — a grande virada
-  grandevirada: {
-    lady: [
-      "E isso não serve só para o começo. A mesma coisa aparece quando você percebe que está gostando, quando precisa colocar um limite, quando sente que a pessoa está se afastando, ou quando precisa decidir se continua.",
-      "Porque existe uma pergunta que muda tudo.",
-      "Em vez de pensar: “como faço essa pessoa gostar de mim?”",
-      "Você começa a pensar: “o que essa pessoa está me mostrando?”",
-      "Isso muda a sua posição. Você deixa de ficar apenas esperando para ser escolhida.",
-      "Você também começa a escolher.",
-    ],
-    opts: [{ t: "Quero aprender isso", to: "esperanca" }],
-  },
-  esperanca: {
-    lady: [
-      "E quero que você guarde uma coisa. Existem pessoas procurando o mesmo que você.",
-      "Pessoas que querem carinho, companhia, parceria, construir uma vida a dois.",
-      "Você não precisa aprender a fazer qualquer pessoa gostar de você. Precisa aprender a reconhecer quem combina com o que você procura — e saber como agir quando essa pessoa aparecer.",
-    ],
-    opts: [{ t: "Quero aprender", to: "transicao" }],
-  },
-  transicao: {
-    lady: [
-      "Foi por isso que eu organizei tudo isso em uma jornada.",
-      "Uma jornada para você entender o que mostra, como se colocar, como conversar, como mostrar interesse, e como perceber quando o interesse vem dos dois lados.",
-      "Sem precisar virar outra mulher. Sem joguinhos. Sem fingir desinteresse.",
-    ],
-    opts: [{ t: "Ver a jornada", cta: true, to: "__done" }],
+    opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
 };
 
@@ -201,9 +161,9 @@ function LadyChat({ onDone }) {
   return (
     <div className="ldy">
       <div className="ldy-top">
-        <div className="ldy-av">{LADY_FOTO ? <img src={LADY_FOTO} alt="A Lady" /> : "L"}</div>
+        <div className="ldy-av">{LADY_FOTO ? <img src={LADY_FOTO} alt="Helena" /> : "H"}</div>
         <div className="ldy-id">
-          <div className="ldy-nome">A Lady</div>
+          <div className="ldy-nome">Helena</div>
           <div className="ldy-status"><i></i> online</div>
         </div>
       </div>
@@ -228,7 +188,7 @@ function LadyChat({ onDone }) {
   );
 }
 
-const TOTAL = 3;
+const TOTAL = 4;
 
 export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
@@ -278,28 +238,78 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
         </>
       )}
 
-      {/* CONVERSA COM A LADY */}
+      {/* CHAT COM A HELENA */}
       {step === 1 && <LadyChat onDone={() => setStep(2)} />}
 
-      {/* OFERTA */}
+      {/* O MAPA — 5 passos + "não são cinco dicas" */}
       {step === 2 && (
         <>
           <div className="sw-card rola" key="c2">
-            <div className="sw-eyebrow">Quem já atravessou a porta</div>
-            <div className="sw-deps">
+            <div className="sw-eyebrow">O mapa</div>
+            <div className="sw-mapa-titulo">Agora deixa eu te mostrar o mapa</div>
+            <div className="sw-mapa-sub">5 passos para você entender o que fazer, despertar interesse e reconhecer quem realmente combina com você.</div>
+            <div className="sw-passos">
+              {PASSOS.map((p) => (
+                <div key={p.n} className="sw-passo">
+                  <img className="sw-passo-img" src={p.img} alt="" loading="lazy" />
+                  <span className="sw-passo-n">{p.n}</span>
+                  <div>
+                    <div className="sw-passo-nome">{p.nome}</div>
+                    <div className="sw-passo-desc">{p.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="sw-seq">
+              <div className="sw-seq-t">Não são cinco dicas soltas.</div>
+              <p>Existe uma sequência. Primeiro você entende onde está. Depois, o que mostra. Depois, o que revela. Depois, como se conecta. E, por fim, como age e escolhe.</p>
+            </div>
+          </div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a jornada completa</button></div>
+        </>
+      )}
+
+      {/* OFERTA MATERIALIZADA — o que você recebe + transformação + preço */}
+      {step === 3 && (
+        <>
+          <div className="sw-card rola" key="c3">
+            <div className="sw-inside">
+              <div className="sw-inside-h">O que você recebe</div>
+              <ul>
+                <li>O mapa completo dos 5 passos, explicado por dentro</li>
+                <li>Cenas e reflexões práticas para aplicar na sua vida</li>
+                <li>Como perceber quando o interesse vem dos dois lados</li>
+                <li>Leitura leve de ~30 minutos, no seu celular</li>
+                <li>Acesso imediato e vitalício</li>
+              </ul>
+            </div>
+
+            <div className="sw-transform">
+              <div className="sw-tr antes">
+                <div className="sw-tr-l">Antes</div>
+                <div className="sw-tr-t">“Será que ele vai gostar de mim?”</div>
+              </div>
+              <div className="sw-tr depois">
+                <div className="sw-tr-l">Depois</div>
+                <div className="sw-tr-t">“Esse homem combina com o que eu quero viver?”</div>
+              </div>
+            </div>
+
+            <div className="sw-deps" style={{ marginTop: 20 }}>
               {["dep5", "dep2", "dep4", "dep6", "dep7"].map((d) => (
                 <div key={d} className="sw-depcard">
                   <img src={`/panfleto/depoimentos/${d}.jpg`} alt="Depoimento de uma leitora" loading="lazy" />
                 </div>
               ))}
             </div>
+
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
-              <div className="sw-oferta-d">Uma jornada prática para você enxergar coisas que ninguém ensinou você a perceber.</div>
+              <div className="sw-oferta-d">O mapa completo para destravar seus relacionamentos e aprender uma nova forma de se colocar, se comunicar e escolher.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
               {url ? (
-                <button type="button" className="pill" onClick={abrirCheckout}>Quero descobrir →</button>
+                <button type="button" className="pill" onClick={abrirCheckout}>Quero o mapa →</button>
               ) : (
                 <span className="pill" style={{ opacity: 0.6, display: "inline-block" }}>Em breve</span>
               )}
