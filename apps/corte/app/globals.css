@@ -787,6 +787,11 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-2);margin-bottom:16px;text-align:center}
 .sw-h{font:900 clamp(27px,7.6vw,38px)/1.14 var(--disp);color:#fdf6e6;text-wrap:balance;text-align:center;margin:0 auto;max-width:18ch}
 .sw-h em{font-style:italic;color:var(--gold-2)}
+.sw-sub{font:italic 500 clamp(15px,4.3vw,17px)/1.45 var(--serif);color:var(--gold-2);text-align:center;margin:12px auto 2px;max-width:30ch}
+/* card-promessa (card 1): centra e compacta p/ caber na viewport sem rolar */
+.sw-card.hero{justify-content:center;gap:2px}
+.sw-card.hero .sw-h{font-size:clamp(25px,7vw,34px);max-width:16ch}
+.sw-card.hero .sw-p{font-size:clamp(15px,4vw,16.5px);line-height:1.55;margin:8px 0 0}
 .sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:16px auto 0}
 .sw-q{font:italic 500 clamp(19px,5.4vw,24px)/1.4 var(--disp);color:var(--gold-2);text-align:center;text-wrap:balance;max-width:24ch;margin:20px auto 0}
 

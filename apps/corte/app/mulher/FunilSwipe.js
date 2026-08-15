@@ -3,12 +3,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  FunilSwipe — landing principal: GANCHO → CONVERSA COM A LADY → OFERTA.
 //
-//  Conversa V5 (naturalidade acima de tudo — parecer WhatsApp real):
-//   • UMA ideia por bolha (cada "Depois:" do roteiro = uma mensagem separada).
-//   • MÁX 3 opções por pergunta; a Lady reconhece a resposta antes de conduzir.
-//   • Linguagem de criança de 10 anos entender; nada que exija interpretação.
-//   • Evitar repetição em bolhas consecutivas (você/hoje/quer/…).
-//   • Autoridade da Lady pela trajetória. Sem "método"/PERLA no funil.
+//  V5 (impulso vindo do Meta): Card 1 TANGÍVEL (mostrar o bolo, não a receita) e
+//  curto (cabe no iPhone 14 sem rolar). Conversa natural, RITMO AGRUPADO (2-3
+//  frases por bolha quando é uma ideia só — nada de picotar demais). Reações
+//  variadas. A descoberta ("você pode estar querendo uma coisa e mostrando
+//  outra") e o exemplo concreto ANTES de nomear a Elegância Prática. Linguagem
+//  de criança de 10 anos entender. Sem "método"/PERLA no funil.
 //  Instrumentação: ViewContent · FunilPasso + /api/evento · InitiateCheckout.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -30,14 +30,13 @@ const Q2_OPTS = [
   { t: "Aparece, mas não vai para frente", to: "r2_frente" },
   { t: "Eu acabo me machucando", to: "r2_machuco" },
 ];
-const CONTINUA = [{ t: "Me conta", to: "descoberta1" }];
+const AO_QUE = [{ t: "O quê?", to: "descoberta" }];
 
 const CHAT = {
   start: {
     lady: [
-      "Oi, querida. ❤️ Que bom ter você aqui.",
-      "Quero te fazer uma pergunta.",
-      "Quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
+      "Oi, querida. ❤️",
+      "Quero entender uma coisa sobre você. Quando pensa no relacionamento que gostaria de viver, o que mais deseja?",
     ],
     opts: [
       { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
@@ -46,146 +45,109 @@ const CHAT = {
     ],
   },
 
-  rec_serio: {
-    lady: ["Eu entendo. ❤️", "Você quer alguém que queira o mesmo que você.", Q2],
-    opts: Q2_OPTS,
-  },
-  rec_valor: {
-    lady: ["Eu entendo. ❤️", "Você quer estar com alguém e se sentir realmente importante para essa pessoa.", Q2],
-    opts: Q2_OPTS,
-  },
-  rec_dividir: {
-    lady: ["Eu entendo. ❤️", "No fundo, você quer alguém que realmente queira estar ao seu lado.", Q2],
-    opts: Q2_OPTS,
-  },
+  rec_serio: { lady: ["Entendi. ❤️ Você quer alguém que queira o mesmo que você.", Q2], opts: Q2_OPTS },
+  rec_valor: { lady: ["Faz sentido. ❤️ Você quer estar com alguém e se sentir realmente importante para essa pessoa.", Q2], opts: Q2_OPTS },
+  rec_dividir: { lady: ["Entendi. ❤️ No fundo, você quer alguém que realmente queira estar ao seu lado.", Q2], opts: Q2_OPTS },
 
   r2_ninguem: {
-    lady: ["Eu entendo.", "É difícil querer viver algo e não encontrar ninguém que pareça querer o mesmo.", "Foi justamente isso que começou a me chamar atenção."],
-    opts: CONTINUA,
+    lady: ["É difícil querer viver algo e não encontrar ninguém que pareça querer o mesmo.", "Sabe o que começou a me chamar atenção?"],
+    opts: AO_QUE,
   },
   r2_frente: {
-    lady: ["Eu entendo.", "Às vezes alguém aparece, existe interesse, mas a história simplesmente não avança.", "Foi justamente isso que começou a me chamar atenção."],
-    opts: CONTINUA,
+    lady: ["Isso acontece com mais mulheres do que você imagina. Às vezes existe interesse, mas a história simplesmente não avança.", "E foi aí que comecei a prestar atenção em uma coisa."],
+    opts: AO_QUE,
   },
   r2_machuco: {
-    lady: ["Eu entendo. ❤️", "Quando você se entrega e não recebe o mesmo de volta, isso machuca.", "Foi justamente isso que começou a me chamar atenção."],
-    opts: CONTINUA,
+    lady: ["Essa parte dói mesmo. Você se entrega e espera que o outro faça o mesmo.", "E foi aí que comecei a prestar atenção em uma coisa."],
+    opts: AO_QUE,
   },
 
-  descoberta1: {
+  // Card 3 — a descoberta
+  descoberta: {
     lady: [
-      "Sabe o que eu comecei a perceber?",
-      "Mulheres muito diferentes passavam pelas mesmas dificuldades.",
-      "Algumas não conseguiam conhecer ninguém. Outras conheciam, mas nada ia para frente. E outras acabavam se machucando.",
-      "Eu queria entender por quê.",
+      "Você pode estar querendo uma coisa — e mostrando outra.",
+      "E a outra pessoa reage ao que vê. Não ao que você sente por dentro.",
     ],
-    opts: [{ t: "Quero saber", to: "historia" }],
+    opts: [{ t: "Como assim?", to: "explica" }],
   },
-  historia: {
+  explica: {
     lady: [
-      "Foi aí que comecei a observar tudo isso mais de perto.",
-      "Idades diferentes. Jeitos diferentes. Histórias diferentes.",
-      "Mas algumas coisas se repetiam.",
-      "Algumas se entregavam demais. Outras tinham medo de mostrar o que sentiam. Outras não sabiam como fazer uma relação avançar.",
-      "E eu comecei a estudar esse assunto de verdade.",
+      "Você pode querer um relacionamento sério. Pode querer alguém presente. Pode querer carinho.",
+      "Mas algumas atitudes podem passar outra mensagem.",
     ],
-    opts: [{ t: "O que você descobriu?", to: "autoridade" }],
+    opts: [{ t: "Me conta mais", to: "autoridade" }],
   },
+
+  // Card 4 — autoridade (trajetória)
   autoridade: {
     lady: [
-      "Quanto mais eu estudava, mais uma coisa ficava clara:",
-      "não era só uma questão de beleza. E também não era falta de sorte.",
-      "Tinha coisa acontecendo antes.",
+      "Sabe o que mais me chamou atenção? Eu comecei a perceber que mulheres muito diferentes passavam pelas mesmas dificuldades.",
+      "Idades diferentes. Jeitos diferentes. Histórias diferentes. Mas algumas coisas se repetiam.",
+      "Foi aí que comecei a estudar esse assunto de verdade.",
     ],
-    opts: [{ t: "Antes do quê?", to: "lacuna" }],
+    opts: [{ t: "O que se repetia?", to: "repetia" }],
   },
-  lacuna: {
+  repetia: {
     lady: [
-      "Antes de um relacionamento começar, muita coisa já está acontecendo.",
-      "O jeito que você fala. O jeito que responde. O que mostra. O que aceita. A forma como age.",
-      "Tudo isso passa uma mensagem.",
+      "Algumas se entregavam demais. Outras tinham medo de mostrar o que sentiam. Outras não sabiam quando insistir e quando parar.",
+      "E foi aí que comecei a enxergar os relacionamentos de outra maneira.",
     ],
-    opts: [{ t: "Como assim?", to: "caminhos" }],
+    opts: [{ t: "Me dá um exemplo", to: "exemplo" }],
   },
-  caminhos: {
-    lady: [
-      "Provavelmente você já ouviu vários conselhos sobre isso.",
-      "“Espere.” Uma hora alguém aparece.",
-      "“Melhore.” Cuide de você e seja sua melhor versão.",
-      "“Faça ele correr atrás.” Não demonstre demais, não fique tão disponível.",
-      "Mas tem uma coisa que esses conselhos não ensinam.",
-    ],
-    opts: [{ t: "O que eles não ensinam?", to: "central" }],
-  },
-  central: {
-    lady: [
-      "O que você está mostrando sem perceber?",
-      "Você pode estar tentando fazer uma coisa… e a outra pessoa entender outra.",
-      "E isso muda muita coisa.",
-    ],
-    opts: [{ t: "Quero entender", to: "elegancia" }],
-  },
-  elegancia: {
-    lady: [
-      "Foi aí que comecei a enxergar os relacionamentos de outra maneira.",
-      "Não é manipular ninguém. Não é fazer joguinho. E muito menos virar outra pessoa.",
-      "É aprender a se colocar melhor.",
-      "Saber o que mostrar. Saber o que falar. Saber quando demonstrar. Saber quando parar. E perceber quando o interesse vem dos dois lados.",
-      "Foi observando tudo isso que eu dei um nome a essa forma diferente de se relacionar:",
-      "Elegância Prática.",
-      "É saber se colocar sem deixar de ser você.",
-    ],
-    opts: [{ t: "Me mostra na prática", to: "exemplo" }],
-  },
+
+  // Card 5 — exemplo concreto
   exemplo: {
     lady: [
-      "Vou te dar um exemplo simples.",
-      "Você conhece alguém e gosta dessa pessoa.",
-      "Aí pode pensar: “preciso mostrar bastante que gostei.”",
-      "Ou: “preciso me segurar para não parecer disponível demais.”",
-      "Nos dois casos, você está tentando controlar o que ele vai pensar.",
-      "Mas existe outra maneira.",
+      "Você começa a conversar com alguém. A conversa é boa, você gosta dele, e ele também demonstra interesse.",
+      "No outro dia, ele some.",
+      "Aí você pode pensar: “vou mandar outra mensagem, vou puxar assunto, preciso fazer essa conversa continuar.”",
+      "Ou o contrário: “agora não respondo, vou demorar, preciso mostrar que não estou disponível.”",
+      "Nos dois casos, você está tentando controlar o que ele vai pensar. Mas existe uma terceira forma.",
+      "Nenhum dos dois.",
     ],
     opts: [{ t: "Qual?", to: "terceiravia" }],
   },
   terceiravia: {
     lady: [
-      "Você pode mostrar que gostou. Pode conversar. Pode ser carinhosa. Pode demonstrar interesse.",
-      "E continuar vivendo a sua vida.",
-      "Sem fingir. Sem joguinho. Sem tentar controlar cada resposta.",
-      "E sem fazer sozinha o que deveria acontecer dos dois lados.",
-      "Percebe a diferença?",
+      "Você pode gostar dele. Pode responder quando ele falar. Pode demonstrar que gostou da conversa.",
+      "Mas não precisa fazer a conversa acontecer sozinha.",
+      "Se ele quiser continuar, ele também vai participar. Se não participar, você já tem uma resposta.",
     ],
-    opts: [{ t: "Sim, agora entendi", to: "grandevirada" }],
+    opts: [{ t: "Faz sentido", to: "nomeia" }],
   },
+  nomeia: {
+    lady: [
+      "É disso que eu falo quando digo Elegância Prática.",
+      "Não é ficar parada esperando. Não é fazer joguinho. E não é correr atrás.",
+      "É participar sem carregar tudo sozinha. É saber se colocar sem deixar de ser você.",
+    ],
+    opts: [{ t: "E onde mais isso aparece?", to: "grandevirada" }],
+  },
+
+  // Card 6 — a grande virada
   grandevirada: {
     lady: [
-      "E isso não serve só para o começo.",
-      "A mesma coisa aparece quando você começa a conversar com alguém. Quando percebe que está gostando. Quando precisa colocar um limite. Quando sente que a pessoa está se afastando. Ou quando precisa decidir se continua.",
+      "E isso não serve só para o começo. A mesma coisa aparece quando você percebe que está gostando, quando precisa colocar um limite, quando sente que a pessoa está se afastando, ou quando precisa decidir se continua.",
       "Porque existe uma pergunta que muda tudo.",
       "Em vez de pensar: “como faço essa pessoa gostar de mim?”",
       "Você começa a pensar: “o que essa pessoa está me mostrando?”",
-      "Isso muda a sua posição.",
-      "Você deixa de ficar apenas esperando para ser escolhida.",
+      "Isso muda a sua posição. Você deixa de ficar apenas esperando para ser escolhida.",
       "Você também começa a escolher.",
     ],
     opts: [{ t: "Quero aprender isso", to: "esperanca" }],
   },
   esperanca: {
     lady: [
-      "E quero que você guarde uma coisa.",
-      "Existem pessoas procurando o mesmo que você.",
-      "Pessoas que querem carinho. Querem companhia. Querem parceria. Querem construir uma vida a dois.",
-      "Você não precisa aprender a fazer qualquer pessoa gostar de você.",
-      "Precisa aprender a reconhecer quem combina com o que você procura.",
-      "E saber como agir quando essa pessoa aparecer.",
+      "E quero que você guarde uma coisa. Existem pessoas procurando o mesmo que você.",
+      "Pessoas que querem carinho, companhia, parceria, construir uma vida a dois.",
+      "Você não precisa aprender a fazer qualquer pessoa gostar de você. Precisa aprender a reconhecer quem combina com o que você procura — e saber como agir quando essa pessoa aparecer.",
     ],
     opts: [{ t: "Quero aprender", to: "transicao" }],
   },
   transicao: {
     lady: [
       "Foi por isso que eu organizei tudo isso em uma jornada.",
-      "Uma jornada para você entender melhor o que mostra sem perceber, como se colocar, como conversar, como mostrar interesse, e como perceber quando o interesse vem dos dois lados.",
+      "Uma jornada para você entender o que mostra, como se colocar, como conversar, como mostrar interesse, e como perceber quando o interesse vem dos dois lados.",
       "Sem precisar virar outra mulher. Sem joguinhos. Sem fingir desinteresse.",
     ],
     opts: [{ t: "Ver a jornada", cta: true, to: "__done" }],
@@ -211,7 +173,7 @@ function LadyChat({ onDone }) {
       if (idx >= n.lady.length) { setShowOpts(true); return; }
       const msg = n.lady[idx];
       setTyping(true);
-      const dly = 550 + Math.min(msg.length * 13, 1500);
+      const dly = 550 + Math.min(msg.length * 12, 1500);
       timers.push(setTimeout(() => {
         if (cancelled) return;
         setTyping(false);
@@ -299,16 +261,15 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
         ))}
       </div>
 
-      {/* GANCHO (sem branding — o desejo) */}
+      {/* CARD 1 — a promessa (tangível, cabe na viewport) */}
       {step === 0 && (
         <>
-          <div className="sw-card rola" key="c0">
-            <h1 className="sw-h">Por que você ainda não está vivendo o relacionamento que <em>gostaria</em>?</h1>
-            <p className="sw-p">Você pode querer algo simples. Alguém para amar, cuidar e dividir a vida. Alguém que queira estar com você. Que te valorize.</p>
-            <p className="sw-p">Mas, por algum motivo, isso ainda não aconteceu. E você já deve ter se perguntado:</p>
-            <p className="sw-q">“O que está faltando?”</p>
-            <p className="sw-p">Foi essa pergunta que me fez olhar mais de perto para a história de muitas mulheres.</p>
-            <p className="sw-q">E encontrei algo que se repetia.</p>
+          <div className="sw-card hero" key="c0">
+            <h1 className="sw-h">O Mapa das Mulheres para Destravar as Relações</h1>
+            <p className="sw-sub">Descubra o que muitas mulheres estão fazendo diferente.</p>
+            <p className="sw-p">Você pode querer alguém para amar, cuidar e dividir a vida. Mas, por algum motivo, isso ainda não aconteceu.</p>
+            <p className="sw-p">E você não é a única.</p>
+            <p className="sw-p">Foi olhando de perto para muitas mulheres que percebi: mesmo sendo diferentes, muitas enfrentavam as mesmas dificuldades.</p>
           </div>
           <div className="sw-foot">
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
