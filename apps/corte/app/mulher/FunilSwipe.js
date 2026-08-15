@@ -227,6 +227,13 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
             <p className="sw-p">Foi olhando de perto para muitas mulheres que percebi: mesmo sendo diferentes, quase todas enfrentam as mesmas dificuldades.</p>
           </div>
           <div className="sw-foot">
+            <div className="sw-assina">
+              {LADY_FOTO ? <img src={LADY_FOTO} alt="Lady Helena" /> : <span className="sw-assina-av">H</span>}
+              <div className="sw-assina-txt">
+                <div className="sw-assina-n">Lady Helena</div>
+                <div className="sw-assina-r">Autora do Mapa das Mulheres</div>
+              </div>
+            </div>
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
             <span className="sw-hint">leva cerca de 2 minutinhos</span>
           </div>
