@@ -225,11 +225,11 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
       {step === 0 && (
         <>
           <div className="sw-card hero" key="c0">
-            <h1 className="sw-h">O Mapa das Mulheres para Destravar as Relações</h1>
-            <p className="sw-sub">Descubra o que muitas mulheres estão fazendo diferente.</p>
-            <p className="sw-p">Você pode querer alguém para amar, cuidar e dividir a vida. Mas, por algum motivo, isso ainda não aconteceu.</p>
-            <p className="sw-p">E você não é a única.</p>
-            <p className="sw-p">Foi olhando de perto para muitas mulheres que percebi: mesmo sendo diferentes, muitas enfrentavam as mesmas dificuldades.</p>
+            <h1 className="sw-h">O Mapa das Mulheres</h1>
+            <p className="sw-sub">Para destravar as relações — e viver o que você tanto deseja.</p>
+            <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. Mas, por algum motivo, isso ainda não aconteceu.</p>
+            <p className="sw-destaque">E você não é a única.</p>
+            <p className="sw-p">Foi olhando de perto para muitas mulheres que percebi: mesmo sendo diferentes, quase todas enfrentam as mesmas dificuldades.</p>
           </div>
           <div className="sw-foot">
             <button className="sw-btn" onClick={avancar}>Quero entender</button>

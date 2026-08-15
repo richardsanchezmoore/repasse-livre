@@ -804,6 +804,16 @@ body.sw-fs{overflow:hidden}
 body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw{height:100dvh;display:flex;flex-direction:column;background:
   radial-gradient(120% 70% at 50% -5%,#4a1620 0%,#2a0e16 45%,#160a10 100%);color:#f3e6cd}
+/* desktop: campanhas são mobile, mas aqui vira uma moldura tipo celular,
+   centralizada — evita a coluna estreita flutuando num mar de branco */
+@media (min-width:600px){
+  body.sw-fs{display:flex;align-items:center;justify-content:center;min-height:100dvh;
+    background:radial-gradient(circle at 50% 25%,#2a0e16,#120309 70%)}
+  body.sw-fs .app{height:min(calc(100dvh - 48px),880px);max-width:412px;border-radius:30px;
+    overflow:hidden;border:1px solid rgba(230,211,163,.16);box-shadow:0 44px 100px -34px rgba(0,0,0,.75)}
+  body.sw-fs .sw-main{height:100%}
+  body.sw-fs .sw{height:100%}
+}
 .sw-prog{display:flex;gap:5px;padding:calc(12px + env(safe-area-inset-top)) 18px 4px}
 .sw-prog i{flex:1;height:3px;border-radius:99px;background:rgba(230,211,163,.22)}
 .sw-prog i.on{background:linear-gradient(90deg,var(--gold),var(--gold-2))}
@@ -818,6 +828,9 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-card.hero{justify-content:center;gap:2px}
 .sw-card.hero .sw-h{font-size:clamp(25px,7vw,34px);max-width:16ch}
 .sw-card.hero .sw-p{font-size:clamp(15px,4vw,16.5px);line-height:1.55;margin:8px 0 0}
+/* frase-destaque do card 1 (cor + peso p/ saltar aos olhos) */
+.sw-destaque{font:italic 700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
+  text-wrap:balance;max-width:22ch;margin:15px auto;text-shadow:0 0 34px rgba(203,168,91,.3)}
 .sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:16px auto 0}
 .sw-q{font:italic 500 clamp(19px,5.4vw,24px)/1.4 var(--disp);color:var(--gold-2);text-align:center;text-wrap:balance;max-width:24ch;margin:20px auto 0}
 
