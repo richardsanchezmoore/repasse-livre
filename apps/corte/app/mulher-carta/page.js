@@ -13,11 +13,11 @@ export const metadata = {
 
 // Os 5 passos do MAPA (o PERLA continua sendo a descoberta dentro da obra).
 const PASSOS = [
-  { n: "01", t: "Presença", d: "Como se posicionar e ser percebida." },
-  { n: "02", t: "Expressão", d: "Como mostrar interesse." },
-  { n: "03", t: "Revelação", d: "Como despertar curiosidade e interesse." },
-  { n: "04", t: "Linguagem", d: "O que falar e como conduzir a conversa." },
-  { n: "05", t: "Ação", d: "Como agir quando o interesse é recíproco." },
+  { n: "01", t: "Presença", d: "Como ser notada por quem você quer." },
+  { n: "02", t: "Expressão", d: "O que você comunica antes de falar." },
+  { n: "03", t: "Revelação", d: "Como despertar a curiosidade dele." },
+  { n: "04", t: "Linguagem", d: "O que dizer para criar conexão." },
+  { n: "05", t: "Ação", d: "Como agir quando o interesse é dos dois." },
 ];
 
 const MUDA = [

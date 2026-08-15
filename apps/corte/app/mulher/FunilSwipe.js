@@ -25,11 +25,11 @@ const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
 // Os 5 passos do MAPA (nomes visíveis; o PERLA como mecanismo fica na obra).
 const PASSOS = [
-  { n: "01", nome: "Presença", desc: "Como se posicionar e ser percebida.", img: "/livro/thumb/cena4.webp" },
-  { n: "02", nome: "Expressão", desc: "Como mostrar interesse.", img: "/livro/thumb/cena2.webp" },
-  { n: "03", nome: "Revelação", desc: "Como despertar curiosidade e interesse.", img: "/livro/thumb/cena11.webp" },
-  { n: "04", nome: "Linguagem", desc: "O que falar e como conduzir a conversa.", img: "/livro/thumb/cena5.webp" },
-  { n: "05", nome: "Ação", desc: "Como agir quando o interesse é recíproco.", img: "/livro/thumb/cena10.webp" },
+  { n: "01", nome: "Presença", desc: "Como ser notada por quem você quer.", img: "/livro/thumb/cena4.webp" },
+  { n: "02", nome: "Expressão", desc: "O que você comunica antes de falar.", img: "/livro/thumb/cena2.webp" },
+  { n: "03", nome: "Revelação", desc: "Como despertar a curiosidade dele.", img: "/livro/thumb/cena11.webp" },
+  { n: "04", nome: "Linguagem", desc: "O que dizer para criar conexão.", img: "/livro/thumb/cena5.webp" },
+  { n: "05", nome: "Ação", desc: "Como agir quando o interesse é dos dois.", img: "/livro/thumb/cena10.webp" },
 ];
 
 // ── roteiro do chat (V6 — Helena; ponte, não aula) ──────────────────────────
