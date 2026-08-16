@@ -24,7 +24,7 @@ function horaAgora() {
 
 // Áudio da Lady (ElevenLabs). Deixe "" para usar o texto; ao subir o arquivo em
 // public/livro/, aponte aqui (ex.: "/livro/lady-voz.mp3") e a bolha vira voz.
-const LADY_AUDIO = "";
+const LADY_AUDIO = "/livro/lady-voz.mp3";
 const BAR_HEIGHTS = [7, 12, 18, 10, 20, 14, 23, 9, 16, 12, 21, 8, 15, 19, 11, 22, 10, 17, 13, 9, 18, 12, 20, 11];
 
 function fmtDur(s) {
@@ -161,7 +161,7 @@ const CHAT = {
       "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
       // ÁUDIO no PICO (descoberta + territórios): momento estratégico + texto longo.
-      { audio: LADY_AUDIO, dur: "0:16", texto: "O que desperta um relacionamento começa antes do primeiro contato. Começa em como você se coloca, no que mostra, no que revela e em como você conversa." },
+      { audio: LADY_AUDIO, dur: "0:16", texto: "Querida, deixa eu te dizer. O que desperta um relacionamento começa antes do primeiro contato. Começa em como você se coloca, no que mostra, no que revela e em como você conversa." },
     ],
     opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },
