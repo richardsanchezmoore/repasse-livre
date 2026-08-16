@@ -166,7 +166,7 @@ const CHAT = {
       "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
       // ÁUDIO no PICO (descoberta + territórios): momento estratégico + texto longo.
-      { audio: LADY_AUDIO, dur: "0:16", texto: "Querida, deixa eu te dizer. O que desperta um relacionamento começa antes do primeiro contato. Começa em como você se coloca, no que mostra, no que revela e em como você conversa." },
+      { audio: LADY_AUDIO, dur: "0:15", texto: "Querida, deixa eu te dizer uma coisa. O que faz um homem se interessar de verdade começa muito antes do primeiro contato. E quase nenhuma mulher percebe isso — é justamente aí que está a virada." },
     ],
     opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },
