@@ -95,7 +95,6 @@ const PASSOS = [
 // ── roteiro do chat (V6 — Helena; ponte, não aula) ──────────────────────────
 const Q2 = "E como estão as coisas hoje?";
 const Q2_OPTS = [
-  { t: "Não aparece ninguém", to: "r2_ninguem" },
   { t: "Aparece, mas não vai para frente", to: "r2_frente" },
   { t: "Eu acabo me machucando", to: "r2_machuco" },
 ];
@@ -118,9 +117,8 @@ const CHAT = {
   start: {
     lady: ABERTURA.b,
     opts: [
-      { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
       { t: "Ser amada e valorizada", to: "rec_valor" },
-      { t: "Ter alguém para dividir a vida", to: "rec_dividir" },
+      { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
     ],
   },
 
@@ -133,7 +131,6 @@ const CHAT = {
   r2_ninguem: {
     lady: [
       "Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.",
-      "E foi aí que comecei a investigar o que estava por trás disso.",
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
@@ -144,7 +141,6 @@ const CHAT = {
   r2_frente: {
     lady: [
       "Isso é frustrante. Começa bem e, de repente, tudo para.",
-      "E foi aí que comecei a investigar o que estava por trás disso.",
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
@@ -155,7 +151,6 @@ const CHAT = {
   r2_machuco: {
     lady: [
       "Essa parte dói. Você entra querendo que dê certo e sai machucada.",
-      "E foi aí que comecei a investigar o que estava por trás disso.",
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
