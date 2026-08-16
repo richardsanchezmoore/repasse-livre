@@ -81,11 +81,11 @@ const CHAT = {
       "Idades diferentes. Jeitos diferentes. Histórias diferentes. Algumas já tinham vivido muitos relacionamentos. Outras, quase nenhum.",
       "E foi aí que percebi: muitas enfrentavam as mesmas dificuldades.",
     ],
-    opts: [{ t: "O que você viu?", to: "descoberta" }],
+    opts: [{ t: "Parece comigo.", to: "descoberta" }],
   },
   descoberta: {
     lady: [
-      "Foi isso que me levou a estudar comportamento, comunicação e relacionamentos.",
+      "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
       "O que desperta um relacionamento começa antes do primeiro contato.",
     ],
