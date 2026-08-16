@@ -383,16 +383,10 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
       {/* O QUE MUDA PARA VOCÊ — benefício/transformação (progressão) + antes→depois */}
       {step === 4 && (
         <>
-          <div className="sw-card rola" key="c3">
+          <div className="sw-card" key="c4">
             <div className="sw-eyebrow">A transformação</div>
             <div className="sw-muda-h">O que muda para você</div>
-            <ul className="sw-muda">
-              <li>Vai entender o que trava seus relacionamentos.</li>
-              <li>Vai perceber o que sua presença comunica.</li>
-              <li>Vai saber despertar o interesse.</li>
-              <li>Vai reconhecer quando o interesse vem dos dois lados.</li>
-              <li>Vai começar a escolher — e não só esperar ser escolhida.</li>
-            </ul>
+            <p className="sw-p" style={{ margin: "2px auto 4px" }}>Repare como a pergunta na sua cabeça muda.</p>
 
             <div className="sw-transform">
               <div className="sw-tr antes">
@@ -404,6 +398,8 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
                 <div className="sw-tr-t">“Esse homem combina com o que eu quero viver?”</div>
               </div>
             </div>
+
+            <p className="sw-destaque" style={{ fontSize: "clamp(18px,5vw,23px)", marginTop: "20px" }}>Você deixa de esperar ser escolhida — e começa a escolher.</p>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a oferta →</button></div>
         </>
