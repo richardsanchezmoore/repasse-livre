@@ -40,13 +40,24 @@ const Q2_OPTS = [
   { t: "Eu acabo me machucando", to: "r2_machuco" },
 ];
 
+// Abertura A/B (testável): ?ab=a|b força a variante; senão 50/50 persistido.
+// Testa só o gancho das 2 primeiras bolhas — a pergunta Q1 é a mesma nas duas.
+const ABERTURA = {
+  a: [
+    "Oi, querida. ❤️ Eu sou a Helena — mas aqui pode me chamar de Lady.",
+    "Quero te conhecer um pouco antes de te mostrar uma coisa.",
+    "Quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
+  ],
+  b: [
+    "Oi, querida. ❤️ Que bom que você chegou até aqui.",
+    "Eu sou a Helena — mas aqui pode me chamar de Lady.",
+    "Me conta: quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
+  ],
+};
+
 const CHAT = {
   start: {
-    lady: [
-      "Oi, querida. ❤️ Eu sou a Helena — mas aqui pode me chamar de Lady.",
-      "Quero te conhecer um pouco antes de te mostrar uma coisa.",
-      "Quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
-    ],
+    lady: ABERTURA.a,
     opts: [
       { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
       { t: "Ser amada e valorizada", to: "rec_valor" },
@@ -66,7 +77,10 @@ const CHAT = {
       "E foi aí que comecei a investigar o que estava por trás disso.",
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
-    opts: [{ t: "Parece comigo.", to: "descoberta" }],
+    opts: [
+      { t: "Parece muito comigo.", to: "descoberta" },
+      { t: "Um pouco, sim.", to: "descoberta" },
+    ],
   },
   r2_frente: {
     lady: [
@@ -74,7 +88,10 @@ const CHAT = {
       "E foi aí que comecei a investigar o que estava por trás disso.",
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
-    opts: [{ t: "Parece comigo.", to: "descoberta" }],
+    opts: [
+      { t: "Parece muito comigo.", to: "descoberta" },
+      { t: "Um pouco, sim.", to: "descoberta" },
+    ],
   },
   r2_machuco: {
     lady: [
@@ -82,7 +99,10 @@ const CHAT = {
       "E foi aí que comecei a investigar o que estava por trás disso.",
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
-    opts: [{ t: "Parece comigo.", to: "descoberta" }],
+    opts: [
+      { t: "Parece muito comigo.", to: "descoberta" },
+      { t: "Um pouco, sim.", to: "descoberta" },
+    ],
   },
 
   // Acolhe a identificação → descoberta firme → territórios, num fôlego só
@@ -106,7 +126,7 @@ const CHAT = {
   },
 };
 
-function LadyChat({ onDone }) {
+function LadyChat({ onDone, variante = "a" }) {
   const [node, setNode] = useState("start");
   const [msgs, setMsgs] = useState([]);
   const [typing, setTyping] = useState(false);
@@ -114,7 +134,7 @@ function LadyChat({ onDone }) {
   const threadRef = useRef(null);
 
   useEffect(() => {
-    const n = CHAT[node];
+    const n = node === "start" ? { ...CHAT.start, lady: ABERTURA[variante] || ABERTURA.a } : CHAT[node];
     if (!n) return;
     let cancelled = false;
     let idx = 0;
@@ -136,7 +156,7 @@ function LadyChat({ onDone }) {
     };
     step();
     return () => { cancelled = true; timers.forEach(clearTimeout); };
-  }, [node]);
+  }, [node, variante]);
 
   useEffect(() => {
     if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
@@ -186,18 +206,30 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
   const [step, setStep] = useState(0);
   const [showCheck, setShowCheck] = useState(false);
   const avancar = () => setStep((s) => Math.min(TOTAL - 1, s + 1));
+  // Variante da abertura A/B: ?ab=a|b força (útil p/ testar por anúncio no Meta);
+  // senão sorteia 50/50 e persiste (organico).
+  const [variante] = useState(() => {
+    if (typeof window === "undefined") return "a";
+    try {
+      const p = new URLSearchParams(window.location.search).get("ab");
+      if (p === "a" || p === "b") { localStorage.setItem("dv_ab", p); return p; }
+      let v = localStorage.getItem("dv_ab");
+      if (v !== "a" && v !== "b") { v = Math.random() < 0.5 ? "a" : "b"; localStorage.setItem("dv_ab", v); }
+      return v;
+    } catch { return "a"; }
+  });
 
   useEffect(() => {
     document.body.classList.add("sw-fs");
     return () => document.body.classList.remove("sw-fs");
   }, []);
 
-  useEffect(() => { trackFb("ViewContent", { content_name: CONTEUDO, content_category: "funil", value: VALOR, currency: "BRL" }); }, []);
+  useEffect(() => { trackFb("ViewContent", { content_name: CONTEUDO, content_category: "funil", value: VALOR, currency: "BRL", ab: variante }); }, [variante]);
   useEffect(() => {
-    trackFb("FunilPasso", { passo: step + 1 }, "trackCustom");
+    trackFb("FunilPasso", { passo: step + 1, ab: variante }, "trackCustom");
     let vid = null;
     try { vid = localStorage.getItem("dv_vid"); if (!vid) { vid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2); localStorage.setItem("dv_vid", vid); } } catch {}
-    try { fetch("/api/evento", { method: "POST", keepalive: true, headers: { "content-type": "application/json" }, body: JSON.stringify({ tipo: "mulher_passo", passo: step + 1, vid }) }); } catch {}
+    try { fetch("/api/evento", { method: "POST", keepalive: true, headers: { "content-type": "application/json" }, body: JSON.stringify({ tipo: "mulher_passo", passo: step + 1, vid, ab: variante }) }); } catch {}
   }, [step]);
 
   function abrirCheckout() {
@@ -238,7 +270,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
       )}
 
       {/* CHAT COM A HELENA */}
-      {step === 1 && <LadyChat onDone={() => setStep(2)} />}
+      {step === 1 && <LadyChat variante={variante} onDone={() => setStep(2)} />}
 
       {/* O MAPA — 5 passos + "não são cinco dicas" */}
       {step === 2 && (
@@ -301,23 +333,15 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
       {step === 4 && (
         <>
           <div className="sw-card rola" key="c4">
-            <div className="sw-deps">
-              {["dep5", "dep2", "dep4", "dep6", "dep7"].map((d) => (
-                <div key={d} className="sw-depcard">
-                  <img src={`/panfleto/depoimentos/${d}.jpg`} alt="Depoimento de uma leitora" loading="lazy" />
-                </div>
-              ))}
-            </div>
-
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
               <div className="sw-oferta-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</div>
               <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
               <ul className="sw-recebe">
+                <li>Os 5 passos, explicados por dentro</li>
                 <li>Acesso imediato</li>
                 <li>Acesso vitalício</li>
-                <li>Leitura de ~30 minutos</li>
                 <li>Garantia de 7 dias</li>
               </ul>
               {url ? (

@@ -172,9 +172,9 @@ export default async function LandingMulherCarta() {
             <p className="lpm-precocard-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</p>
             <div className="lpm-preco">{preco}<small>pagamento único · acesso imediato</small></div>
             <ul className="lpm-recebe">
+              <li>Os 5 passos, explicados por dentro</li>
               <li>Acesso imediato</li>
               <li>Acesso vitalício</li>
-              <li>Leitura de ~30 minutos</li>
               <li>Garantia de 7 dias</li>
             </ul>
             <CTA url={url} preco={preco}>Quero o mapa</CTA>
