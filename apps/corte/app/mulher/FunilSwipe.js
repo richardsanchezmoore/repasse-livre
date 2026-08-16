@@ -17,6 +17,11 @@ import PreCheckout from "@/components/PreCheckout";
 
 const LADY_FOTO = "/livro/lady.webp";
 
+function horaAgora() {
+  try { const d = new Date(); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; }
+  catch { return ""; }
+}
+
 function trackFb(evento, dados, tipo = "track") {
   try { if (typeof window !== "undefined" && window.fbq) window.fbq(tipo, evento, dados); } catch {}
 }
@@ -78,8 +83,8 @@ const CHAT = {
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "tentativas" },
-      { t: "Um pouco, sim.", to: "tentativas" },
+      { t: "Parece muito comigo.", to: "descoberta" },
+      { t: "Um pouco, sim.", to: "descoberta" },
     ],
   },
   r2_frente: {
@@ -89,8 +94,8 @@ const CHAT = {
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "tentativas" },
-      { t: "Um pouco, sim.", to: "tentativas" },
+      { t: "Parece muito comigo.", to: "descoberta" },
+      { t: "Um pouco, sim.", to: "descoberta" },
     ],
   },
   r2_machuco: {
@@ -100,27 +105,16 @@ const CHAT = {
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "tentativas" },
-      { t: "Um pouco, sim.", to: "tentativas" },
+      { t: "Parece muito comigo.", to: "descoberta" },
+      { t: "Um pouco, sim.", to: "descoberta" },
     ],
-  },
-
-  // INIMIGO COMUM: tira a culpa dela ("não é você") e desqualifica os caminhos
-  // que já falharam — reengaja quem já tentou métodos. Tese Tipo 4, sem citar.
-  tentativas: {
-    lady: [
-      "E olha: não é por falta de tentar.",
-      "Você provavelmente já ouviu de tudo — ter paciência, se amar primeiro, até se fazer de difícil pra ele correr atrás.",
-      "Mas nada disso mudou o que realmente importa.",
-    ],
-    opts: [{ t: "É verdade...", to: "descoberta" }],
   },
 
   // Acolhe a identificação → descoberta firme → territórios, num fôlego só
   // (sem a alavanca "Como assim?"). SOBRE O MÉTODO = convicção.
   descoberta: {
     lady: [
-      "Foi justamente isso que me levou a estudar comportamento, comunicação e relacionamentos.",
+      "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
       "O que desperta um relacionamento começa antes do primeiro contato.",
       "Começa em como você se coloca, no que mostra, no que revela e em como você conversa.",
@@ -156,11 +150,11 @@ function LadyChat({ onDone, variante = "a" }) {
       if (idx >= n.lady.length) { setShowOpts(true); return; }
       const msg = n.lady[idx];
       setTyping(true);
-      const dly = 550 + Math.min(msg.length * 12, 1500);
+      const dly = 700 + Math.min(msg.length * 14, 1700);
       timers.push(setTimeout(() => {
         if (cancelled) return;
         setTyping(false);
-        setMsgs((m) => [...m, { who: "lady", text: msg }]);
+        setMsgs((m) => [...m, { who: "lady", text: msg, hora: horaAgora() }]);
         idx += 1;
         timers.push(setTimeout(step, 280));
       }, dly));
@@ -174,7 +168,7 @@ function LadyChat({ onDone, variante = "a" }) {
   }, [msgs, typing, showOpts]);
 
   function pick(o) {
-    setMsgs((m) => [...m, { who: "eu", text: o.t }]);
+    setMsgs((m) => [...m, { who: "eu", text: o.t, hora: horaAgora() }]);
     setShowOpts(false);
     if (o.to === "__done") { setTimeout(() => onDone(), 500); return; }
     setTimeout(() => setNode(o.to), 350);
@@ -184,15 +178,21 @@ function LadyChat({ onDone, variante = "a" }) {
   return (
     <div className="ldy">
       <div className="ldy-top">
-        <div className="ldy-av">{LADY_FOTO ? <img src={LADY_FOTO} alt="Helena" /> : "H"}</div>
+        <div className="ldy-avwrap">
+          <div className="ldy-av">{LADY_FOTO ? <img src={LADY_FOTO} alt="Helena" /> : "H"}</div>
+          <span className="ldy-online" aria-hidden></span>
+        </div>
         <div className="ldy-id">
           <div className="ldy-nome">Helena</div>
-          <div className="ldy-status"><i></i> online</div>
+          <div className={"ldy-status" + (typing ? " digitando" : "")}>{typing ? "digitando…" : "online"}</div>
         </div>
       </div>
       <div className="ldy-thread" ref={threadRef}>
         {msgs.map((m, i) => (
-          <div key={i} className={"ldy-msg " + (m.who === "lady" ? "lady" : "eu")}>{m.text}</div>
+          <div key={i} className={"ldy-msg " + (m.who === "lady" ? "lady" : "eu")}>
+            {m.text}
+            {m.hora && <span className="ldy-hora">{m.hora}</span>}
+          </div>
         ))}
         {typing && (
           <div className="ldy-typing"><span></span><span></span><span></span></div>
@@ -211,7 +211,7 @@ function LadyChat({ onDone, variante = "a" }) {
   );
 }
 
-const TOTAL = 5;
+const TOTAL = 6;
 
 export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
@@ -277,11 +277,30 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
         </>
       )}
 
+      {/* CARD 2 — INIMIGO COMUM (não é você; os caminhos que já falharam) */}
+      {step === 1 && (
+        <>
+          <div className="sw-card rola" key="c1">
+            <div className="sw-eyebrow">A verdade</div>
+            <div className="sw-muda-h">O problema nunca foi você</div>
+            <p className="sw-p" style={{ margin: "0 auto 6px" }}>Se você tentou e não deu certo, não foi por falta de esforço. Já te disseram de tudo:</p>
+            <ul className="sw-erros">
+              <li>Ter paciência e esperar o tempo certo.</li>
+              <li>Se amar primeiro que alguém aparece.</li>
+              <li>Se fazer de difícil pra ele correr atrás.</li>
+            </ul>
+            <p className="sw-destaque" style={{ fontSize: "clamp(19px,5.4vw,24px)" }}>E, mesmo assim, nada mudou.</p>
+            <p className="sw-p">Porque todos esses caminhos esquecem a mesma coisa. E é justamente ela que muda o jogo.</p>
+          </div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero saber o que é →</button></div>
+        </>
+      )}
+
       {/* CHAT COM A HELENA */}
-      {step === 1 && <LadyChat variante={variante} onDone={() => setStep(2)} />}
+      {step === 2 && <LadyChat variante={variante} onDone={() => setStep(3)} />}
 
       {/* O MAPA — 5 passos + "não são cinco dicas" */}
-      {step === 2 && (
+      {step === 3 && (
         <>
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
@@ -309,7 +328,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
       )}
 
       {/* O QUE MUDA PARA VOCÊ — benefício/transformação (progressão) + antes→depois */}
-      {step === 3 && (
+      {step === 4 && (
         <>
           <div className="sw-card rola" key="c3">
             <div className="sw-eyebrow">A transformação</div>
@@ -338,7 +357,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
       )}
 
       {/* OFERTA — vende o caminho; formato/garantia perto do checkout (não como título) */}
-      {step === 4 && (
+      {step === 5 && (
         <>
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
