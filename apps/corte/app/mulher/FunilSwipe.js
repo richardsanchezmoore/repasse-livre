@@ -100,7 +100,6 @@ const ABERTURA = {
   ],
   b: [
     "Oi, querida. ❤️ Que bom que você chegou até aqui.",
-    "Eu sou a Helena — mas aqui pode me chamar de Lady.",
     "Me conta: quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
   ],
 };
@@ -159,10 +158,10 @@ const CHAT = {
   // (sem a alavanca "Como assim?"). SOBRE O MÉTODO = convicção.
   descoberta: {
     lady: [
-      { audio: LADY_AUDIO, dur: "0:14", texto: "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos." },
+      "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
-      "O que desperta um relacionamento começa antes do primeiro contato.",
-      "Começa em como você se coloca, no que mostra, no que revela e em como você conversa.",
+      // ÁUDIO no PICO (descoberta + territórios): momento estratégico + texto longo.
+      { audio: LADY_AUDIO, dur: "0:16", texto: "O que desperta um relacionamento começa antes do primeiro contato. Começa em como você se coloca, no que mostra, no que revela e em como você conversa." },
     ],
     opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },
@@ -233,7 +232,7 @@ function LadyChat({ onDone, variante = "a" }) {
         </div>
         <div className="ldy-id">
           <div className="ldy-nome">Helena</div>
-          <div className={"ldy-status" + (typing ? " digitando" : "")}>{typing ? "digitando…" : "online"}</div>
+          <div className={"ldy-status" + (typing ? " digitando" : "")}>{typing ? "Digitando…" : "Online"}</div>
         </div>
       </div>
       <div className="ldy-thread" ref={threadRef}>
