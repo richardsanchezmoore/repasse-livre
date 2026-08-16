@@ -39,7 +39,6 @@ const Q2_OPTS = [
   { t: "Aparece, mas não vai para frente", to: "r2_frente" },
   { t: "Eu acabo me machucando", to: "r2_machuco" },
 ];
-const CONTINUA = [{ t: "Me conta", to: "experiencia" }];
 
 const CHAT = {
   start: {
@@ -56,46 +55,44 @@ const CHAT = {
   },
 
   rec_serio: { lady: ["Entendi. ❤️ Você quer alguém que esteja buscando o mesmo que você.", Q2], opts: Q2_OPTS },
-  rec_valor: { lady: ["Faz sentido. ❤️ Você quer estar com alguém e sentir que isso vem dos dois lados.", Q2], opts: Q2_OPTS },
+  rec_valor: { lady: ["Ah, isso mexe comigo. ❤️ Ser amada e sentir que te valorizam sempre — não só no começo.", Q2], opts: Q2_OPTS },
   rec_dividir: { lady: ["Eu entendo o que você busca. ❤️ Ter alguém para compartilhar a vida muda muita coisa.", Q2], opts: Q2_OPTS },
 
-  // Acolhimento (COM A MULHER = suave); muda só a 1ª linha e converge p/ a MESMA
-  // investigação → descoberta → mapa (regra das ramificações, seção 19).
+  // Acolhimento suave (muda só a 1ª linha) → converge direto p/ a observação e o
+  // beat de identificação. Sem alavanca "Me conta" (a mulher já contou a dor).
   r2_ninguem: {
-    lady: ["Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.", "E foi aí que comecei a investigar o que estava por trás disso."],
-    opts: CONTINUA,
-  },
-  r2_frente: {
-    lady: ["Isso é frustrante. Começa bem e, de repente, tudo para.", "E foi aí que comecei a investigar o que estava por trás disso."],
-    opts: CONTINUA,
-  },
-  r2_machuco: {
-    lady: ["Essa parte dói. Você entra querendo que dê certo e sai machucada.", "E foi aí que comecei a investigar o que estava por trás disso."],
-    opts: CONTINUA,
-  },
-
-  // SOBRE O MÉTODO = convicção. Sem perguntas retóricas, sem "muitas vezes/talvez".
-  experiencia: {
     lady: [
-      "Durante muito tempo, observei mulheres completamente diferentes.",
-      "Idades diferentes. Jeitos diferentes. Histórias diferentes. Algumas já tinham vivido muitos relacionamentos. Outras, quase nenhum.",
-      "E foi aí que percebi: muitas enfrentavam as mesmas dificuldades.",
+      "Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.",
+      "E foi aí que comecei a investigar o que estava por trás disso.",
+      "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [{ t: "Parece comigo.", to: "descoberta" }],
   },
+  r2_frente: {
+    lady: [
+      "Isso é frustrante. Começa bem e, de repente, tudo para.",
+      "E foi aí que comecei a investigar o que estava por trás disso.",
+      "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
+    ],
+    opts: [{ t: "Parece comigo.", to: "descoberta" }],
+  },
+  r2_machuco: {
+    lady: [
+      "Essa parte dói. Você entra querendo que dê certo e sai machucada.",
+      "E foi aí que comecei a investigar o que estava por trás disso.",
+      "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
+    ],
+    opts: [{ t: "Parece comigo.", to: "descoberta" }],
+  },
+
+  // Acolhe a identificação → descoberta firme → territórios, num fôlego só
+  // (sem a alavanca "Como assim?"). SOBRE O MÉTODO = convicção.
   descoberta: {
     lady: [
       "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
       "O que desperta um relacionamento começa antes do primeiro contato.",
-    ],
-    opts: [{ t: "Como assim?", to: "revelacao" }],
-  },
-  revelacao: {
-    lady: [
-      "Começa na forma como você se coloca.",
-      "No que sua presença mostra. No que você revela. E na forma como você se comunica.",
-      "É aí que muita coisa começa a mudar.",
+      "Começa em como você se coloca, no que mostra, no que revela e em como você conversa.",
     ],
     opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },
