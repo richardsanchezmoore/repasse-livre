@@ -22,6 +22,51 @@ function horaAgora() {
   catch { return ""; }
 }
 
+// Áudio da Lady (ElevenLabs). Deixe "" para usar o texto; ao subir o arquivo em
+// public/livro/, aponte aqui (ex.: "/livro/lady-voz.mp3") e a bolha vira voz.
+const LADY_AUDIO = "";
+const BAR_HEIGHTS = [7, 12, 18, 10, 20, 14, 23, 9, 16, 12, 21, 8, 15, 19, 11, 22, 10, 17, 13, 9, 18, 12, 20, 11];
+
+function fmtDur(s) {
+  if (!s || !isFinite(s)) return "";
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+// Player de nota de voz estilo WhatsApp (play/pause + ondinha + duração auto)
+function LadyAudio({ src, durProp = "" }) {
+  const ref = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const [prog, setProg] = useState(0);
+  const [dur, setDur] = useState(durProp);
+  function toggle() {
+    const a = ref.current; if (!a) return;
+    if (a.paused) a.play().catch(() => {}); else a.pause();
+  }
+  return (
+    <div className="ldy-audio">
+      <audio ref={ref} src={src} preload="metadata"
+        onLoadedMetadata={(e) => { const d = e.currentTarget.duration; if (d) setDur(fmtDur(d)); }}
+        onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
+        onEnded={() => { setPlaying(false); setProg(0); }}
+        onTimeUpdate={(e) => { const a = e.currentTarget; if (a.duration) setProg(a.currentTime / a.duration); }} />
+      <button type="button" className="ldy-audio-btn" onClick={toggle} aria-label={playing ? "Pausar" : "Tocar"}>
+        {playing ? (
+          <svg viewBox="0 0 16 16" width="14" height="14"><rect x="4" y="3" width="3" height="10" fill="currentColor" /><rect x="9" y="3" width="3" height="10" fill="currentColor" /></svg>
+        ) : (
+          <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 3l9 5-9 5z" fill="currentColor" /></svg>
+        )}
+      </button>
+      <div className="ldy-audio-wave">
+        {BAR_HEIGHTS.map((h, i) => (
+          <span key={i} className={"ldy-bar" + (prog * BAR_HEIGHTS.length > i ? " on" : "")} style={{ height: h + "px" }} />
+        ))}
+      </div>
+      <span className="ldy-audio-dur">{dur || durProp}</span>
+    </div>
+  );
+}
+
 function trackFb(evento, dados, tipo = "track") {
   try { if (typeof window !== "undefined" && window.fbq) window.fbq(tipo, evento, dados); } catch {}
 }
@@ -114,7 +159,7 @@ const CHAT = {
   // (sem a alavanca "Como assim?"). SOBRE O MÉTODO = convicção.
   descoberta: {
     lady: [
-      "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
+      { audio: LADY_AUDIO, dur: "0:14", texto: "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos." },
       "E uma coisa ficou clara:",
       "O que desperta um relacionamento começa antes do primeiro contato.",
       "Começa em como você se coloca, no que mostra, no que revela e em como você conversa.",
@@ -148,13 +193,17 @@ function LadyChat({ onDone, variante = "a" }) {
     const step = () => {
       if (cancelled) return;
       if (idx >= n.lady.length) { setShowOpts(true); return; }
-      const msg = n.lady[idx];
+      const item = n.lady[idx];
+      const isAudio = typeof item === "object" && !!item.audio;
+      const text = typeof item === "string" ? item : (item.texto || "");
       setTyping(true);
-      const dly = 700 + Math.min(msg.length * 14, 1700);
+      const dly = isAudio ? 1100 : 700 + Math.min(text.length * 14, 1700);
       timers.push(setTimeout(() => {
         if (cancelled) return;
         setTyping(false);
-        setMsgs((m) => [...m, { who: "lady", text: msg, hora: horaAgora() }]);
+        setMsgs((m) => [...m, isAudio
+          ? { who: "lady", audio: item.audio, dur: item.dur, hora: horaAgora() }
+          : { who: "lady", text, hora: horaAgora() }]);
         idx += 1;
         timers.push(setTimeout(step, 280));
       }, dly));
@@ -189,8 +238,8 @@ function LadyChat({ onDone, variante = "a" }) {
       </div>
       <div className="ldy-thread" ref={threadRef}>
         {msgs.map((m, i) => (
-          <div key={i} className={"ldy-msg " + (m.who === "lady" ? "lady" : "eu")}>
-            {m.text}
+          <div key={i} className={"ldy-msg " + (m.who === "lady" ? "lady" : "eu") + (m.audio ? " audio" : "")}>
+            {m.audio ? <LadyAudio src={m.audio} durProp={m.dur} /> : m.text}
             {m.hora && <span className="ldy-hora">{m.hora}</span>}
           </div>
         ))}
