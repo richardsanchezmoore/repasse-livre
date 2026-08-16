@@ -110,7 +110,7 @@ const ABERTURA = {
   ],
   b: [
     "Oi, querida. ❤️ Que bom que você chegou até aqui.",
-    "Me conta: quando você pensa no relacionamento que gostaria de viver, o que mais deseja?",
+    "Me conta: o que você mais deseja num relacionamento?",
   ],
 };
 
