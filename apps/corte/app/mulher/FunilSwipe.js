@@ -57,7 +57,7 @@ const ABERTURA = {
 
 const CHAT = {
   start: {
-    lady: ABERTURA.a,
+    lady: ABERTURA.b,
     opts: [
       { t: "Encontrar alguém que queira algo sério", to: "rec_serio" },
       { t: "Ser amada e valorizada", to: "rec_valor" },
@@ -78,8 +78,8 @@ const CHAT = {
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "descoberta" },
-      { t: "Um pouco, sim.", to: "descoberta" },
+      { t: "Parece muito comigo.", to: "tentativas" },
+      { t: "Um pouco, sim.", to: "tentativas" },
     ],
   },
   r2_frente: {
@@ -89,8 +89,8 @@ const CHAT = {
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "descoberta" },
-      { t: "Um pouco, sim.", to: "descoberta" },
+      { t: "Parece muito comigo.", to: "tentativas" },
+      { t: "Um pouco, sim.", to: "tentativas" },
     ],
   },
   r2_machuco: {
@@ -100,16 +100,27 @@ const CHAT = {
       "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "descoberta" },
-      { t: "Um pouco, sim.", to: "descoberta" },
+      { t: "Parece muito comigo.", to: "tentativas" },
+      { t: "Um pouco, sim.", to: "tentativas" },
     ],
+  },
+
+  // INIMIGO COMUM: tira a culpa dela ("não é você") e desqualifica os caminhos
+  // que já falharam — reengaja quem já tentou métodos. Tese Tipo 4, sem citar.
+  tentativas: {
+    lady: [
+      "E olha: não é por falta de tentar.",
+      "Você provavelmente já ouviu de tudo — ter paciência, se amar primeiro, até se fazer de difícil pra ele correr atrás.",
+      "Mas nada disso mudou o que realmente importa.",
+    ],
+    opts: [{ t: "É verdade...", to: "descoberta" }],
   },
 
   // Acolhe a identificação → descoberta firme → territórios, num fôlego só
   // (sem a alavanca "Como assim?"). SOBRE O MÉTODO = convicção.
   descoberta: {
     lady: [
-      "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
+      "Foi justamente isso que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
       "O que desperta um relacionamento começa antes do primeiro contato.",
       "Começa em como você se coloca, no que mostra, no que revela e em como você conversa.",
@@ -209,14 +220,11 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
   // Variante da abertura A/B: ?ab=a|b força (útil p/ testar por anúncio no Meta);
   // senão sorteia 50/50 e persiste (organico).
   const [variante] = useState(() => {
-    if (typeof window === "undefined") return "a";
+    if (typeof window === "undefined") return "b";
     try {
-      const p = new URLSearchParams(window.location.search).get("ab");
-      if (p === "a" || p === "b") { localStorage.setItem("dv_ab", p); return p; }
-      let v = localStorage.getItem("dv_ab");
-      if (v !== "a" && v !== "b") { v = Math.random() < 0.5 ? "a" : "b"; localStorage.setItem("dv_ab", v); }
-      return v;
-    } catch { return "a"; }
+      // B é o padrão (a Lady já se apresenta no card 1); ?ab=a força a antiga p/ teste.
+      return new URLSearchParams(window.location.search).get("ab") === "a" ? "a" : "b";
+    } catch { return "b"; }
   });
 
   useEffect(() => {
@@ -251,7 +259,7 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">O Mapa das Mulheres</h1>
             <p className="sw-sub">Para destravar as relações — e viver o que você tanto deseja.</p>
-            <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. Mas, por algum motivo, isso ainda não aconteceu.</p>
+            <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, isso ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
             <p className="sw-p">Foi olhando de perto para muitas mulheres que percebi: mesmo sendo diferentes, quase todas enfrentam as mesmas dificuldades.</p>
           </div>
