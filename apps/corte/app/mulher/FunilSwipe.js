@@ -33,12 +33,14 @@ function fmtDur(s) {
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
-// Player de nota de voz estilo WhatsApp (play/pause + ondinha + duração auto)
+// Player de nota de voz estilo WhatsApp: play/pause + ondinha + duração (conta ao
+// tocar) + FOTO da Lady com selo de microfone. Cores da marca, layout do WhatsApp.
 function LadyAudio({ src, durProp = "" }) {
   const ref = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [prog, setProg] = useState(0);
   const [dur, setDur] = useState(durProp);
+  const [elapsed, setElapsed] = useState("");
   function toggle() {
     const a = ref.current; if (!a) return;
     if (a.paused) a.play().catch(() => {}); else a.pause();
@@ -48,8 +50,8 @@ function LadyAudio({ src, durProp = "" }) {
       <audio ref={ref} src={src} preload="metadata"
         onLoadedMetadata={(e) => { const d = e.currentTarget.duration; if (d) setDur(fmtDur(d)); }}
         onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
-        onEnded={() => { setPlaying(false); setProg(0); }}
-        onTimeUpdate={(e) => { const a = e.currentTarget; if (a.duration) setProg(a.currentTime / a.duration); }} />
+        onEnded={() => { setPlaying(false); setProg(0); setElapsed(""); }}
+        onTimeUpdate={(e) => { const a = e.currentTarget; if (a.duration) { setProg(a.currentTime / a.duration); setElapsed(fmtDur(a.currentTime)); } }} />
       <button type="button" className="ldy-audio-btn" onClick={toggle} aria-label={playing ? "Pausar" : "Tocar"}>
         {playing ? (
           <svg viewBox="0 0 16 16" width="14" height="14"><rect x="4" y="3" width="3" height="10" fill="currentColor" /><rect x="9" y="3" width="3" height="10" fill="currentColor" /></svg>
@@ -57,12 +59,20 @@ function LadyAudio({ src, durProp = "" }) {
           <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 3l9 5-9 5z" fill="currentColor" /></svg>
         )}
       </button>
-      <div className="ldy-audio-wave">
-        {BAR_HEIGHTS.map((h, i) => (
-          <span key={i} className={"ldy-bar" + (prog * BAR_HEIGHTS.length > i ? " on" : "")} style={{ height: h + "px" }} />
-        ))}
+      <div className="ldy-audio-mid">
+        <div className="ldy-audio-wave">
+          {BAR_HEIGHTS.map((h, i) => (
+            <span key={i} className={"ldy-bar" + (prog * BAR_HEIGHTS.length > i ? " on" : "")} style={{ height: h + "px" }} />
+          ))}
+        </div>
+        <span className="ldy-audio-dur">{playing && elapsed ? elapsed : (dur || durProp)}</span>
       </div>
-      <span className="ldy-audio-dur">{dur || durProp}</span>
+      <div className="ldy-audio-av">
+        {LADY_FOTO ? <img src={LADY_FOTO} alt="Helena" /> : <span className="ldy-audio-avf">H</span>}
+        <span className="ldy-audio-mic" aria-hidden>
+          <svg viewBox="0 0 24 24" width="10" height="10"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z" /></svg>
+        </span>
+      </div>
     </div>
   );
 }

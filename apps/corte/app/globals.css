@@ -893,15 +893,22 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* horário na bolha (estilo WhatsApp) */
 .ldy-hora{position:absolute;right:12px;bottom:5px;font:500 10px var(--ui);opacity:.55;letter-spacing:.02em}
 /* nota de voz da Lady (estilo WhatsApp) */
-.ldy-msg.audio{padding:8px 11px 17px}
-.ldy-audio{display:flex;align-items:center;gap:9px;min-width:210px}
+.ldy-msg.audio{padding:8px 10px 17px}
+.ldy-audio{display:flex;align-items:center;gap:9px;min-width:240px}
 .ldy-audio-btn{flex:none;width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
   background:var(--gold-2);color:var(--wine);display:flex;align-items:center;justify-content:center;transition:transform .1s}
 .ldy-audio-btn:active{transform:scale(.94)}
-.ldy-audio-wave{flex:1;display:flex;align-items:center;gap:2px;height:26px;min-width:112px}
+.ldy-audio-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ldy-audio-wave{display:flex;align-items:center;gap:2px;height:24px}
 .ldy-bar{flex:1;min-width:2px;background:rgba(230,211,163,.32);border-radius:2px}
 .ldy-bar.on{background:var(--gold-2)}
-.ldy-audio-dur{flex:none;font:600 11px var(--ui);color:#c9b48f;min-width:26px;text-align:right}
+.ldy-audio-dur{font:600 10.5px var(--ui);color:#c9b48f;letter-spacing:.02em}
+.ldy-audio-av{position:relative;flex:none;width:34px;height:34px}
+.ldy-audio-av img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold-2);display:block}
+.ldy-audio-avf{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#f7edd4,#efe0be);font:900 15px var(--disp);color:var(--wine)}
+.ldy-audio-mic{position:absolute;right:-3px;bottom:-3px;width:17px;height:17px;border-radius:50%;
+  background:#39d353;color:#12303a;display:flex;align-items:center;justify-content:center;border:2px solid #20303a}
 .ldy-thread{flex:1;overflow-y:auto;padding:18px 14px 8px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch}
 .ldy-msg{position:relative;max-width:82%;padding:10px 14px 17px;border-radius:16px;font:400 15px/1.5 var(--serif);
   animation:swIn .35s ease;word-wrap:break-word}
