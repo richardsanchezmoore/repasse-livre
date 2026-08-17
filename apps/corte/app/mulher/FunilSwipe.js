@@ -167,8 +167,10 @@ const CHAT = {
     lady: [
       "E você não está sozinha nisso. Foi o que me levou a estudar comportamento, comunicação e relacionamentos.",
       "E uma coisa ficou clara:",
-      // Slot de voz dormente (LADY_AUDIO=""): hoje renderiza como TEXTO — a tese-joia.
+      // Áudio (voz humana) + a tese em TEXTO logo abaixo: quem NÃO tocar o áudio não
+      // perde a descoberta (evita o vazamento de conversão do insight ficar só na voz).
       { audio: LADY_AUDIO, dur: "0:15", texto: "O que desperta um relacionamento começa antes do primeiro contato." },
+      ...(LADY_AUDIO ? ["Ou seja: o que desperta um relacionamento começa antes do primeiro contato."] : []),
     ],
     opts: [{ t: "E como eu faço isso?", to: "encerramento" }],
   },

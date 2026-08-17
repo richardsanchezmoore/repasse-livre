@@ -3,7 +3,7 @@ import FunilSwipe from "./FunilSwipe";
 
 // Landing PRINCIPAL (/mulher) — experiência em cards full-screen (swipe) com o
 // posicionamento Tipo 4 + a sessão com A Lady (chat scripted). Vende planos.kit
-// (R$ 37,90). A versão clássica de landing vive em /mulher-carta (A/B).
+// Vende o Kit (O Mapa + a Coleção) a R$ 67,90. Clássica em /mulher-carta (A/B).
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Por que você ainda não está vivendo o relacionamento que gostaria?",

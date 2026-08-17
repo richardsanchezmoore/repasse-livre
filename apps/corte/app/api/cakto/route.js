@@ -109,7 +109,7 @@ export async function POST(req) {
     const precoPlano = planos?.[tipo]?.preco;
     const valorPayload = Number(String(pick(d0, ["amount", "total", "offer.price", "price", "value"]) || "").toString().replace(/[^\d,.-]/g, "").replace(",", "."));
     const valorPlano = Number(String(precoPlano || "").replace(/[^\d,.-]/g, "").replace(",", "."));
-    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : tipo === "livro" ? 37.9 : 17.9));
+    const valor = valorPayload > 0 ? valorPayload : (valorPlano > 0 ? valorPlano : (tipo === "assinatura" ? 19.9 : tipo === "livro" ? 37.9 : 67.9));
     // AWAIT (não fire-and-forget): no serverless a Vercel CONGELA a função assim que a
     // resposta sai e mata promessas pendentes — o fetch não completa e nem o .catch roda.
     // O try/catch garante que uma falha aqui não derruba a resposta 200 do webhook.
