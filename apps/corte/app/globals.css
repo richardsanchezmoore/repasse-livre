@@ -843,14 +843,18 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-btn:active{transform:scale(.99)}
 .sw-hint{font:600 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:rgba(230,211,163,.6)}
 /* assinatura da Lady no card 1 (rosto + nome = aquece e valida antes do CTA) */
-.sw-assina{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.sw-assina img,.sw-assina-av{width:38px;height:38px;border-radius:50%;flex:none;object-fit:cover;
+.sw-assina{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.sw-assina img,.sw-assina-av{width:50px;height:50px;border-radius:50%;flex:none;object-fit:cover;
   border:1.5px solid var(--gold-2);box-shadow:0 0 18px rgba(203,168,91,.28)}
 .sw-assina-av{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#f7edd4,#efe0be);
-  font:900 16px var(--disp);color:var(--wine)}
-.sw-assina-txt{text-align:left;line-height:1.2}
-.sw-assina-n{font:700 14px var(--disp);color:#fdf6e6}
-.sw-assina-r{font:500 11px var(--ui);letter-spacing:.03em;color:var(--gold-2)}
+  font:900 20px var(--disp);color:var(--wine)}
+.sw-assina-txt{text-align:left;line-height:1.25}
+.sw-assina-n{font:700 15.5px var(--disp);color:#fdf6e6}
+.sw-assina-r{font:500 12px var(--ui);letter-spacing:.03em;color:var(--gold-2)}
+/* assinatura da Lady na oferta (fundo creme → texto escuro) */
+.sw-assina-oferta{justify-content:center;margin:18px auto 0}
+.sw-assina-oferta .sw-assina-n{color:var(--wine)}
+.sw-assina-oferta .sw-assina-r{color:var(--ink-soft)}
 
 /* card 2 — os 3 caminhos */
 .sw-caminhos{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:22px auto 0;width:100%}
@@ -961,8 +965,8 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-prova-t{font:700 14px/1.35 var(--disp);color:var(--wine);margin:0 0 6px}
 .sw-prova-q{font:400 12.5px/1.5 var(--serif);color:var(--ink-soft);margin:0 0 8px}
 .sw-prova-n{font:600 12px var(--ui);color:var(--ink)}
-/* folga p/ caber o selo no Card 1 */
-.sw-card.hero .sw-p{margin:6px 0 0}
+/* folga p/ caber o selo no Card 1 + mais intensidade (semibold) */
+.sw-card.hero .sw-p{margin:6px 0 0;font-weight:600}
 
 @media (prefers-reduced-motion:reduce){
   .sw-card,.ldy-msg{animation:none}
