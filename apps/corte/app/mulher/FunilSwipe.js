@@ -27,7 +27,7 @@ function horaAgora() {
 // Nota de voz da Lady — roteiro NATURAL (fala de gente, não frase de efeito).
 // Fallback em texto continua sendo a tese crua. "" desliga a voz.
 const LADY_AUDIO = "/livro/lady-voz-2.mp3";
-const BAR_HEIGHTS = [7, 12, 18, 10, 20, 14, 23, 9, 16, 12, 21, 8, 15, 19, 11, 22, 10, 17, 13, 9, 18, 12, 20, 11];
+const BAR_HEIGHTS = [6, 11, 8, 15, 10, 18, 12, 7, 14, 20, 9, 16, 11, 22, 8, 13, 17, 10, 19, 12, 7, 15, 21, 9, 14, 11, 18, 8, 16, 13, 20, 10, 12, 17, 7, 14, 19, 9, 15, 11, 18, 8, 13, 16, 10, 20, 12, 9];
 
 function fmtDur(s) {
   if (!s || !isFinite(s)) return "";
