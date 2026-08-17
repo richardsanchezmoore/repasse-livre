@@ -125,7 +125,7 @@ const CHAT = {
   },
 
   rec_serio: { lady: ["Entendi. Você quer alguém que esteja buscando o mesmo que você.", Q2], opts: Q2_OPTS },
-  rec_valor: { lady: ["Ah, isso mexe comigo. Ser amada e sentir que te valorizam sempre — não só no começo.", Q2], opts: Q2_OPTS },
+  rec_valor: { lady: ["Ah, isso mexe comigo. Ser amada e sentir que te valorizam pelo que você é.", Q2], opts: Q2_OPTS },
   rec_dividir: { lady: ["Eu entendo o que você busca. Ter alguém para compartilhar a vida muda muita coisa.", Q2], opts: Q2_OPTS },
 
   // Acolhimento suave (muda só a 1ª linha) → converge direto p/ a observação e o
