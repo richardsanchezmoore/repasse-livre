@@ -936,7 +936,9 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-oferta-card{max-width:400px;margin:18px auto 0;width:100%;background:linear-gradient(165deg,var(--creme),#f5ecd6);
   border:1px solid var(--gold);border-radius:18px;padding:24px 22px;text-align:center;color:var(--ink);box-shadow:0 24px 54px -28px rgba(0,0,0,.7)}
 .sw-oferta-card .ic{font-size:32px}
-.sw-oferta-t{font:700 clamp(20px,5.4vw,25px)/1.2 var(--serif);color:var(--wine);text-wrap:balance;margin:8px 0 10px}
+.sw-oferta-head{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:2px}
+.sw-oferta-ic{font-size:30px;flex:none;filter:drop-shadow(0 3px 8px rgba(176,135,63,.4))}
+.sw-oferta-t{font:700 clamp(20px,5.4vw,25px)/1.2 var(--serif);color:var(--wine);text-wrap:balance;margin:0}
 .sw-oferta-d{font:400 14px/1.55 var(--serif);color:var(--ink-soft);margin:0 0 14px}
 .sw-preco{font:900 44px var(--disp);color:var(--wine);line-height:1}
 .sw-preco-de{display:block;font:600 16px var(--ui);color:var(--ink-soft);text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
@@ -952,7 +954,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-pix{font:600 13px var(--ui);color:var(--ink-soft);margin-top:10px}
 .sw-pix b{color:var(--wine)}
 /* destaque no parcelamento (menor número primeiro) */
-.sw-preco-parcela{display:block;font:700 clamp(30px,8.4vw,42px)/1.05 var(--serif);color:var(--wine);letter-spacing:-.01em}
+.sw-preco-parcela{display:block;font:700 clamp(26px,7.2vw,35px)/1.05 var(--serif);color:var(--wine);letter-spacing:-.01em}
 /* selo da Semana da Mulher de Valor (Card 1, fundo escuro) */
 .sw-selo-semana{font:700 10.5px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);text-align:center;margin-bottom:10px}
 /* urgência honesta na oferta (fundo creme) */

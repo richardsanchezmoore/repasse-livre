@@ -403,15 +403,16 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
-              <div className="ic">🔑</div>
-              <div className="sw-oferta-t">O Mapa + a Coleção da Corte</div>
-              <div className="sw-oferta-d">Tudo para você entender, aplicar e escolher com clareza:</div>
+              <div className="sw-oferta-head">
+                <span className="sw-oferta-ic">🔑</span>
+                <div className="sw-oferta-t">O Mapa + a Coleção Completa</div>
+              </div>
+              <div className="sw-oferta-d">Tudo o que você precisa para se tornar essa mulher:</div>
 
               <div className="sw-kit">
                 <ul>
                   <li><span className="sw-kit-ic">📖</span><span><b>O Mapa</b> — a obra completa, os 5 passos por dentro</span></li>
                   <li><span className="sw-kit-ic">📜</span><span><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</span></li>
-                  <li><span className="sw-kit-ic">🔎</span><span><b>O Dossiê + o Veredito</b> — investigue o pretendente e leia os sinais</span></li>
                   <li><span className="sw-kit-ic">👑</span><span><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</span></li>
                   <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
                   <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Guia “Verde ou Vermelho?”, os Wallpapers “Mulher de Valor” e o Diário da Dama</span></li>

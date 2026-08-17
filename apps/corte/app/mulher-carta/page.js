@@ -161,18 +161,15 @@ export default async function LandingMulherCarta() {
           <h2 className="lpm-h2">Comece hoje</h2>
           <div className="lpm-precocard">
             <div className="ic">🔑</div>
-            <div className="lpm-precocard-t">O Mapa + a Coleção da Corte</div>
-            <p className="lpm-precocard-d">A obra completa — “Como se Tornar a Mulher que ‘Ele’ Procura” — e todos os materiais de discernimento da Corte, juntos.</p>
+            <div className="lpm-precocard-t">O Mapa + a Coleção Completa</div>
+            <p className="lpm-precocard-d">Tudo o que você precisa para se tornar essa mulher:</p>
             <div className="sw-kit">
               <ul>
-                <li><b>O Mapa</b> — a obra completa, os 5 passos por dentro</li>
-                <li><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</li>
-                <li><b>O Dossiê + o Veredito</b> — investigue o pretendente e leia os sinais</li>
-                <li><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</li>
-                <li><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</li>
-                <li><b>Guia “Verde ou Vermelho?”</b> — os sinais lado a lado</li>
-                <li><b>Wallpapers “Mulher de Valor”</b> — versículos de identidade</li>
-                <li><b>O Diário da Dama</b> — 7 noites de reflexão e oração</li>
+                <li><span className="sw-kit-ic">📖</span><span><b>O Mapa</b> — a obra completa, os 5 passos por dentro</span></li>
+                <li><span className="sw-kit-ic">📜</span><span><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</span></li>
+                <li><span className="sw-kit-ic">👑</span><span><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</span></li>
+                <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
+                <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Guia “Verde ou Vermelho?”, os Wallpapers “Mulher de Valor” e o Diário da Dama</span></li>
               </ul>
             </div>
             <div className="lpm-preco">
