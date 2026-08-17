@@ -165,18 +165,17 @@ export default async function LandingMulherCarta() {
             <p className="lpm-precocard-d">Tudo o que você precisa para se tornar essa mulher:</p>
             <div className="sw-kit">
               <ul>
-                <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — o Mapa completo, os 5 passos por dentro</span></li>
-                <li><span className="sw-kit-ic">📜</span><span><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</span></li>
+                <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — a obra completa</span></li>
                 <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
-                <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
+                <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
               </ul>
             </div>
             <div className="lpm-preco">
-              {precoDe ? <span className="lpm-preco-de">tudo isso: de {precoDe}</span> : null}
+              {precoDe ? <span className="lpm-preco-de">Tudo isso vale {precoDe}</span> : null}
               <span className="sw-preco-parcela">4x de R$ 19,00</span>
               <small>ou {preco} à vista no PIX</small>
             </div>
-            <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08. Depois, volta para R$ 149,90.</div>
+            <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08.</div>
             <CTA url={url} preco={preco}>Quero tudo</CTA>
             <div className="lpm-garantia"><span className="sel">🛡️</span> 7 dias de garantia — ou o seu dinheiro de volta.</div>
           </div>

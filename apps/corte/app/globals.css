@@ -745,7 +745,7 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .lpm-precocard .ic{font-size:32px}
 .lpm-precocard-t{font:900 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 12px}
 .lpm-preco{font:900 46px var(--disp);color:var(--wine);line-height:1}
-.lpm-preco-de{display:block;font:600 16px var(--ui);color:var(--ink-soft);text-decoration:line-through;margin-bottom:3px;letter-spacing:.02em}
+.lpm-preco-de{display:block;font:600 15px var(--ui);color:var(--ink-soft);margin-bottom:3px;letter-spacing:.03em}
 .lpm-preco small{display:block;font:600 12px var(--ui);letter-spacing:.05em;color:var(--ink-soft);margin-top:5px}
 .lpm-precocard .pill{margin:18px auto 0}
 .lpm-garantia{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;
@@ -943,10 +943,10 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* card final — oferta */
 /* card de oferta ESCURO (consistente com o funil — não parece iframe) */
 .sw-oferta-card{max-width:440px;margin:6px auto 0;width:100%;background:none;border:none;border-radius:0;padding:0 2px;text-align:center;color:#f0e3c8;box-shadow:none}
-.sw-oferta-t{font:700 clamp(21px,5.6vw,26px)/1.2 var(--serif);color:#fdf6e6;text-wrap:balance;margin:0 auto 4px}
+.sw-oferta-t{font:700 clamp(24px,6.6vw,28px)/1.2 var(--serif);color:#fdf6e6;text-wrap:balance;margin:0 auto 4px}
 .sw-oferta-d{font:400 14px/1.55 var(--serif);color:#e4d3b4;margin:0 0 14px}
 .sw-preco{color:#fdf6e6;line-height:1;margin-top:20px}
-.sw-preco-de{display:block;font:600 16px var(--ui);color:#c9b48f;text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
+.sw-preco-de{display:block;font:600 14px var(--ui);color:#b8a98c;margin-bottom:2px;letter-spacing:.03em}
 .sw-preco small{display:block;font:600 12px var(--ui);color:#c9b48f;margin-top:5px}
 .sw-oferta-card .pill{width:100%;margin-top:16px}
 .sw-reassure{font:500 12px/1.5 var(--ui);color:#c9b48f;margin-top:12px}
@@ -963,8 +963,8 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* Kit explícito na oferta (ancoragem do valor) */
 .sw-kit{text-align:left;max-width:360px;margin:16px auto 0;border-top:1px solid var(--gold-soft);padding-top:14px}
 .sw-kit ul{list-style:none;display:flex;flex-direction:column;gap:10px}
-.sw-kit li{display:flex;gap:10px;align-items:flex-start;font:400 12.5px/1.4 var(--serif);color:var(--ink-soft)}
-.sw-kit-ic{flex:none;font-size:16px;line-height:1.2;width:22px;text-align:center}
+.sw-kit li{display:flex;gap:10px;align-items:flex-start;font:400 13.5px/1.45 var(--serif);color:var(--ink-soft)}
+.sw-kit-ic{flex:none;font-size:17px;line-height:1.2;width:22px;text-align:center}
 .sw-kit li b{color:var(--wine);font-weight:700}
 .sw-pix{font:600 13px var(--ui);color:var(--ink-soft);margin-top:10px}
 .sw-pix b{color:var(--wine)}
@@ -980,9 +980,9 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-provas{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:18px auto 0;border-top:1px solid var(--gold-soft);padding-top:16px}
 .sw-prova{background:rgba(255,255,255,.5);border:1px solid var(--gold-soft);border-radius:12px;padding:13px 15px;text-align:left}
 .sw-estrelas{color:var(--gold);font-size:14px;letter-spacing:2px;margin-bottom:6px}
-.sw-prova-t{font:700 14px/1.35 var(--disp);color:var(--wine);margin:0 0 6px}
-.sw-prova-q{font:400 12.5px/1.5 var(--serif);color:var(--ink-soft);margin:0 0 8px}
-.sw-prova-n{font:600 12px var(--ui);color:var(--ink)}
+.sw-prova-t{font:700 clamp(15px,4.4vw,16.5px)/1.3 var(--disp);color:var(--wine);margin:0 0 6px}
+.sw-prova-q{font:400 clamp(13.5px,4vw,14.5px)/1.55 var(--serif);color:var(--ink-soft);margin:0 0 8px}
+.sw-prova-n{font:600 12.5px var(--ui);color:var(--ink)}
 /* folga p/ caber o selo no Card 1 + mais intensidade (semibold) */
 .sw-card.hero .sw-p{margin:6px 0 0;font-weight:600}
 

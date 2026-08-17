@@ -404,23 +404,21 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
               <div className="sw-oferta-t">O Mapa + a Coleção Completa</div>
-              <div className="sw-oferta-d">Tudo o que você precisa para se tornar essa mulher:</div>
 
               <div className="sw-kit">
                 <ul>
-                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — o Mapa completo, os 5 passos por dentro</span></li>
-                  <li><span className="sw-kit-ic">📜</span><span><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</span></li>
+                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — a obra completa</span></li>
                   <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
-                  <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
+                  <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
                 </ul>
               </div>
 
               <div className="sw-preco">
-                {precoDe ? <span className="sw-preco-de">tudo isso: de {precoDe}</span> : null}
+                {precoDe ? <span className="sw-preco-de">Tudo isso vale {precoDe}</span> : null}
                 <span className="sw-preco-parcela">4x de R$ 19,00</span>
                 <small>ou {preco} à vista no PIX</small>
               </div>
-              <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08. Depois, volta para R$ 149,90.</div>
+              <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08.</div>
               <p className="sw-reassure">✓ Acesso na hora · ✓ vitalício · ✓ 7 dias de garantia</p>
 
               <div className="sw-provas">
