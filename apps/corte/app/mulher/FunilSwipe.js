@@ -24,9 +24,9 @@ function horaAgora() {
 
 // Áudio da Lady (ElevenLabs). Deixe "" para usar o texto; ao subir o arquivo em
 // public/livro/, aponte aqui (ex.: "/livro/lady-voz.mp3") e a bolha vira voz.
-// Voz de IA soa artificial e quebra a "voz mental" que cada leitora cria da Lady →
-// ficamos no TEXTO. Mecanismo (LadyAudio) fica pronto p/ uma voz HUMANA real no futuro.
-const LADY_AUDIO = "";
+// Nota de voz da Lady — roteiro NATURAL (fala de gente, não frase de efeito).
+// Fallback em texto continua sendo a tese crua. "" desliga a voz.
+const LADY_AUDIO = "/livro/lady-voz-2.mp3";
 const BAR_HEIGHTS = [7, 12, 18, 10, 20, 14, 23, 9, 16, 12, 21, 8, 15, 19, 11, 22, 10, 17, 13, 9, 18, 12, 20, 11];
 
 function fmtDur(s) {
