@@ -314,7 +314,6 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 0 && (
         <>
           <div className="sw-card hero" key="c0">
-            <div className="sw-selo-semana">✦ Semana da Mulher de Valor · só até 26/08</div>
             <h1 className="sw-h">O Mapa das Mulheres</h1>
             <p className="sw-sub">Para destravar as relações — e viver o que você tanto deseja.</p>
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, isso ainda não aconteceu.</p>
