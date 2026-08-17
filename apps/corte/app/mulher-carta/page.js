@@ -166,12 +166,11 @@ export default async function LandingMulherCarta() {
             <div className="sw-kit">
               <ul>
                 <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — a obra completa</span></li>
-                <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
-                <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
+                <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — as Cartas Entre Nós, o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
               </ul>
             </div>
             <div className="lpm-preco">
-              {precoDe ? <span className="lpm-preco-de">Tudo isso vale {precoDe}</span> : null}
+              {precoDe ? <span className="lpm-preco-de">De {precoDe} por apenas</span> : null}
               <span className="sw-preco-parcela">4x de R$ 19,00</span>
               <small>ou {preco} à vista no PIX</small>
             </div>

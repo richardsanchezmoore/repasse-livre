@@ -861,8 +861,8 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-assina-r{font:500 12px var(--ui);letter-spacing:.03em;color:var(--gold-2)}
 /* assinatura da Lady na oferta (fundo creme → texto escuro) */
 .sw-assina-oferta{justify-content:center;margin:18px auto 0}
-.sw-assina-oferta .sw-assina-n{color:var(--wine)}
-.sw-assina-oferta .sw-assina-r{color:var(--ink-soft)}
+.sw-assina-oferta .sw-assina-n{color:#fdf6e6}
+.sw-assina-oferta .sw-assina-r{color:var(--gold-2)}
 
 /* card 2 — os 3 caminhos */
 .sw-caminhos{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:22px auto 0;width:100%}
@@ -995,21 +995,22 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .pc-overlay{position:fixed;inset:0;z-index:80;background:rgba(20,8,14,.6);backdrop-filter:blur(3px);
   display:flex;align-items:flex-end;justify-content:center;animation:instFade .18s ease}
 @media (min-width:560px){.pc-overlay{align-items:center}}
-.pc-box{position:relative;width:100%;max-width:460px;background:linear-gradient(180deg,var(--creme),#f7efd9);
-  border:1px solid var(--gold);border-radius:20px 20px 0 0;padding:24px 22px calc(22px + env(safe-area-inset-bottom));
-  box-shadow:0 -12px 40px rgba(0,0,0,.4);animation:instUp .24s cubic-bezier(.2,.8,.2,1)}
+.pc-box{position:relative;width:100%;max-width:460px;background:radial-gradient(120% 100% at 50% 0%,#3a141b,#200d13 72%,#180a0f);
+  border:1px solid var(--gold-2);border-radius:20px 20px 0 0;padding:24px 22px calc(22px + env(safe-area-inset-bottom));
+  box-shadow:0 -14px 44px rgba(0,0,0,.55);animation:instUp .24s cubic-bezier(.2,.8,.2,1);color:#f0e3c8}
 @media (min-width:560px){.pc-box{border-radius:18px}}
-.pc-x{position:absolute;top:12px;right:14px;border:none;background:transparent;font:400 26px var(--ui);color:var(--ink-soft);cursor:pointer;line-height:1}
-.pc-h{font:900 20px var(--disp);color:var(--wine);text-align:center}
-.pc-sub{font:400 13.5px var(--serif);color:var(--ink-soft);text-align:center;margin:4px 0 16px}
-.pc-in{width:100%;font:500 16px var(--serif);color:var(--ink);background:#fff;border:1px solid var(--gold-soft);
+.pc-x{position:absolute;top:12px;right:14px;border:none;background:transparent;font:400 26px var(--ui);color:#c9b48f;cursor:pointer;line-height:1}
+.pc-h{font:900 20px var(--disp);color:#fdf6e6;text-align:center}
+.pc-sub{font:400 13.5px var(--serif);color:#d8c6a4;text-align:center;margin:4px 0 16px}
+.pc-in{width:100%;font:500 16px var(--serif);color:#fdf6e6;background:rgba(255,255,255,.06);border:1px solid rgba(230,211,163,.32);
   border-radius:11px;padding:13px 14px;outline:none;-webkit-appearance:none;appearance:none;margin-bottom:10px}
-.pc-in:focus{border-color:var(--gold)}
-.pc-err{font:600 13px var(--serif);color:var(--wine);margin:2px 0 10px;text-align:center}
-.pc-go{width:100%;border:none;cursor:pointer;border-radius:12px;padding:15px 18px;margin-top:4px;
-  font:800 15.5px var(--ui);color:#fff;background:linear-gradient(180deg,var(--wine),var(--wine-2));border:1px solid var(--gold-2)}
+.pc-in::placeholder{color:#9a8a6e}
+.pc-in:focus{border-color:var(--gold-2);background:rgba(255,255,255,.09)}
+.pc-err{font:600 13px var(--serif);color:#e8a8a8;margin:2px 0 10px;text-align:center}
+.pc-go{width:100%;border:none;cursor:pointer;border-radius:12px;padding:16px 18px;margin-top:4px;
+  font:800 15.5px var(--ui);color:#2a1708;background:linear-gradient(180deg,var(--gold),#a9762f);border:1px solid var(--gold-soft)}
 .pc-go:disabled{opacity:.7;cursor:default}
-.pc-safe{font:500 11.5px/1.4 var(--ui);color:var(--ink-soft);text-align:center;margin-top:12px}
+.pc-safe{font:500 11.5px/1.4 var(--ui);color:#b8a98c;text-align:center;margin-top:12px}
 
 /* ── MAPA (pós-chat) + materialização do entregável ─────────────────────── */
 .sw-mapa-titulo{font:900 clamp(22px,6vw,29px)/1.15 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
