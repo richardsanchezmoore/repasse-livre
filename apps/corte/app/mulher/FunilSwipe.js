@@ -346,7 +346,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <li>Se amar primeiro que alguém aparece.</li>
               <li>Se fazer de difícil pra ele correr atrás.</li>
             </ul>
-            <p className="sw-destaque" style={{ fontSize: "clamp(19px,5.4vw,24px)" }}>E, mesmo assim, nada mudou.</p>
+            <p className="sw-destaque" style={{ fontSize: "clamp(19px,5.4vw,24px)", fontStyle: "normal" }}>E, mesmo assim, nada mudou.</p>
             <p className="sw-p">Porque todos esses caminhos esquecem a mesma coisa. E é justamente ela que muda o jogo.</p>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero saber o que é →</button></div>
@@ -394,7 +394,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
 
             <p className="sw-destaque" style={{ fontSize: "clamp(18px,5.2vw,24px)", marginTop: "24px" }}>Você deixa de esperar ser escolhida — e passa a ser desejada de verdade.</p>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a oferta →</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero a Transformação →</button></div>
         </>
       )}
 
@@ -409,14 +409,12 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
 
               <div className="sw-kit">
                 <ul>
-                  <li><b>O Mapa</b> — a obra completa, os 5 passos por dentro</li>
-                  <li><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</li>
-                  <li><b>O Dossiê + o Veredito</b> — investigue o pretendente e leia os sinais</li>
-                  <li><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</li>
-                  <li><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</li>
-                  <li><b>Guia “Verde ou Vermelho?”</b> — os sinais lado a lado</li>
-                  <li><b>Wallpapers “Mulher de Valor”</b> — versículos de identidade</li>
-                  <li><b>O Diário da Dama</b> — 7 noites de reflexão e oração</li>
+                  <li><span className="sw-kit-ic">📖</span><span><b>O Mapa</b> — a obra completa, os 5 passos por dentro</span></li>
+                  <li><span className="sw-kit-ic">📜</span><span><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</span></li>
+                  <li><span className="sw-kit-ic">🔎</span><span><b>O Dossiê + o Veredito</b> — investigue o pretendente e leia os sinais</span></li>
+                  <li><span className="sw-kit-ic">👑</span><span><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</span></li>
+                  <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
+                  <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Guia “Verde ou Vermelho?”, os Wallpapers “Mulher de Valor” e o Diário da Dama</span></li>
                 </ul>
               </div>
 

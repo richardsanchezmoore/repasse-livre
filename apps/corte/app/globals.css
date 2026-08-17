@@ -929,13 +929,14 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
   padding:15px 16px;font:700 15px var(--ui);color:var(--gold-2);background:rgba(203,168,91,.08);transition:background .14s,transform .1s}
 .ldy-opt:hover{background:rgba(203,168,91,.16)}
 .ldy-opt:active{transform:scale(.99)}
-.ldy-opt.cta{background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;border-color:var(--gold-soft)}
+.ldy-opt.cta{background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;border-color:var(--gold-soft);
+  min-height:58px;padding:18px 16px;font-size:16.5px;font-weight:800;box-shadow:0 12px 26px -12px rgba(176,135,63,.5)}
 
 /* card final — oferta */
 .sw-oferta-card{max-width:400px;margin:18px auto 0;width:100%;background:linear-gradient(165deg,var(--creme),#f5ecd6);
   border:1px solid var(--gold);border-radius:18px;padding:24px 22px;text-align:center;color:var(--ink);box-shadow:0 24px 54px -28px rgba(0,0,0,.7)}
 .sw-oferta-card .ic{font-size:32px}
-.sw-oferta-t{font:900 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 10px}
+.sw-oferta-t{font:700 clamp(20px,5.4vw,25px)/1.2 var(--serif);color:var(--wine);text-wrap:balance;margin:8px 0 10px}
 .sw-oferta-d{font:400 14px/1.55 var(--serif);color:var(--ink-soft);margin:0 0 14px}
 .sw-preco{font:900 44px var(--disp);color:var(--wine);line-height:1}
 .sw-preco-de{display:block;font:600 16px var(--ui);color:var(--ink-soft);text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
@@ -944,14 +945,14 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-reassure{font:500 12px/1.5 var(--ui);color:var(--ink-soft);margin-top:12px}
 /* Kit explícito na oferta (ancoragem do valor) */
 .sw-kit{text-align:left;max-width:360px;margin:16px auto 0;border-top:1px solid var(--gold-soft);padding-top:14px}
-.sw-kit ul{list-style:none;display:flex;flex-direction:column;gap:9px}
-.sw-kit li{font:400 12.5px/1.4 var(--serif);color:var(--ink-soft);padding-left:22px;position:relative}
-.sw-kit li::before{content:"✓";position:absolute;left:0;top:0;color:var(--gold);font-weight:900}
+.sw-kit ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.sw-kit li{display:flex;gap:10px;align-items:flex-start;font:400 12.5px/1.4 var(--serif);color:var(--ink-soft)}
+.sw-kit-ic{flex:none;font-size:16px;line-height:1.2;width:22px;text-align:center}
 .sw-kit li b{color:var(--wine);font-weight:700}
 .sw-pix{font:600 13px var(--ui);color:var(--ink-soft);margin-top:10px}
 .sw-pix b{color:var(--wine)}
 /* destaque no parcelamento (menor número primeiro) */
-.sw-preco-parcela{display:block;font:900 clamp(30px,8.4vw,42px)/1 var(--disp);color:var(--wine)}
+.sw-preco-parcela{display:block;font:700 clamp(30px,8.4vw,42px)/1.05 var(--serif);color:var(--wine);letter-spacing:-.01em}
 /* selo da Semana da Mulher de Valor (Card 1, fundo escuro) */
 .sw-selo-semana{font:700 10.5px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);text-align:center;margin-bottom:10px}
 /* urgência honesta na oferta (fundo creme) */
@@ -995,7 +996,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 
 /* ── MAPA (pós-chat) + materialização do entregável ─────────────────────── */
 .sw-mapa-titulo{font:900 clamp(22px,6vw,29px)/1.15 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
-.sw-mapa-sub{font:400 14px/1.5 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:9px auto 18px}
+.sw-mapa-sub{font:400 14px/1.5 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:8px auto 4px}
 .sw-passos{display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto;width:100%}
 .sw-passo{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:9px 11px}
 .sw-passo-img{width:56px;height:70px;object-fit:cover;border-radius:9px;border:1px solid rgba(230,211,163,.4);flex:none}
@@ -1007,13 +1008,13 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-seq p{font:400 14px/1.65 var(--serif);color:#e4d3b4;max-width:36ch;margin:0 auto}
 
 /* MAPA MENTAL (estilo MindMeister): raiz "Você" → 5 ramos numerados */
-.sw-mm{max-width:400px;margin:16px auto 0;text-align:left}
+.sw-mm{max-width:400px;margin:10px auto 0;text-align:left}
 .sw-mm-raiz{display:inline-block;margin-left:2px;background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;
   font:900 12px var(--ui);letter-spacing:.16em;text-transform:uppercase;padding:8px 20px;border-radius:99px;box-shadow:0 0 22px rgba(203,168,91,.35)}
 .sw-mm-ramos{position:relative;margin-top:2px}
 .sw-mm-ramos::before{content:"";position:absolute;left:19px;top:0;bottom:18px;width:2px;
   background:linear-gradient(var(--gold-2),rgba(203,168,91,.15))}
-.sw-mm-ramo{position:relative;display:flex;align-items:center;gap:14px;margin-top:11px}
+.sw-mm-ramo{position:relative;display:flex;align-items:center;gap:14px;margin-top:9px}
 .sw-mm-n{position:relative;z-index:1;flex:none;width:38px;height:38px;border-radius:50%;
   background:linear-gradient(160deg,#3a1a22,#22101a);border:1.5px solid var(--gold-2);display:flex;align-items:center;justify-content:center;
   font:900 14px var(--disp);color:var(--gold-2);box-shadow:0 0 16px rgba(203,168,91,.25)}
