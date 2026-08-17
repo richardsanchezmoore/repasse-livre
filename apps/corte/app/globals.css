@@ -933,18 +933,26 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
   min-height:58px;padding:18px 16px;font-size:16.5px;font-weight:800;box-shadow:0 12px 26px -12px rgba(176,135,63,.5)}
 
 /* card final — oferta */
-.sw-oferta-card{max-width:400px;margin:18px auto 0;width:100%;background:linear-gradient(165deg,var(--creme),#f5ecd6);
-  border:1px solid var(--gold);border-radius:18px;padding:24px 22px;text-align:center;color:var(--ink);box-shadow:0 24px 54px -28px rgba(0,0,0,.7)}
-.sw-oferta-card .ic{font-size:32px}
-.sw-oferta-head{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:2px}
-.sw-oferta-ic{font-size:30px;flex:none;filter:drop-shadow(0 3px 8px rgba(176,135,63,.4))}
-.sw-oferta-t{font:700 clamp(20px,5.4vw,25px)/1.2 var(--serif);color:var(--wine);text-wrap:balance;margin:0}
-.sw-oferta-d{font:400 14px/1.55 var(--serif);color:var(--ink-soft);margin:0 0 14px}
-.sw-preco{font:900 44px var(--disp);color:var(--wine);line-height:1}
-.sw-preco-de{display:block;font:600 16px var(--ui);color:var(--ink-soft);text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
-.sw-preco small{display:block;font:600 12px var(--ui);color:var(--ink-soft);margin-top:5px}
+/* card de oferta ESCURO (consistente com o funil — não parece iframe) */
+.sw-oferta-card{max-width:420px;margin:14px auto 0;width:100%;background:rgba(255,255,255,.045);
+  border:1px solid rgba(230,211,163,.35);border-radius:18px;padding:22px 20px;text-align:center;color:#f0e3c8;box-shadow:0 20px 50px -30px rgba(0,0,0,.6)}
+.sw-oferta-t{font:700 clamp(21px,5.6vw,26px)/1.2 var(--serif);color:#fdf6e6;text-wrap:balance;margin:0 auto 4px}
+.sw-oferta-d{font:400 14px/1.55 var(--serif);color:#e4d3b4;margin:0 0 14px}
+.sw-preco{color:#fdf6e6;line-height:1}
+.sw-preco-de{display:block;font:600 16px var(--ui);color:#c9b48f;text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
+.sw-preco small{display:block;font:600 12px var(--ui);color:#c9b48f;margin-top:5px}
 .sw-oferta-card .pill{width:100%;margin-top:16px}
-.sw-reassure{font:500 12px/1.5 var(--ui);color:var(--ink-soft);margin-top:12px}
+.sw-reassure{font:500 12px/1.5 var(--ui);color:#c9b48f;margin-top:12px}
+/* overrides do tema escuro p/ classes compartilhadas (não afeta /mulher-carta claro) */
+.sw-oferta-card .sw-kit li{color:#d3c09c}
+.sw-oferta-card .sw-kit li b{color:var(--gold-2)}
+.sw-oferta-card .sw-preco-parcela{color:#fdf6e6}
+.sw-oferta-card .sw-urg{color:var(--gold-2);background:rgba(203,168,91,.14);border-color:rgba(230,211,163,.3)}
+.sw-oferta-card .sw-urg b{color:var(--gold-2)}
+.sw-oferta-card .sw-prova{background:rgba(255,255,255,.05);border-color:rgba(230,211,163,.28)}
+.sw-oferta-card .sw-prova-t{color:var(--gold-2)}
+.sw-oferta-card .sw-prova-q{color:#d3c09c}
+.sw-oferta-card .sw-prova-n{color:#e9d9bd}
 /* Kit explícito na oferta (ancoragem do valor) */
 .sw-kit{text-align:left;max-width:360px;margin:16px auto 0;border-top:1px solid var(--gold-soft);padding-top:14px}
 .sw-kit ul{list-style:none;display:flex;flex-direction:column;gap:10px}
