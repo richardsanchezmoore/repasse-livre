@@ -429,9 +429,12 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
                 </ul>
               </div>
 
-              <div className="sw-preco">{precoDe ? <span className="sw-preco-de">tudo isso: de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato e vitalício</small></div>
-              <div className="sw-pix">no <b>PIX</b> ou em até <b>6x de R$ 13,00</b> no cartão</div>
-              <p className="sw-reassure">✓ Acesso na hora · ✓ 7 dias de garantia</p>
+              <div className="sw-preco">
+                {precoDe ? <span className="sw-preco-de">tudo isso: de {precoDe}</span> : null}
+                <span className="sw-preco-parcela">4x de R$ 19,00</span>
+                <small>ou {preco} à vista no PIX</small>
+              </div>
+              <p className="sw-reassure">✓ Acesso na hora · ✓ vitalício · ✓ 7 dias de garantia</p>
               {url ? (
                 <button type="button" className="pill" onClick={abrirCheckout}>Quero tudo →</button>
               ) : (

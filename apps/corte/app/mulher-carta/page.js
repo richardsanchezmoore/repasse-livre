@@ -184,8 +184,11 @@ export default async function LandingMulherCarta() {
                 <li><b>O Diário da Dama</b> — 7 noites de reflexão e oração</li>
               </ul>
             </div>
-            <div className="lpm-preco">{precoDe ? <span className="lpm-preco-de">tudo isso: de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato e vitalício</small></div>
-            <div className="sw-pix">no <b>PIX</b> ou em até <b>6x de R$ 13,00</b> no cartão</div>
+            <div className="lpm-preco">
+              {precoDe ? <span className="lpm-preco-de">tudo isso: de {precoDe}</span> : null}
+              <span className="sw-preco-parcela">4x de R$ 19,00</span>
+              <small>ou {preco} à vista no PIX</small>
+            </div>
             <CTA url={url} preco={preco}>Quero tudo</CTA>
             <div className="lpm-garantia"><span className="sel">🛡️</span> 7 dias de garantia — ou o seu dinheiro de volta.</div>
           </div>

@@ -946,6 +946,8 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-kit li b{color:var(--wine);font-weight:700}
 .sw-pix{font:600 13px var(--ui);color:var(--ink-soft);margin-top:10px}
 .sw-pix b{color:var(--wine)}
+/* destaque no parcelamento (menor número primeiro) */
+.sw-preco-parcela{display:block;font:900 clamp(30px,8.4vw,42px)/1 var(--disp);color:var(--wine)}
 
 @media (prefers-reduced-motion:reduce){
   .sw-card,.ldy-msg{animation:none}
