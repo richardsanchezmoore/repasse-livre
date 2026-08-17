@@ -451,7 +451,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           {/* CTA FIXO no rodapé — sempre visível enquanto ela rola a oferta */}
           <div className="sw-foot">
             {url ? (
-              <button type="button" className="sw-btn ouro" onClick={abrirCheckout}>Quero tudo →</button>
+              <button type="button" className="sw-btn ouro sw-glow" onClick={abrirCheckout}>Quero tudo →</button>
             ) : (
               <span className="sw-btn" style={{ opacity: 0.6 }}>Em breve</span>
             )}

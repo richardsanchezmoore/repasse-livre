@@ -57,10 +57,10 @@ export async function enviarEmailAcesso({ email, nome, tipo }) {
   if (!email) return { ok: false, erro: "sem email" };
   const produtoLabel = tipo === "assinatura" ? "A sua assinatura das Damas Virtuosas"
     : tipo === "livro" ? "A sua obra — Como se Tornar a Mulher que “Ele” Procura"
-    : "O seu Kit de Discernimento";
+    : "A sua obra “Como se Tornar a Mulher que ‘Ele’ Procura” + a Coleção Completa";
   const assunto = tipo === "assinatura" ? "👑 A sua assinatura está pronta — crie o seu acesso"
     : tipo === "livro" ? "👑 A sua obra está pronta — crie o seu acesso"
-    : "👑 O seu Kit de Discernimento está pronto — crie o seu acesso";
+    : "👑 O seu acesso está pronto — Como se Tornar a Mulher que “Ele” Procura";
   const primeiroNome = nome ? esc(String(nome).trim().split(/\s+/)[0]) : "";
   const link = `${APP_URL}/bem-vinda?email=${encodeURIComponent(email)}`;
   const html = render({ primeiroNome, produtoLabel, link });

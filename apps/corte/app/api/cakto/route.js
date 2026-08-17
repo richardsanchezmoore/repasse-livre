@@ -114,7 +114,7 @@ export async function POST(req) {
     // resposta sai e mata promessas pendentes — o fetch não completa e nem o .catch roda.
     // O try/catch garante que uma falha aqui não derruba a resposta 200 do webhook.
     try {
-      await enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : tipo === "livro" ? "A Mulher que Ele Procura" : "Coleção da Corte" });
+      await enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : tipo === "livro" ? "A Mulher que Ele Procura" : "O Mapa + a Coleção Completa" });
     } catch (e) { console.error("[cakto] capi falhou:", e?.message); }
     // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
     // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.
