@@ -843,9 +843,9 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* borda de gradiente girando (estilo clickmax) — puxa o olho pro CTA */
 @property --sw-ang{syntax:'<angle>';initial-value:0deg;inherits:false}
 .sw-glow{position:relative;z-index:0;isolation:isolate}
-.sw-glow::before{content:"";position:absolute;inset:-3px;border-radius:16px;z-index:-1;
-  background:conic-gradient(from var(--sw-ang),transparent 0deg,var(--gold-2) 55deg,#fff4d2 90deg,var(--gold) 125deg,transparent 200deg,transparent 330deg,var(--gold-2) 360deg);
-  animation:swSpin 3.6s linear infinite}
+.sw-glow::before{content:"";position:absolute;inset:-2px;border-radius:16px;z-index:-1;
+  background:conic-gradient(from var(--sw-ang),transparent 0deg,transparent 62deg,var(--gold-2) 88deg,#fff6da 100deg,var(--gold-2) 112deg,transparent 138deg,transparent 360deg);
+  animation:swSpin 5.5s linear infinite;filter:blur(.4px)}
 @keyframes swSpin{to{--sw-ang:360deg}}
 @media (prefers-reduced-motion:reduce){.sw-glow::before{animation:none}}
 .sw-btn:active{transform:scale(.99)}
