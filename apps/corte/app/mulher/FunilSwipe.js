@@ -314,11 +314,12 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 0 && (
         <>
           <div className="sw-card hero" key="c0">
+            <div className="sw-selo-semana">✦ Semana da Mulher de Valor · só até 26/08</div>
             <h1 className="sw-h">O Mapa das Mulheres</h1>
             <p className="sw-sub">Para destravar as relações — e viver o que você tanto deseja.</p>
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, isso ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
-            <p className="sw-p">Foi olhando de perto para muitas mulheres que percebi: mesmo sendo diferentes, quase todas enfrentam as mesmas dificuldades.</p>
+            <p className="sw-p">Foi olhando para muitas mulheres que percebi: quase todas enfrentam as mesmas dificuldades.</p>
           </div>
           <div className="sw-foot">
             <div className="sw-assina">
@@ -436,7 +437,23 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
                 <span className="sw-preco-parcela">4x de R$ 19,00</span>
                 <small>ou {preco} à vista no PIX</small>
               </div>
+              <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08. Depois, volta para R$ 149,90.</div>
               <p className="sw-reassure">✓ Acesso na hora · ✓ vitalício · ✓ 7 dias de garantia</p>
+
+              <div className="sw-provas">
+                <div className="sw-prova">
+                  <div className="sw-estrelas">★★★★★</div>
+                  <p className="sw-prova-t">“Eu sempre achava que o problema era comigo.”</p>
+                  <p className="sw-prova-q">Depois de ler, comecei a perceber que eu estava me colocando de um jeito que não mostrava quem eu realmente era. Foi uma mudança simples, mas comecei a enxergar meus relacionamentos de outra forma.</p>
+                  <div className="sw-prova-n">— Mariana, 32 anos</div>
+                </div>
+                <div className="sw-prova">
+                  <div className="sw-estrelas">★★★★★</div>
+                  <p className="sw-prova-t">“Finalmente entendi onde eu estava errando.”</p>
+                  <p className="sw-prova-q">Eu já tinha lido outras coisas, mas sempre parecia que eu precisava virar outra pessoa. Aqui foi diferente. Entendi coisas que eu fazia sem perceber e mudei pequenas atitudes nas minhas conversas e nos meus encontros.</p>
+                  <div className="sw-prova-n">— Juliana, 35 anos</div>
+                </div>
+              </div>
             </div>
           </div>
           {/* CTA FIXO no rodapé — sempre visível enquanto ela rola a oferta */}

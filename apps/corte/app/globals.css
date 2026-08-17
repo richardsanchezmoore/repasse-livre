@@ -948,6 +948,21 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-pix b{color:var(--wine)}
 /* destaque no parcelamento (menor número primeiro) */
 .sw-preco-parcela{display:block;font:900 clamp(30px,8.4vw,42px)/1 var(--disp);color:var(--wine)}
+/* selo da Semana da Mulher de Valor (Card 1, fundo escuro) */
+.sw-selo-semana{font:700 10.5px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);text-align:center;margin-bottom:10px}
+/* urgência honesta na oferta (fundo creme) */
+.sw-urg{font:600 12.5px/1.4 var(--ui);color:var(--wine);background:rgba(203,168,91,.16);
+  border:1px solid var(--gold-soft);border-radius:10px;padding:9px 12px;margin-top:12px;max-width:360px;margin-left:auto;margin-right:auto}
+.sw-urg b{color:var(--wine)}
+/* prova social elegante (estrelas + citação) */
+.sw-provas{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:18px auto 0;border-top:1px solid var(--gold-soft);padding-top:16px}
+.sw-prova{background:rgba(255,255,255,.5);border:1px solid var(--gold-soft);border-radius:12px;padding:13px 15px;text-align:left}
+.sw-estrelas{color:var(--gold);font-size:14px;letter-spacing:2px;margin-bottom:6px}
+.sw-prova-t{font:700 14px/1.35 var(--disp);color:var(--wine);margin:0 0 6px}
+.sw-prova-q{font:400 12.5px/1.5 var(--serif);color:var(--ink-soft);margin:0 0 8px}
+.sw-prova-n{font:600 12px var(--ui);color:var(--ink)}
+/* folga p/ caber o selo no Card 1 */
+.sw-card.hero .sw-p{margin:6px 0 0}
 
 @media (prefers-reduced-motion:reduce){
   .sw-card,.ldy-msg{animation:none}

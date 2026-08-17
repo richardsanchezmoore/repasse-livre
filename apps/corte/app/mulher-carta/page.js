@@ -189,8 +189,24 @@ export default async function LandingMulherCarta() {
               <span className="sw-preco-parcela">4x de R$ 19,00</span>
               <small>ou {preco} à vista no PIX</small>
             </div>
+            <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08. Depois, volta para R$ 149,90.</div>
             <CTA url={url} preco={preco}>Quero tudo</CTA>
             <div className="lpm-garantia"><span className="sel">🛡️</span> 7 dias de garantia — ou o seu dinheiro de volta.</div>
+          </div>
+
+          <div className="sw-provas" style={{ marginTop: 22 }}>
+            <div className="sw-prova">
+              <div className="sw-estrelas">★★★★★</div>
+              <p className="sw-prova-t">“Eu sempre achava que o problema era comigo.”</p>
+              <p className="sw-prova-q">Depois de ler, comecei a perceber que eu estava me colocando de um jeito que não mostrava quem eu realmente era. Foi uma mudança simples, mas comecei a enxergar meus relacionamentos de outra forma.</p>
+              <div className="sw-prova-n">— Mariana, 32 anos</div>
+            </div>
+            <div className="sw-prova">
+              <div className="sw-estrelas">★★★★★</div>
+              <p className="sw-prova-t">“Finalmente entendi onde eu estava errando.”</p>
+              <p className="sw-prova-q">Eu já tinha lido outras coisas, mas sempre parecia que eu precisava virar outra pessoa. Aqui foi diferente. Entendi coisas que eu fazia sem perceber e mudei pequenas atitudes nas minhas conversas e nos meus encontros.</p>
+              <div className="sw-prova-n">— Juliana, 35 anos</div>
+            </div>
           </div>
         </section>
 
