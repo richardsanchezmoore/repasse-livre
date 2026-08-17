@@ -745,7 +745,7 @@ select.fld{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50
 .lpm-precocard .ic{font-size:32px}
 .lpm-precocard-t{font:900 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 12px}
 .lpm-preco{font:900 46px var(--disp);color:var(--wine);line-height:1}
-.lpm-preco-de{font:500 14px var(--serif);color:var(--ink-soft);text-decoration:line-through;margin-bottom:2px}
+.lpm-preco-de{display:block;font:600 16px var(--ui);color:var(--ink-soft);text-decoration:line-through;margin-bottom:3px;letter-spacing:.02em}
 .lpm-preco small{display:block;font:600 12px var(--ui);letter-spacing:.05em;color:var(--ink-soft);margin-top:5px}
 .lpm-precocard .pill{margin:18px auto 0}
 .lpm-garantia{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;
@@ -934,6 +934,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-oferta-t{font:900 clamp(20px,5.4vw,25px)/1.15 var(--disp);color:var(--wine);text-wrap:balance;margin:8px 0 10px}
 .sw-oferta-d{font:400 14px/1.55 var(--serif);color:var(--ink-soft);margin:0 0 14px}
 .sw-preco{font:900 44px var(--disp);color:var(--wine);line-height:1}
+.sw-preco-de{display:block;font:600 16px var(--ui);color:var(--ink-soft);text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
 .sw-preco small{display:block;font:600 12px var(--ui);color:var(--ink-soft);margin-top:5px}
 .sw-oferta-card .pill{width:100%;margin-top:16px}
 .sw-reassure{font:500 12px/1.5 var(--ui);color:var(--ink-soft);margin-top:12px}

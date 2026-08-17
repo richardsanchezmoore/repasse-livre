@@ -82,7 +82,7 @@ function LadyAudio({ src, durProp = "" }) {
 function trackFb(evento, dados, tipo = "track") {
   try { if (typeof window !== "undefined" && window.fbq) window.fbq(tipo, evento, dados); } catch {}
 }
-const VALOR = 37.9;
+const VALOR = 67.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
 // Os 5 passos do MAPA (nomes visíveis; o PERLA como mecanismo fica na obra).
@@ -268,7 +268,7 @@ function LadyChat({ onDone, variante = "a" }) {
 
 const TOTAL = 6;
 
-export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) {
+export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
   const [showCheck, setShowCheck] = useState(false);
   const avancar = () => setStep((s) => Math.min(TOTAL - 1, s + 1));
@@ -413,17 +413,17 @@ export default function FunilSwipe({ preco = "R$ 37,90", url = "", slug = "" }) 
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
-              <div className="sw-oferta-t">Como se Tornar a Mulher que “Ele” Procura</div>
-              <div className="sw-oferta-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</div>
-              <div className="sw-preco">{preco}<small>pagamento único · acesso imediato</small></div>
+              <div className="sw-oferta-t">O Mapa + a Coleção da Corte</div>
+              <div className="sw-oferta-d">A obra completa — “Como se Tornar a Mulher que ‘Ele’ Procura” — e todos os materiais de discernimento da Corte, juntos.</div>
+              <div className="sw-preco">{precoDe ? <span className="sw-preco-de">de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato</small></div>
               <ul className="sw-recebe">
-                <li>Os 5 passos, explicados por dentro</li>
-                <li>Acesso imediato</li>
-                <li>Acesso vitalício</li>
+                <li>O Mapa completo (os 5 passos por dentro)</li>
+                <li>A Coleção da Corte inteira (7 materiais)</li>
+                <li>Acesso imediato e vitalício</li>
                 <li>Garantia de 7 dias</li>
               </ul>
               {url ? (
-                <button type="button" className="pill" onClick={abrirCheckout}>Quero o mapa →</button>
+                <button type="button" className="pill" onClick={abrirCheckout}>Quero tudo →</button>
               ) : (
                 <span className="pill" style={{ opacity: 0.6, display: "inline-block" }}>Em breve</span>
               )}

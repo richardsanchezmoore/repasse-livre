@@ -56,7 +56,8 @@ export default async function LandingMulherCarta() {
   const kit = cfg?.valor?.kit || {};
   const livro = cfg?.valor?.livro || {};
   const prod = livro.cakto_url ? livro : kit;
-  const preco = prod.preco || "R$ 37,90";
+  const preco = prod.preco || "R$ 67,90";
+  const precoDe = prod.preco_de || "";
   const url = prod.cakto_url || "";
 
   return (
@@ -168,16 +169,16 @@ export default async function LandingMulherCarta() {
           <h2 className="lpm-h2">Comece hoje</h2>
           <div className="lpm-precocard">
             <div className="ic">🔑</div>
-            <div className="lpm-precocard-t">Como se Tornar a Mulher que “Ele” Procura</div>
-            <p className="lpm-precocard-d">O mapa completo para você entender, aplicar e viver uma nova forma de se relacionar.</p>
-            <div className="lpm-preco">{preco}<small>pagamento único · acesso imediato</small></div>
+            <div className="lpm-precocard-t">O Mapa + a Coleção da Corte</div>
+            <p className="lpm-precocard-d">A obra completa — “Como se Tornar a Mulher que ‘Ele’ Procura” — e todos os materiais de discernimento da Corte, juntos.</p>
+            <div className="lpm-preco">{precoDe ? <span className="lpm-preco-de">de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato</small></div>
             <ul className="lpm-recebe">
-              <li>Os 5 passos, explicados por dentro</li>
-              <li>Acesso imediato</li>
-              <li>Acesso vitalício</li>
+              <li>O Mapa completo (os 5 passos por dentro)</li>
+              <li>A Coleção da Corte inteira (7 materiais)</li>
+              <li>Acesso imediato e vitalício</li>
               <li>Garantia de 7 dias</li>
             </ul>
-            <CTA url={url} preco={preco}>Quero o mapa</CTA>
+            <CTA url={url} preco={preco}>Quero tudo</CTA>
             <div className="lpm-garantia"><span className="sel">🛡️</span> 7 dias de garantia — ou o seu dinheiro de volta.</div>
           </div>
         </section>

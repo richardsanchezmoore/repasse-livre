@@ -21,7 +21,7 @@ export default async function LandingMulher() {
   const prod = livro.cakto_url ? livro : kit;
   return (
     <main className="sw-main">
-      <FunilSwipe preco={prod.preco || "R$ 37,90"} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} />
+      <FunilSwipe preco={prod.preco || "R$ 67,90"} precoDe={prod.preco_de || ""} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} />
     </main>
   );
 }
