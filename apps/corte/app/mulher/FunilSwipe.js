@@ -347,9 +347,9 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <li>Se fazer de difícil pra ele correr atrás.</li>
             </ul>
             <p className="sw-destaque" style={{ fontSize: "clamp(19px,5.4vw,24px)", fontStyle: "normal" }}>E, mesmo assim, nada mudou.</p>
-            <p className="sw-p">Porque todos esses caminhos esquecem a mesma coisa. E é justamente ela que muda o jogo.</p>
+            <p className="sw-p">Porque todos te mostraram uma porta — mas nunca te entregaram a chave.</p>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero saber o que é →</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero a chave →</button></div>
         </>
       )}
 
