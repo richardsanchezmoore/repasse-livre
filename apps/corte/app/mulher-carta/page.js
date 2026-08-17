@@ -172,13 +172,20 @@ export default async function LandingMulherCarta() {
             <div className="ic">🔑</div>
             <div className="lpm-precocard-t">O Mapa + a Coleção da Corte</div>
             <p className="lpm-precocard-d">A obra completa — “Como se Tornar a Mulher que ‘Ele’ Procura” — e todos os materiais de discernimento da Corte, juntos.</p>
-            <div className="lpm-preco">{precoDe ? <span className="lpm-preco-de">de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato</small></div>
-            <ul className="lpm-recebe">
-              <li>O Mapa completo (os 5 passos por dentro)</li>
-              <li>A Coleção da Corte inteira (7 materiais)</li>
-              <li>Acesso imediato e vitalício</li>
-              <li>Garantia de 7 dias</li>
-            </ul>
+            <div className="sw-kit">
+              <ul>
+                <li><b>O Mapa</b> — a obra completa, os 5 passos por dentro</li>
+                <li><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</li>
+                <li><b>O Dossiê + o Veredito</b> — investigue o pretendente e leia os sinais</li>
+                <li><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</li>
+                <li><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</li>
+                <li><b>Guia “Verde ou Vermelho?”</b> — os sinais lado a lado</li>
+                <li><b>Wallpapers “Mulher de Valor”</b> — versículos de identidade</li>
+                <li><b>O Diário da Dama</b> — 7 noites de reflexão e oração</li>
+              </ul>
+            </div>
+            <div className="lpm-preco">{precoDe ? <span className="lpm-preco-de">tudo isso: de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato e vitalício</small></div>
+            <div className="sw-pix">no <b>PIX</b> ou em até <b>6x de R$ 13,00</b> no cartão</div>
             <CTA url={url} preco={preco}>Quero tudo</CTA>
             <div className="lpm-garantia"><span className="sel">🛡️</span> 7 dias de garantia — ou o seu dinheiro de volta.</div>
           </div>

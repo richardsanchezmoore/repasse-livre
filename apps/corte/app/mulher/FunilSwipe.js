@@ -414,14 +414,24 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
             <div className="sw-oferta-card">
               <div className="ic">🔑</div>
               <div className="sw-oferta-t">O Mapa + a Coleção da Corte</div>
-              <div className="sw-oferta-d">A obra completa — “Como se Tornar a Mulher que ‘Ele’ Procura” — e todos os materiais de discernimento da Corte, juntos.</div>
-              <div className="sw-preco">{precoDe ? <span className="sw-preco-de">de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato</small></div>
-              <ul className="sw-recebe">
-                <li>O Mapa completo (os 5 passos por dentro)</li>
-                <li>A Coleção da Corte inteira (7 materiais)</li>
-                <li>Acesso imediato e vitalício</li>
-                <li>Garantia de 7 dias</li>
-              </ul>
+              <div className="sw-oferta-d">Tudo para você entender, aplicar e escolher com clareza:</div>
+
+              <div className="sw-kit">
+                <ul>
+                  <li><b>O Mapa</b> — a obra completa, os 5 passos por dentro</li>
+                  <li><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</li>
+                  <li><b>O Dossiê + o Veredito</b> — investigue o pretendente e leia os sinais</li>
+                  <li><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</li>
+                  <li><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</li>
+                  <li><b>Guia “Verde ou Vermelho?”</b> — os sinais lado a lado</li>
+                  <li><b>Wallpapers “Mulher de Valor”</b> — versículos de identidade</li>
+                  <li><b>O Diário da Dama</b> — 7 noites de reflexão e oração</li>
+                </ul>
+              </div>
+
+              <div className="sw-preco">{precoDe ? <span className="sw-preco-de">tudo isso: de {precoDe}</span> : null}{preco}<small>pagamento único · acesso imediato e vitalício</small></div>
+              <div className="sw-pix">no <b>PIX</b> ou em até <b>6x de R$ 13,00</b> no cartão</div>
+              <p className="sw-reassure">✓ Acesso na hora · ✓ 7 dias de garantia</p>
               {url ? (
                 <button type="button" className="pill" onClick={abrirCheckout}>Quero tudo →</button>
               ) : (
