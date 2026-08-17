@@ -363,22 +363,20 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
             <div className="sw-mapa-titulo">O Mapa das Mulheres</div>
-            <div className="sw-mapa-sub">5 passos para destravar seus relacionamentos.</div>
-            <div className="sw-passos">
-              {PASSOS.map((p) => (
-                <div key={p.n} className="sw-passo">
-                  <img className="sw-passo-img" src={p.img} alt="" loading="lazy" />
-                  <span className="sw-passo-n">{p.n}</span>
-                  <div>
-                    <div className="sw-passo-nome">{p.nome}</div>
-                    <div className="sw-passo-desc">{p.desc}</div>
+            <div className="sw-mapa-sub">Não são 5 dicas soltas — é um caminho que sai de você.</div>
+            <div className="sw-mm">
+              <div className="sw-mm-raiz">Você</div>
+              <div className="sw-mm-ramos">
+                {PASSOS.map((p) => (
+                  <div key={p.n} className="sw-mm-ramo">
+                    <span className="sw-mm-n">{p.n}</span>
+                    <div className="sw-mm-no">
+                      <div className="sw-mm-nome">{p.nome}</div>
+                      <div className="sw-mm-desc">{p.desc}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className="sw-seq">
-              <div className="sw-seq-t">Não são cinco dicas soltas.</div>
-              <p>Existe uma sequência. Primeiro você entende onde está. Depois, o que mostra. Depois, o que revela. Depois, como se conecta. E, por fim, como age e escolhe.</p>
+                ))}
+              </div>
             </div>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero ver o que muda →</button></div>
@@ -388,23 +386,14 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {/* O QUE MUDA PARA VOCÊ — benefício/transformação (progressão) + antes→depois */}
       {step === 4 && (
         <>
-          <div className="sw-card" key="c4">
+          <div className="sw-card hero" key="c4">
             <div className="sw-eyebrow">A transformação</div>
             <div className="sw-muda-h">O que muda para você</div>
-            <p className="sw-p" style={{ margin: "2px auto 4px" }}>Da dúvida… para o desejo.</p>
+            <p className="sw-p" style={{ margin: "2px auto 16px" }}>Imagine a mulher que você vai se tornar:</p>
 
-            <div className="sw-transform">
-              <div className="sw-tr antes">
-                <div className="sw-tr-l">Hoje</div>
-                <div className="sw-tr-t">Ver o interesse dele esfriar — e não saber por quê.</div>
-              </div>
-              <div className="sw-tr depois">
-                <div className="sw-tr-l">Depois</div>
-                <div className="sw-tr-t">Ser a mulher que ele admira, procura e não quer perder.</div>
-              </div>
-            </div>
+            <div className="sw-torna">Aquela que ele admira, procura — e não quer perder.</div>
 
-            <p className="sw-destaque" style={{ fontSize: "clamp(18px,5vw,23px)", marginTop: "20px" }}>Você deixa de esperar ser escolhida — e passa a ser desejada de verdade.</p>
+            <p className="sw-destaque" style={{ fontSize: "clamp(18px,5.2vw,24px)", marginTop: "24px" }}>Você deixa de esperar ser escolhida — e passa a ser desejada de verdade.</p>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a oferta →</button></div>
         </>

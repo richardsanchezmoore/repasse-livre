@@ -1005,6 +1005,25 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-seq{max-width:440px;margin:22px auto 0;text-align:center}
 .sw-seq-t{font:900 clamp(18px,5vw,23px) var(--disp);color:var(--gold-2);text-wrap:balance;margin-bottom:8px}
 .sw-seq p{font:400 14px/1.65 var(--serif);color:#e4d3b4;max-width:36ch;margin:0 auto}
+
+/* MAPA MENTAL (estilo MindMeister): raiz "Você" → 5 ramos numerados */
+.sw-mm{max-width:400px;margin:16px auto 0;text-align:left}
+.sw-mm-raiz{display:inline-block;margin-left:2px;background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;
+  font:900 12px var(--ui);letter-spacing:.16em;text-transform:uppercase;padding:8px 20px;border-radius:99px;box-shadow:0 0 22px rgba(203,168,91,.35)}
+.sw-mm-ramos{position:relative;margin-top:2px}
+.sw-mm-ramos::before{content:"";position:absolute;left:19px;top:0;bottom:18px;width:2px;
+  background:linear-gradient(var(--gold-2),rgba(203,168,91,.15))}
+.sw-mm-ramo{position:relative;display:flex;align-items:center;gap:14px;margin-top:11px}
+.sw-mm-n{position:relative;z-index:1;flex:none;width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(160deg,#3a1a22,#22101a);border:1.5px solid var(--gold-2);display:flex;align-items:center;justify-content:center;
+  font:900 14px var(--disp);color:var(--gold-2);box-shadow:0 0 16px rgba(203,168,91,.25)}
+.sw-mm-no{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:12px;padding:10px 13px}
+.sw-mm-nome{font:700 15px var(--disp);color:#fdf6e6;text-transform:uppercase;letter-spacing:.02em}
+.sw-mm-desc{font:400 13px/1.4 var(--serif);color:#c9b48f;margin-top:2px}
+
+/* pancada da transformação — o FUTURO dela (sem "antes") */
+.sw-torna{font:italic 600 clamp(23px,6.6vw,32px)/1.25 var(--disp);color:var(--gold-2);text-align:center;
+  text-wrap:balance;max-width:15ch;margin:6px auto 0;text-shadow:0 0 44px rgba(203,168,91,.3)}
 .sw-inside{max-width:440px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:15px 16px}
 .sw-inside-h{font:700 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);margin-bottom:11px}
 .sw-inside ul{list-style:none;display:flex;flex-direction:column;gap:8px}
