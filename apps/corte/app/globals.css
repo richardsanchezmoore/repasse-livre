@@ -820,7 +820,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-card{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 26px 20px;
   animation:swIn .5s cubic-bezier(.2,.9,.2,1)}
 @keyframes swIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.sw-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-2);margin-bottom:16px;text-align:center}
+.sw-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-2);margin-bottom:9px;text-align:center}
 .sw-h{font:900 clamp(27px,7.6vw,38px)/1.14 var(--disp);color:#fdf6e6;text-wrap:balance;text-align:center;margin:0 auto;max-width:18ch}
 .sw-h em{font-style:italic;color:var(--gold-2)}
 .sw-sub{font:italic 500 clamp(15px,4.3vw,17px)/1.45 var(--serif);color:var(--gold-2);text-align:center;margin:12px auto 2px;max-width:30ch}
@@ -942,11 +942,10 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 
 /* card final — oferta */
 /* card de oferta ESCURO (consistente com o funil — não parece iframe) */
-.sw-oferta-card{max-width:420px;margin:14px auto 0;width:100%;background:rgba(255,255,255,.045);
-  border:1px solid rgba(230,211,163,.35);border-radius:18px;padding:22px 20px;text-align:center;color:#f0e3c8;box-shadow:0 20px 50px -30px rgba(0,0,0,.6)}
+.sw-oferta-card{max-width:440px;margin:6px auto 0;width:100%;background:none;border:none;border-radius:0;padding:0 2px;text-align:center;color:#f0e3c8;box-shadow:none}
 .sw-oferta-t{font:700 clamp(21px,5.6vw,26px)/1.2 var(--serif);color:#fdf6e6;text-wrap:balance;margin:0 auto 4px}
 .sw-oferta-d{font:400 14px/1.55 var(--serif);color:#e4d3b4;margin:0 0 14px}
-.sw-preco{color:#fdf6e6;line-height:1}
+.sw-preco{color:#fdf6e6;line-height:1;margin-top:20px}
 .sw-preco-de{display:block;font:600 16px var(--ui);color:#c9b48f;text-decoration:line-through;margin-bottom:4px;letter-spacing:.02em}
 .sw-preco small{display:block;font:600 12px var(--ui);color:#c9b48f;margin-top:5px}
 .sw-oferta-card .pill{width:100%;margin-top:16px}
@@ -1037,8 +1036,8 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
   background:linear-gradient(160deg,#3a1a22,#22101a);border:1.5px solid var(--gold-2);display:flex;align-items:center;justify-content:center;
   font:900 14px var(--disp);color:var(--gold-2);box-shadow:0 0 16px rgba(203,168,91,.25)}
 .sw-mm-no{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:12px;padding:10px 13px}
-.sw-mm-nome{font:700 15px var(--disp);color:#fdf6e6;text-transform:uppercase;letter-spacing:.02em}
-.sw-mm-desc{font:400 13px/1.4 var(--serif);color:#c9b48f;margin-top:2px}
+.sw-mm-nome{font:700 16px var(--disp);color:#fdf6e6;text-transform:uppercase;letter-spacing:.02em}
+.sw-mm-desc{font:400 14px/1.4 var(--serif);color:#c9b48f;margin-top:2px}
 
 /* pancada da transformação — o FUTURO dela (sem "antes") */
 .sw-torna{font:800 clamp(23px,6.6vw,32px)/1.25 var(--disp);color:var(--gold-2);text-align:center;

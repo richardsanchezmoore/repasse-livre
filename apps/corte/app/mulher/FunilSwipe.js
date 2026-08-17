@@ -408,11 +408,10 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
 
               <div className="sw-kit">
                 <ul>
-                  <li><span className="sw-kit-ic">📖</span><span><b>O Mapa</b> — a obra completa, os 5 passos por dentro</span></li>
+                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — o Mapa completo, os 5 passos por dentro</span></li>
                   <li><span className="sw-kit-ic">📜</span><span><b>O Panfleto Secreto</b> — os 12 perfis a reconhecer antes do altar</span></li>
-                  <li><span className="sw-kit-ic">👑</span><span><b>O Cavalheiro que Vale o seu Altar</b> — o contramodelo (Boaz)</span></li>
                   <li><span className="sw-kit-ic">💌</span><span><b>Cartas Entre Nós</b> — 24 perguntas que revelam o caráter dele</span></li>
-                  <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Guia “Verde ou Vermelho?”, os Wallpapers “Mulher de Valor” e o Diário da Dama</span></li>
+                  <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
                 </ul>
               </div>
 
