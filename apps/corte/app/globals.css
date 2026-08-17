@@ -829,7 +829,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-card.hero .sw-h{font-size:clamp(25px,7vw,34px);max-width:16ch}
 .sw-card.hero .sw-p{font-size:clamp(15px,4vw,16.5px);line-height:1.55;margin:8px 0 0}
 /* frase-destaque do card 1 (cor + peso p/ saltar aos olhos) */
-.sw-destaque{font:italic 700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
+.sw-destaque{font:700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
   text-wrap:balance;max-width:22ch;margin:15px auto;text-shadow:0 0 34px rgba(203,168,91,.3)}
 .sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:16px auto 0}
 .sw-q{font:italic 500 clamp(19px,5.4vw,24px)/1.4 var(--disp);color:var(--gold-2);text-align:center;text-wrap:balance;max-width:24ch;margin:20px auto 0}
@@ -1041,7 +1041,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-mm-desc{font:400 13px/1.4 var(--serif);color:#c9b48f;margin-top:2px}
 
 /* pancada da transformação — o FUTURO dela (sem "antes") */
-.sw-torna{font:italic 600 clamp(23px,6.6vw,32px)/1.25 var(--disp);color:var(--gold-2);text-align:center;
+.sw-torna{font:800 clamp(23px,6.6vw,32px)/1.25 var(--disp);color:var(--gold-2);text-align:center;
   text-wrap:balance;max-width:15ch;margin:6px auto 0;text-shadow:0 0 44px rgba(203,168,91,.3)}
 .sw-inside{max-width:440px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:15px 16px}
 .sw-inside-h{font:700 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-2);margin-bottom:11px}
