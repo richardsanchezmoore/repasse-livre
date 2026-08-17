@@ -1079,3 +1079,68 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-depcard{flex:0 0 clamp(158px,52%,176px);scroll-snap-align:center;aspect-ratio:49/100;border-radius:14px;
   overflow:hidden;border:1px solid rgba(230,211,163,.35);box-shadow:0 14px 30px -20px rgba(0,0,0,.6);background:#fbf6ea}
 .sw-depcard img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ══════════════════════════════════════════════════════════════════
+   CHECKOUT PIX NATIVO (.pix-*) — damasvirtuosas.com, sem sair do site
+   ══════════════════════════════════════════════════════════════════ */
+.pix-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:16px;background:radial-gradient(120% 90% at 50% 0%,rgba(58,20,27,.9),rgba(20,8,11,.97));
+  backdrop-filter:blur(3px);overflow-y:auto}
+.pix-card{width:100%;max-width:420px;margin:auto;background:linear-gradient(180deg,#2c141a,#1f0f13);
+  border:1px solid var(--gold,#b0873f);border-radius:18px;padding:20px 20px 22px;
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.8);color:#f3e6cd;font-family:var(--serif,Merriweather,Georgia,serif)}
+.pix-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pix-brand{color:var(--gold-2,#cba85b);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.pix-x{background:none;border:none;color:#b8a98c;font-size:26px;line-height:1;cursor:pointer;padding:0 4px}
+.pix-x:hover{color:#f3e6cd}
+
+.pix-h{font-family:var(--disp,'Playfair Display',serif);font-weight:700;color:#f6e7c9;
+  font-size:clamp(20px,5.6vw,23px);line-height:1.2;text-align:center;margin:2px 0 6px}
+.pix-sub{color:#d3c09c;font-size:13.5px;line-height:1.55;text-align:center;margin:0 0 16px}
+.pix-sub b{color:#f6e7c9}
+
+.pix-form{display:flex;flex-direction:column;gap:10px}
+.pix-in{width:100%;box-sizing:border-box;background:#160a0e;border:1px solid rgba(203,168,91,.4);
+  border-radius:10px;padding:14px 14px;color:#f6ecd6;font-size:16px;font-family:var(--ui,system-ui,sans-serif);
+  outline:none;transition:border-color .15s,box-shadow .15s}
+.pix-in::placeholder{color:#8f7f68}
+.pix-in:focus{border-color:var(--gold-2,#cba85b);box-shadow:0 0 0 3px rgba(203,168,91,.14)}
+.pix-erro{background:rgba(150,40,50,.25);border:1px solid rgba(203,120,120,.5);color:#f4d6d6;
+  border-radius:8px;padding:9px 12px;font-size:13px;text-align:center}
+
+.pix-btn{margin-top:4px;width:100%;background:linear-gradient(180deg,#cba85b,#b0873f);color:#2a0e16;
+  border:1px solid #f6e7c9;border-radius:11px;padding:16px;font-size:17px;font-weight:800;
+  font-family:var(--ui,system-ui,sans-serif);cursor:pointer;box-shadow:0 12px 26px -14px rgba(203,168,91,.7)}
+.pix-btn:disabled{opacity:.7;cursor:default}
+.pix-btn:not(:disabled):active{transform:translateY(1px)}
+.pix-selos{margin-top:12px;text-align:center;color:#b8a98c;font-size:11.5px;line-height:1.5;
+  font-family:var(--ui,system-ui,sans-serif)}
+
+/* PIX — QR + copia e cola */
+.pix-pay{display:flex;flex-direction:column;align-items:center}
+.pix-qr{width:230px;height:230px;border-radius:12px;background:#fff;padding:8px;box-sizing:border-box;
+  box-shadow:0 12px 30px -16px rgba(0,0,0,.7);margin:2px 0 14px}
+.pix-qr-vazio{display:flex;align-items:center;justify-content:center;text-align:center;color:#7c2b37;
+  font-size:13px;padding:20px}
+.pix-copia{width:100%;background:#160a0e;border:1px solid var(--gold-2,#cba85b);color:#f6e7c9;
+  border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;
+  font-family:var(--ui,system-ui,sans-serif);transition:background .15s}
+.pix-copia.ok{background:rgba(80,140,80,.22);border-color:#8fce8f;color:#dff3df}
+.pix-code{width:100%;box-sizing:border-box;margin-top:8px;background:#0f0609;border:1px dashed rgba(203,168,91,.35);
+  border-radius:8px;padding:9px 10px;color:#9a8a70;font-size:10.5px;line-height:1.4;word-break:break-all;
+  font-family:ui-monospace,monospace;cursor:pointer;max-height:54px;overflow:hidden}
+
+.pix-espera{margin-top:15px;display:flex;align-items:center;gap:8px;color:#e3d6bd;font-size:14px}
+.pix-espera b{color:var(--gold-2,#cba85b)}
+.pix-dot{width:9px;height:9px;border-radius:50%;background:#7fce7f;box-shadow:0 0 0 0 rgba(127,206,127,.6);
+  animation:pixPulse 1.4s infinite}
+@keyframes pixPulse{0%{box-shadow:0 0 0 0 rgba(127,206,127,.55)}70%{box-shadow:0 0 0 9px rgba(127,206,127,0)}100%{box-shadow:0 0 0 0 rgba(127,206,127,0)}}
+.pix-timer{margin-top:6px;color:#b8a98c;font-size:12px;font-family:var(--ui,system-ui,sans-serif)}
+.pix-nota{margin:12px 4px 0;color:#b8a98c;font-size:12px;line-height:1.5;text-align:center}
+
+/* PAGO */
+.pix-ok{display:flex;flex-direction:column;align-items:center;padding:22px 0 10px}
+.pix-check{width:76px;height:76px;border-radius:50%;background:linear-gradient(180deg,#8fce8f,#4f9d4f);
+  color:#123512;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;box-shadow:0 0 0 8px rgba(127,206,127,.15);animation:pixPop .4s ease-out}
+@keyframes pixPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
