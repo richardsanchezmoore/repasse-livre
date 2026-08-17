@@ -826,7 +826,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-sub{font:italic 500 clamp(15px,4.3vw,17px)/1.45 var(--serif);color:var(--gold-2);text-align:center;margin:12px auto 2px;max-width:30ch}
 /* card-promessa (card 1): centra e compacta p/ caber na viewport sem rolar */
 .sw-card.hero{justify-content:center;gap:2px}
-.sw-card.hero .sw-h{font-size:clamp(25px,7vw,34px);max-width:16ch}
+.sw-card.hero .sw-h{font-size:clamp(28px,7.9vw,38px);max-width:16ch}
 .sw-card.hero .sw-p{font-size:clamp(15px,4vw,16.5px);line-height:1.55;margin:8px 0 0}
 /* frase-destaque do card 1 (cor + peso p/ saltar aos olhos) */
 .sw-destaque{font:700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
@@ -906,15 +906,15 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .ldy-hora{position:absolute;right:12px;bottom:5px;font:500 10px var(--ui);opacity:.55;letter-spacing:.02em}
 /* nota de voz da Lady (estilo WhatsApp) */
 .ldy-msg.audio{padding:8px 10px 17px}
-.ldy-audio{display:flex;align-items:center;gap:9px;width:100%}
+.ldy-audio{position:relative;display:flex;align-items:center;gap:9px;width:100%}
 .ldy-audio-btn{flex:none;width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
   background:var(--gold-2);color:var(--wine);display:flex;align-items:center;justify-content:center;transition:transform .1s}
 .ldy-audio-btn:active{transform:scale(.94)}
-.ldy-audio-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.ldy-audio-wave{display:flex;align-items:center;gap:2px;height:24px}
-.ldy-bar{flex:1;min-width:2px;background:rgba(230,211,163,.32);border-radius:2px}
+.ldy-audio-mid{flex:1;min-width:0;display:flex;align-items:center}
+.ldy-audio-wave{display:flex;align-items:center;justify-content:space-between;width:100%;height:26px}
+.ldy-bar{flex:none;width:2px;background:rgba(230,211,163,.3);border-radius:2px}
 .ldy-bar.on{background:var(--gold-2)}
-.ldy-audio-dur{font:600 10.5px var(--ui);color:#c9b48f;letter-spacing:.02em}
+.ldy-audio-dur{position:absolute;left:47px;bottom:-13px;font:600 10px var(--ui);color:#c9b48f;letter-spacing:.02em}
 .ldy-audio-av{position:relative;flex:none;width:34px;height:34px}
 .ldy-audio-av img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold-2);display:block}
 .ldy-audio-avf{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -959,6 +959,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-oferta-card .sw-prova{background:rgba(255,255,255,.05);border-color:rgba(230,211,163,.28)}
 .sw-oferta-card .sw-prova-t{color:var(--gold-2)}
 .sw-oferta-card .sw-prova-q{color:#d3c09c}
+.sw-oferta-card .sw-prova-q b{color:#fdf6e6}
 .sw-oferta-card .sw-prova-n{color:#e9d9bd}
 /* Kit explícito na oferta (ancoragem do valor) */
 .sw-kit{text-align:left;max-width:360px;margin:16px auto 0;border-top:1px solid var(--gold-soft);padding-top:14px}
@@ -982,6 +983,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-estrelas{color:var(--gold);font-size:14px;letter-spacing:2px;margin-bottom:6px}
 .sw-prova-t{font:700 clamp(15px,4.4vw,16.5px)/1.3 var(--disp);color:var(--wine);margin:0 0 6px}
 .sw-prova-q{font:400 clamp(13.5px,4vw,14.5px)/1.55 var(--serif);color:var(--ink-soft);margin:0 0 8px}
+.sw-prova-q b{color:var(--wine);font-weight:700}
 .sw-prova-n{font:600 12.5px var(--ui);color:var(--ink)}
 /* folga p/ caber o selo no Card 1 + mais intensidade (semibold) */
 .sw-card.hero .sw-p{margin:6px 0 0;font-weight:600}
@@ -1056,7 +1058,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-tr-t{font:italic 500 clamp(16px,4.6vw,18px)/1.4 var(--disp);color:#fdf6e6}
 
 /* card "O QUE MUDA PARA VOCÊ" — benefício/transformação (leitura rápida) */
-.sw-muda-h{font:900 clamp(24px,6.6vw,32px)/1.12 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 20px;max-width:16ch}
+.sw-muda-h{font:900 clamp(27px,7.5vw,36px)/1.12 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 20px;max-width:16ch}
 .sw-muda{list-style:none;display:flex;flex-direction:column;gap:12px;max-width:440px;margin:0 auto;width:100%}
 .sw-muda li{font:500 clamp(16px,4.4vw,18px)/1.35 var(--serif);color:#f0e3c8;padding-left:30px;position:relative}
 .sw-muda li::before{content:"✦";position:absolute;left:0;top:1px;color:var(--gold-2);font-size:16px}

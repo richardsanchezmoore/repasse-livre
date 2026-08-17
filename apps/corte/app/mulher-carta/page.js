@@ -161,11 +161,11 @@ export default async function LandingMulherCarta() {
           <h2 className="lpm-h2">Comece hoje</h2>
           <div className="lpm-precocard">
             <div className="ic">🔑</div>
-            <div className="lpm-precocard-t">O Mapa + a Coleção Completa</div>
+            <div className="lpm-precocard-t">O Mapa + Coleção Completa</div>
             <p className="lpm-precocard-d">Tudo o que você precisa para se tornar essa mulher:</p>
             <div className="sw-kit">
               <ul>
-                <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — a obra completa</span></li>
+                <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b></span></li>
                 <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — as Cartas Entre Nós, o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
               </ul>
             </div>
@@ -182,15 +182,23 @@ export default async function LandingMulherCarta() {
           <div className="sw-provas" style={{ marginTop: 22 }}>
             <div className="sw-prova">
               <div className="sw-estrelas">★★★★★</div>
-              <p className="sw-prova-t">“Eu sempre achava que o problema era comigo.”</p>
-              <p className="sw-prova-q">Depois de ler, comecei a perceber que eu estava me colocando de um jeito que não mostrava quem eu realmente era. Foi uma mudança simples, mas comecei a enxergar meus relacionamentos de outra forma.</p>
+              <p className="sw-prova-q">“Eu estava acostumada a correr atrás. <b>Hoje é diferente:</b> percebo mais homens tomando iniciativa e demonstrando interesse por mim.”</p>
               <div className="sw-prova-n">— Mariana, 32 anos</div>
             </div>
             <div className="sw-prova">
               <div className="sw-estrelas">★★★★★</div>
-              <p className="sw-prova-t">“Finalmente entendi onde eu estava errando.”</p>
-              <p className="sw-prova-q">Eu já tinha lido outras coisas, mas sempre parecia que eu precisava virar outra pessoa. Aqui foi diferente. Entendi coisas que eu fazia sem perceber e mudei pequenas atitudes nas minhas conversas e nos meus encontros.</p>
+              <p className="sw-prova-q">“Depois que comecei a aplicar o que vi no mapa, percebi <b>perfis de homens que antes nem me notavam</b> começando a demonstrar interesse.”</p>
+              <div className="sw-prova-n">— Camila, 29 anos</div>
+            </div>
+            <div className="sw-prova">
+              <div className="sw-estrelas">★★★★★</div>
+              <p className="sw-prova-q">“O que mais me surpreendeu foi <b>despertar interesse sem precisar forçar nada.</b> Os homens passaram a se aproximar de outra forma.”</p>
               <div className="sw-prova-n">— Juliana, 35 anos</div>
+            </div>
+            <div className="sw-prova">
+              <div className="sw-estrelas">★★★★★</div>
+              <p className="sw-prova-q">“Eu achava que precisava encontrar alguém. Depois do mapa, comecei a entender <b>como me posicionar</b> — e os homens começaram a me perceber de outra maneira.”</p>
+              <div className="sw-prova-n">— Renata, 38 anos</div>
             </div>
           </div>
         </section>

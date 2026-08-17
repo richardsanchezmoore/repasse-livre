@@ -67,8 +67,8 @@ function LadyAudio({ src, durProp = "" }) {
             <span key={i} className={"ldy-bar" + (prog * BAR_HEIGHTS.length > i ? " on" : "")} style={{ height: h + "px" }} />
           ))}
         </div>
-        <span className="ldy-audio-dur">{playing && elapsed ? elapsed : (dur || durProp)}</span>
       </div>
+      <span className="ldy-audio-dur">{playing && elapsed ? elapsed : (dur || durProp)}</span>
       <div className="ldy-audio-av">
         {LADY_FOTO ? <img src={LADY_FOTO} alt="Helena" /> : <span className="ldy-audio-avf">H</span>}
         <span className="ldy-audio-mic" aria-hidden>
@@ -403,11 +403,11 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
-              <div className="sw-oferta-t">O Mapa<br />+ a Coleção Completa</div>
+              <div className="sw-oferta-t">O Mapa<br />+ Coleção Completa</div>
 
               <div className="sw-kit">
                 <ul>
-                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — a obra completa</span></li>
+                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b></span></li>
                   <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — as Cartas Entre Nós, o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
                 </ul>
               </div>
@@ -423,15 +423,23 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <div className="sw-provas">
                 <div className="sw-prova">
                   <div className="sw-estrelas">★★★★★</div>
-                  <p className="sw-prova-t">“Eu sempre achava que o problema era comigo.”</p>
-                  <p className="sw-prova-q">Depois de ler, comecei a perceber que eu estava me colocando de um jeito que não mostrava quem eu realmente era. Foi uma mudança simples, mas comecei a enxergar meus relacionamentos de outra forma.</p>
+                  <p className="sw-prova-q">“Eu estava acostumada a correr atrás. <b>Hoje é diferente:</b> percebo mais homens tomando iniciativa e demonstrando interesse por mim.”</p>
                   <div className="sw-prova-n">— Mariana, 32 anos</div>
                 </div>
                 <div className="sw-prova">
                   <div className="sw-estrelas">★★★★★</div>
-                  <p className="sw-prova-t">“Finalmente entendi onde eu estava errando.”</p>
-                  <p className="sw-prova-q">Eu já tinha lido outras coisas, mas sempre parecia que eu precisava virar outra pessoa. Aqui foi diferente. Entendi coisas que eu fazia sem perceber e mudei pequenas atitudes nas minhas conversas e nos meus encontros.</p>
+                  <p className="sw-prova-q">“Depois que comecei a aplicar o que vi no mapa, percebi <b>perfis de homens que antes nem me notavam</b> começando a demonstrar interesse.”</p>
+                  <div className="sw-prova-n">— Camila, 29 anos</div>
+                </div>
+                <div className="sw-prova">
+                  <div className="sw-estrelas">★★★★★</div>
+                  <p className="sw-prova-q">“O que mais me surpreendeu foi <b>despertar interesse sem precisar forçar nada.</b> Os homens passaram a se aproximar de outra forma.”</p>
                   <div className="sw-prova-n">— Juliana, 35 anos</div>
+                </div>
+                <div className="sw-prova">
+                  <div className="sw-estrelas">★★★★★</div>
+                  <p className="sw-prova-q">“Eu achava que precisava encontrar alguém. Depois do mapa, comecei a entender <b>como me posicionar</b> — e os homens começaram a me perceber de outra maneira.”</p>
+                  <div className="sw-prova-n">— Renata, 38 anos</div>
                 </div>
               </div>
 
