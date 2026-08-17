@@ -124,40 +124,40 @@ const CHAT = {
     ],
   },
 
-  rec_serio: { lady: ["Entendi. ❤️ Você quer alguém que esteja buscando o mesmo que você.", Q2], opts: Q2_OPTS },
-  rec_valor: { lady: ["Ah, isso mexe comigo. ❤️ Ser amada e sentir que te valorizam sempre — não só no começo.", Q2], opts: Q2_OPTS },
-  rec_dividir: { lady: ["Eu entendo o que você busca. ❤️ Ter alguém para compartilhar a vida muda muita coisa.", Q2], opts: Q2_OPTS },
+  rec_serio: { lady: ["Entendi. Você quer alguém que esteja buscando o mesmo que você.", Q2], opts: Q2_OPTS },
+  rec_valor: { lady: ["Ah, isso mexe comigo. Ser amada e sentir que te valorizam sempre — não só no começo.", Q2], opts: Q2_OPTS },
+  rec_dividir: { lady: ["Eu entendo o que você busca. Ter alguém para compartilhar a vida muda muita coisa.", Q2], opts: Q2_OPTS },
 
   // Acolhimento suave (muda só a 1ª linha) → converge direto p/ a observação e o
   // beat de identificação. Sem alavanca "Me conta" (a mulher já contou a dor).
   r2_ninguem: {
     lady: [
       "Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.",
-      "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
+      "Já vi tantas mulheres passarem por isso. Diferentes umas das outras, mas travando quase sempre nas mesmas coisas.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "descoberta" },
-      { t: "Um pouco, sim.", to: "descoberta" },
+      { t: "Sou eu também.", to: "descoberta" },
+      { t: "Parece bastante comigo.", to: "descoberta" },
     ],
   },
   r2_frente: {
     lady: [
       "Isso é frustrante. Começa bem e, de repente, tudo para.",
-      "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
+      "Já vi tantas mulheres passarem por isso. Diferentes umas das outras, mas travando quase sempre nas mesmas coisas.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "descoberta" },
-      { t: "Um pouco, sim.", to: "descoberta" },
+      { t: "Sou eu também.", to: "descoberta" },
+      { t: "Parece bastante comigo.", to: "descoberta" },
     ],
   },
   r2_machuco: {
     lady: [
       "Essa parte dói. Você entra querendo que dê certo e sai machucada.",
-      "Observei mulheres muito diferentes — e percebi: quase todas enfrentavam as mesmas dificuldades.",
+      "Já vi tantas mulheres passarem por isso. Diferentes umas das outras, mas travando quase sempre nas mesmas coisas.",
     ],
     opts: [
-      { t: "Parece muito comigo.", to: "descoberta" },
-      { t: "Um pouco, sim.", to: "descoberta" },
+      { t: "Sou eu também.", to: "descoberta" },
+      { t: "Parece bastante comigo.", to: "descoberta" },
     ],
   },
 
@@ -176,7 +176,7 @@ const CHAT = {
   encerramento: {
     lady: [
       "É exatamente isso que você vai encontrar no mapa.",
-      "São 5 passos simples para você saber o que fazer em cada etapa.",
+      "São 5 passos que mostram exatamente o que fazer em cada etapa.",
     ],
     opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
@@ -388,20 +388,20 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card" key="c4">
             <div className="sw-eyebrow">A transformação</div>
             <div className="sw-muda-h">O que muda para você</div>
-            <p className="sw-p" style={{ margin: "2px auto 4px" }}>Repare como a pergunta na sua cabeça muda.</p>
+            <p className="sw-p" style={{ margin: "2px auto 4px" }}>Da dúvida… para o desejo.</p>
 
             <div className="sw-transform">
               <div className="sw-tr antes">
-                <div className="sw-tr-l">Antes</div>
-                <div className="sw-tr-t">“Será que ele vai gostar de mim?”</div>
+                <div className="sw-tr-l">Hoje</div>
+                <div className="sw-tr-t">Ver o interesse dele esfriar — e não saber por quê.</div>
               </div>
               <div className="sw-tr depois">
                 <div className="sw-tr-l">Depois</div>
-                <div className="sw-tr-t">“Esse homem combina com o que eu quero viver?”</div>
+                <div className="sw-tr-t">Ser a mulher que ele admira, procura e não quer perder.</div>
               </div>
             </div>
 
-            <p className="sw-destaque" style={{ fontSize: "clamp(18px,5vw,23px)", marginTop: "20px" }}>Você deixa de esperar ser escolhida — e começa a escolher.</p>
+            <p className="sw-destaque" style={{ fontSize: "clamp(18px,5vw,23px)", marginTop: "20px" }}>Você deixa de esperar ser escolhida — e passa a ser desejada de verdade.</p>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Ver a oferta →</button></div>
         </>

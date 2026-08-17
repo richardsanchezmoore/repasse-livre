@@ -139,15 +139,16 @@ export default async function LandingMulherCarta() {
           <div className="lpm-kicker">A mudança de perspectiva</div>
           <div className="lpm-trans">
             <div className="lpm-trans-c antes">
-              <div className="lpm-trans-l">Antes</div>
-              <div className="lpm-trans-t">“Será que ele vai gostar de mim?”</div>
+              <div className="lpm-trans-l">Hoje</div>
+              <div className="lpm-trans-t">Ver o interesse dele esfriar — e não saber por quê.</div>
             </div>
             <div className="lpm-trans-seta" aria-hidden>↓</div>
             <div className="lpm-trans-c depois">
               <div className="lpm-trans-l">Depois</div>
-              <div className="lpm-trans-t">“Esse homem combina com o que eu quero viver?”</div>
+              <div className="lpm-trans-t">Ser a mulher que ele admira, procura e não quer perder.</div>
             </div>
           </div>
+          <p className="lpm-em" style={{ marginTop: 18 }}>Você deixa de esperar ser escolhida — e passa a ser desejada de verdade.</p>
         </section>
 
         {/* ── PROVA SOCIAL ────────────────────────────────────────────── */}
