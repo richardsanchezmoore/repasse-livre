@@ -360,8 +360,9 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 3 && (
         <>
           <div className="sw-card rola" key="c2">
-            <div className="sw-mapa-titulo">O Mapa das Mulheres</div>
-            <div className="sw-mapa-sub">Não são 5 dicas soltas — é um caminho que sai de você.</div>
+            <div className="sw-eyebrow">O mapa</div>
+            <div className="sw-mapa-titulo">Em 5 Passos</div>
+            <div className="sw-mapa-sub">A virada de chave começa com você!</div>
             <div className="sw-mm">
               <div className="sw-mm-raiz">Você</div>
               <div className="sw-mm-ramos">
