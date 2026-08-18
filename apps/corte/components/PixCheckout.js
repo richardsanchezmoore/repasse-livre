@@ -57,7 +57,9 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
   const [metodo, setMetodo] = useState("pix"); // pix | cartao
   const [etapa, setEtapa] = useState("form"); // form | pix | processando | pago
   const [form, setForm] = useState({ nome: "", email: "", whatsapp: "", cpf: "" });
-  const [card, setCard] = useState({ numero: "", validade: "", cvv: "", installments: opcoesParcela[0].n });
+  // Default no MÁXIMO de parcelas (igual à Cakto) — mostra logo a menor parcela
+  // (ex.: "4x de R$ 19,00"), que soa mais acessível que "1x de R$ 67,90".
+  const [card, setCard] = useState({ numero: "", validade: "", cvv: "", installments: opcoesParcela[opcoesParcela.length - 1].n });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [pix, setPix] = useState(null);
