@@ -9,21 +9,34 @@ import crypto from "crypto";
  * META_CAPI_TEST_CODE p/ testar no "Eventos de teste" do Gerenciador.
  */
 const sha256 = (v) => crypto.createHash("sha256").update(String(v).trim().toLowerCase()).digest("hex");
+const soDig = (v) => String(v || "").replace(/\D/g, "");
 
-export async function enviarPurchaseCapi({ email, valor, moeda = "BRL", nomeConteudo = "Panfleto + Kit", eventId }) {
+// Enriquecido com os sinais de clique do checkout nativo (fbp/fbc/fbclid capturados
+// no nosso domínio) → match alto + atribuição de campanha correta. fbp/fbc vão CRUS
+// (não hasheados); em/ph/external_id vão hasheados (SHA-256), como a Meta exige.
+export async function enviarPurchaseCapi({ email, valor, moeda = "BRL", nomeConteudo = "Panfleto + Kit", eventId, telefone, fbp, fbc, fbclid, externalId, sourceUrl }) {
   const pixel = process.env.META_PIXEL_ID;
   const token = process.env.META_CAPI_TOKEN;
   if (!pixel || !token) return { ok: false, motivo: "capi_nao_configurado" };
 
   const user_data = {};
   if (email && String(email).includes("@")) user_data.em = [sha256(email)];
+  const tel = soDig(telefone);
+  if (tel.length >= 10) user_data.ph = [sha256(tel.startsWith("55") ? tel : "55" + tel)];
+  if (externalId) user_data.external_id = [sha256(externalId)];
+  if (fbp) user_data.fbp = fbp;
+  // fbc = cookie _fbc; se não veio mas tem fbclid, constrói no formato fb.1.<ts>.<fbclid>.
+  let _fbc = fbc || "";
+  if (!_fbc && fbclid) _fbc = `fb.1.${Math.floor(Date.now() / 1000)}.${fbclid}`;
+  if (_fbc) user_data.fbc = _fbc;
 
   const evento = {
     event_name: "Purchase",
     event_time: Math.floor(Date.now() / 1000),
     action_source: "website",
-    // event_id permite deduplicar se um dia dispararmos Purchase também no navegador.
-    ...(eventId ? { event_id: eventId } : {}),
+    // event_id = order_id: deduplica webhook repetido e um futuro Purchase no navegador.
+    ...(eventId ? { event_id: String(eventId) } : {}),
+    ...(sourceUrl ? { event_source_url: sourceUrl } : {}),
     user_data,
     custom_data: { currency: moeda, value: Number(valor) || 0, content_name: nomeConteudo },
   };

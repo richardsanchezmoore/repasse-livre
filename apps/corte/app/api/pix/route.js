@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { criarPix } from "@/lib/caktoApi";
 import { offerIdAtivo } from "@/lib/caktoOferta";
+import { salvarTracking } from "@/lib/tracking";
 
 // POST /api/pix — cria a cobrança PIX e devolve o copia-e-cola + a imagem do QR.
 // Body: { nome, email, cpf, whatsapp, fingerprint?, metadata? }
@@ -39,6 +40,10 @@ export async function POST(req) {
     console.error("[pix] falha criar cobranca", r.status, JSON.stringify(r.erro));
     return Response.json({ ok: false, erro: "Não foi possível gerar o PIX agora. Tente novamente." }, { status: 502 });
   }
+
+  // Guarda os sinais de atribuição ligados ao pedido — o webhook enriquece o CAPI depois.
+  const t = b.tracking || {};
+  await salvarTracking(r.id, { email, valor: r.amount, fbp: t.fbp, fbc: t.fbc, fbclid: t.fbclid, utm_source: t.utm_source, utm_medium: t.utm_medium, utm_campaign: t.utm_campaign, utm_content: t.utm_content, utm_term: t.utm_term });
 
   // A API só devolve o copia-e-cola; a imagem do QR a gente gera aqui.
   let qrImg = "";

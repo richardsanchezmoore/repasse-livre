@@ -48,6 +48,22 @@ function fingerprint() {
   }
 }
 
+// Sinais de atribuição do Meta, capturados no NOSSO domínio (o checkout roda aqui):
+// _fbp/_fbc dos cookies do Pixel + fbclid/utm da URL do funil. Vão junto na cobrança
+// pro webhook enriquecer o Purchase do CAPI (match + atribuição de campanha).
+function capturarTracking() {
+  const t = {};
+  try {
+    const cookie = (n) => (document.cookie.match(new RegExp("(?:^|; )" + n + "=([^;]*)")) || [])[1] || "";
+    t.fbp = cookie("_fbp");
+    t.fbc = cookie("_fbc");
+    const q = new URLSearchParams(window.location.search);
+    t.fbclid = q.get("fbclid") || "";
+    for (const k of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]) t[k] = q.get(k) || "";
+  } catch {}
+  return t;
+}
+
 export default function PixCheckout({ valor = "", parcelas, metadata, onClose }) {
   // Fonte da verdade do preço/parcelas = Cakto (/api/oferta). As props valor/parcelas
   // só entram se vierem explícitas (ex.: uma promo pontual fora da oferta).
@@ -139,7 +155,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
       const r = await fetch("/api/pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: form.nome.trim(), email: form.email.trim(), cpf, whatsapp: tel, fingerprint: fingerprint(), metadata }),
+        body: JSON.stringify({ nome: form.nome.trim(), email: form.email.trim(), cpf, whatsapp: tel, fingerprint: fingerprint(), tracking: capturarTracking(), metadata }),
       });
       const j = await r.json();
       if (!j.ok) { setErro(j.erro || "Não foi possível gerar o PIX."); setCarregando(false); return; }
@@ -185,7 +201,8 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome: form.nome.trim(), email: form.email.trim(), cpf, whatsapp: tel,
-          fingerprint: fingerprint(), cardToken, antifraudRef, installments: card.installments, metadata,
+          fingerprint: fingerprint(), cardToken, antifraudRef, installments: card.installments,
+          tracking: capturarTracking(), metadata,
         }),
       });
       const j = await r.json();

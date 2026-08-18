@@ -108,7 +108,7 @@ a{color:inherit;text-decoration:none}
 .bar.big>span{background:linear-gradient(90deg,var(--gold-2),var(--gold-soft))}
 
 /* ---- formulários ---- */
-.fld-l{display:block;font:700 12px var(--ui);letter-spacing:.02em;color:var(--wine);margin:0 0 6px}
+.fld-l{display:block;font:700 13.5px var(--ui);letter-spacing:.02em;color:var(--wine);margin:0 0 6px}
 .fld-l .opt{font-weight:500;color:var(--ink-soft);letter-spacing:0}
 .opt{font:500 12px var(--ui);color:var(--ink-soft)}
 .fld{width:100%;font:500 16px var(--serif);color:var(--ink);background:rgba(255,255,255,.7);

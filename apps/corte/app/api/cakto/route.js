@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { concederAcesso, revogarAcesso } from "@/lib/acessos";
 import { enviarPurchaseCapi } from "@/lib/metaCapi";
+import { lerTracking } from "@/lib/tracking";
 import { enviarEmailAcesso } from "@/lib/emailAcesso";
 
 export const runtime = "nodejs";
@@ -114,7 +115,21 @@ export async function POST(req) {
     // resposta sai e mata promessas pendentes — o fetch não completa e nem o .catch roda.
     // O try/catch garante que uma falha aqui não derruba a resposta 200 do webhook.
     try {
-      await enviarPurchaseCapi({ email, valor, nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : tipo === "livro" ? "A Mulher que Ele Procura" : "O Mapa + a Coleção Completa" });
+      // Enriquece o Purchase com os sinais de clique guardados no checkout (por order_id).
+      const orderId = pick(d0, ["id", "order.id", "transaction_id", "refId"]);
+      const telefone = pick(d0, ["customer.phone", "buyer.phone", "phone"]);
+      const trk = orderId ? await lerTracking(orderId) : null;
+      await enviarPurchaseCapi({
+        email,
+        valor,
+        nomeConteudo: tipo === "assinatura" ? "Damas Virtuosas · assinatura" : tipo === "livro" ? "A Mulher que Ele Procura" : "O Mapa + a Coleção Completa",
+        eventId: orderId || undefined,
+        telefone,
+        externalId: user.id,
+        fbp: trk?.fbp,
+        fbc: trk?.fbc,
+        fbclid: trk?.fbclid,
+      });
     } catch (e) { console.error("[cakto] capi falhou:", e?.message); }
     // Auto-login: amarra o token de claim à conta pra a /bem-vinda trocar por sessão
     // (sem digitar e-mail). Só em concessão — a compradora acabou de pagar e vai cair lá.

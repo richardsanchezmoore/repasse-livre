@@ -1,5 +1,6 @@
 import { criarCartao } from "@/lib/caktoApi";
 import { offerIdAtivo } from "@/lib/caktoOferta";
+import { salvarTracking } from "@/lib/tracking";
 
 // POST /api/card — finaliza o pagamento com cartão. O browser (SDK Cakto) já
 // tokenizou o cartão e rodou o antifraude; aqui só recebemos o token + a
@@ -52,6 +53,10 @@ export async function POST(req) {
     }
     return Response.json({ ok: false, erro: msg }, { status: 502 });
   }
+
+  // Guarda os sinais de atribuição ligados ao pedido — o webhook enriquece o CAPI depois.
+  const t = b.tracking || {};
+  await salvarTracking(r.id, { email, valor: r.amount, fbp: t.fbp, fbc: t.fbc, fbclid: t.fbclid, utm_source: t.utm_source, utm_medium: t.utm_medium, utm_campaign: t.utm_campaign, utm_content: t.utm_content, utm_term: t.utm_term });
 
   // paid → sucesso. declined/refused → recusado (buyer tenta outro cartão/PIX).
   return Response.json({ ok: true, pago: r.pago, status: r.status, id: r.id, amount: r.amount });
