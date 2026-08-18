@@ -151,6 +151,7 @@ export async function statusPedido(id) {
   const token = await getToken();
   const r = await fetch(BASE + "/orders/" + encodeURIComponent(id) + "/", {
     headers: { Authorization: "Bearer " + token },
+    cache: "no-store", // polling: NUNCA cachear — senão trava no 1º "waiting_payment"
   });
   if (!r.ok) return { ok: false, status: r.status };
   const j = await r.json().catch(() => ({}));
