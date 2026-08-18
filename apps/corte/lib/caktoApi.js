@@ -84,6 +84,55 @@ export async function criarPix({ nome, email, cpf, telefone, fingerprint, offerI
   };
 }
 
+// Cria uma cobrança com CARTÃO DE CRÉDITO. O token do cartão e a referência do
+// antifraude vêm do SDK no browser (o número do cartão nunca toca no servidor).
+// Sem 3DS (o painel da oferta está com 3DS desligado). Cobrança é síncrona:
+// devolve status paid | declined | refused.
+export async function criarCartao({ nome, email, cpf, telefone, fingerprint, cardToken, antifraudRef, installments, offerId, metadata }) {
+  const token = await getToken();
+  const oferta = offerId || process.env.CAKTO_OFFER_ID || "3fowby7";
+
+  const corpo = {
+    paymentMethod: "credit_card",
+    customer: {
+      name: nome,
+      email,
+      phone: telefone,
+      docType: "cpf",
+      docNumber: cpf,
+      fingerprint: fingerprint || "fp_" + crypto.randomUUID(),
+    },
+    items: [{ offerId: oferta }],
+    card: { token: cardToken },
+    // ⚠️ snake_case — a API rejeita o camelCase que a doc mostra.
+    antifraud_profiling_attempt_reference: antifraudRef,
+    installments: Number(installments) || 1,
+    ...(metadata ? { metadata } : {}),
+  };
+
+  const r = await fetch(BASE + "/payments/", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": crypto.randomUUID(),
+    },
+    body: JSON.stringify(corpo),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    return { ok: false, status: r.status, erro: j };
+  }
+  const s = String(j.status || "").toLowerCase();
+  return {
+    ok: true,
+    id: j.id,
+    status: s,
+    pago: ["paid", "approved", "completed", "authorized"].includes(s),
+    amount: j.amount ?? null,
+  };
+}
+
 // Consulta o status do pedido. Devolve { ok, status, pago }.
 export async function statusPedido(id) {
   const token = await getToken();

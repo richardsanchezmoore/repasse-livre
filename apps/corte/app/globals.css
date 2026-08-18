@@ -1144,3 +1144,21 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
   color:#123512;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center;
   margin-bottom:16px;box-shadow:0 0 0 8px rgba(127,206,127,.15);animation:pixPop .4s ease-out}
 @keyframes pixPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+
+/* Checkout — abas PIX/Cartão + campos de cartão */
+.pix-tabs{display:flex;gap:8px;margin:4px 0 2px}
+.pix-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;background:#160a0e;
+  border:1px solid rgba(203,168,91,.32);border-radius:10px;padding:9px;cursor:pointer;color:#c9b892;
+  font-family:var(--ui,system-ui,sans-serif);transition:border-color .15s,background .15s}
+.pix-tab b{color:#f6e7c9;font-size:14px}
+.pix-tab span{font-size:10.5px;color:#9a8a70;text-transform:uppercase;letter-spacing:.5px}
+.pix-tab.on{border-color:var(--gold-2,#cba85b);background:rgba(203,168,91,.12)}
+.pix-tab.on b{color:var(--gold-2,#cba85b)}
+.pix-cardfields{display:flex;flex-direction:column;gap:10px;margin-top:2px}
+.pix-lin2{display:flex;gap:10px}
+.pix-lin2 .pix-in{flex:1;min-width:0}
+.pix-sel{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23cba85b' stroke-width='1.6'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.pix-spin{width:52px;height:52px;border-radius:50%;border:4px solid rgba(203,168,91,.25);
+  border-top-color:var(--gold-2,#cba85b);animation:pixRot .8s linear infinite;margin-bottom:16px}
+@keyframes pixRot{to{transform:rotate(360deg)}}

@@ -14,6 +14,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import PreCheckout from "@/components/PreCheckout";
+// ⬇️ CHECKOUT NATIVO (PIX + Cartão, sem sair do site). Construído e validado em /pix-teste.
+// PARA ATIVAR quando o teste com cartão real passar:
+//   1) descomente o import abaixo;
+//   2) lá no rodapé, comente a linha do <PreCheckout> e descomente o bloco <PixCheckout>;
+//   3) garanta na Vercel: CAKTO_API_CLIENT_ID, CAKTO_API_CLIENT_SECRET, CAKTO_OFFER_ID e NEXT_PUBLIC_CAKTO_SDK_CLIENT_ID.
+// import PixCheckout from "@/components/PixCheckout";
 
 const LADY_FOTO = "/livro/lady.webp";
 
@@ -464,6 +470,26 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       )}
 
       {showCheck && url && <PreCheckout url={url} slug={slug} onClose={() => setShowCheck(false)} />}
+
+      {/* ═══ TROCA PARA O CHECKOUT NATIVO (PIX + Cartão) ═══════════════════════
+          Comente a linha do <PreCheckout> acima e descomente o bloco abaixo.
+          A tabela PARCELAS espelha a oferta na Cakto — ATUALIZE se o preço mudar
+          (ex.: em 26/08, R$ 149,90 tem outra tabela de parcelas).
+
+      {showCheck && (
+        <PixCheckout
+          valor={preco}
+          parcelas={[
+            { n: 1, label: "1x de R$ 67,90" },
+            { n: 2, label: "2x de R$ 36,90" },
+            { n: 3, label: "3x de R$ 24,85" },
+            { n: 4, label: "4x de R$ 19,00" },
+          ]}
+          metadata={{ origem: "funil-mulher", ab: variante }}
+          onClose={() => setShowCheck(false)}
+        />
+      )}
+      ═══════════════════════════════════════════════════════════════════════ */}
     </div>
   );
 }
