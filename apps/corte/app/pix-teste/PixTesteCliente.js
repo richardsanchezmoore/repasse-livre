@@ -4,20 +4,14 @@ import { useState } from "react";
 import PixCheckout from "@/components/PixCheckout";
 
 // Página de teste isolada do funil que vai ao ar — valida o checkout nativo
-// (PIX + Cartão) ponta a ponta. A tabela de parcelas espelha a oferta 3fowby7.
-const PARCELAS = [
-  { n: 1, label: "1x de R$ 67,90" },
-  { n: 2, label: "2x de R$ 36,90" },
-  { n: 3, label: "3x de R$ 24,85" },
-  { n: 4, label: "4x de R$ 19,00" },
-];
-
+// (PIX + Cartão) ponta a ponta. Preço e parcelas vêm da Cakto (via /api/oferta),
+// sem nada chumbado: mude o valor na Cakto e aqui reflete sozinho.
 export default function PixTesteCliente() {
   const [aberto, setAberto] = useState(false);
   return (
     <main style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#1f0f13", padding: 24 }}>
       {aberto ? (
-        <PixCheckout valor="R$ 67,90" parcelas={PARCELAS} metadata={{ origem: "pix-teste" }} onClose={() => setAberto(false)} />
+        <PixCheckout metadata={{ origem: "pix-teste" }} onClose={() => setAberto(false)} />
       ) : (
         <button
           onClick={() => setAberto(true)}

@@ -133,6 +133,19 @@ export async function criarCartao({ nome, email, cpf, telefone, fingerprint, car
   };
 }
 
+// Preço atual da oferta (fonte da verdade = Cakto). Devolve { price, name }.
+export async function precoOferta(offerId) {
+  const token = await getToken();
+  const id = offerId || process.env.CAKTO_OFFER_ID || "3fowby7";
+  const r = await fetch(BASE + "/offers/" + encodeURIComponent(id) + "/", {
+    headers: { Authorization: "Bearer " + token },
+    next: { revalidate: 120 }, // preço muda raramente — cache de 2min tira a Cakto do hot path
+  });
+  if (!r.ok) return null;
+  const j = await r.json().catch(() => ({}));
+  return { price: Number(j.price) || 0, name: j.name || "" };
+}
+
 // Consulta o status do pedido. Devolve { ok, status, pago }.
 export async function statusPedido(id) {
   const token = await getToken();

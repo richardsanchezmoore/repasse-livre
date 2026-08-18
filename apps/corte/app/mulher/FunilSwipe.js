@@ -473,18 +473,12 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
 
       {/* ═══ TROCA PARA O CHECKOUT NATIVO (PIX + Cartão) ═══════════════════════
           Comente a linha do <PreCheckout> acima e descomente o bloco abaixo.
-          A tabela PARCELAS espelha a oferta na Cakto — ATUALIZE se o preço mudar
-          (ex.: em 26/08, R$ 149,90 tem outra tabela de parcelas).
+          Preço e parcelas vêm da Cakto sozinhos (/api/oferta) — nada a atualizar
+          aqui quando o preço mudar (ex.: 26/08 → R$ 149,90).
 
       {showCheck && (
         <PixCheckout
           valor={preco}
-          parcelas={[
-            { n: 1, label: "1x de R$ 67,90" },
-            { n: 2, label: "2x de R$ 36,90" },
-            { n: 3, label: "3x de R$ 24,85" },
-            { n: 4, label: "4x de R$ 19,00" },
-          ]}
           metadata={{ origem: "funil-mulher", ab: variante }}
           onClose={() => setShowCheck(false)}
         />

@@ -49,17 +49,16 @@ function fingerprint() {
 }
 
 export default function PixCheckout({ valor = "", parcelas, metadata, onClose }) {
-  // parcelas: [{ n, label }] — ex.: [{n:1,label:"1x de R$ 67,90"},...]. Sem isso, só à vista.
-  const opcoesParcela = Array.isArray(parcelas) && parcelas.length
-    ? parcelas
-    : [{ n: 1, label: valor ? "1x de " + valor : "À vista" }];
-
+  // Fonte da verdade do preço/parcelas = Cakto (/api/oferta). As props valor/parcelas
+  // só entram se vierem explícitas (ex.: uma promo pontual fora da oferta).
+  const [oferta, setOferta] = useState({
+    valor: valor || "",
+    parcelas: Array.isArray(parcelas) && parcelas.length ? parcelas : null,
+  });
   const [metodo, setMetodo] = useState("pix"); // pix | cartao
   const [etapa, setEtapa] = useState("form"); // form | pix | processando | pago
   const [form, setForm] = useState({ nome: "", email: "", whatsapp: "", cpf: "" });
-  // Default no MÁXIMO de parcelas (igual à Cakto) — mostra logo a menor parcela
-  // (ex.: "4x de R$ 19,00"), que soa mais acessível que "1x de R$ 67,90".
-  const [card, setCard] = useState({ numero: "", validade: "", cvv: "", installments: opcoesParcela[opcoesParcela.length - 1].n });
+  const [card, setCard] = useState({ numero: "", validade: "", cvv: "", installments: 1 });
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [pix, setPix] = useState(null);
@@ -68,8 +67,29 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
   const pollRef = useRef(null);
   const sdkRef = useRef(null);
 
+  const valorMostra = valor || oferta.valor || "";
+  const opcoesParcela = (Array.isArray(parcelas) && parcelas.length ? parcelas : oferta.parcelas)
+    || [{ n: 1, label: valorMostra ? "1x de " + valorMostra : "À vista" }];
+
   function set(campo, v) { setForm((f) => ({ ...f, [campo]: v })); }
   function setC(campo, v) { setCard((c) => ({ ...c, [campo]: v })); }
+
+  // Busca preço + parcelas reais da Cakto (a menos que venham por prop).
+  useEffect(() => {
+    if (valor && Array.isArray(parcelas) && parcelas.length) return;
+    let vivo = true;
+    fetch("/api/oferta").then((r) => r.json()).then((j) => {
+      if (vivo && j.ok) setOferta({ valor: j.valor, parcelas: j.parcelas });
+    }).catch(() => {});
+    return () => { vivo = false; };
+  }, []);
+
+  // Quando as parcelas carregam, default no MÁXIMO (igual à Cakto) — mostra logo a
+  // menor parcela, que soa mais acessível.
+  useEffect(() => {
+    const max = opcoesParcela[opcoesParcela.length - 1]?.n || 1;
+    setCard((c) => ({ ...c, installments: max }));
+  }, [opcoesParcela.length]);
 
   // Carrega o SDK da Cakto (tokenização + antifraude) uma vez.
   useEffect(() => {
@@ -227,7 +247,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
     } catch {}
   }
 
-  const precoMostra = fmtReais(pix?.amount) || valor;
+  const precoMostra = fmtReais(pix?.amount) || valorMostra;
   const parcelaSel = opcoesParcela.find((p) => p.n === Number(card.installments)) || opcoesParcela[0];
 
   return (
@@ -279,7 +299,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
 
             <button className="pix-btn" type="submit" disabled={carregando}>
               {carregando ? "Processando…" : metodo === "pix"
-                ? `Gerar PIX${valor ? " · " + valor : ""}`
+                ? `Gerar PIX${valorMostra ? " · " + valorMostra : ""}`
                 : `Pagar ${parcelaSel.label}`}
             </button>
             <div className="pix-selos">🔒 Ambiente seguro · ✓ Acesso vitalício · ✓ 7 dias de garantia</div>

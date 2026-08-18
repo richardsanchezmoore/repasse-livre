@@ -1,4 +1,6 @@
 import { criarSupabaseServer } from "@/lib/supabaseServer";
+import { precoOferta } from "@/lib/caktoApi";
+import { offerIdAtivo } from "@/lib/caktoOferta";
 import FunilSwipe from "./FunilSwipe";
 
 // Landing PRINCIPAL (/mulher) — experiência em cards full-screen (swipe) com o
@@ -19,9 +21,18 @@ export default async function LandingMulher() {
   // Produto principal = o LIVRO solo (order bump vende os extras). Enquanto o
   // produto Cakto do livro não estiver configurado, cai no kit (não quebra o ar).
   const prod = livro.cakto_url ? livro : kit;
+
+  // Preço = fonte da verdade na Cakto (muda lá, reflete aqui e no checkout).
+  // precoDe (âncora "de") continua no painel — é marketing, não existe na Cakto.
+  let preco = prod.preco || "R$ 67,90";
+  try {
+    const info = await precoOferta(await offerIdAtivo());
+    if (info?.price) preco = "R$ " + info.price.toFixed(2).replace(".", ",");
+  } catch { /* mantém o do painel */ }
+
   return (
     <main className="sw-main">
-      <FunilSwipe preco={prod.preco || "R$ 67,90"} precoDe={prod.preco_de || ""} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} />
+      <FunilSwipe preco={preco} precoDe={prod.preco_de || ""} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} />
     </main>
   );
 }
