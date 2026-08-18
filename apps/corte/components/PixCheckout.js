@@ -187,7 +187,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
       if (j.ok && j.pago) {
         try { window.fbq && window.fbq("trackCustom", "CartaoAprovado", { currency: "BRL" }); } catch {}
         setEtapa("pago");
-        setTimeout(() => { window.location.href = "/bem-vinda?email=" + encodeURIComponent(form.email.trim()); }, 1800);
+        setTimeout(() => { window.location.href = "/bem-vinda?pago=1&email=" + encodeURIComponent(form.email.trim()); }, 1800);
       } else if (j.ok && !j.pago) {
         setErro("Cartão recusado. Tente outro cartão ou pague no PIX.");
         setEtapa("form");
@@ -222,7 +222,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
         if (vivo && j.pago) {
           clearInterval(pollRef.current);
           setEtapa("pago");
-          setTimeout(() => { window.location.href = "/bem-vinda?email=" + encodeURIComponent(form.email.trim()); }, 1800);
+          setTimeout(() => { window.location.href = "/bem-vinda?pago=1&email=" + encodeURIComponent(form.email.trim()); }, 1800);
         }
       } catch {}
     }

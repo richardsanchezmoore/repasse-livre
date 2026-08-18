@@ -30,6 +30,15 @@ export default function BemVindaAcesso({ emailInicial }) {
   useEffect(() => {
     if (rodou.current) return;
     rodou.current = true;
+    // Checkout NATIVO (?pago=1): o pagamento já foi confirmado e a conta/acesso já
+    // existem (webhook roda em ~1s) → vai DIRETO pro form de senha, sem esperar claim
+    // (o fluxo nativo não cria claim). Limpa qualquer claim velho do localStorage.
+    let pago = false;
+    try { pago = new URLSearchParams(window.location.search).get("pago") === "1"; } catch {}
+    if (pago) {
+      try { localStorage.removeItem("corte_claim"); } catch {}
+      return; // fica na fase "form" (e-mail pré-preenchido + senha), instantâneo
+    }
     // Token do claim: ?sck=claim_{token} na URL (Cakto propaga) OU localStorage (BotaoCompra).
     let token = null;
     try {
