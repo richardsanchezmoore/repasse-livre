@@ -34,6 +34,8 @@ export default function ConstrutorAssinaturas({ planosIniciais, webhook, secret,
         <Campo label="Descrição" val={p.kit?.descricao} onChange={(v) => upd("kit", "descricao", v)} />
         <Campo label="Link de compra (Cakto)" val={p.kit?.cakto_url} onChange={(v) => upd("kit", "cakto_url", v)} ph="https://pay.cakto.com.br/…" />
         <Campo label="ID do produto na Cakto (p/ o webhook casar)" val={p.kit?.cakto_produto} onChange={(v) => upd("kit", "cakto_produto", v)} />
+        <Campo label="ID da oferta (checkout nativo PIX/Cartão)" val={p.kit?.cakto_offer_id} onChange={(v) => upd("kit", "cakto_offer_id", v)} ph="3fowby7" />
+        <p className="c-p" style={{ marginTop: 6, opacity: 0.8 }}>É o ID que aparece no fim do link do checkout (<code>pay.cakto.com.br/<strong>3fowby7</strong></code>). Trocou de produto? Muda só aqui — o checkout nativo já usa.</p>
       </section>
 
       <section className="card" style={{ marginTop: 14 }}>

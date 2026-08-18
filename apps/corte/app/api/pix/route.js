@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import { criarPix } from "@/lib/caktoApi";
+import { offerIdAtivo } from "@/lib/caktoOferta";
 
 // POST /api/pix — cria a cobrança PIX e devolve o copia-e-cola + a imagem do QR.
 // Body: { nome, email, cpf, whatsapp, fingerprint?, metadata? }
@@ -29,6 +30,7 @@ export async function POST(req) {
     cpf,
     telefone: tel,
     fingerprint: b.fingerprint,
+    offerId: await offerIdAtivo(),
     metadata: b.metadata,
   });
 

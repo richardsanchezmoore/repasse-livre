@@ -1,4 +1,5 @@
 import { criarCartao } from "@/lib/caktoApi";
+import { offerIdAtivo } from "@/lib/caktoOferta";
 
 // POST /api/card — finaliza o pagamento com cartão. O browser (SDK Cakto) já
 // tokenizou o cartão e rodou o antifraude; aqui só recebemos o token + a
@@ -36,6 +37,7 @@ export async function POST(req) {
     cardToken: b.cardToken,
     antifraudRef: b.antifraudRef,
     installments: b.installments,
+    offerId: await offerIdAtivo(),
     metadata: b.metadata,
   });
 
