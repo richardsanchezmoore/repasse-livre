@@ -80,7 +80,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
   useEffect(() => {
     if (valor && Array.isArray(parcelas) && parcelas.length) return;
     let vivo = true;
-    fetch("/api/oferta").then((r) => r.json()).then((j) => {
+    fetch("/api/oferta", { cache: "no-store" }).then((r) => r.json()).then((j) => {
       if (vivo && j.ok) setOferta({ valor: j.valor, parcelas: j.parcelas, taxaLabel: j.taxaLabel, totalPix: j.totalPix });
     }).catch(() => {});
     return () => { vivo = false; };

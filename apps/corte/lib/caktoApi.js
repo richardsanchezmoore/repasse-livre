@@ -134,12 +134,15 @@ export async function criarCartao({ nome, email, cpf, telefone, fingerprint, car
 }
 
 // Preço atual da oferta (fonte da verdade = Cakto). Devolve { price, name }.
-export async function precoOferta(offerId) {
+// revalidateSec: 0 = sempre fresco (checkout, precisa do preço exato); >0 = cache
+// em segundos (funil/hot path, tolera leve atraso). Default 120s.
+export async function precoOferta(offerId, revalidateSec = 120) {
   const token = await getToken();
   const id = offerId || process.env.CAKTO_OFFER_ID || "3fowby7";
+  const cacheOpt = revalidateSec === 0 ? { cache: "no-store" } : { next: { revalidate: revalidateSec } };
   const r = await fetch(BASE + "/offers/" + encodeURIComponent(id) + "/", {
     headers: { Authorization: "Bearer " + token },
-    next: { revalidate: 120 }, // preço muda raramente — cache de 2min tira a Cakto do hot path
+    ...cacheOpt,
   });
   if (!r.ok) return null;
   const j = await r.json().catch(() => ({}));

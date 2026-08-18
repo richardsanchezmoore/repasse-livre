@@ -26,7 +26,7 @@ export default async function LandingMulher() {
   // precoDe (âncora "de") continua no painel — é marketing, não existe na Cakto.
   let preco = prod.preco || "R$ 67,90";
   try {
-    const info = await precoOferta(await offerIdAtivo());
+    const info = await precoOferta(await offerIdAtivo(), 120); // funil = hot path, cache 2min
     if (info?.price) preco = "R$ " + info.price.toFixed(2).replace(".", ",");
   } catch { /* mantém o do painel */ }
 

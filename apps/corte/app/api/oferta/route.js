@@ -3,14 +3,15 @@ import { offerIdAtivo } from "@/lib/caktoOferta";
 import { calcularParcelas, TAXA_SERVICO, fmtReais } from "@/lib/parcelas";
 
 // GET /api/oferta — preço + parcelas da oferta ATIVA (fonte da verdade = Cakto).
-// O checkout consome isto pra mostrar sempre o valor real, sem preço chumbado.
+// O checkout consome isto no momento da compra, então precisa do preço EXATO/atual —
+// sem cache (mudou na Cakto, reflete na hora).
 export const runtime = "nodejs";
-export const revalidate = 120;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     const offerId = await offerIdAtivo();
-    const info = await precoOferta(offerId);
+    const info = await precoOferta(offerId, 0); // 0 = sempre fresco
     const precoNum = info?.price || 0;
     if (!precoNum) return Response.json({ ok: false }, { status: 502 });
     const valor = fmtReais(precoNum);
@@ -25,7 +26,7 @@ export async function GET() {
         totalPix: fmtReais(precoNum + TAXA_SERVICO), // produto + taxa (PIX/à vista)
         parcelas,                                // cada uma com { n, label, total }
       },
-      { headers: { "cache-control": "public, max-age=120, s-maxage=120" } }
+      { headers: { "cache-control": "no-store" } }
     );
   } catch {
     return Response.json({ ok: false }, { status: 502 });
