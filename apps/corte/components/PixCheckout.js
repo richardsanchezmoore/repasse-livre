@@ -54,6 +54,8 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
   const [oferta, setOferta] = useState({
     valor: valor || "",
     parcelas: Array.isArray(parcelas) && parcelas.length ? parcelas : null,
+    taxaLabel: "",
+    totalPix: "",
   });
   const [metodo, setMetodo] = useState("pix"); // pix | cartao
   const [etapa, setEtapa] = useState("form"); // form | pix | processando | pago
@@ -79,7 +81,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
     if (valor && Array.isArray(parcelas) && parcelas.length) return;
     let vivo = true;
     fetch("/api/oferta").then((r) => r.json()).then((j) => {
-      if (vivo && j.ok) setOferta({ valor: j.valor, parcelas: j.parcelas });
+      if (vivo && j.ok) setOferta({ valor: j.valor, parcelas: j.parcelas, taxaLabel: j.taxaLabel, totalPix: j.totalPix });
     }).catch(() => {});
     return () => { vivo = false; };
   }, []);
@@ -295,12 +297,25 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
               </div>
             )}
 
+            {valorMostra && (
+              <div className="pix-resumo">
+                <div className="pix-resumo-l"><span>Oferta</span><span>{valorMostra}</span></div>
+                {oferta.taxaLabel && (
+                  <div className="pix-resumo-l"><span>Taxa de serviço</span><span>{oferta.taxaLabel}</span></div>
+                )}
+                <div className="pix-resumo-l pix-resumo-total">
+                  <span>Total</span>
+                  <span>{metodo === "pix" ? (oferta.totalPix || valorMostra) : (parcelaSel?.total || valorMostra)}</span>
+                </div>
+              </div>
+            )}
+
             {erro && <div className="pix-erro">{erro}</div>}
 
             <button className="pix-btn" type="submit" disabled={carregando}>
               {carregando ? "Processando…" : metodo === "pix"
-                ? `Gerar PIX${valorMostra ? " · " + valorMostra : ""}`
-                : `Pagar ${parcelaSel.label}`}
+                ? `Gerar PIX${oferta.totalPix || valorMostra ? " · " + (oferta.totalPix || valorMostra) : ""}`
+                : `Pagar ${parcelaSel.total || parcelaSel.label}`}
             </button>
             <div className="pix-selos">🔒 Ambiente seguro · ✓ Acesso vitalício · ✓ 7 dias de garantia</div>
           </form>

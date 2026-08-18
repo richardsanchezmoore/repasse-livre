@@ -1162,3 +1162,12 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .pix-spin{width:52px;height:52px;border-radius:50%;border:4px solid rgba(203,168,91,.25);
   border-top-color:var(--gold-2,#cba85b);animation:pixRot .8s linear infinite;margin-bottom:16px}
 @keyframes pixRot{to{transform:rotate(360deg)}}
+
+/* Checkout — resumo do pedido (Oferta / Taxa / Total) */
+.pix-resumo{margin-top:6px;background:#160a0e;border:1px solid rgba(203,168,91,.25);border-radius:10px;
+  padding:11px 13px;font-family:var(--ui,system-ui,sans-serif)}
+.pix-resumo-l{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  color:#c1b090;font-size:13px;padding:3px 0}
+.pix-resumo-total{margin-top:5px;padding-top:8px;border-top:1px solid rgba(203,168,91,.2);
+  color:#f6e7c9;font-size:15px;font-weight:800}
+.pix-resumo-total span:last-child{color:var(--gold-2,#cba85b)}
