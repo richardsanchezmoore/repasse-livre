@@ -145,7 +145,11 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
       if (!j.ok) { setErro(j.erro || "Não foi possível gerar o PIX."); setCarregando(false); return; }
       setPix(j);
       setEtapa("pix");
-      try { window.fbq && window.fbq("trackCustom", "PixGerado", { currency: "BRL", value: Number(j.amount) || undefined }); } catch {}
+      try {
+        // Evento PADRÃO do Meta (otimização) + custom (drop-off no /admin/leads).
+        window.fbq && window.fbq("track", "AddPaymentInfo", { currency: "BRL", value: Number(j.amount) || undefined, content_name: "O Mapa + a Coleção Completa" });
+        window.fbq && window.fbq("trackCustom", "PixGerado", { currency: "BRL", value: Number(j.amount) || undefined });
+      } catch {}
     } catch { setErro("Falha de conexão. Tente de novo."); }
     setCarregando(false);
   }
@@ -162,6 +166,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
 
     const cpf = form.cpf.replace(/\D/g, "");
     const tel = form.whatsapp.replace(/\D/g, "");
+    try { window.fbq && window.fbq("track", "AddPaymentInfo", { currency: "BRL", content_name: "O Mapa + a Coleção Completa" }); } catch {}
     setCarregando(true);
     setEtapa("processando");
     try {

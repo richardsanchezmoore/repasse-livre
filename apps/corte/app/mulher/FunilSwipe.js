@@ -13,13 +13,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useState } from "react";
-import PreCheckout from "@/components/PreCheckout";
-// ⬇️ CHECKOUT NATIVO (PIX + Cartão, sem sair do site). Construído e validado em /pix-teste.
-// PARA ATIVAR quando o teste com cartão real passar:
-//   1) descomente o import abaixo;
-//   2) lá no rodapé, comente a linha do <PreCheckout> e descomente o bloco <PixCheckout>;
-//   3) garanta na Vercel: CAKTO_API_CLIENT_ID, CAKTO_API_CLIENT_SECRET, CAKTO_OFFER_ID e NEXT_PUBLIC_CAKTO_SDK_CLIENT_ID.
-// import PixCheckout from "@/components/PixCheckout";
+import PreCheckout from "@/components/PreCheckout"; // legado (checkout hospedado) — mantido só p/ rollback
+import PixCheckout from "@/components/PixCheckout"; // ✅ checkout NATIVO (PIX + Cartão) — ATIVO
 
 const LADY_FOTO = "/livro/lady.webp";
 
@@ -469,13 +464,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         </>
       )}
 
-      {showCheck && url && <PreCheckout url={url} slug={slug} onClose={() => setShowCheck(false)} />}
-
-      {/* ═══ TROCA PARA O CHECKOUT NATIVO (PIX + Cartão) ═══════════════════════
-          Comente a linha do <PreCheckout> acima e descomente o bloco abaixo.
-          Preço e parcelas vêm da Cakto sozinhos (/api/oferta) — nada a atualizar
-          aqui quando o preço mudar (ex.: 26/08 → R$ 149,90).
-
+      {/* Checkout NATIVO (PIX + Cartão) — preço/parcelas vêm da Cakto sozinhos (/api/oferta). */}
       {showCheck && (
         <PixCheckout
           valor={preco}
@@ -483,7 +472,9 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           onClose={() => setShowCheck(false)}
         />
       )}
-      ═══════════════════════════════════════════════════════════════════════ */}
+
+      {/* ROLLBACK (checkout hospedado): comente o bloco acima e descomente a linha abaixo.
+      {showCheck && url && <PreCheckout url={url} slug={slug} onClose={() => setShowCheck(false)} />} */}
     </div>
   );
 }
