@@ -342,7 +342,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card rola" key="c1">
             <div className="sw-eyebrow">A verdade</div>
             <div className="sw-muda-h">O problema nunca foi você</div>
-            <p className="sw-p" style={{ margin: "0 auto 6px" }}>Se não deu certo, não foi falta de esforço. Já te disseram de tudo:</p>
+            <p className="sw-p" style={{ margin: "0 auto 6px" }}>Já te disseram de tudo:</p>
             <ul className="sw-erros">
               <li>Ter paciência e esperar o tempo certo.</li>
               <li>Se amar primeiro que alguém aparece.</li>
