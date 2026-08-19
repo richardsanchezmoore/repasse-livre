@@ -1,6 +1,6 @@
 import FunilSwipe from "./FunilSwipe";
 
-// Landing PRINCIPAL México (/es/mulher) — versión en español del funil de la Lady.
+// Landing PRINCIPAL México (/es/mujer) — versión en español del funil de la Lady.
 // Vende el Kit a ~MXN $299 vía Hotmart (widget popup). Precio es CONTENIDO aquí
 // (Hotmart es la fuente real en el checkout). noindex hasta el lanzamiento.
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export const metadata = {
   description:
     "Hay una parte de la dinámica de las relaciones que sucede antes de que una relación empiece. Una conversación con la Lady.",
   robots: { index: false, follow: false }, // quitar cuando salga a producción
-  alternates: { canonical: "/es/mulher" },
+  alternates: { canonical: "/es/mujer" },
 };
 
 export default function LandingMujer() {

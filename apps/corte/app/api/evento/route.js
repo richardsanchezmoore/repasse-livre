@@ -12,7 +12,7 @@ export async function POST(req) {
   try { body = await req.json(); } catch { body = {}; }
 
   const tipo = String(body?.tipo || "");
-  // "mujer_paso" = funil MX (/es/mulher) — tipo distinto p/ separar do BR no painel.
+  // "mujer_paso" = funil MX (/es/mujer) — tipo distinto p/ separar do BR no painel.
   if (!["visita", "quiz_fim", "mulher_passo", "mujer_paso"].includes(tipo)) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
