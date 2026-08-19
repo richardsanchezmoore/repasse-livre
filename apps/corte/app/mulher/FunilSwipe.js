@@ -178,7 +178,7 @@ const CHAT = {
   encerramento: {
     lady: [
       "É exatamente isso que o Mapa revela.",
-      "Não é uma listinha de dicas. É uma forma nova de se posicionar — que vai despertar interesse e fazer uma relação acontecer.",
+      "Existe uma forma nova de se posicionar — que vai despertar interesse e fazer uma relação acontecer.",
     ],
     opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
