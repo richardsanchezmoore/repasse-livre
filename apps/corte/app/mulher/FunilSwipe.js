@@ -317,7 +317,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">O Mapa das Mulheres</h1>
-            <p className="sw-sub">Para destravar as relações — e viver o que você tanto deseja.</p>
+            <p className="sw-sub">Seja amada e desejada.</p>
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, isso ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
             <p className="sw-p">Foi olhando para muitas mulheres que percebi: quase todas enfrentam as mesmas dificuldades.</p>
