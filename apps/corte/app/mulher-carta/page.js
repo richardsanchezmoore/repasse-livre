@@ -108,7 +108,7 @@ export default async function LandingMulherCarta() {
         {/* ── O MAPA ──────────────────────────────────────────────────── */}
         <section className="lpm-sec creme">
           <div className="lpm-kicker">O mapa</div>
-          <h2 className="lpm-h2">O código por trás de ser escolhida</h2>
+          <h2 className="lpm-h2">O que faz um homem escolher — e não esquecer</h2>
           <p className="lpm-lead">
             Existe uma lógica por trás do que faz um homem perceber — e não esquecer —
             uma mulher. A maioria nunca chega a conhecê-la. O Mapa revela, camada por

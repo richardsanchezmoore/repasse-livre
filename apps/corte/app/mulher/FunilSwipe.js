@@ -178,7 +178,7 @@ const CHAT = {
   encerramento: {
     lady: [
       "É exatamente isso que o Mapa revela.",
-      "Não é uma listinha de dicas. É uma forma nova de enxergar — que muda como você é percebida, do primeiro olhar em diante.",
+      "Não é uma listinha de dicas. É uma forma nova de se posicionar — que vai despertar interesse e fazer uma relação acontecer.",
     ],
     opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
@@ -362,16 +362,15 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
             <div className="sw-mapa-titulo">
-              {variante === "a" ? "O que elas enxergam — e você ainda não." : "O código por trás de ser escolhida."}
+              {variante === "a" ? "O que elas enxergam — e você ainda não." : "O que faz um homem escolher — e não esquecer."}
             </div>
-            <div className="sw-mapa-sub">Existe uma lógica por trás do que faz um homem perceber — e não esquecer — uma mulher. A maioria nunca chega a conhecê-la.</div>
+            <div className="sw-mapa-sub">Existe uma lógica por trás de ser percebida — e a maioria das mulheres nunca a conhece.</div>
             <div className="sw-camadas">
-              <div className="sw-camadas-intro">O Mapa revela, camada por camada:</div>
+              <div className="sw-camadas-intro">O Mapa revela:</div>
               {CAMADAS.map((c, i) => (
                 <div key={i} className="sw-camada"><span className="sw-camada-mk">✦</span><span>{c}</span></div>
               ))}
             </div>
-            <div className="sw-destaque">Não são dicas soltas. É uma forma nova de enxergar — que muda como você é percebida, do primeiro olhar em diante.</div>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero enxergar o Mapa →</button></div>
         </>
