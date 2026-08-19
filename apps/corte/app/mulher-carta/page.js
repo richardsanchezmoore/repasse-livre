@@ -11,13 +11,11 @@ export const metadata = {
     "O mapa das mulheres para destravar seus relacionamentos: entenda o que fazer, desperte interesse e reconheça quem realmente combina com você.",
 };
 
-// Os 5 passos do MAPA (o PERLA continua sendo a descoberta dentro da obra).
-const PASSOS = [
-  { n: "01", t: "Presença", d: "Como ser notada por quem você quer." },
-  { n: "02", t: "Expressão", d: "O que você comunica antes de falar." },
-  { n: "03", t: "Revelação", d: "Como despertar a curiosidade dele." },
-  { n: "04", t: "Linguagem", d: "O que dizer para criar conexão." },
-  { n: "05", t: "Ação", d: "Como agir quando o interesse é dos dois." },
+// O Mapa vendido como DESCOBERTA (não "5 passos"). Estrutura interna (P.E.R.L.A) fica na obra.
+const CAMADAS = [
+  "O que a sua presença comunica — muito antes de você falar.",
+  "O que desperta a curiosidade dele — e o que faz o interesse esfriar.",
+  "Como reconhecer o momento certo — e o homem que vale a sua atenção.",
 ];
 
 const MUDA = [
@@ -109,20 +107,17 @@ export default async function LandingMulherCarta() {
 
         {/* ── O MAPA ──────────────────────────────────────────────────── */}
         <section className="lpm-sec creme">
-          <div className="lpm-kicker">O mapa das mulheres</div>
-          <h2 className="lpm-h2">5 passos para destravar seus relacionamentos</h2>
-          <div className="lpm-passos">
-            {PASSOS.map((m) => (
-              <div key={m.n} className="lpm-passo">
-                <div className="lpm-passo-n">{m.n}</div>
-                <div>
-                  <div className="lpm-passo-t">{m.t}</div>
-                  <div className="lpm-passo-d">{m.d}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="lpm-em">Não são cinco dicas soltas. Existe uma sequência.</p>
+          <div className="lpm-kicker">O mapa</div>
+          <h2 className="lpm-h2">O código por trás de ser escolhida</h2>
+          <p className="lpm-lead">
+            Existe uma lógica por trás do que faz um homem perceber — e não esquecer —
+            uma mulher. A maioria nunca chega a conhecê-la. O Mapa revela, camada por
+            camada, o que sempre esteve ali, invisível.
+          </p>
+          <ul className="lpm-muda">
+            {CAMADAS.map((c) => <li key={c}>{c}</li>)}
+          </ul>
+          <p className="lpm-em">Não são dicas soltas — é uma forma nova de enxergar.</p>
         </section>
 
         {/* ── O QUE MUDA PARA VOCÊ ────────────────────────────────────── */}

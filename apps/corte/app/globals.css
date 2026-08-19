@@ -1171,3 +1171,9 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .pix-resumo-total{margin-top:5px;padding-top:8px;border-top:1px solid rgba(203,168,91,.2);
   color:#f6e7c9;font-size:15px;font-weight:800}
 .pix-resumo-total span:last-child{color:var(--gold-2,#cba85b)}
+
+/* Card do Mapa — camadas (descoberta, não "5 passos") */
+.sw-camadas{margin:16px auto 6px;max-width:40ch;display:flex;flex-direction:column;gap:12px}
+.sw-camadas-intro{color:var(--gold-2);font:700 12px/1.4 var(--ui);letter-spacing:1.4px;text-transform:uppercase;margin-bottom:2px}
+.sw-camada{display:flex;gap:11px;align-items:flex-start;color:#e9dcc0;font:400 clamp(15px,4.2vw,17px)/1.45 var(--serif)}
+.sw-camada-mk{color:var(--gold-2);font-size:13px;line-height:1.55;flex:none;margin-top:2px}

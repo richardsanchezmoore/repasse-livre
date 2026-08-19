@@ -86,13 +86,12 @@ function trackFb(evento, dados, tipo = "track") {
 const VALOR = 67.9;
 const CONTEUDO = "Kit · A Mulher que Ele Procura";
 
-// Os 5 passos do MAPA (nomes visíveis; o PERLA como mecanismo fica na obra).
-const PASSOS = [
-  { n: "01", nome: "Presença", desc: "Como ser notada por quem você quer.", img: "/livro/thumb/cena4.webp" },
-  { n: "02", nome: "Expressão", desc: "O que você comunica antes de falar.", img: "/livro/thumb/cena2.webp" },
-  { n: "03", nome: "Revelação", desc: "Como despertar a curiosidade dele.", img: "/livro/thumb/cena11.webp" },
-  { n: "04", nome: "Linguagem", desc: "O que dizer para criar conexão.", img: "/livro/thumb/cena5.webp" },
-  { n: "05", nome: "Ação", desc: "Como agir quando o interesse é dos dois.", img: "/livro/thumb/cena10.webp" },
+// O Mapa é vendido como DESCOBERTA — não "curso de 5 passos". A estrutura interna
+// (P.E.R.L.A) fica na obra; aqui, camadas evocativas: mostram profundidade sem checklist.
+const CAMADAS = [
+  "O que a sua presença comunica — muito antes de você falar.",
+  "O que desperta a curiosidade dele — e o que faz o interesse esfriar.",
+  "Como reconhecer o momento certo — e o homem que vale a sua atenção.",
 ];
 
 // ── roteiro do chat (V6 — Helena; ponte, não aula) ──────────────────────────
@@ -178,8 +177,8 @@ const CHAT = {
   // Responde DIRETO à pergunta "E como eu faço isso?" (ponte pergunta→produto)
   encerramento: {
     lady: [
-      "É exatamente isso que você vai encontrar no mapa.",
-      "São 5 passos que mostram exatamente o que fazer em cada etapa.",
+      "É exatamente isso que o Mapa revela.",
+      "Não é uma listinha de dicas. É uma forma nova de enxergar — que muda como você é percebida, do primeiro olhar em diante.",
     ],
     opts: [{ t: "Quero ver o mapa →", cta: true, to: "__done" }],
   },
@@ -357,29 +356,24 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {/* CHAT COM A HELENA */}
       {step === 2 && <LadyChat variante={variante} onDone={() => setStep(3)} />}
 
-      {/* O MAPA — 5 passos + "não são cinco dicas" */}
+      {/* O MAPA — vendido como DESCOBERTA (não "5 passos"). Título A/B por variante. */}
       {step === 3 && (
         <>
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
-            <div className="sw-mapa-titulo">Em 5 Passos</div>
-            <div className="sw-mapa-sub">A virada de chave começa com você!</div>
-            <div className="sw-mm">
-              <div className="sw-mm-raiz">Você</div>
-              <div className="sw-mm-ramos">
-                {PASSOS.map((p) => (
-                  <div key={p.n} className="sw-mm-ramo">
-                    <span className="sw-mm-n">{p.n}</span>
-                    <div className="sw-mm-no">
-                      <div className="sw-mm-nome">{p.nome}</div>
-                      <div className="sw-mm-desc">{p.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="sw-mapa-titulo">
+              {variante === "a" ? "O que elas enxergam — e você ainda não." : "O código por trás de ser escolhida."}
             </div>
+            <div className="sw-mapa-sub">Existe uma lógica por trás do que faz um homem perceber — e não esquecer — uma mulher. A maioria nunca chega a conhecê-la.</div>
+            <div className="sw-camadas">
+              <div className="sw-camadas-intro">O Mapa revela, camada por camada:</div>
+              {CAMADAS.map((c, i) => (
+                <div key={i} className="sw-camada"><span className="sw-camada-mk">✦</span><span>{c}</span></div>
+              ))}
+            </div>
+            <div className="sw-destaque">Não são dicas soltas. É uma forma nova de enxergar — que muda como você é percebida, do primeiro olhar em diante.</div>
           </div>
-          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero ver o que muda →</button></div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero enxergar o Mapa →</button></div>
         </>
       )}
 
