@@ -57,9 +57,9 @@ function LadyAudio({ src, durProp = "" }) {
         onTimeUpdate={(e) => { const a = e.currentTarget; if (a.duration) { setProg(a.currentTime / a.duration); setElapsed(fmtDur(a.currentTime)); } }} />
       <button type="button" className="ldy-audio-btn" onClick={toggle} aria-label={playing ? "Pausar" : "Tocar"}>
         {playing ? (
-          <svg viewBox="0 0 16 16" width="14" height="14"><rect x="4" y="3" width="3" height="10" fill="currentColor" /><rect x="9" y="3" width="3" height="10" fill="currentColor" /></svg>
+          <svg viewBox="0 0 16 16" width="17" height="17"><rect x="4" y="3" width="3" height="10" fill="currentColor" /><rect x="9" y="3" width="3" height="10" fill="currentColor" /></svg>
         ) : (
-          <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 3l9 5-9 5z" fill="currentColor" /></svg>
+          <svg viewBox="0 0 16 16" width="17" height="17"><path d="M4 3l9 5-9 5z" fill="currentColor" /></svg>
         )}
       </button>
       <div className="ldy-audio-mid">
@@ -68,8 +68,8 @@ function LadyAudio({ src, durProp = "" }) {
             <span key={i} className={"ldy-bar" + (prog * BAR_HEIGHTS.length > i ? " on" : "")} style={{ height: h + "px" }} />
           ))}
         </div>
+        <span className="ldy-audio-dur">{playing && elapsed ? elapsed : (dur || durProp)}</span>
       </div>
-      <span className="ldy-audio-dur">{playing && elapsed ? elapsed : (dur || durProp)}</span>
       <div className="ldy-audio-av">
         {LADY_FOTO ? <img src={LADY_FOTO} alt="Helena" /> : <span className="ldy-audio-avf">H</span>}
         <span className="ldy-audio-mic" aria-hidden>
