@@ -364,7 +364,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
             <div className="sw-mapa-titulo">
-              {variante === "a" ? "O que elas enxergam — e você ainda não." : "O que faz um homem escolher — e não esquecer."}
+              {variante === "a" ? "O que elas enxergam — e você ainda não." : "Se tornando desejável"}
             </div>
             <div className="sw-mapa-sub">Existe uma lógica por trás de ser percebida — e a maioria das mulheres nunca a conhece.</div>
             <div className="sw-mm-intro">Ao percorrer o Mapa, você vai descobrindo:</div>
