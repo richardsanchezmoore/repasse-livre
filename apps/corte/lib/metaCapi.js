@@ -14,15 +14,17 @@ const soDig = (v) => String(v || "").replace(/\D/g, "");
 // Enriquecido com os sinais de clique do checkout nativo (fbp/fbc/fbclid capturados
 // no nosso domínio) → match alto + atribuição de campanha correta. fbp/fbc vão CRUS
 // (não hasheados); em/ph/external_id vão hasheados (SHA-256), como a Meta exige.
-export async function enviarPurchaseCapi({ email, valor, moeda = "BRL", nomeConteudo = "Panfleto + Kit", eventId, telefone, fbp, fbc, fbclid, externalId, sourceUrl }) {
-  const pixel = process.env.META_PIXEL_ID;
-  const token = process.env.META_CAPI_TOKEN;
-  if (!pixel || !token) return { ok: false, motivo: "capi_nao_configurado" };
+export async function enviarPurchaseCapi({ email, valor, moeda = "BRL", nomeConteudo = "Panfleto + Kit", eventId, telefone, fbp, fbc, fbclid, externalId, sourceUrl, pixelId, token, ddi = "55" }) {
+  // pixelId/token opcionais: BR usa as envs padrão (comportamento inalterado); MX
+  // passa META_PIXEL_ID_MX/META_CAPI_TOKEN_MX + ddi "52" (pixel separado por mercado).
+  const pixel = pixelId || process.env.META_PIXEL_ID;
+  const tok = token || process.env.META_CAPI_TOKEN;
+  if (!pixel || !tok) return { ok: false, motivo: "capi_nao_configurado" };
 
   const user_data = {};
   if (email && String(email).includes("@")) user_data.em = [sha256(email)];
   const tel = soDig(telefone);
-  if (tel.length >= 10) user_data.ph = [sha256(tel.startsWith("55") ? tel : "55" + tel)];
+  if (tel.length >= 10) user_data.ph = [sha256(tel.startsWith(ddi) ? tel : ddi + tel)];
   if (externalId) user_data.external_id = [sha256(externalId)];
   if (fbp) user_data.fbp = fbp;
   // fbc = cookie _fbc; se não veio mas tem fbclid, constrói no formato fb.1.<ts>.<fbclid>.
@@ -45,7 +47,7 @@ export async function enviarPurchaseCapi({ email, valor, moeda = "BRL", nomeCont
   if (process.env.META_CAPI_TEST_CODE) corpo.test_event_code = process.env.META_CAPI_TEST_CODE;
 
   try {
-    const r = await fetch(`https://graph.facebook.com/v21.0/${pixel}/events?access_token=${token}`, {
+    const r = await fetch(`https://graph.facebook.com/v21.0/${pixel}/events?access_token=${tok}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(corpo),

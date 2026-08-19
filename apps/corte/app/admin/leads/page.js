@@ -9,17 +9,32 @@ const fmtBR = (t) => new Date(t).toLocaleString("pt-BR", { timeZone: TZ, day: "2
 const hourBR = (t) => Number(new Date(t).toLocaleString("en-US", { timeZone: TZ, hour: "2-digit", hour12: false })) % 24;
 const diaBR = (t) => new Date(t).toLocaleDateString("en-CA", { timeZone: TZ }); // YYYY-MM-DD
 const histo = (rows) => { const h = Array(24).fill(0); for (const r of rows) h[hourBR(r.criado_em)]++; return h; };
+// Brasil não tem horário de verão desde 2019 → America/Sao_Paulo é fixo UTC-3.
+// Um dia BR [00:00,24:00) = [dia 03:00Z, dia+1 03:00Z). Bounds p/ filtrar no fuso certo.
+function boundsBR(diaISO) {
+  const ini = new Date(`${diaISO}T03:00:00.000Z`);
+  return { ini: ini.toISOString(), fim: new Date(ini.getTime() + 86400000).toISOString() };
+}
+const fmtDia = (d) => d.split("-").reverse().slice(0, 2).join("/"); // YYYY-MM-DD → DD/MM
 
-export default async function AdminLeadsPage() {
+export default async function AdminLeadsPage({ searchParams }) {
   await exigirAdmin();
   const admin = supabaseAdmin();
+
+  const hoje = diaBR(new Date());
+  // Filtro por DIA (fuso Brasil). ?dia=YYYY-MM-DD escopa o funil da landing àquele dia;
+  // sem o parâmetro, mostra todos os dias (comportamento anterior).
+  const diaSel = typeof searchParams?.dia === "string" && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.dia) ? searchParams.dia : "";
+  let mpQuery = admin.from("corte_funil").select("vid, quiz_slug, criado_em").eq("tipo", "mulher_passo");
+  if (diaSel) { const b = boundsBR(diaSel); mpQuery = mpQuery.gte("criado_em", b.ini).lt("criado_em", b.fim); }
+  mpQuery = mpQuery.order("criado_em", { ascending: false }).limit(20000);
 
   const [{ data: leadsRows }, { data: vis }, { data: con }, { data: fr }, { data: mpRows }] = await Promise.all([
     admin.from("corte_leads").select("*").order("criado_em", { ascending: false }).limit(3000),
     admin.from("corte_funil").select("criado_em, quiz_slug").eq("tipo", "visita").order("criado_em", { ascending: false }).limit(3000),
     admin.from("corte_funil").select("criado_em, quiz_slug").eq("tipo", "quiz_fim").order("criado_em", { ascending: false }).limit(3000),
     admin.rpc("corte_funil_resumo"),
-    admin.from("corte_funil").select("vid, quiz_slug").eq("tipo", "mulher_passo").limit(20000),
+    mpQuery,
   ]);
 
   // ── Funil da landing /mulher: distintos (vid) por card ──
@@ -72,7 +87,20 @@ export default async function AdminLeadsPage() {
       <section className="card" style={{ marginTop: 18 }}>
         <div className="c-k">◈ Funil da landing /mulher ◈</div>
         <div className="c-t" style={{ marginBottom: 4 }}>Onde elas <em>param</em></div>
-        <div className="c-p" style={{ marginBottom: 14 }}>Pessoas distintas que chegaram a cada card (e a queda entre eles).</div>
+        <div className="c-p" style={{ marginBottom: 12 }}>Pessoas distintas que chegaram a cada card (e a queda entre eles).</div>
+
+        {/* Filtro por dia (fuso Brasil). Sem seleção = todos os dias. */}
+        <form method="GET" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", margin: "0 0 16px" }}>
+          <input type="date" name="dia" defaultValue={diaSel || hoje} max={hoje}
+            style={{ font: "600 13px var(--ui, sans-serif)", padding: "6px 9px", border: "1px solid var(--gold)", borderRadius: 8, background: "#fff", color: "var(--ink)" }} />
+          <button type="submit" style={{ font: "700 13px var(--ui, sans-serif)", padding: "7px 15px", border: "none", borderRadius: 8, background: "var(--wine)", color: "#fff", cursor: "pointer" }}>Filtrar dia</button>
+          <a href={`/admin/leads?dia=${hoje}`} style={{ font: "700 12.5px var(--ui, sans-serif)", padding: "6px 12px", borderRadius: 8, border: "1px solid var(--gold)", color: "var(--wine)", textDecoration: "none" }}>Hoje</a>
+          <a href="/admin/leads" style={{ font: "700 12.5px var(--ui, sans-serif)", padding: "6px 12px", borderRadius: 8, border: "1px solid var(--gold)", color: "var(--wine)", textDecoration: "none" }}>Tudo</a>
+          <span style={{ font: "700 12.5px var(--disp, serif)", color: "var(--ink-soft)", marginLeft: "auto" }}>
+            {diaSel ? `📅 ${fmtDia(diaSel)}` : "📅 todos os dias"}
+          </span>
+        </form>
+
         {funilMulher.map((c, i) => {
           const base = funilMulher[0].distintos || 0;
           const larg = base > 0 ? Math.round((c.distintos / base) * 100) : 0;
