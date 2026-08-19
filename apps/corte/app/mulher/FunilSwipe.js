@@ -135,7 +135,7 @@ const CHAT = {
   r2_ninguem: {
     lady: [
       "Eu imagino como isso pesa. Você quer viver algo, mas parece que nada começa.",
-      "Já vi tantas mulheres passarem por isso. Diferentes umas das outras, mas travando quase sempre nas mesmas coisas.",
+      "Já vi muitas mulheres passarem por isso. Todas diferentes entre si, mas quase sempre tropeçando nas mesmas coisas.",
     ],
     opts: [
       { t: "Sou eu também.", to: "descoberta" },
@@ -145,7 +145,7 @@ const CHAT = {
   r2_frente: {
     lady: [
       "Isso é frustrante. Começa bem e, de repente, tudo para.",
-      "Já vi tantas mulheres passarem por isso. Diferentes umas das outras, mas travando quase sempre nas mesmas coisas.",
+      "Já vi muitas mulheres passarem por isso. Todas diferentes entre si, mas quase sempre tropeçando nas mesmas coisas.",
     ],
     opts: [
       { t: "Sou eu também.", to: "descoberta" },
@@ -155,7 +155,7 @@ const CHAT = {
   r2_machuco: {
     lady: [
       "Essa parte dói. Você entra querendo que dê certo e sai machucada.",
-      "Já vi tantas mulheres passarem por isso. Diferentes umas das outras, mas travando quase sempre nas mesmas coisas.",
+      "Já vi muitas mulheres passarem por isso. Todas diferentes entre si, mas quase sempre tropeçando nas mesmas coisas.",
     ],
     opts: [
       { t: "Sou eu também.", to: "descoberta" },
