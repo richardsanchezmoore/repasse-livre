@@ -13,9 +13,11 @@ export const metadata = {
 
 // O Mapa vendido como DESCOBERTA (não "5 passos"). Estrutura interna (P.E.R.L.A) fica na obra.
 const CAMADAS = [
-  "O que a sua presença comunica — muito antes de você falar.",
-  "O que desperta a curiosidade dele — e o que faz o interesse esfriar.",
-  "Como reconhecer o momento certo — e o homem que vale a sua atenção.",
+  "O que a sua presença comunica antes de você falar.",
+  "Como despertar a curiosidade dele.",
+  "O que faz o interesse crescer — ou esfriar.",
+  "O que dizer para criar uma conexão de verdade.",
+  "Como reconhecer o momento — e o homem — certo.",
 ];
 
 const MUDA = [
@@ -117,7 +119,7 @@ export default async function LandingMulherCarta() {
           <ul className="lpm-muda">
             {CAMADAS.map((c) => <li key={c}>{c}</li>)}
           </ul>
-          <p className="lpm-em">Não são dicas soltas — é uma forma nova de enxergar.</p>
+          <p className="lpm-em">Uma forma nova de se posicionar — que desperta interesse e faz uma relação acontecer.</p>
         </section>
 
         {/* ── O QUE MUDA PARA VOCÊ ────────────────────────────────────── */}

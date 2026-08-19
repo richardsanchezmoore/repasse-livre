@@ -89,9 +89,11 @@ const CONTEUDO = "Kit · A Mulher que Ele Procura";
 // O Mapa é vendido como DESCOBERTA — não "curso de 5 passos". A estrutura interna
 // (P.E.R.L.A) fica na obra; aqui, camadas evocativas: mostram profundidade sem checklist.
 const CAMADAS = [
-  "O que a sua presença comunica — muito antes de você falar.",
-  "O que desperta a curiosidade dele — e o que faz o interesse esfriar.",
-  "Como reconhecer o momento certo — e o homem que vale a sua atenção.",
+  "O que a sua presença comunica antes de você falar.",
+  "Como despertar a curiosidade dele.",
+  "O que faz o interesse crescer — ou esfriar.",
+  "O que dizer para criar uma conexão de verdade.",
+  "Como reconhecer o momento — e o homem — certo.",
 ];
 
 // ── roteiro do chat (V6 — Helena; ponte, não aula) ──────────────────────────
@@ -365,11 +367,17 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               {variante === "a" ? "O que elas enxergam — e você ainda não." : "O que faz um homem escolher — e não esquecer."}
             </div>
             <div className="sw-mapa-sub">Existe uma lógica por trás de ser percebida — e a maioria das mulheres nunca a conhece.</div>
-            <div className="sw-camadas">
-              <div className="sw-camadas-intro">O Mapa revela:</div>
-              {CAMADAS.map((c, i) => (
-                <div key={i} className="sw-camada"><span className="sw-camada-mk">✦</span><span>{c}</span></div>
-              ))}
+            <div className="sw-mm-intro">Ao percorrer o Mapa, você vai descobrindo:</div>
+            <div className="sw-mm">
+              <div className="sw-mm-raiz">Você</div>
+              <div className="sw-mm-ramos">
+                {CAMADAS.map((c, i) => (
+                  <div key={i} className="sw-mm-ramo">
+                    <span className="sw-mm-n" style={{ fontSize: 17 }}>✦</span>
+                    <div className="sw-mm-no sw-mm-txt">{c}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero enxergar o Mapa →</button></div>
