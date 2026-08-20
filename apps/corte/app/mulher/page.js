@@ -13,7 +13,19 @@ export const metadata = {
     "Existe uma parte da dinâmica dos relacionamentos que acontece antes mesmo de um relacionamento começar. Uma conversa com A Lady.",
 };
 
-export default async function LandingMulher() {
+// Imagem-herói do Card 1 = a mesma cena do criativo que trouxe a pessoa
+// (utm_content = {{ad.name}}). Nome do anúncio com "selfie"/"disputa" → selfie;
+// senão igreja (padrão). ?img=selfie|igreja força manualmente (teste).
+function heroDoAnuncio(sp) {
+  const MAP = { selfie: "/livro/cena-selfie.webp", igreja: "/livro/cena-igreja.webp" };
+  const explicit = String(sp?.img || "").toLowerCase();
+  if (MAP[explicit]) return MAP[explicit];
+  const c = (String(sp?.utm_content || "") + " " + String(sp?.utm_campaign || "")).toLowerCase();
+  if (/selfie|disputa/.test(c)) return MAP.selfie;
+  return MAP.igreja;
+}
+
+export default async function LandingMulher({ searchParams }) {
   const sb = await criarSupabaseServer();
   const { data: cfg } = await sb.from("corte_config").select("valor").eq("chave", "planos").maybeSingle();
   const kit = cfg?.valor?.kit || {};
@@ -32,7 +44,7 @@ export default async function LandingMulher() {
 
   return (
     <main className="sw-main">
-      <FunilSwipe preco={preco} precoDe={prod.preco_de || ""} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} />
+      <FunilSwipe preco={preco} precoDe={prod.preco_de || ""} url={prod.cakto_url || ""} slug={prod.cakto_slug || ""} heroImg={heroDoAnuncio(searchParams)} />
     </main>
   );
 }

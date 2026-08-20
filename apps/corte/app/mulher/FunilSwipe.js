@@ -271,7 +271,7 @@ function LadyChat({ onDone, variante = "a" }) {
 
 const TOTAL = 6;
 
-export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "", slug = "" }) {
+export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "", slug = "", heroImg = "/livro/cena-igreja.webp" }) {
   const [step, setStep] = useState(0);
   const [showCheck, setShowCheck] = useState(false);
   const avancar = () => setStep((s) => Math.min(TOTAL - 1, s + 1));
@@ -316,8 +316,8 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">Não é a beleza.</h1>
-            <p className="sw-sub">O que faz um homem escolher — e não querer largar — é outra coisa.</p>
-            <img className="sw-hero-img" src="/livro/cena-igreja.webp" alt="" width="880" height="500" />
+            <p className="sw-sub">O que faz um homem escolher — e ficar — é outra coisa.</p>
+            <img className="sw-hero-img" src={heroImg} alt="" width="880" height="500" />
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
           </div>
