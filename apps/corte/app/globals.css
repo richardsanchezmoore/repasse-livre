@@ -831,7 +831,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* frase-destaque do card 1 (cor + peso p/ saltar aos olhos) */
 .sw-destaque{font:700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
   text-wrap:balance;max-width:22ch;margin:15px auto;text-shadow:0 0 34px rgba(203,168,91,.3)}
-.sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:16px auto 0}
+.sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#f2e8d4;text-align:center;max-width:34ch;margin:16px auto 0}
 .sw-q{font:italic 500 clamp(19px,5.4vw,24px)/1.4 var(--disp);color:var(--gold-2);text-align:center;text-wrap:balance;max-width:24ch;margin:20px auto 0}
 
 /* rodapé de avanço */
@@ -1064,7 +1064,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-muda li::before{content:"✦";position:absolute;left:0;top:1px;color:var(--gold-2);font-size:16px}
 /* card do INIMIGO COMUM — caminhos que já falharam (✕) */
 .sw-erros{list-style:none;max-width:440px;margin:14px auto;display:flex;flex-direction:column;gap:11px}
-.sw-erros li{font:500 clamp(15px,4.2vw,17px)/1.35 var(--serif);color:#d8c6a4;padding-left:28px;position:relative}
+.sw-erros li{font:500 clamp(15px,4.2vw,17px)/1.35 var(--serif);color:#f2e8d4;padding-left:28px;position:relative}
 .sw-erros li::before{content:"✕";position:absolute;left:0;top:1px;color:#b7635f;font-weight:900}
 /* formato/garantia perto do checkout (secundário, dentro do card de oferta) */
 .sw-recebe{list-style:none;display:flex;flex-direction:column;gap:6px;margin:16px auto 0;max-width:300px;text-align:left}
@@ -1180,4 +1180,4 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 
 /* Trilha do Mapa — rastreio de descobertas (sem número) */
 .sw-mm-intro{text-align:center;color:var(--gold-2);font:italic 400 clamp(14px,3.9vw,16px)/1.4 var(--serif);margin:16px auto 6px;max-width:32ch}
-.sw-mm-txt{font:400 15px/1.4 var(--serif);color:#e6d4b0}
+.sw-mm-txt{font:400 15px/1.4 var(--serif);color:#f2e8d4}
