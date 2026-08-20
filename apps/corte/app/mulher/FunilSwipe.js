@@ -444,8 +444,8 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <div className="sw-assina sw-assina-oferta">
                 {LADY_FOTO ? <img src={LADY_FOTO} alt="Lady Helena" /> : <span className="sw-assina-av">H</span>}
                 <div className="sw-assina-txt">
-                  <div className="sw-assina-n">Lady Helena</div>
-                  <div className="sw-assina-r">Quem preparou tudo isso para você</div>
+                  <div className="sw-assina-n">Lady Helena M.</div>
+                  <div className="sw-assina-r">Especialista em Relacionamentos</div>
                 </div>
               </div>
             </div>
