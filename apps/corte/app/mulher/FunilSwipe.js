@@ -270,7 +270,7 @@ function LadyChat({ onDone, variante = "a" }) {
   );
 }
 
-const TOTAL = 6;
+const TOTAL = 5;
 
 export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
@@ -316,11 +316,11 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 0 && (
         <>
           <div className="sw-card hero" key="c0">
-            <h1 className="sw-h">O Mapa das Mulheres</h1>
-            <p className="sw-sub">Seja amada e desejada.</p>
-            <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, isso ainda não aconteceu.</p>
+            <h1 className="sw-h">Não é a beleza.</h1>
+            <p className="sw-sub">É o que faz um homem escolher uma mulher — e não querer largar.</p>
+            <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
-            <p className="sw-p">Foi olhando para muitas mulheres que percebi: quase todas enfrentam as mesmas dificuldades.</p>
+            <p className="sw-p">O que decide isso começa antes do primeiro contato — e quase nenhuma mulher aprendeu.</p>
           </div>
           <div className="sw-foot">
             <div className="sw-assina">
@@ -355,11 +355,8 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         </>
       )}
 
-      {/* CHAT COM A HELENA */}
-      {step === 2 && <LadyChat variante={variante} onDone={() => setStep(3)} />}
-
-      {/* O MAPA — vendido como DESCOBERTA (não "5 passos"). Título A/B por variante. */}
-      {step === 3 && (
+      {/* O MAPA — vendido como DESCOBERTA. Título A/B por variante. (Chat removido: teste sem conversa.) */}
+      {step === 2 && (
         <>
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">O mapa</div>
@@ -384,7 +381,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       )}
 
       {/* O QUE MUDA PARA VOCÊ — benefício/transformação (progressão) + antes→depois */}
-      {step === 4 && (
+      {step === 3 && (
         <>
           <div className="sw-card hero" key="c4">
             <div className="sw-eyebrow">A transformação</div>
@@ -400,7 +397,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       )}
 
       {/* OFERTA — vende o caminho; formato/garantia perto do checkout (não como título) */}
-      {step === 5 && (
+      {step === 4 && (
         <>
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
