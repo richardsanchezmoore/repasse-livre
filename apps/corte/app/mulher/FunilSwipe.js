@@ -323,13 +323,6 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
             <p className="sw-p">O que decide isso começa antes do primeiro contato — e quase nenhuma mulher aprendeu.</p>
           </div>
           <div className="sw-foot">
-            <div className="sw-assina">
-              {LADY_FOTO ? <img src={LADY_FOTO} alt="Lady Helena" /> : <span className="sw-assina-av">H</span>}
-              <div className="sw-assina-txt">
-                <div className="sw-assina-n">Lady Helena</div>
-                <div className="sw-assina-r">Quem vai te guiar</div>
-              </div>
-            </div>
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
             <span className="sw-hint">leva cerca de 2 minutinhos</span>
           </div>
