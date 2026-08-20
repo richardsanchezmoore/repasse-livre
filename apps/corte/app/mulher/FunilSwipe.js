@@ -317,9 +317,9 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">Não é a beleza.</h1>
             <p className="sw-sub">O que faz um homem escolher — e não querer largar — é outra coisa.</p>
+            <img className="sw-hero-img" src="/livro/cena-igreja.webp" alt="" width="880" height="540" />
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
-            <p className="sw-p">O que decide isso começa antes do primeiro contato — e quase nenhuma mulher aprendeu.</p>
           </div>
           <div className="sw-foot">
             <button className="sw-btn" onClick={avancar}>Quero entender</button>
