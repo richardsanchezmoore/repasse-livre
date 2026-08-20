@@ -317,7 +317,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">Não é a beleza.</h1>
             <p className="sw-sub">O que faz um homem escolher — e não querer largar — é outra coisa.</p>
-            <img className="sw-hero-img" src="/livro/cena-igreja.webp" alt="" width="880" height="540" />
+            <img className="sw-hero-img" src="/livro/cena-igreja.webp" alt="" width="880" height="500" />
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
           </div>
@@ -376,11 +376,9 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card hero" key="c4">
             <div className="sw-eyebrow">A transformação</div>
             <div className="sw-muda-h">O que muda para você</div>
-            <p className="sw-p" style={{ margin: "2px auto 16px" }}>Imagine a mulher que você vai se tornar:</p>
-
-            <div className="sw-torna">Aquela que ele admira, procura — e não quer perder.</div>
-
-            <p className="sw-destaque" style={{ fontSize: "clamp(18px,5.2vw,24px)", marginTop: "24px" }}>Você deixa de esperar ser escolhida — e passa a ser desejada de verdade.</p>
+            <p className="sw-p" style={{ margin: "2px auto 10px" }}>Você irá se tornar a mulher…</p>
+            <img className="sw-hero-img" src="/livro/cena-transformacao.webp" alt="" width="880" height="500" />
+            <div className="sw-torna" style={{ marginTop: 12 }}>…que ele admira, procura — e não quer perder.</div>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero a Transformação →</button></div>
         </>
