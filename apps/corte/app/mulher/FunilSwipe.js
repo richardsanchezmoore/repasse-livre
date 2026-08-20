@@ -91,7 +91,6 @@ const CONTEUDO = "Kit · A Mulher que Ele Procura";
 const CAMADAS = [
   "O que a sua presença comunica antes de você falar.",
   "Como despertar a curiosidade dele.",
-  "O que faz o interesse crescer — ou esfriar.",
   "O que dizer para criar uma conexão de verdade.",
   "Como reconhecer o momento — e o homem — certo.",
 ];
@@ -353,8 +352,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">A chave</div>
-            <div className="sw-mapa-titulo">Começa antes do primeiro contato</div>
-            <p className="sw-p" style={{ margin: "2px auto 14px" }}>O que atrai e prende um homem é o que a sua presença comunica — e isso pode ser aprendido.</p>
+            <div className="sw-mapa-titulo">O que atrai um homem é o que a sua presença comunica — e isso pode ser aprendido.</div>
             <div className="sw-mm-intro">É o que o Mapa revela, passo a passo:</div>
             <div className="sw-mm">
               <div className="sw-mm-raiz">Você</div>
@@ -394,7 +392,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card rola" key="c5">
             <div className="sw-eyebrow">Quem já está seguindo o Mapa</div>
             <div className="sw-muda-h">Elas leram — e já sentem a diferença</div>
-            <div className="sw-provas" style={{ marginTop: 14 }}>
+            <div className="sw-provas sw-provas-escura" style={{ marginTop: 14 }}>
               <div className="sw-prova">
                 <div className="sw-estrelas">★★★★★</div>
                 <p className="sw-prova-q">“Eu estava acostumada a correr atrás. <b>Hoje é diferente:</b> percebo mais homens tomando iniciativa e demonstrando interesse por mim.”</p>

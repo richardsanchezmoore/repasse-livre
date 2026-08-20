@@ -985,6 +985,11 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-prova-q{font:400 clamp(13.5px,4vw,14.5px)/1.55 var(--serif);color:var(--ink-soft);margin:0 0 8px}
 .sw-prova-q b{color:var(--wine);font-weight:700}
 .sw-prova-n{font:600 12.5px var(--ui);color:var(--ink)}
+/* Depoimentos no card dedicado (fundo escuro, fora da oferta) — mesmo tratamento dark */
+.sw-provas-escura .sw-prova{background:rgba(255,255,255,.05);border-color:rgba(230,211,163,.28)}
+.sw-provas-escura .sw-prova-q{color:#e7d7b4}
+.sw-provas-escura .sw-prova-q b{color:#fdf6e6}
+.sw-provas-escura .sw-prova-n{color:#e9d9bd}
 /* folga p/ caber o selo no Card 1 + mais intensidade (semibold) */
 .sw-card.hero .sw-p{margin:6px 0 0;font-weight:600}
 
