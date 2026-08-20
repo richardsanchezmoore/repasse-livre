@@ -38,7 +38,7 @@ export default async function AdminLeadsPage({ searchParams }) {
   ]);
 
   // ── Funil da landing /mulher: distintos (vid) por card ──
-  const CARDS_MULHER = ["1 · Promessa", "2 · Inimigo comum", "3 · O Mapa", "4 · Transformação", "5 · Oferta"];
+  const CARDS_MULHER = ["1 · Promessa", "2 · Inimigo comum", "3 · O Mapa", "4 · Transformação", "5 · Depoimentos", "6 · Oferta"];
   const funilMulher = CARDS_MULHER.map((nome, i) => ({
     nome, passo: i + 1,
     distintos: new Set((mpRows || []).filter((r) => r.quiz_slug === String(i + 1)).map((r) => r.vid).filter(Boolean)).size,

@@ -270,7 +270,7 @@ function LadyChat({ onDone, variante = "a" }) {
   );
 }
 
-const TOTAL = 5;
+const TOTAL = 6;
 
 export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "", slug = "" }) {
   const [step, setStep] = useState(0);
@@ -317,7 +317,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">Não é a beleza.</h1>
-            <p className="sw-sub">É o que faz um homem escolher uma mulher — e não querer largar.</p>
+            <p className="sw-sub">O que faz um homem escolher — e não querer largar — é outra coisa.</p>
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
             <p className="sw-p">O que decide isso começa antes do primeiro contato — e quase nenhuma mulher aprendeu.</p>
@@ -359,11 +359,10 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 2 && (
         <>
           <div className="sw-card rola" key="c2">
-            <div className="sw-eyebrow">O mapa</div>
-            <div className="sw-mapa-titulo">
-              {variante === "a" ? "O que elas enxergam — e você ainda não." : "Se tornando desejável"}
-            </div>
-            <div className="sw-mm-intro">Ao percorrer o Mapa, você vai descobrindo:</div>
+            <div className="sw-eyebrow">A chave</div>
+            <div className="sw-mapa-titulo">Começa antes do primeiro contato</div>
+            <p className="sw-p" style={{ margin: "2px auto 14px" }}>O que atrai e prende um homem é o que a sua presença comunica — e isso pode ser aprendido.</p>
+            <div className="sw-mm-intro">É o que o Mapa revela, passo a passo:</div>
             <div className="sw-mm">
               <div className="sw-mm-raiz">Você</div>
               <div className="sw-mm-ramos">
@@ -396,8 +395,41 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         </>
       )}
 
-      {/* OFERTA — vende o caminho; formato/garantia perto do checkout (não como título) */}
+      {/* DEPOIMENTOS — prova social dedicada logo antes do checkout (esquenta pra oferta) */}
       {step === 4 && (
+        <>
+          <div className="sw-card rola" key="c5">
+            <div className="sw-eyebrow">Quem já está seguindo o Mapa</div>
+            <div className="sw-muda-h">Elas leram — e já sentem a diferença</div>
+            <div className="sw-provas" style={{ marginTop: 14 }}>
+              <div className="sw-prova">
+                <div className="sw-estrelas">★★★★★</div>
+                <p className="sw-prova-q">“Eu estava acostumada a correr atrás. <b>Hoje é diferente:</b> percebo mais homens tomando iniciativa e demonstrando interesse por mim.”</p>
+                <div className="sw-prova-n">— Mariana, 32 anos</div>
+              </div>
+              <div className="sw-prova">
+                <div className="sw-estrelas">★★★★★</div>
+                <p className="sw-prova-q">“Depois que comecei a aplicar o que vi no Mapa, percebi <b>perfis de homens que antes nem me notavam</b> começando a demonstrar interesse.”</p>
+                <div className="sw-prova-n">— Camila, 29 anos</div>
+              </div>
+              <div className="sw-prova">
+                <div className="sw-estrelas">★★★★★</div>
+                <p className="sw-prova-q">“O que mais me surpreendeu foi <b>despertar interesse sem precisar forçar nada.</b> Os homens passaram a se aproximar de outra forma.”</p>
+                <div className="sw-prova-n">— Juliana, 35 anos</div>
+              </div>
+              <div className="sw-prova">
+                <div className="sw-estrelas">★★★★★</div>
+                <p className="sw-prova-q">“Eu achava que precisava encontrar alguém. Depois do Mapa, entendi <b>como me posicionar</b> — e os homens começaram a me perceber de outra maneira.”</p>
+                <div className="sw-prova-n">— Renata, 38 anos</div>
+              </div>
+            </div>
+          </div>
+          <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero isso também →</button></div>
+        </>
+      )}
+
+      {/* OFERTA — vende o caminho; formato/garantia perto do checkout (não como título) */}
+      {step === 5 && (
         <>
           <div className="sw-card rola" key="c4">
             <div className="sw-oferta-card">
@@ -405,7 +437,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
 
               <div className="sw-kit">
                 <ul>
-                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b></span></li>
+                  <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — o Mapa completo, passo a passo</span></li>
                   <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — as Cartas Entre Nós, o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
                 </ul>
               </div>
@@ -417,29 +449,6 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               </div>
               <div className="sw-urg">🌷 <b>Semana da Mulher de Valor</b> — só até 26/08.</div>
               <p className="sw-reassure">✓ Acesso na hora · ✓ vitalício · ✓ 7 dias de garantia</p>
-
-              <div className="sw-provas">
-                <div className="sw-prova">
-                  <div className="sw-estrelas">★★★★★</div>
-                  <p className="sw-prova-q">“Eu estava acostumada a correr atrás. <b>Hoje é diferente:</b> percebo mais homens tomando iniciativa e demonstrando interesse por mim.”</p>
-                  <div className="sw-prova-n">— Mariana, 32 anos</div>
-                </div>
-                <div className="sw-prova">
-                  <div className="sw-estrelas">★★★★★</div>
-                  <p className="sw-prova-q">“Depois que comecei a aplicar o que vi no mapa, percebi <b>perfis de homens que antes nem me notavam</b> começando a demonstrar interesse.”</p>
-                  <div className="sw-prova-n">— Camila, 29 anos</div>
-                </div>
-                <div className="sw-prova">
-                  <div className="sw-estrelas">★★★★★</div>
-                  <p className="sw-prova-q">“O que mais me surpreendeu foi <b>despertar interesse sem precisar forçar nada.</b> Os homens passaram a se aproximar de outra forma.”</p>
-                  <div className="sw-prova-n">— Juliana, 35 anos</div>
-                </div>
-                <div className="sw-prova">
-                  <div className="sw-estrelas">★★★★★</div>
-                  <p className="sw-prova-q">“Eu achava que precisava encontrar alguém. Depois do mapa, comecei a entender <b>como me posicionar</b> — e os homens começaram a me perceber de outra maneira.”</p>
-                  <div className="sw-prova-n">— Renata, 38 anos</div>
-                </div>
-              </div>
 
               <div className="sw-assina sw-assina-oferta">
                 {LADY_FOTO ? <img src={LADY_FOTO} alt="Lady Helena" /> : <span className="sw-assina-av">H</span>}
