@@ -389,7 +389,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card rola" key="c5">
             <div className="sw-eyebrow">Quem já está seguindo o Mapa</div>
-            <div className="sw-muda-h">Elas leram — e já sentem a diferença</div>
+            <div className="sw-muda-h" style={{ fontSize: "clamp(20px,5.3vw,26px)", maxWidth: "24ch", marginBottom: 10 }}>Elas leram — e já sentem a diferença</div>
             <div className="sw-provas sw-provas-escura" style={{ marginTop: 14 }}>
               <div className="sw-prova">
                 <div className="sw-estrelas">★★★★★</div>
