@@ -339,7 +339,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <li>Se fazer de difícil pra ele correr atrás.</li>
             </ul>
             <p className="sw-destaque" style={{ fontSize: "clamp(18px,5vw,22px)", fontStyle: "normal", margin: "6px auto" }}>E, mesmo assim, nada mudou.</p>
-            <img className="sw-hero-img slim" src="/livro/cena-desanimada.webp" alt="" width="700" height="315" style={{ margin: "4px auto 8px" }} />
+            <img className="sw-hero-img slim" src="/livro/cena-desanimada.webp" alt="" width="700" height="365" style={{ margin: "4px auto 8px" }} />
             <p className="sw-p" style={{ fontWeight: 700, color: "#f3e6cd" }}>Porque todos te mostraram uma porta — mas nunca te entregaram <b style={{ color: "var(--gold-2)" }}>a chave</b>.</p>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero descobrir →</button></div>
