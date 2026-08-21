@@ -332,7 +332,6 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 1 && (
         <>
           <div className="sw-card rola" key="c1">
-            <div className="sw-eyebrow">A verdade</div>
             <div className="sw-muda-h">O problema nunca foi você</div>
             <p className="sw-p" style={{ margin: "0 auto 6px" }}>Já te disseram de tudo:</p>
             <ul className="sw-erros">
@@ -340,6 +339,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <li>Se fazer de difícil pra ele correr atrás.</li>
             </ul>
             <p className="sw-destaque" style={{ fontSize: "clamp(19px,5.4vw,24px)", fontStyle: "normal" }}>E, mesmo assim, nada mudou.</p>
+            <img className="sw-hero-img" src="/livro/cena-desanimada.webp" alt="" width="700" height="431" style={{ margin: "10px auto 14px" }} />
             <p className="sw-p" style={{ fontWeight: 700, color: "#f3e6cd" }}>Porque todos te mostraram uma porta — mas nunca te entregaram <b style={{ color: "var(--gold-2)" }}>a chave</b>.</p>
           </div>
           <div className="sw-foot"><button className="sw-btn" onClick={avancar}>Quero descobrir →</button></div>
