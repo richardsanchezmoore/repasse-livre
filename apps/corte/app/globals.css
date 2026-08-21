@@ -823,7 +823,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-eyebrow{font:700 11px var(--ui);letter-spacing:.28em;text-transform:uppercase;color:var(--gold-2);margin-bottom:9px;text-align:center}
 .sw-h{font:900 clamp(27px,7.6vw,38px)/1.14 var(--disp);color:#fdf6e6;text-wrap:balance;text-align:center;margin:0 auto;max-width:18ch}
 .sw-h em{font-style:italic;color:var(--gold-2)}
-.sw-sub{font:italic 500 clamp(15px,4.3vw,17px)/1.45 var(--serif);color:var(--gold-2);text-align:center;margin:12px auto 2px;max-width:30ch}
+.sw-sub{font:italic 500 clamp(15px,4.8vw,17px)/1.45 var(--serif);color:var(--gold-2);text-align:center;margin:12px auto 2px;max-width:30ch}
 /* card-promessa (card 1): centra e compacta p/ caber na viewport sem rolar */
 .sw-card.hero{justify-content:center;gap:2px}
 .sw-card.hero .sw-h{font-size:clamp(28px,7.9vw,38px);max-width:16ch}
@@ -831,7 +831,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* frase-destaque do card 1 (cor + peso p/ saltar aos olhos) */
 .sw-destaque{font:700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
   text-wrap:balance;max-width:22ch;margin:15px auto;text-shadow:0 0 34px rgba(203,168,91,.3)}
-.sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#f2e8d4;text-align:center;max-width:34ch;margin:16px auto 0}
+.sw-p{font:400 clamp(16px,4.9vw,18px)/1.7 var(--serif);color:#f2e8d4;text-align:center;max-width:34ch;margin:16px auto 0}
 /* imagem-herói do Card 1 (mesma cena do criativo → continuidade anúncio↔landing) */
 .sw-hero-img{display:block;width:100%;max-width:400px;height:auto;max-height:250px;object-fit:cover;border-radius:14px;margin:16px auto 20px;border:1px solid var(--gold-soft);box-shadow:0 6px 20px rgba(0,0,0,.35)}
 .sw-hero-img.slim{max-height:150px}
@@ -947,7 +947,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* card final — oferta */
 /* card de oferta ESCURO (consistente com o funil — não parece iframe) */
 .sw-oferta-card{max-width:440px;margin:6px auto 0;width:100%;background:none;border:none;border-radius:0;padding:0 2px;text-align:center;color:#f0e3c8;box-shadow:none}
-.sw-oferta-t{font:700 clamp(24px,6.6vw,28px)/1.2 var(--serif);color:#fdf6e6;text-wrap:balance;margin:0 auto 4px}
+.sw-oferta-t{font:700 clamp(24px,7.3vw,28px)/1.2 var(--serif);color:#fdf6e6;text-wrap:balance;margin:0 auto 4px}
 .sw-oferta-d{font:400 14px/1.55 var(--serif);color:#e4d3b4;margin:0 0 14px}
 .sw-preco{color:#fdf6e6;line-height:1;margin-top:20px}
 .sw-preco-de{display:block;font:600 14px var(--ui);color:#b8a98c;margin-bottom:2px;letter-spacing:.03em}
@@ -968,7 +968,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* Kit explícito na oferta (ancoragem do valor) */
 .sw-kit{text-align:left;max-width:360px;margin:16px auto 0;border-top:1px solid var(--gold-soft);padding-top:14px}
 .sw-kit ul{list-style:none;display:flex;flex-direction:column;gap:10px}
-.sw-kit li{display:flex;gap:10px;align-items:flex-start;font:400 13.5px/1.45 var(--serif);color:var(--ink-soft)}
+.sw-kit li{display:flex;gap:10px;align-items:flex-start;font:400 clamp(14px,4.1vw,16px)/1.45 var(--serif);color:var(--ink-soft)}
 .sw-kit-ic{flex:none;font-size:17px;line-height:1.2;width:22px;text-align:center}
 .sw-kit li b{color:var(--wine);font-weight:700}
 .sw-pix{font:600 13px var(--ui);color:var(--ink-soft);margin-top:10px}
@@ -988,7 +988,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-prova-t{font:700 clamp(15px,4.4vw,16.5px)/1.3 var(--disp);color:var(--wine);margin:0 0 6px}
 .sw-prova-q{font:400 clamp(15px,4.4vw,16.5px)/1.55 var(--serif);color:var(--ink-soft);margin:0 0 8px}
 .sw-prova-q b{color:var(--wine);font-weight:700}
-.sw-prova-n{font:600 13.5px var(--ui);color:var(--ink)}
+.sw-prova-n{font:600 clamp(13px,3.6vw,14px) var(--ui);color:var(--ink)}
 /* Depoimentos no card dedicado (fundo escuro, fora da oferta) — mesmo tratamento dark */
 .sw-provas-escura .sw-prova{background:rgba(255,255,255,.05);border-color:rgba(230,211,163,.28)}
 .sw-provas-escura .sw-prova-q{color:#e7d7b4}
@@ -1024,7 +1024,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .pc-safe{font:500 11.5px/1.4 var(--ui);color:#b8a98c;text-align:center;margin-top:12px}
 
 /* ── MAPA (pós-chat) + materialização do entregável ─────────────────────── */
-.sw-mapa-titulo{font:800 clamp(20px,5.2vw,26px)/1.25 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
+.sw-mapa-titulo{font:800 clamp(20px,6vw,26px)/1.25 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
 .sw-mapa-sub{font:400 14px/1.5 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:8px auto 4px}
 .sw-passos{display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto;width:100%}
 .sw-passo{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:9px 11px}
@@ -1188,5 +1188,5 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-camada-mk{color:var(--gold-2);font-size:13px;line-height:1.55;flex:none;margin-top:2px}
 
 /* Trilha do Mapa — rastreio de descobertas (sem número) */
-.sw-mm-intro{text-align:center;color:var(--gold-2);font:italic 400 clamp(14px,3.9vw,16px)/1.4 var(--serif);margin:16px auto 6px;max-width:32ch}
-.sw-mm-txt{font:600 15.5px/1.4 var(--serif);color:#f2e8d4}
+.sw-mm-intro{text-align:center;color:var(--gold-2);font:italic 400 clamp(14px,4.4vw,16px)/1.4 var(--serif);margin:16px auto 6px;max-width:32ch}
+.sw-mm-txt{font:600 clamp(15px,4.2vw,16.5px)/1.4 var(--serif);color:#f2e8d4}

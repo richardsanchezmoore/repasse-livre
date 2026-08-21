@@ -387,8 +387,8 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 4 && (
         <>
           <div className="sw-card rola" key="c5">
-            <div className="sw-eyebrow">Mulheres em Transformação</div>
-            <div className="sw-muda-h" style={{ fontSize: "clamp(20px,5.3vw,26px)", maxWidth: "24ch", marginBottom: 10 }}>Elas leram — e já sentem a diferença</div>
+            <div className="sw-muda-h" style={{ fontSize: "clamp(21px,5.6vw,27px)", maxWidth: "24ch", marginBottom: 5 }}>Elas leram — e já sentem a diferença</div>
+            <div className="sw-eyebrow" style={{ marginBottom: 12 }}>Mulheres em Transformação</div>
             <div className="sw-provas sw-provas-escura" style={{ marginTop: 14 }}>
               <div className="sw-prova">
                 <div className="sw-estrelas">★★★★★</div>
@@ -426,7 +426,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
               <div className="sw-kit">
                 <ul>
                   <li><span className="sw-kit-ic">📖</span><span><b>Como se Tornar a Mulher que “Ele” Procura</b> — o Mapa completo, passo a passo</span></li>
-                  <li><span className="sw-kit-ic">✨</span><span><b>+ Muito mais</b> — as Cartas Entre Nós, o Panfleto Secreto, o Cavalheiro (Boaz), o Guia “Verde ou Vermelho?”, os Wallpapers e o Diário da Dama</span></li>
+                  <li><span className="sw-kit-ic">✨</span><span>+ As Cartas Entre Nós, o Cavalheiro (Boaz), o Diário da Dama <b>e muito mais</b></span></li>
                 </ul>
               </div>
 
