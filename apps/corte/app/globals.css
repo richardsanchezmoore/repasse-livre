@@ -827,7 +827,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 /* card-promessa (card 1): centra e compacta p/ caber na viewport sem rolar */
 .sw-card.hero{justify-content:center;gap:2px}
 .sw-card.hero .sw-h{font-size:clamp(28px,7.9vw,38px);max-width:16ch}
-.sw-card.hero .sw-p{font-size:clamp(15px,4vw,16.5px);line-height:1.55;margin:8px 0 0}
+.sw-card.hero .sw-p{font-size:clamp(16px,4.7vw,17.5px);line-height:1.55;margin:8px 0 0}
 /* frase-destaque do card 1 (cor + peso p/ saltar aos olhos) */
 .sw-destaque{font:700 clamp(21px,6vw,27px)/1.3 var(--disp);color:var(--gold-2);text-align:center;
   text-wrap:balance;max-width:22ch;margin:15px auto;text-shadow:0 0 34px rgba(203,168,91,.3)}
