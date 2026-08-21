@@ -445,6 +445,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
                   <div className="sw-assina-r">Especialista em Relacionamentos</div>
                 </div>
               </div>
+              <p style={{ textAlign: "center", color: "var(--gold-2)", font: "700 clamp(19px,5.4vw,23px)/1.35 var(--disp)", margin: "20px auto 2px" }}>Junte-se à Comunidade</p>
             </div>
           </div>
           {/* CTA FIXO no rodapé — sempre visível enquanto ela rola a oferta */}
