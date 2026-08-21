@@ -316,7 +316,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card hero" key="c0">
             <h1 className="sw-h">Não é a beleza.</h1>
-            <p className="sw-sub">O que faz um homem escolher — e ficar — é outra coisa.</p>
+            <p className="sw-sub" style={{ fontWeight: 700 }}>O que faz um homem escolher e ficar é outra coisa.</p>
             <img className="sw-hero-img" src={heroImg} alt="" width="880" height="500" />
             <p className="sw-p">Você quer alguém para amar, cuidar e dividir a vida. E, mesmo fazendo a sua parte, ainda não aconteceu.</p>
             <p className="sw-destaque">E você não é a única.</p>
@@ -337,7 +337,6 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
             <p className="sw-p" style={{ margin: "0 auto 6px" }}>Já te disseram de tudo:</p>
             <ul className="sw-erros">
               <li>Ter paciência e esperar o tempo certo.</li>
-              <li>Se amar primeiro que alguém aparece.</li>
               <li>Se fazer de difícil pra ele correr atrás.</li>
             </ul>
             <p className="sw-destaque" style={{ fontSize: "clamp(19px,5.4vw,24px)", fontStyle: "normal" }}>E, mesmo assim, nada mudou.</p>
@@ -352,8 +351,8 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
         <>
           <div className="sw-card rola" key="c2">
             <div className="sw-eyebrow">A chave</div>
-            <div className="sw-mapa-titulo">O que atrai um homem é o que a sua presença comunica — e isso pode ser aprendido.</div>
-            <div className="sw-mm-intro">É o que o Mapa revela, passo a passo:</div>
+            <div className="sw-mapa-titulo">O que atrai um homem começa antes de você falar.</div>
+            <div className="sw-mm-intro">A chave é o Mapa. Veja o que ele revela, passo a passo:</div>
             <div className="sw-mm">
               <div className="sw-mm-raiz">Você</div>
               <div className="sw-mm-ramos">
@@ -376,7 +375,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
           <div className="sw-card hero" key="c4">
             <div className="sw-eyebrow">A transformação</div>
             <div className="sw-muda-h">O que muda para você</div>
-            <p className="sw-p" style={{ margin: "2px auto 10px" }}>Você irá se tornar a mulher…</p>
+            <p className="sw-p" style={{ margin: "2px auto 10px", fontSize: "clamp(17px,4.8vw,20px)", fontWeight: 600 }}>Você irá se tornar a mulher…</p>
             <img className="sw-hero-img" src="/livro/cena-transformacao.webp" alt="" width="880" height="500" />
             <div className="sw-torna" style={{ marginTop: 12 }}>…que ele admira, procura — e não quer perder.</div>
           </div>
@@ -388,7 +387,7 @@ export default function FunilSwipe({ preco = "R$ 67,90", precoDe = "", url = "",
       {step === 4 && (
         <>
           <div className="sw-card rola" key="c5">
-            <div className="sw-eyebrow">Quem já está seguindo o Mapa</div>
+            <div className="sw-eyebrow">Mulheres em Transformação</div>
             <div className="sw-muda-h" style={{ fontSize: "clamp(20px,5.3vw,26px)", maxWidth: "24ch", marginBottom: 10 }}>Elas leram — e já sentem a diferença</div>
             <div className="sw-provas sw-provas-escura" style={{ marginTop: 14 }}>
               <div className="sw-prova">

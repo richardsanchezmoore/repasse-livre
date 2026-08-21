@@ -834,14 +834,15 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-p{font:400 clamp(16px,4.4vw,18px)/1.7 var(--serif);color:#f2e8d4;text-align:center;max-width:34ch;margin:16px auto 0}
 /* imagem-herói do Card 1 (mesma cena do criativo → continuidade anúncio↔landing) */
 .sw-hero-img{display:block;width:100%;max-width:400px;height:auto;max-height:250px;object-fit:cover;border-radius:14px;margin:16px auto 20px;border:1px solid var(--gold-soft);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.sw-hero-img.slim{max-height:150px}
 .sw-q{font:italic 500 clamp(19px,5.4vw,24px)/1.4 var(--disp);color:var(--gold-2);text-align:center;text-wrap:balance;max-width:24ch;margin:20px auto 0}
 
 /* rodapé de avanço */
 .sw-foot{flex:none;padding:14px 26px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px}
 .sw-btn{width:100%;max-width:360px;min-height:56px;border:none;cursor:pointer;border-radius:14px;padding:18px 22px;
-  font:800 16px var(--ui);color:#fff;background:linear-gradient(180deg,var(--wine),var(--wine-2));
-  border:1px solid var(--gold-2);box-shadow:0 14px 30px -12px rgba(97,32,42,.7);transition:transform .12s}
-.sw-btn.ouro{background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;border-color:var(--gold-soft)}
+  font:800 16px var(--ui);color:#fff;background:linear-gradient(180deg,var(--wine),var(--wine-2));text-transform:uppercase;letter-spacing:.045em;
+  border:1px solid var(--gold-2);box-shadow:0 6px 0 #4a1420,0 10px 18px -8px rgba(97,32,42,.5);transition:transform .08s,box-shadow .08s}
+.sw-btn.ouro{background:linear-gradient(180deg,var(--gold),#a9762f);color:#2a1708;border-color:var(--gold-soft);box-shadow:0 6px 0 #7a5416,0 10px 18px -8px rgba(120,84,20,.45)}
 /* borda de gradiente girando (estilo clickmax) — puxa o olho pro CTA */
 @property --sw-ang{syntax:'<angle>';initial-value:0deg;inherits:false}
 .sw-glow{position:relative;z-index:0;isolation:isolate}
@@ -850,7 +851,8 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
   animation:swSpin 5.5s linear infinite;filter:blur(.4px)}
 @keyframes swSpin{to{--sw-ang:360deg}}
 @media (prefers-reduced-motion:reduce){.sw-glow::before{animation:none}}
-.sw-btn:active{transform:scale(.99)}
+.sw-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #4a1420}
+.sw-btn.ouro:active{transform:translateY(4px);box-shadow:0 2px 0 #7a5416}
 .sw-hint{font:600 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:rgba(230,211,163,.6)}
 /* assinatura da Lady no card 1 (rosto + nome = aquece e valida antes do CTA) */
 .sw-assina{display:flex;align-items:center;gap:11px;margin-bottom:14px}
@@ -984,9 +986,9 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .sw-prova{background:rgba(255,255,255,.5);border:1px solid var(--gold-soft);border-radius:12px;padding:13px 15px;text-align:left}
 .sw-estrelas{color:var(--gold);font-size:14px;letter-spacing:2px;margin-bottom:6px}
 .sw-prova-t{font:700 clamp(15px,4.4vw,16.5px)/1.3 var(--disp);color:var(--wine);margin:0 0 6px}
-.sw-prova-q{font:400 clamp(13.5px,4vw,14.5px)/1.55 var(--serif);color:var(--ink-soft);margin:0 0 8px}
+.sw-prova-q{font:400 clamp(15px,4.4vw,16.5px)/1.55 var(--serif);color:var(--ink-soft);margin:0 0 8px}
 .sw-prova-q b{color:var(--wine);font-weight:700}
-.sw-prova-n{font:600 12.5px var(--ui);color:var(--ink)}
+.sw-prova-n{font:600 13.5px var(--ui);color:var(--ink)}
 /* Depoimentos no card dedicado (fundo escuro, fora da oferta) — mesmo tratamento dark */
 .sw-provas-escura .sw-prova{background:rgba(255,255,255,.05);border-color:rgba(230,211,163,.28)}
 .sw-provas-escura .sw-prova-q{color:#e7d7b4}
@@ -1022,7 +1024,7 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 .pc-safe{font:500 11.5px/1.4 var(--ui);color:#b8a98c;text-align:center;margin-top:12px}
 
 /* ── MAPA (pós-chat) + materialização do entregável ─────────────────────── */
-.sw-mapa-titulo{font:800 clamp(18px,4.7vw,23px)/1.28 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
+.sw-mapa-titulo{font:800 clamp(20px,5.2vw,26px)/1.25 var(--disp);color:#fdf6e6;text-align:center;text-wrap:balance;margin:4px auto 0}
 .sw-mapa-sub{font:400 14px/1.5 var(--serif);color:#e4d3b4;text-align:center;max-width:34ch;margin:8px auto 4px}
 .sw-passos{display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto;width:100%}
 .sw-passo{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(230,211,163,.28);border-radius:14px;padding:9px 11px}
@@ -1187,4 +1189,4 @@ body.sw-fs .app{padding-bottom:0;max-width:560px;height:100dvh;overflow:hidden}
 
 /* Trilha do Mapa — rastreio de descobertas (sem número) */
 .sw-mm-intro{text-align:center;color:var(--gold-2);font:italic 400 clamp(14px,3.9vw,16px)/1.4 var(--serif);margin:16px auto 6px;max-width:32ch}
-.sw-mm-txt{font:400 15px/1.4 var(--serif);color:#f2e8d4}
+.sw-mm-txt{font:600 15.5px/1.4 var(--serif);color:#f2e8d4}
