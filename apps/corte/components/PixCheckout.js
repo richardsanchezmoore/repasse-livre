@@ -14,6 +14,19 @@ function mascCpf(v) {
   v = v.replace(/\D/g, "").slice(0, 11);
   return v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 }
+// Valida CPF de verdade (dígitos verificadores) — barra 555.../123... e lixo.
+function cpfValido(v) {
+  const cpf = String(v).replace(/\D/g, "");
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += parseInt(cpf[i], 10) * (10 - i);
+  let d1 = (s * 10) % 11; if (d1 === 10) d1 = 0;
+  if (d1 !== parseInt(cpf[9], 10)) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += parseInt(cpf[i], 10) * (11 - i);
+  let d2 = (s * 10) % 11; if (d2 === 10) d2 = 0;
+  return d2 === parseInt(cpf[10], 10);
+}
 function mascTel(v) {
   v = v.replace(/\D/g, "").slice(0, 11);
   if (v.length <= 10) return v.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
@@ -144,6 +157,7 @@ export default function PixCheckout({ valor = "", parcelas, metadata, onClose })
     if (!form.email.includes("@") || form.email.length < 5) return "Digite um e-mail válido.";
     if (tel.length < 10) return "Digite o seu WhatsApp com DDD.";
     if (cpf.length !== 11) return "Digite o seu CPF completo.";
+    if (!cpfValido(cpf)) return "CPF inválido — confira os números.";
     return "";
   }
 

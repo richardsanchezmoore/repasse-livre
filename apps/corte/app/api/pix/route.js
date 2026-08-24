@@ -12,6 +12,16 @@ function soDigitos(v) {
   return String(v || "").replace(/\D/g, "");
 }
 
+// Valida CPF de verdade (dígitos verificadores) — barra 555.../lixo mesmo batendo direto na API.
+function cpfValido(v) {
+  const cpf = soDigitos(v);
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  let s = 0; for (let i = 0; i < 9; i++) s += parseInt(cpf[i], 10) * (10 - i);
+  let d1 = (s * 10) % 11; if (d1 === 10) d1 = 0; if (d1 !== parseInt(cpf[9], 10)) return false;
+  s = 0; for (let i = 0; i < 10; i++) s += parseInt(cpf[i], 10) * (11 - i);
+  let d2 = (s * 10) % 11; if (d2 === 10) d2 = 0; return d2 === parseInt(cpf[10], 10);
+}
+
 export async function POST(req) {
   const b = await req.json().catch(() => ({}));
 
@@ -21,8 +31,8 @@ export async function POST(req) {
   let tel = soDigitos(b.whatsapp);
   if (tel && !tel.startsWith("55")) tel = "55" + tel;
 
-  if (nome.length < 2 || !email.includes("@") || cpf.length !== 11 || tel.length < 12) {
-    return Response.json({ ok: false, erro: "Preencha nome, e-mail, CPF e WhatsApp." }, { status: 400 });
+  if (nome.length < 2 || !email.includes("@") || !cpfValido(cpf) || tel.length < 12) {
+    return Response.json({ ok: false, erro: "Preencha nome, e-mail, CPF válido e WhatsApp." }, { status: 400 });
   }
 
   const r = await criarPix({
