@@ -1,0 +1,492 @@
+import "dotenv/config";
+import {
+  buscarDetalhesDaPaginaAnuncio,
+  capturarAnunciosOlx,
+  montarUrlPagina,
+  resolverChaveFiltroFipe,
+} from "./olxService.js";
+import { calcularMargemPercentual, classificar, definirTetoSuspeita, ehElegivel, MARGEM_MINIMA_PADRAO } from "./margin.js";
+import { resolverReferenciaFipePorValorHibrido } from "./fipeService.js";
+import { garantirHistoricoFipe, registrarPontoHistoricoFipe, resolverCodigoPorHistoricoLocal } from "./historicoFipe.js";
+import { buscarCodigoAprendido, gravarCodigoAprendido } from "./mapaAprendidoFipe.js";
+import { gerarSnapshotDiario } from "./snapshotDiario.js";
+import {
+  apagarOportunidadeDuplicada,
+  avancarCheckpoint,
+  buscarDuplicataPorTituloEKm,
+  finalizarRegistroVarreduraComErro,
+  finalizarRegistroVarreduraComSucesso,
+  finalizarRunsPresosComoErro,
+  garantirCoordenadasCidade,
+  iniciarRegistroVarredura,
+  lerConfig,
+  linkOrigemJaExiste,
+  obterCheckpoint,
+  salvarOportunidade,
+} from "./supabaseClient.js";
+import type { AnuncioOlx, Oportunidade } from "./types.js";
+
+type ModoVarredura = "inicial" | "incremental" | "intervalo";
+
+interface Config {
+  categoriasUrlBase: string[];
+  margemMinima: number;
+  modo: ModoVarredura;
+  janelaInicialDias: number;
+  maxPaginas: number;
+  janelaIntervaloInicio: Date | null;
+  janelaIntervaloFim: Date | null;
+}
+
+let config: Config | undefined;
+
+/**
+ * Config do worker é editável pelo painel admin (tabela worker_config no
+ * Supabase) — lida no início de cada execução, com fallback pro env var/
+ * default de hoje quando a chave ainda não foi configurada pelo painel.
+ * O processo é short-lived (uma execução por invocação do cron), então não
+ * há necessidade de releitura durante a varredura.
+ */
+async function carregarConfig(): Promise<Config> {
+  const olxCategoryUrl =
+    (await lerConfig("OLX_CATEGORY_URL")) ??
+    process.env.OLX_CATEGORY_URL ??
+    "https://www.olx.com.br/autos-e-pecas/carros-vans-e-utilitarios/estado-rs";
+
+  const modoBruto = (await lerConfig("MODO_VARREDURA")) ?? process.env.MODO_VARREDURA;
+  const modo: ModoVarredura = modoBruto === "inicial" ? "inicial" : modoBruto === "intervalo" ? "intervalo" : "incremental";
+
+  const janelaIntervaloInicioBruta = (await lerConfig("JANELA_INICIO")) ?? process.env.JANELA_INICIO;
+  const janelaIntervaloFimBruta = (await lerConfig("JANELA_FIM")) ?? process.env.JANELA_FIM;
+
+  return {
+    categoriasUrlBase: olxCategoryUrl
+      .split(",")
+      .map((url) => url.trim())
+      .filter(Boolean),
+    margemMinima: Number((await lerConfig("MARGEM_MINIMA_PERCENTUAL")) ?? process.env.MARGEM_MINIMA_PERCENTUAL ?? MARGEM_MINIMA_PADRAO),
+    modo,
+    janelaInicialDias: Number((await lerConfig("JANELA_INICIAL_DIAS")) ?? process.env.JANELA_INICIAL_DIAS ?? 30),
+    maxPaginas: Number((await lerConfig("MAX_PAGINAS")) ?? process.env.MAX_PAGINAS ?? 50),
+    janelaIntervaloInicio: janelaIntervaloInicioBruta ? new Date(janelaIntervaloInicioBruta) : null,
+    janelaIntervaloFim: janelaIntervaloFimBruta ? new Date(janelaIntervaloFimBruta) : null,
+  };
+}
+
+function obterConfig(): Config {
+  if (!config) {
+    throw new Error("Config ainda não carregada — carregarConfig() precisa rodar antes.");
+  }
+  return config;
+}
+
+interface ResultadoVarredura {
+  novos: number;
+  elegiveis: number;
+  descartados: number;
+  semFipe: number;
+  falhasDetalheSeguidas: number; // disjuntor de bloqueio (transiente, não vai pro banco)
+  observacao?: string; // radar de cobertura (em dia / GAP) — vai pra observacao do run
+}
+
+// Quando a OLX bloqueia o worker, ela ainda serve a LISTAGEM mas trava as páginas
+// de DETALHE de cada anúncio → cada fetch bate o timeout (165s) e o run moía horas
+// até a faxina matar ("run preso"). N falhas de detalhe SEGUIDAS = fonte bloqueada →
+// aborta o run com erro honesto (o próximo cron tenta de novo, o IP pode ter girado).
+const LIMIAR_BLOQUEIO_DETALHE = 10;
+
+/**
+ * O FIPE usado aqui vem direto da página individual do anúncio (a OLX já
+ * calcula isso para cada veículo) — não da API externa de FIPE. Por isso
+ * todo anúncio novo precisa de uma requisição extra para sua própria
+ * página, não só os que pareceriam elegíveis por uma estimativa textual.
+ */
+async function processarAnuncio(
+  anuncio: AnuncioOlx,
+  resultado: ResultadoVarredura,
+  margemMinima: number
+): Promise<void> {
+  if (await linkOrigemJaExiste(anuncio.linkOrigem)) {
+    return; // já capturado antes (ex.: anúncio "renovado" pela OLX, reaparecendo no topo da listagem)
+  }
+  resultado.novos++;
+
+  let detalhes;
+  try {
+    detalhes = await buscarDetalhesDaPaginaAnuncio(anuncio.linkOrigem);
+    resultado.falhasDetalheSeguidas = 0; // fetch OK → zera o disjuntor
+  } catch (erro) {
+    console.warn(`[motor-descoberta] Falha ao buscar FIPE na página de "${anuncio.titulo}":`, erro);
+    resultado.semFipe++;
+    resultado.falhasDetalheSeguidas++;
+    if (resultado.falhasDetalheSeguidas >= LIMIAR_BLOQUEIO_DETALHE) {
+      throw new Error(
+        `OLX bloqueado — ${resultado.falhasDetalheSeguidas} detalhes de anúncio seguidos falharam no fetch. ` +
+          `Abortando o run (evita moer horas até a faxina). Próximo cron tenta de novo.`
+      );
+    }
+    return;
+  }
+
+  const { fipe, fotos, atributos, descricao, professionalAd } = detalhes;
+  if (!fipe) {
+    resultado.semFipe++;
+    return;
+  }
+
+  // Preço 0 (ou negativo) é anúncio "sob consulta"/sem preço informado na
+  // OLX, não uma oportunidade real — calcularMargemPercentual trataria isso
+  // como 100% de margem (preço 0 vs. qualquer FIPE), inflando o anúncio pra
+  // "top_oportunidade" indevidamente.
+  if (anuncio.preco <= 0) {
+    resultado.descartados++;
+    return;
+  }
+
+  // Só substitui a foto principal e usa fotos secundárias quando a página
+  // do anúncio realmente trouxe uma galeria (mais de 1 foto). Caso
+  // contrário, mantém a foto de capa da listagem e nenhuma secundária —
+  // não há link de mais fotos para mostrar, então não preenchemos o
+  // slider com nada que possa quebrá-lo.
+  const fotoPrincipal = fotos[0] ?? anuncio.fotoPrincipal;
+  const fotosSecundarias = fotos.length > 1 ? fotos.slice(1) : [];
+
+  const margemPercentual = calcularMargemPercentual(anuncio.preco, fipe.fipeValor);
+
+  if (!ehElegivel(margemPercentual, margemMinima)) {
+    resultado.descartados++;
+    return;
+  }
+
+  const classificacao = classificar(margemPercentual, margemMinima);
+  if (!classificacao) {
+    resultado.descartados++;
+    return;
+  }
+
+  // O codigo_fipe canônico (chave do gráfico de histórico) vem por ÂNCORA DE
+  // VALOR: o FIPE que a OLX mostra é EXATO (ela puxa da fonte oficial na
+  // inserção do anúncio), então achamos o código cujo valor oficial ENCAIXA no
+  // valor da página — no mês vigente OU no anterior (a OLX congela o FIPE na
+  // inserção, então um anúncio de junho ainda ativo mostra o FIPE de junho).
+  // Primeiro a base APRENDIDA (HIT direto, sem tocar na FIPE); no miss,
+  // resolvemos por valor e aprendemos. A MARGEM segue vindo do valor da página
+  // (fipe.fipeValor) — aqui só resolvemos o código. Se não encaixa, fica sem
+  // código (sem gráfico) e re-tenta no próximo run — nunca chuta um código
+  // errado. Ver project_repasse_livre_fipe_ancora_valor_olx.
+  const palavrasTitulo = anuncio.titulo.trim().split(/\s+/);
+  const chaveAprendido = anuncio.modelo ?? anuncio.titulo;
+  let codigoFipeResolvido: string | null = null;
+  let anoModeloResolvido: number | null = null;
+  try {
+    const aprendido = await buscarCodigoAprendido(chaveAprendido, anuncio.ano ?? "");
+    const local = aprendido ?? (await resolverCodigoPorHistoricoLocal(anuncio.ano ?? "", fipe.fipeValor));
+    if (local) {
+      // HIT direto (base aprendida) ou âncora de valor LOCAL contra o
+      // fipe_historico — ambos resolvem sem tocar na FIPE oficial (fogem do
+      // 403/proxy do Railway). O código já está no histórico, então não há o
+      // que registrar; a margem segue vindo do valor da página.
+      codigoFipeResolvido = local.codigoFipe;
+      anoModeloResolvido = local.anoModelo;
+    } else {
+      const ref = await resolverReferenciaFipePorValorHibrido(
+        palavrasTitulo[0] ?? "",
+        palavrasTitulo[1] ?? "",
+        anuncio.ano ?? "",
+        anuncio.modelo,
+        fipe.fipeValor
+      );
+      if (ref) {
+        codigoFipeResolvido = ref.codigoFipe;
+        anoModeloResolvido = ref.anoModelo;
+        await gravarCodigoAprendido(chaveAprendido, anuncio.ano ?? "", ref);
+        await registrarPontoHistoricoFipe(ref);
+      }
+    }
+  } catch {
+    // transiente (ex.: 429) — segue sem código, re-tenta no próximo run
+  }
+
+  const oportunidade: Oportunidade = {
+    fonte: "OLX",
+    link_origem: anuncio.linkOrigem,
+    veiculo: anuncio.titulo,
+    versao: anuncio.modelo,
+    ano: anuncio.ano,
+    cambio: anuncio.cambio,
+    km: anuncio.km,
+    cidade: anuncio.cidade,
+    estado: anuncio.estado,
+    preco: anuncio.preco,
+    fipe_valor: fipe.fipeValor,
+    fipe_data_referencia: fipe.mesReferencia,
+    // Código FIPE canônico via âncora de valor (o valor da margem segue vindo
+    // da página OLX acima). Null se não encaixou — sem gráfico, re-tenta depois.
+    fipe_codigo: codigoFipeResolvido,
+    margem_percentual: Number(margemPercentual.toFixed(2)),
+    classificacao,
+    foto_principal: fotoPrincipal,
+    fotos_secundarias: fotosSecundarias,
+    // A listagem (__NEXT_DATA__) não traz mais `description` por anúncio —
+    // só a página individual tem o texto completo (ver olxService.ts).
+    descricao: descricao ?? anuncio.descricao,
+    origem_tipo: "descoberta",
+    status: "descoberta",
+    data_publicacao_origem:
+      anuncio.dataPublicacao !== null ? new Date(anuncio.dataPublicacao * 1000).toISOString() : null,
+    atributos_olx: atributos,
+    // Página individual é a fonte mais confiável (ver extrairTipoAnuncianteDoHtml);
+    // cai pro valor já presente na listagem só se a página não trouxer nada.
+    anunciante_profissional: professionalAd ?? anuncio.professionalAd,
+  };
+
+  // Grandes frotistas (Localiza/Movida/Unidas etc.) deixam cada loja da rede
+  // republicar o mesmo carro (mesmo título e KM). Sem KM não dá pra comparar
+  // com segurança, então só dedupe quando o anúncio trouxe KM.
+  if (anuncio.km !== null) {
+    const duplicata = await buscarDuplicataPorTituloEKm(anuncio.titulo, anuncio.km);
+    if (duplicata) {
+      if (anuncio.preco >= duplicata.preco) {
+        console.log(
+          `[motor-descoberta] Duplicado de rede ("${anuncio.titulo}", ${anuncio.km}km) com preço >= já salvo (R$ ${duplicata.preco}) — descartado.`
+        );
+        resultado.descartados++;
+        return;
+      }
+      console.log(
+        `[motor-descoberta] Duplicado de rede mais barato ("${anuncio.titulo}", ${anuncio.km}km) — substituindo oferta anterior (id ${duplicata.id}, R$ ${duplicata.preco} → R$ ${anuncio.preco}).`
+      );
+      await apagarOportunidadeDuplicada(duplicata);
+    }
+  }
+
+  await salvarOportunidade(oportunidade);
+  resultado.elegiveis++;
+
+  // Popula o histórico do modelo (pro gráfico) quando o código foi resolvido —
+  // mesmo padrão do ML/Webmotors e do garantirCoordenadasCidade.
+  if (codigoFipeResolvido && anoModeloResolvido) {
+    await garantirHistoricoFipe(codigoFipeResolvido, anoModeloResolvido);
+  }
+
+  if (anuncio.cidade && anuncio.estado) {
+    await garantirCoordenadasCidade(anuncio.cidade, anuncio.estado);
+  }
+}
+
+/**
+ * Varredura paginada da OLX, ordenada por data (mais recentes primeiro).
+ *
+ * - Modo "inicial": pagina até encontrar um anúncio mais antigo que
+ *   JANELA_INICIAL_DIAS, populando a "prateleira" antes do primeiro envio.
+ * - Modo "incremental" (execução recorrente, a cada 6h): pagina até a data
+ *   de publicação cair no ou antes do checkpoint da varredura anterior
+ *   (não mais "até achar um anúncio já salvo" — a OLX reposiciona no topo
+ *   anúncios antigos "renovados" pelo anunciante, com data aparente recente;
+ *   parar nesse ponto faria a varredura ignorar anúncios genuinamente novos
+ *   posicionados abaixo dele). Anúncios já conhecidos pelo caminho são só
+ *   pulados (o upsert por link_origem em salvarOportunidade já evita
+ *   duplicar), não interrompem mais a varredura.
+ */
+async function executarVarredura(categoriaUrlBase: string): Promise<ResultadoVarredura> {
+  const {
+    modo: MODO,
+    margemMinima: MARGEM_MINIMA,
+    janelaInicialDias: JANELA_INICIAL_DIAS,
+    maxPaginas: MAX_PAGINAS,
+    janelaIntervaloInicio: JANELA_INICIO,
+    janelaIntervaloFim: JANELA_FIM,
+  } = obterConfig();
+  const resultado: ResultadoVarredura = { novos: 0, elegiveis: 0, descartados: 0, semFipe: 0, falhasDetalheSeguidas: 0 };
+  const cutoffEpoch = Math.floor(Date.now() / 1000) - JANELA_INICIAL_DIAS * 24 * 60 * 60;
+  const checkpointAnteriorEpoch = MODO === "incremental" ? await obterCheckpoint(categoriaUrlBase) : null;
+  let maiorDataVistaEpoch: number | null = null;
+  // Contador de páginas consecutivas onde todos os anúncios já existem no banco.
+  // A listagem da OLX segue a ordem de PUBLICAÇÃO (o filtro "abaixo da FIPE" só
+  // esconde os acima da tabela, NÃO reordena). Ainda assim, em vez de cortar na 1ª
+  // data <= checkpoint (frágil com anúncio sem data ou pequena reordenação),
+  // esperamos 3 páginas "secas" (sem nenhum novo) — robusto e, com a recência, já
+  // para cedo (os novos ficam nas primeiras páginas).
+  let paginasSemsNovos = 0;
+  const MAX_PAGINAS_SECAS = 3;
+  // Radar de cobertura (só incremental): alcançamos o já-visto (em dia) ou batemos
+  // no teto de páginas com novos ainda por cobrir (GAP)? Vira a observacao do run.
+  let alcancouCheckpoint = false;
+  let motivoCobertura: string | null = null;
+  let paginasOk = 0; // páginas que carregaram — distingue "nada carregou" de "parcial"
+
+  if (MODO === "intervalo" && (!JANELA_INICIO || !JANELA_FIM)) {
+    throw new Error(
+      "Modo 'intervalo' exige JANELA_INICIO e JANELA_FIM (datas ISO, ex.: 2026-06-18T00:00:00-03:00)."
+    );
+  }
+  const intervaloInicioEpoch = JANELA_INICIO ? Math.floor(JANELA_INICIO.getTime() / 1000) : null;
+  const intervaloFimEpoch = JANELA_FIM ? Math.floor(JANELA_FIM.getTime() / 1000) : null;
+
+  const chaveFiltroFipe = await resolverChaveFiltroFipe(categoriaUrlBase);
+  const urlComFiltro = new URL(categoriaUrlBase);
+  urlComFiltro.searchParams.set(chaveFiltroFipe, "2");
+
+  console.log(
+    `[motor-descoberta] Modo: ${MODO} | Categoria: ${urlComFiltro.toString()} (filtro "abaixo da FIPE" via chave "${chaveFiltroFipe}")`
+  );
+
+  paginas: for (let pagina = 1; pagina <= MAX_PAGINAS; pagina++) {
+    const url = montarUrlPagina(urlComFiltro.toString(), pagina);
+    // Uma página com 504/parse-fail NÃO pode derrubar o run inteiro (perdíamos
+    // ~1h de trabalho). Retry 1× — a rotação de proxy manda no OUTRO IP, que
+    // costuma responder. Se falhar 2× E nada carregou ainda → erro real (OLX/proxy
+    // fora); se já processamos páginas → encerra PARCIAL (salva o que tem; o
+    // checkpoint avança e o próximo run continua de onde parou).
+    let anuncios: AnuncioOlx[];
+    try {
+      anuncios = await capturarAnunciosOlx(url);
+    } catch (erro) {
+      console.warn(`[motor-descoberta] Página ${pagina} falhou (${erro instanceof Error ? erro.message : erro}) — tentando outro IP…`);
+      await new Promise((r) => setTimeout(r, 3000));
+      try {
+        anuncios = await capturarAnunciosOlx(url);
+      } catch {
+        if (paginasOk === 0) throw erro; // nada carregou → falha real
+        console.warn(`[motor-descoberta] Página ${pagina} falhou 2× — encerrando PARCIAL (${resultado.novos} novos já processados).`);
+        if (MODO === "incremental") motivoCobertura = `parcial — página ${pagina} falhou (504); ${resultado.novos} novos salvos antes`;
+        break;
+      }
+    }
+    paginasOk++;
+
+    if (anuncios.length === 0) {
+      console.log(`[motor-descoberta] Página ${pagina} vazia, fim da listagem.`);
+      motivoCobertura = "fim da listagem (cobriu tudo)";
+      break;
+    }
+
+    // Log de diagnóstico: data do primeiro e último anúncio da página
+    const primData = anuncios[0]?.dataPublicacao;
+    const ultData = anuncios[anuncios.length - 1]?.dataPublicacao;
+    console.log(
+      `[motor-descoberta] Página ${pagina}: ${anuncios.length} anúncios.` +
+      ` Datas: ${primData ? new Date(primData * 1000).toISOString() : "null"} → ${ultData ? new Date(ultData * 1000).toISOString() : "null"}` +
+      (checkpointAnteriorEpoch ? ` | checkpoint: ${new Date(checkpointAnteriorEpoch * 1000).toISOString()}` : "")
+    );
+
+    const novosAntesDestaPagina = resultado.novos;
+
+    for (const anuncio of anuncios) {
+      if (anuncio.dataPublicacao !== null && (maiorDataVistaEpoch === null || anuncio.dataPublicacao > maiorDataVistaEpoch)) {
+        maiorDataVistaEpoch = anuncio.dataPublicacao;
+      }
+      // Passamos do checkpoint → chegamos na zona já coberta (radar "em dia").
+      if (
+        MODO === "incremental" &&
+        checkpointAnteriorEpoch !== null &&
+        anuncio.dataPublicacao !== null &&
+        anuncio.dataPublicacao <= checkpointAnteriorEpoch
+      ) {
+        alcancouCheckpoint = true;
+      }
+
+      if (MODO === "inicial" && anuncio.dataPublicacao !== null && anuncio.dataPublicacao < cutoffEpoch) {
+        console.log(
+          `[motor-descoberta] Anúncio fora da janela de ${JANELA_INICIAL_DIAS} dias, parando varredura inicial.`
+        );
+        break paginas;
+      }
+
+      if (MODO === "intervalo") {
+        if (anuncio.dataPublicacao === null) {
+          continue; // sem data, não dá pra saber se está na janela — pula sem parar a varredura
+        }
+        if (anuncio.dataPublicacao > intervaloFimEpoch!) {
+          continue; // ainda mais novo que o fim da janela, segue procurando os mais antigos
+        }
+        if (anuncio.dataPublicacao < intervaloInicioEpoch!) {
+          console.log(`[motor-descoberta] Anúncio anterior ao início da janela, parando varredura de intervalo.`);
+          break paginas;
+        }
+      }
+
+      await processarAnuncio(anuncio, resultado, MARGEM_MINIMA);
+    }
+
+    // Parada incremental: 3 páginas consecutivas sem NENHUM novo = já cobrimos
+    // até onde a última varredura chegou (a lista segue publicação, então os
+    // novos ficam no começo; as secas vêm logo em seguida).
+    if (MODO === "incremental" && resultado.novos === novosAntesDestaPagina) {
+      paginasSemsNovos++;
+      console.log(`[motor-descoberta] Página ${pagina} sem novos (${paginasSemsNovos}/${MAX_PAGINAS_SECAS} páginas secas).`);
+      if (paginasSemsNovos >= MAX_PAGINAS_SECAS) {
+        console.log(`[motor-descoberta] ${MAX_PAGINAS_SECAS} páginas consecutivas sem novos, parando varredura incremental.`);
+        motivoCobertura = "em dia (alcançou o já-visto)";
+        break paginas;
+      }
+    } else {
+      paginasSemsNovos = 0;
+    }
+  }
+
+  // Radar de cobertura (só incremental): se não paramos por parada-seca nem fim da
+  // listagem, batemos no teto de páginas — se nem chegamos no checkpoint, há novos
+  // não cobertos (GAP), sinal pra rodar mais vezes / o proxy estar lento.
+  if (MODO === "incremental") {
+    if (!motivoCobertura) {
+      motivoCobertura = alcancouCheckpoint
+        ? "em dia (alcançou o já-visto)"
+        : `GAP — limite de ${MAX_PAGINAS} páginas atingido, novos ainda por cobrir`;
+    }
+    resultado.observacao = motivoCobertura;
+  }
+
+  // Atualiza o checkpoint em "inicial" e "incremental" — qualquer varredura
+  // recorrente (não "intervalo", que deliberadamente revisita uma janela
+  // passada) precisa deixar marcado até onde chegou, senão a próxima
+  // execução incremental não tem de onde partir e teria que reprocessar
+  // tudo (ou, sem checkpoint nenhum, paginar sem critério de parada).
+  if (MODO !== "intervalo" && maiorDataVistaEpoch !== null) {
+    await avancarCheckpoint(categoriaUrlBase, maiorDataVistaEpoch);
+  }
+
+  console.log(
+    `[motor-descoberta] Resultado (${categoriaUrlBase}): ${resultado.novos} novos | ${resultado.elegiveis} elegíveis salvos | ${resultado.descartados} descartados (margem < ${MARGEM_MINIMA}%) | ${resultado.semFipe} sem FIPE na página do anúncio.`
+  );
+
+  return resultado;
+}
+
+async function executarVarreduraComRegistro(categoriaUrlBase: string, modo: string): Promise<void> {
+  const registroId = await iniciarRegistroVarredura(categoriaUrlBase, modo);
+  try {
+    const resultado = await executarVarredura(categoriaUrlBase);
+    await finalizarRegistroVarreduraComSucesso(registroId, resultado, resultado.observacao ?? null);
+  } catch (erro) {
+    const mensagem = erro instanceof Error ? erro.message : String(erro);
+    await finalizarRegistroVarreduraComErro(registroId, mensagem);
+    throw erro;
+  }
+}
+
+async function executarTodasCategorias(): Promise<void> {
+  await finalizarRunsPresosComoErro(); // limpa zumbis de execuções mortas antes de abrir novos
+  config = await carregarConfig();
+  // Teto de margem suspeita (regra geral, todas as fontes): margem acima disso =
+  // falso alarme (FIPE errada / preço-parcela de financiado) → descarta.
+  definirTetoSuspeita(Number((await lerConfig("MARGEM_MAX_SUSPEITA")) ?? process.env.MARGEM_MAX_SUSPEITA ?? 50));
+  for (const categoriaUrlBase of config.categoriasUrlBase) {
+    await executarVarreduraComRegistro(categoriaUrlBase, config.modo);
+  }
+
+  // Roda a cada cron, mas só faz o trabalho de fato na primeira execução do
+  // dia (gerarSnapshotDiario já se protege checando se hoje já tem
+  // snapshot) — não precisa de um segundo serviço/cron só pra isso. Falha
+  // aqui não pode derrubar a varredura, que é o que importa de verdade.
+  try {
+    await gerarSnapshotDiario();
+  } catch (erro) {
+    console.warn("[motor-descoberta] Falha ao gerar snapshot diário:", erro);
+  }
+}
+
+executarTodasCategorias().catch((erro) => {
+  console.error("[motor-descoberta] Falha na execução:", erro);
+  process.exitCode = 1;
+});
