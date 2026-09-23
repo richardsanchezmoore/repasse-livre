@@ -35,6 +35,44 @@ interface Regiao {
 const RAIOS = ["1", "2", "5", "10", "20", "25", "40", "60", "80", "100", "250", "500"];
 const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
+/**
+ * Departamentos do Paraguai, com prefixo "PY-" DE PROPÓSITO.
+ *
+ * ⚠️ Sem o prefixo haveria colisão feia com as UFs brasileiras: AP é Amapá e
+ * também Alto Paraná; AM é Amazonas e também Amambay; CE é Ceará e também
+ * Central; SP é São Paulo e também San Pedro. Como o campo `uf` é um só e
+ * entra no slug da região, duas praças de países diferentes viveriam com a
+ * mesma identidade — e a captação de uma sobrescreveria a outra.
+ *
+ * O prefixo também é o que deixa o país ser DEDUZIDO do dado que já existe,
+ * sem migração de formato: nenhuma região brasileira antiga precisa mudar.
+ */
+const DEPARTAMENTOS_PY: { cod: string; nome: string }[] = [
+  { cod: "PY-ASU", nome: "Asunción" },
+  { cod: "PY-CEN", nome: "Central" },
+  { cod: "PY-APA", nome: "Alto Paraná (CDE)" },
+  { cod: "PY-ITA", nome: "Itapúa (Encarnación)" },
+  { cod: "PY-AMA", nome: "Amambay (Pedro Juan)" },
+  { cod: "PY-CAG", nome: "Caaguazú" },
+  { cod: "PY-CAN", nome: "Canindeyú" },
+  { cod: "PY-CON", nome: "Concepción" },
+  { cod: "PY-COR", nome: "Cordillera" },
+  { cod: "PY-GUA", nome: "Guairá" },
+  { cod: "PY-MIS", nome: "Misiones" },
+  { cod: "PY-NEE", nome: "Ñeembucú" },
+  { cod: "PY-PAR", nome: "Paraguarí" },
+  { cod: "PY-PHA", nome: "Pdte. Hayes" },
+  { cod: "PY-SPE", nome: "San Pedro" },
+  { cod: "PY-CAZ", nome: "Caazapá" },
+  { cod: "PY-BOQ", nome: "Boquerón" },
+  { cod: "PY-APY", nome: "Alto Paraguay" },
+];
+
+const ehPY = (uf: string) => uf.startsWith("PY-");
+const paisDaUf = (uf: string) => (ehPY(uf) ? "PY" : "BR");
+const rotuloUf = (uf: string) =>
+  ehPY(uf) ? (DEPARTAMENTOS_PY.find((d) => d.cod === uf)?.nome ?? uf.slice(3)) : uf || "? sem UF";
+
 /** MESMA lógica do worker (facebookMain.slug). */
 function slugify(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -100,10 +138,28 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
   // Abas por ESTADO (evita a tripa longa). Aba "" = regiões ainda sem UF (mostradas como "?").
   const ufsPresentes = useMemo(() => [...new Set(regioes.map((r) => r.uf || ""))], [regioes]);
   const [ufAtiva, setUfAtiva] = useState<string>(() => regioes.find((r) => r.uf)?.uf ?? "RS");
+
+  // ★ Camada de PAÍS acima das abas de estado (pedido do Gustavo, 23/09): com
+  // a virada para o Paraguai, misturar praça brasileira e paraguaia na mesma
+  // tripa de abas esconde o que importa. Brasil fica visível até ele decidir
+  // remover — desligar antes de apagar, como no resto do projeto.
+  const [pais, setPais] = useState<"BR" | "PY">(() => (regioes.some((r) => ehPY(r.uf)) ? "PY" : "BR"));
+  const contaPais = (p: "BR" | "PY") => regioes.filter((r) => paisDaUf(r.uf) === p).length;
+
   const abas = useMemo(
-    () => [...new Set([...ufsPresentes, ufAtiva])].sort((a, b) => (a === "" ? -1 : b === "" ? 1 : a.localeCompare(b))),
-    [ufsPresentes, ufAtiva]
+    () =>
+      [...new Set([...ufsPresentes, ufAtiva])]
+        .filter((uf) => paisDaUf(uf) === pais)
+        .sort((a, b) => (a === "" ? -1 : b === "" ? 1 : a.localeCompare(b))),
+    [ufsPresentes, ufAtiva, pais]
   );
+
+  // Trocar de país leva junto a aba: sem isto a lista fica vazia e parece bug.
+  function trocarPais(p: "BR" | "PY") {
+    setPais(p);
+    const primeira = regioes.find((r) => paisDaUf(r.uf) === p)?.uf;
+    setUfAtiva(primeira ?? (p === "PY" ? "PY-ASU" : "RS"));
+  }
 
   function salvarTudo() {
     const limpas = regioes.filter((r) => r.nome.trim() && r.url.trim());
@@ -223,9 +279,37 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
           onClick={() => { setRegioes((r) => [...r, { nome: "", url: "", raio: "250", uf: ufAtiva, precoMax: "", paginar: false }]); marcarSujo(); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#059669", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 8, cursor: "pointer" }}
         >
-          <Plus size={14} /> Adicionar {ufAtiva ? `em ${ufAtiva}` : "região"}
+          <Plus size={14} /> Adicionar {ufAtiva ? `em ${rotuloUf(ufAtiva)}` : "região"}
         </button>
       </div>
+
+      {/* ★ País primeiro: o Paraguai é o foco novo, o Brasil segue visível
+          enquanto não for desligado de vez. */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        {(["BR", "PY"] as const).map((p) => {
+          const ativo = pais === p;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => trocarPais(p)}
+              style={{ padding: "7px 16px", fontSize: 13.5, fontWeight: 700, borderRadius: 10, cursor: "pointer", border: `1px solid ${ativo ? "#059669" : "#e5e7eb"}`, background: ativo ? "#ecfdf5" : "#fff", color: ativo ? "#059669" : "#6b7280" }}
+            >
+              {p === "BR" ? "🇧🇷 Brasil" : "🇵🇾 Paraguai"}
+              <span style={{ fontWeight: 500, opacity: 0.7 }}> ({contaPais(p)})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {pais === "PY" && (
+        <p style={{ margin: "0 0 10px", padding: "8px 12px", fontSize: 12.5, lineHeight: 1.5, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8 }}>
+          ⚠️ <strong>Os filtros de preço abaixo estão em REAIS.</strong> Anúncio
+          paraguaio sai em guarani ou dólar — com o mínimo em 15.000 e o máximo em
+          400.000, o filtro descarta o mercado inteiro <strong>em silêncio</strong>
+          (o log não acusa, só não aparece anúncio). Ajuste antes de ligar.
+        </p>
+      )}
 
       {/* Abas por estado + adicionar novo estado */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12, borderBottom: "1px solid #e5e7eb", paddingBottom: 8 }}>
@@ -240,7 +324,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
               title={uf === "" ? "Regiões ainda sem estado definido" : undefined}
               style={{ padding: "5px 12px", fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: "pointer", border: `1px solid ${ativa ? "#059669" : uf === "" ? "#fca5a5" : "#e5e7eb"}`, background: ativa ? "#ecfdf5" : "#fff", color: ativa ? "#059669" : uf === "" ? "#dc2626" : "#6b7280" }}
             >
-              {uf || "? sem UF"}{n > 0 && <span style={{ fontWeight: 500, opacity: 0.7 }}> ({n})</span>}
+              {rotuloUf(uf)}{n > 0 && <span style={{ fontWeight: 500, opacity: 0.7 }}> ({n})</span>}
             </button>
           );
         })}
@@ -250,10 +334,14 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
           onChange={(e) => { if (e.target.value) setUfAtiva(e.target.value); }}
           style={{ padding: "5px 8px", fontSize: 12.5, border: "1px dashed #cbd5e1", borderRadius: 8, color: "#6b7280", cursor: "pointer", background: "#fff" }}
         >
-          <option value="">+ estado</option>
-          {UFS.filter((u) => !abas.includes(u)).map((u) => (
-            <option key={u} value={u}>{u}</option>
-          ))}
+          <option value="">{pais === "PY" ? "+ departamento" : "+ estado"}</option>
+          {pais === "PY"
+            ? DEPARTAMENTOS_PY.filter((d) => !abas.includes(d.cod)).map((d) => (
+                <option key={d.cod} value={d.cod}>{d.nome}</option>
+              ))
+            : UFS.filter((u) => !abas.includes(u)).map((u) => (
+                <option key={u} value={u}>{u}</option>
+              ))}
         </select>
       </div>
 
@@ -263,7 +351,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
       </p>
 
       {regioes.filter((r) => r.uf === ufAtiva).length === 0 && (
-        <p style={{ margin: "4px 0 12px", fontSize: 13, color: "#9ca3af" }}>Nenhuma região em {ufAtiva || "“sem UF”"}. Use “Adicionar” e cole a URL-base do Marketplace.</p>
+        <p style={{ margin: "4px 0 12px", fontSize: 13, color: "#9ca3af" }}>Nenhuma região em {rotuloUf(ufAtiva)}. Use “Adicionar” e cole a URL-base do Marketplace.</p>
       )}
 
       {regioes.map((r, i) =>
@@ -283,12 +371,14 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
                 onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], url: e.target.value }; setRegioes(n); marcarSujo(); }}
               />
               <select
-                style={{ ...inputEstilo, flex: "0 0 62px" }}
+                style={{ ...inputEstilo, flex: pais === "PY" ? "0 0 150px" : "0 0 62px" }}
                 value={r.uf}
                 aria-label="Estado (UF)"
                 onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], uf: e.target.value }; setRegioes(n); marcarSujo(); }}
               >
-                {UFS.map((u) => <option key={u} value={u}>{u}</option>)}
+                {pais === "PY"
+                  ? DEPARTAMENTOS_PY.map((d) => <option key={d.cod} value={d.cod}>{d.nome}</option>)
+                  : UFS.map((u) => <option key={u} value={u}>{u}</option>)}
               </select>
               <select
                 style={{ ...inputEstilo, flex: "0 0 84px" }}
