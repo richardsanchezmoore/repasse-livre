@@ -630,7 +630,11 @@ export function geografiaDaBusca(html: string): { estados: string[]; cidades: st
 
 /** Janela do anúncio PRINCIPAL: o nó do `redacted_description` é único do principal, então
  *  campos que colidem (preço/título/localização) são lidos AQUI, não por first-match global. */
-function janelaPrincipal(html: string): string {
+/** Recorte do anúncio PRINCIPAL. Exportado porque a sonda precisa ancorar
+ * igual: sem isso ela lê o preço de um anúncio RELACIONADO da mesma página —
+ * foi o que aconteceu em 23/09, quando um Sorento 2026 apareceu por ₲30.000.
+ * O aviso já estava no cabeçalho deste arquivo. */
+export function janelaPrincipal(html: string): string {
   const di = html.indexOf('"redacted_description"');
   return di === -1 ? html : html.slice(Math.max(0, di - 9000), di + 9000);
 }

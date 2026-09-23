@@ -26,6 +26,7 @@ export type LeituraPreco =
 export type MotivoDescarte =
   | "sem_preco"        // não achei número nenhum
   | "preco_isca"       // Gs. 1, US$ 1,00 — vendedor fugindo do filtro
+  | "outro_mercado"    // anunciado em REAL → é carro brasileiro
   | "fora_de_faixa";   // valor que não descreve carro em nenhuma das moedas
 
 /**
@@ -44,6 +45,25 @@ const TETO_DOLAR_CRIVEL = 300_000;
 
 const RX_GUARANI = /(?:\bGs\.?|₲|\bGuaran[ií]e?s?\b|\bPYG\b)/i;
 const RX_DOLAR = /(?:US\s?\$|\bUSD\b|\bU\$S\b|(?<![A-Za-z])\$)/i;
+
+/**
+ * ★★ REAL = CARRO BRASILEIRO, e isso é regra de mercado, não de formatação.
+ *
+ * Do Gustavo (23/09): "carro que está dentro do Paraguai, com placa paraguaia,
+ * não é anunciado em real". A praça de Ciudad del Este fica a poucos
+ * quilômetros da fronteira, então anúncio do lado de lá aparece na busca —
+ * mas é outro mercado, com outro imposto e outro comprador. Entrar na mesma
+ * tabela de referência a envenenaria.
+ *
+ * ⚠️ E sem esta regra o estrago era SILENCIOSO: "R$ 50.000" não casava em
+ * nenhum símbolo e caía na regra de grandeza, sendo lido como **USD 50.000**
+ * — cinquenta mil dólares, quase seis vezes o valor. Medido em 23/09.
+ *
+ * A cidade NÃO serve para isso: na primeira sondagem ela veio "Foz do Iguaçu"
+ * em anúncios que, conferidos na página pelo Gustavo, não eram de Foz. A moeda
+ * é o sinal confiável.
+ */
+const RX_REAL = /(?:R\$|\bBRL\b|\breais\b)/i;
 
 /**
  * Converte o texto do número para valor, no formato es-PY: ponto separa
@@ -108,10 +128,16 @@ export function lerPreco(bruto: string): LeituraPreco {
   if (!texto) return { ok: false, motivo: "sem_preco" };
 
   const ehGuarani = RX_GUARANI.test(texto);
-  const ehDolar = RX_DOLAR.test(texto);
+  const ehReal = RX_REAL.test(texto);
+  // "R$" contém "$": sem excluir o real aqui, todo preço brasileiro seria
+  // lido como dólar.
+  const ehDolar = !ehReal && RX_DOLAR.test(texto);
   const valor = numeroPY(texto);
 
   if (valor === null || valor <= 0) return { ok: false, motivo: "sem_preco" };
+
+  // Real = mercado brasileiro. Fora, antes de qualquer outra avaliação.
+  if (ehReal) return { ok: false, motivo: "outro_mercado", valorBruto: valor };
 
   // ⚠️ PREÇO-ISCA. Real, no ClasiPar: "TOYOTA 4RUNNER — Gs. 130" e
   // "RAM 1500 RHO 2025 — US$. 1,00". É o vendedor escapando do filtro de preço

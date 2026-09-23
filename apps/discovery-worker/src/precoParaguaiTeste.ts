@@ -31,6 +31,14 @@ const CASOS: Caso[] = [
   ["Gs 45.000.000", "PYG 45000000", "sem ponto depois do Gs"],
   ["$ 12.500", "USD 12500", "cifrão solto"],
 
+  // ---------- real = carro brasileiro, outro mercado ----------
+  // ⚠️ Sem a regra da moeda, "R$ 50.000" caía na regra de grandeza e virava
+  // USD 50.000 — quase seis vezes o valor, e em silêncio.
+  ["R$ 50.000", "X outro_mercado", "carro brasileiro, não entra na tabela do PY"],
+  ["R$ 89.900", "X outro_mercado"],
+  ["R$50.000,00", "X outro_mercado"],
+  ["BRL 72.000", "X outro_mercado"],
+
   // ---------- preço-isca: tem que ser recusado ----------
   ["Gs. 130", "X preco_isca", "REAL — ClasiPar, Toyota 4Runner por 130 guaranis"],
   ["Gs. 1", "X preco_isca", "REAL — ClasiPar"],

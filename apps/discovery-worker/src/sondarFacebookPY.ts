@@ -11,7 +11,7 @@
  *
  * Uso:  npx tsx src/sondarFacebookPY.ts
  */
-import { HEADERS, montarUrlBuscaFacebook, extrairIdsDaBusca, extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
+import { HEADERS, janelaPrincipal, montarUrlBuscaFacebook, extrairIdsDaBusca, extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
 import { lerPreco, lerProcedencia, ehAnuncioDeCompra } from "./precoParaguai.js";
 
 const URL_BASE =
@@ -79,16 +79,21 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
         // ★ Saber POR QUE não leu vale mais que o número de falhas. O extrator
         // brasileiro descarta o que não serve para a FIPE (sem motor, sem
         // modelo) — e no Paraguai isso pode estar jogando fora anúncio bom.
-        const motivo = (r as { motivo?: string }).motivo ?? "(sem motivo)";
+        const motivo = r.motivoDescarte ?? "(sem motivo)";
         motivos[motivo] = (motivos[motivo] ?? 0) + 1;
         console.log(`  ✗ ${id} — descartado pelo extrator: ${motivo}`);
         await dormir(2500);
         continue;
       }
 
-      // Bloco de preço CRU do JSON, para entender o formato em vez de adivinhar.
-      const blocoPreco = detalhe.match(/"listing_price":\{[^}]{0,220}\}/)?.[0] ?? "";
-      const txt = decodificar(detalhe.match(/"formatted_price":\{"text":"([^"]+)"/)?.[1] ?? "");
+      // ⚠️ ANCORAR NO ANÚNCIO PRINCIPAL. O HTML traz ~21 anúncios (o principal
+      // mais os relacionados) e TODOS têm listing_price/formatted_price. Pegar
+      // o primeiro do arquivo lê o preço do VIZINHO: em 23/09 um Sorento 2026
+      // apareceu por ₲30.000 e outro carro apareceu como "GRATIS". O cabeçalho
+      // deste serviço avisa isso desde o começo e eu passei por cima.
+      const win = janelaPrincipal(detalhe);
+      const blocoPreco = win.match(/"listing_price":\{[^}]{0,220}\}/)?.[0] ?? "";
+      const txt = decodificar(win.match(/"formatted_price":\{"text":"([^"]+)"/)?.[1] ?? "");
       const moedaFb = blocoPreco.match(/"currency":"([A-Z]{3})"/)?.[1] ?? null;
       const comOffset = blocoPreco.match(/"amount_with_offset":"(\d+)"/)?.[1] ?? null;
       const amount = blocoPreco.match(/"amount":"([\d.]+)"/)?.[1] ?? null;
@@ -124,7 +129,8 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
   console.log("cidades:      ", cidades);
   console.log("descartes do extrator:", motivos);
   console.log("anúncios de compra:", compras);
-  console.log("\n⚠️ Repare nas CIDADES: o raio de 65km de Ciudad del Este alcança");
-  console.log("   Foz do Iguaçu. Vai entrar anúncio brasileiro, em real, na base");
-  console.log("   paraguaia — outro mercado e outra moeda na mesma tabela.");
+  console.log("\n⚠️ CIDADE é campo pouco confiável aqui: na primeira sondagem apareceu");
+  console.log("   'Foz do Iguaçu' e o Gustavo conferiu na página — não havia. Era leitura");
+  console.log("   errada minha, de bloco vizinho. Quem separa carro brasileiro de");
+  console.log("   paraguaio é a MOEDA: carro com placa paraguaia não se anuncia em real.");
 })();
