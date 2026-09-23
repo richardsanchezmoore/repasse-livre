@@ -258,10 +258,30 @@ export function lerPrecoComContexto(
  * HYUNDAI TUCSON — Gs. 1" aparece na listagem de autos à venda. Não é oferta,
  * é procura — e o preço nem é preço. Tem que sair antes de qualquer média.
  */
-const RX_PROCURA = /\b(compro|compramos|busco|buscamos|necesito|permuto|cambio\s+por|se\s+busca)\b/i;
+const RX_PROCURA = /\b(compro|compramos|busco|buscamos|necesito|permuto|se\s+busca)\b/i;
+
+/**
+ * ⚠️ PERMUTA/TROCA também não é venda — e escapou na sonda de 23/09:
+ * *"Cambió caldina 2000/2001 por fielder 2001"* passou como anúncio válido
+ * de ₲22.000.000. O padrão antigo era `cambio\s+por`, que exige as duas
+ * palavras coladas; na frase real o modelo aparece no meio.
+ *
+ * Por que importa para a tabela: num anúncio de troca o número quase nunca é
+ * o preço do carro — é a "volta" (a diferença que uma parte paga à outra), ou
+ * um valor nominal de referência. Entra na mediana como se fosse preço de
+ * venda e puxa a linha inteira para baixo.
+ */
+// ⚠️ SEM `\b` depois de `[oó]` — é o MESMO bug de acento que já tinha me
+// pegado em "único dueño": em JavaScript, `ó` não conta como caractere de
+// palavra, então `/\bcambi[oó]\b/` NÃO casa em "Cambió caldina". Duas vezes o
+// mesmo tropeço no mesmo arquivo; a regra é olhar com desconfiança todo `\b`
+// que encoste em letra acentuada. O lookahead faz o papel da âncora sem
+// depender de `\b`.
+const RX_TROCA = /\bcambi[oó](?![a-zà-ú])[^.!?]{0,40}\bpor\b|\bpermut[ao]\b|\btomo\s+.{0,20}parte\s+de\s+pago\b/i;
 
 export function ehAnuncioDeCompra(titulo: string, descricao = ""): boolean {
-  return RX_PROCURA.test(`${titulo} ${descricao}`);
+  const t = `${titulo} ${descricao}`;
+  return RX_PROCURA.test(t) || RX_TROCA.test(t);
 }
 
 /**
