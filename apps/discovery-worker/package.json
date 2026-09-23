@@ -31,7 +31,8 @@
     "backfill:coordenadas": "tsx src/backfillCoordenadas.ts",
     "backfill:anunciante": "tsx src/backfillTipoAnunciante.ts",
     "migrar": "tsx src/rodarMigracoes.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "testar:preco-py": "npx tsx src/precoParaguaiTeste.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
