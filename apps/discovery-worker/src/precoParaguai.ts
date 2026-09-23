@@ -177,6 +177,74 @@ export function lerPreco(bruto: string): LeituraPreco {
 }
 
 /**
+ * ★★ QUANDO O NÚMERO NÃO DIZ A MOEDA — três degraus, nesta ordem.
+ *
+ * Ideia do Gustavo (23/09), a partir de um "New Sorento 2026" que apareceu
+ * como 30.000: *"deve ser 30.000 DÓLARES... teremos que investigar no corpo da
+ * descrição menções sobre currency, e na ausência usar uma inteligência
+ * pré-definida e determinística"*. É exatamente o desenho certo, porque cada
+ * degrau é mais fraco que o anterior e isso precisa ficar REGISTRADO — uma
+ * moeda adivinhada não pode entrar numa mediana com o mesmo peso de uma moeda
+ * lida do símbolo.
+ *
+ *   1. SÍMBOLO no próprio preço — ₲, Gs., US$. É o que vale sempre que existe.
+ *   2. PALAVRA na descrição — "30 mil dólares", "40 millones", "en guaraníes".
+ *      No Paraguai se fala em "millones" o tempo todo, e isso desambigua.
+ *   3. GRANDEZA — o último recurso, determinístico: preço de carro em guarani
+ *      vive na casa dos milhões; em dólar, dos milhares. As faixas não se
+ *      sobrepõem, e é isso que faz a regra funcionar.
+ *
+ * A confiança volta junto no resultado de propósito. Quem monta a tabela de
+ * referência decide se aceita "grandeza" ou só símbolo — e essa decisão é
+ * metade da credibilidade do produto.
+ */
+export type ConfiancaMoeda = "simbolo" | "descricao" | "grandeza";
+
+/** Faixa cinzenta: alto demais para guarani de carro, alto demais para dólar. */
+const ZONA_CINZENTA = { min: 500_000, max: 5_000_000 };
+
+const RX_DIZ_DOLAR = /(d[oó]lar|d[oó]lares|\bdolar\b|\busd\b|\bu\$s\b|verdes?\b)/i;
+const RX_DIZ_GUARANI = /(guaran[ií]|\bgs\b|mill[oó]n|millones|\bmil[lh][oó]es\b)/i;
+
+export function lerPrecoComContexto(
+  textoPreco: string,
+  descricao = ""
+): LeituraPreco & { confianca?: ConfiancaMoeda } {
+  const direto = lerPreco(textoPreco);
+
+  // Teve símbolo? Então está resolvido, e com a melhor evidência possível.
+  const tinhaSimbolo = RX_GUARANI.test(desescapar(textoPreco)) || RX_DOLAR.test(desescapar(textoPreco)) || RX_REAL.test(desescapar(textoPreco));
+  if (tinhaSimbolo) return { ...direto, confianca: "simbolo" };
+
+  const valor = numeroPY(desescapar(textoPreco));
+  if (valor === null || valor <= 0) return direto;
+
+  // Degrau 2: a descrição diz a moeda?
+  const ctx = `${textoPreco} ${descricao}`;
+  const dizDolar = RX_DIZ_DOLAR.test(ctx);
+  const dizGuarani = RX_DIZ_GUARANI.test(ctx);
+  if (dizDolar !== dizGuarani) {
+    const moeda: MoedaPY = dizDolar ? "USD" : "PYG";
+    const faixa = FAIXA[moeda];
+    if (valor >= faixa.min && valor <= faixa.max) return { ok: true, valor, moeda, confianca: "descricao" };
+    // A descrição diz uma coisa e a grandeza diz outra. "40 millones" com o
+    // número 40 é o caso clássico: o vendedor escreveu o valor por extenso.
+    if (moeda === "PYG" && valor < faixa.min && /mill/i.test(ctx)) {
+      const emMilhoes = valor * 1_000_000;
+      if (emMilhoes <= faixa.max) return { ok: true, valor: emMilhoes, moeda: "PYG", confianca: "descricao" };
+    }
+  }
+
+  // Degrau 3: grandeza. Só resolve fora da zona cinzenta.
+  if (valor > ZONA_CINZENTA.max && valor <= FAIXA.PYG.max) return { ok: true, valor, moeda: "PYG", confianca: "grandeza" };
+  if (valor >= FAIXA.USD.min && valor < ZONA_CINZENTA.min) return { ok: true, valor, moeda: "USD", confianca: "grandeza" };
+
+  // Dentro da zona cinzenta ninguém sabe. Recusar é melhor que chutar: um
+  // palpite errado aqui entra na mediana e não dá sinal nenhum de que entrou.
+  return { ok: false, motivo: "fora_de_faixa", valorBruto: valor };
+}
+
+/**
  * ⚠️ ANÚNCIO DE COMPRA travestido de venda. Real, no ClasiPar: "COMPRO CONTADO
  * HYUNDAI TUCSON — Gs. 1" aparece na listagem de autos à venda. Não é oferta,
  * é procura — e o preço nem é preço. Tem que sair antes de qualquer média.

@@ -7,7 +7,7 @@
  *
  * Rodar:  npx tsx src/precoParaguaiTeste.ts
  */
-import { lerPreco, ehAnuncioDeCompra, lerProcedencia } from "./precoParaguai.js";
+import { lerPreco, lerPrecoComContexto, ehAnuncioDeCompra, lerProcedencia } from "./precoParaguai.js";
 
 type Caso = [entrada: string, esperado: string, nota?: string];
 
@@ -113,6 +113,29 @@ for (const [texto, esperado] of PROCEDENCIA) {
   console.log(`  ${ok ? "✅" : "❌"} ${obtido.padEnd(14)} | ${texto}` + (ok ? "" : `  (esperava ${esperado})`));
 }
 
-const total = CASOS.length + COMPRA.length + PROCEDENCIA.length;
+// ---------- moeda pelo CONTEXTO: símbolo > descrição > grandeza ----------
+const CONTEXTO: [preco: string, descricao: string, esperado: string, nota?: string][] = [
+  ["₲110.000.000", "", "PYG 110000000 simbolo", "símbolo sempre manda"],
+  ["30.000", "New Sorento 2026 2.2 turbo diesel, precio 30.000 dólares", "USD 30000 descricao", "a ideia do Gustavo"],
+  ["30.000", "Vendo Sorento, 30 mil dolares negociables", "USD 30000 descricao"],
+  ["40", "Toyota Hilux, 40 millones guaraníes", "PYG 40000000 descricao", "valor por extenso"],
+  ["85.000.000", "", "PYG 85000000 grandeza", "milhões só existe em guarani"],
+  ["24.500", "", "USD 24500 grandeza", "milhares só faz sentido em dólar"],
+  ["2.000.000", "", "X fora_de_faixa", "ZONA CINZENTA: recusar é melhor que chutar"],
+];
+
+console.log("\n=== MOEDA PELO CONTEXTO (símbolo > descrição > grandeza) ===");
+for (const [p, d, esperado, nota] of CONTEXTO) {
+  const r = lerPrecoComContexto(p, d);
+  const obtido = r.ok ? `${r.moeda} ${r.valor} ${r.confianca}` : `X ${r.motivo}`;
+  const ok = obtido === esperado;
+  if (!ok) falhas++;
+  console.log(
+    `  ${ok ? "✅" : "❌"} ${JSON.stringify(p).padEnd(16)} → ${obtido.padEnd(26)}` +
+    (ok ? "" : ` (esperava ${esperado})`) + (nota ? `   ${nota}` : "")
+  );
+}
+
+const total = CASOS.length + COMPRA.length + PROCEDENCIA.length + CONTEXTO.length;
 console.log(falhas ? `\n❌ ${falhas} FALHA(S) de ${total}` : `\n✅ TODAS PASSAM (${total})`);
 process.exit(falhas ? 1 : 0);

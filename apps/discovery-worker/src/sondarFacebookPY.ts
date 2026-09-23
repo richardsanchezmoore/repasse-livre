@@ -114,7 +114,12 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
         : `❌ ${preco.motivo}`;
       console.log(`  • ${(a.titulo ?? "sem título").slice(0, 44).padEnd(44)} | ${etiqueta.padEnd(22)} | ${proc}${compra ? " | 🚩COMPRA" : ""}`);
       console.log(`      texto: "${txt}" | currency: ${moedaFb ?? "—"} | with_offset: ${comOffset ?? "—"} | amount: ${amount ?? "—"}`);
-      console.log(`      precoCampo do extrator: ${a.precoCampo ?? "—"}  ← se estiver /100, é o bug do centavo`);
+      // ✅ MEDIDO 23/09 e o alarme era FALSO: no Auris veio with_offset
+      // 4.000.000.000 e amount 40.000.000 — ou seja, o Facebook aplica o
+      // fator 100 TAMBÉM em guarani, mesmo a moeda não tendo centavo. A
+      // divisão por 100 do extrator está CERTA. Instrumentar antes de
+      // "consertar" evitou quebrar o que funcionava.
+      console.log(`      precoCampo do extrator: ${a.precoCampo ?? "—"}  (with_offset/100 — confirmado correto)`);
       console.log(`      ano: ${a.ano ?? "—"} | cidade: ${cid}`);
 
       await dormir(2500);
