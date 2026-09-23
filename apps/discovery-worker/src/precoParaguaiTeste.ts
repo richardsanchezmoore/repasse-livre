@@ -24,6 +24,10 @@ const CASOS: Caso[] = [
   ["₲75.000.000", "PYG 75000000", "REAL — FB Marketplace CDE, 23/09"],
   ["₲49.000.000", "PYG 49000000", "REAL — FB Marketplace CDE"],
   ["₲13.500", "X preco_isca", "REAL — FB CDE: treze mil guaranis é R$11, não é carro"],
+  // ★ Como o símbolo CHEGA do JSON do Facebook: escapado. Sem desescapar,
+  // o "20b2" entra como dígito e 110 milhões viram 202 BILHÕES.
+  ["\u20b2110.000.000", "PYG 110000000", "REAL — FB CDE, cru do JSON"],
+  ["\u20b2273.405.420", "PYG 273405420", "REAL — Kia Cerato 2020/21"],
   ["Gs 45.000.000", "PYG 45000000", "sem ponto depois do Gs"],
   ["$ 12.500", "USD 12500", "cifrão solto"],
 

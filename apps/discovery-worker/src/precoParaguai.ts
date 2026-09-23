@@ -86,7 +86,25 @@ function numeroPY(texto: string): number | null {
  *
  * @param texto  o trecho de preço como aparece na página ("Gs. 97.500.000")
  */
-export function lerPreco(texto: string): LeituraPreco {
+/**
+ * ⚠️ O JSON do Facebook entrega o símbolo do guarani ESCAPADO: chega a
+ * sequência literal `₲`, não o caractere "₲". Medido na primeira sonda
+ * real de Ciudad del Este (23/09): `₲110.000.000` foi lido como
+ * **202.110.000.000** — o "20b2" do escape entrou como dígito e o preço ganhou
+ * três casas. Um carro de cento e dez milhões de guaranis virou duzentos e dois
+ * BILHÕES, o que passaria direto pelo teto de faixa e envenenaria a tabela.
+ *
+ * A decodificação mora AQUI, e não em quem chama, justamente para não depender
+ * de alguém lembrar.
+ */
+function desescapar(s: string): string {
+  return s.includes("\\u")
+    ? s.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    : s;
+}
+
+export function lerPreco(bruto: string): LeituraPreco {
+  const texto = desescapar(bruto ?? "");
   if (!texto) return { ok: false, motivo: "sem_preco" };
 
   const ehGuarani = RX_GUARANI.test(texto);
