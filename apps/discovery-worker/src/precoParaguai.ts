@@ -258,18 +258,26 @@ export function lerPrecoComContexto(
  * HYUNDAI TUCSON — Gs. 1" aparece na listagem de autos à venda. Não é oferta,
  * é procura — e o preço nem é preço. Tem que sair antes de qualquer média.
  */
-const RX_PROCURA = /\b(compro|compramos|busco|buscamos|necesito|permuto|se\s+busca)\b/i;
+// "permuto" saiu daqui: trocar é vender, não procurar. Ver RX_TROCA.
+const RX_PROCURA = /\b(compro|compramos|busco|buscamos|necesito|se\s+busca)\b/i;
 
 /**
- * ⚠️ PERMUTA/TROCA também não é venda — e escapou na sonda de 23/09:
- * *"Cambió caldina 2000/2001 por fielder 2001"* passou como anúncio válido
- * de ₲22.000.000. O padrão antigo era `cambio\s+por`, que exige as duas
- * palavras coladas; na frase real o modelo aparece no meio.
+ * ★ TROCA/PERMUTA **VALE** COMO VENDA — corrigido pelo Gustavo em 23/09.
  *
- * Por que importa para a tabela: num anúncio de troca o número quase nunca é
- * o preço do carro — é a "volta" (a diferença que uma parte paga à outra), ou
- * um valor nominal de referência. Entra na mediana como se fosse preço de
- * venda e puxa a linha inteira para baixo.
+ * Eu tinha excluído, supondo que o número fosse a "volta" (a diferença paga
+ * entre as partes). Ele conhece o mercado e desfez:
+ *
+ * > *"o permuta na maioria das vezes está com o preço do veículo que está
+ * > sendo oferecido, não valor a colocar na volta por outro... os anunciantes
+ * > gostam de destacar que além da venda têm forte interesse pela troca"*
+ *
+ * Ou seja: é anúncio de VENDA com abertura para troca, e o preço é o do carro.
+ * Excluir jogaria fora dado bom — e num mercado onde só 3 de 10 anúncios têm
+ * preço utilizável, cada um conta.
+ *
+ * Fica como SINAL, não como descarte: quem menciona troca costuma ser
+ * particular e ter mais flexibilidade, o que pode virar informação útil na
+ * tela mais para frente.
  */
 // ⚠️ SEM `\b` depois de `[oó]` — é o MESMO bug de acento que já tinha me
 // pegado em "único dueño": em JavaScript, `ó` não conta como caractere de
@@ -279,9 +287,17 @@ const RX_PROCURA = /\b(compro|compramos|busco|buscamos|necesito|permuto|se\s+bus
 // depender de `\b`.
 const RX_TROCA = /\bcambi[oó](?![a-zà-ú])[^.!?]{0,40}\bpor\b|\bpermut[ao]\b|\btomo\s+.{0,20}parte\s+de\s+pago\b/i;
 
+/** Anúncio de PROCURA (quer comprar). Não é oferta — fora da média. */
 export function ehAnuncioDeCompra(titulo: string, descricao = ""): boolean {
-  const t = `${titulo} ${descricao}`;
-  return RX_PROCURA.test(t) || RX_TROCA.test(t);
+  return RX_PROCURA.test(`${titulo} ${descricao}`);
+}
+
+/**
+ * Menciona troca/permuta. **Não descarta** — é só um sinal.
+ * Ver o comentário de RX_TROCA: o preço anunciado é o do carro oferecido.
+ */
+export function mencionaTroca(titulo: string, descricao = ""): boolean {
+  return RX_TROCA.test(`${titulo} ${descricao}`);
 }
 
 /**

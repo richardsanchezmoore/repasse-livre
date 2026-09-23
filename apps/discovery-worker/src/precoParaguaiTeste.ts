@@ -65,12 +65,15 @@ const CASOS: Caso[] = [
 const COMPRA: [string, boolean][] = [
   ["COMPRO CONTADO HYUNDAI TUCSON", true],
   ["Busco Toyota Hilux 2015 en adelante", true],
-  ["Permuto por camioneta", true],
-  // REAL — FB CDE 23/09: passou como venda de ₲22.000.000. Num anúncio de
-  // troca o número é a "volta", não o preço do carro.
-  ["Cambió caldina 2000/2001 por fielder 2001 me", true],
-  ["Cambio Corolla por camioneta, abono diferencia", true],
-  ["Tomo auto en parte de pago", true],
+  ["Necesito un auto familiar hasta 40 millones", true],
+  // ★ TROCA NÃO É PROCURA (correção do Gustavo, 23/09): o preço anunciado é o
+  // do carro OFERECIDO, não a volta. Quem menciona troca está vendendo, e num
+  // mercado onde só 3 de 10 anúncios têm preço utilizável, descartar esses
+  // seria jogar fora dado bom.
+  ["Permuto por camioneta", false],
+  ["Cambió caldina 2000/2001 por fielder 2001 me", false],
+  ["Cambio Corolla por camioneta, abono diferencia", false],
+  ["Tomo auto en parte de pago", false],
   ["Vendo Corolla 2015, acepto efectivo", false],
   ["VENDO TOYOTA COROLLA 2018", false],
   ["Chevrolet Tracker 2022 LTZ con garantía", false],
