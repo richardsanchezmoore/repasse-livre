@@ -267,6 +267,32 @@ export interface FiltrosFacebook {
  * Sobrescreve qualquer `radius=` que venha colado na URL. minPrice tira velharia+isca; minYear corta
  * ônibus/motorhome; sortBy prioriza fresco.
  */
+/**
+ * Cabeçalhos de Chrome real — ÚNICO lugar. O scraper e a sonda usam o mesmo.
+ *
+ * ⚠️ Não é enfeite: com só o user-agent o Facebook responde HTTP 400. Foi
+ * exatamente o que aconteceu na primeira sonda do Paraguai (23/09), dos dois
+ * lados (sandbox e máquina do Gustavo) — e me fez suspeitar de bloqueio de IP
+ * quando era cabeçalho faltando. O aviso já estava escrito aqui embaixo.
+ */
+export const HEADERS: Record<string, string> = {
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "accept-language": "pt-BR,pt;q=0.9,en;q=0.8",
+  "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+  "sec-ch-ua-mobile": "?0",
+  "sec-ch-ua-platform": '"Windows"',
+  "sec-fetch-dest": "document",
+  "sec-fetch-mode": "navigate",
+  // sec-fetch-site FICA "none": testado, "cross-site" faz o FB devolver 400. O Referer do Google
+  // (sozinho, com site=none) mantém o 200 E dá o sinal de tráfego ORGÂNICO de busca — camada
+  // defensiva pra o IP residencial não ser fichado com o volume/tempo. Ver memória do FB.
+  "sec-fetch-site": "none",
+  "sec-fetch-user": "?1",
+  referer: "https://www.google.com/",
+  "upgrade-insecure-requests": "1",
+};
+
 export function montarUrlBuscaFacebook(urlBase: string, f: FiltrosFacebook, raio = "250"): string {
   const base = urlBase
     .trim()

@@ -12,11 +12,8 @@
  *
  * Uso:  npx tsx src/sondarFacebookPY.ts "<url-base>"
  */
-import { montarUrlBuscaFacebook, extrairIdsDaBusca, extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
+import { HEADERS, montarUrlBuscaFacebook, extrairIdsDaBusca, extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
 import { lerPreco, lerProcedencia, ehAnuncioDeCompra } from "./precoParaguai.js";
-
-const UA_CHROME =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 const URL_BASE =
   process.argv[2] ??
@@ -26,13 +23,11 @@ const URL_BASE =
 const AMOSTRA = 8;
 
 async function baixar(url: string): Promise<string> {
-  const r = await fetch(url, {
-    headers: {
-      "user-agent": UA_CHROME,
-      "accept-language": "es-PY,es;q=0.9,pt-BR;q=0.8",
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    },
-  });
+  // ⚠️ USA O MESMO BLOCO DE CABEÇALHOS DO SCRAPER. A primeira versão desta
+  // sonda mandava só o user-agent e levou HTTP 400 nas duas máquinas — e me
+  // fez suspeitar de bloqueio de IP quando o aviso já estava escrito no
+  // código: sem o conjunto de sec-fetch/sec-ch-ua, o Facebook recusa.
+  const r = await fetch(url, { headers: HEADERS });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.text();
 }
