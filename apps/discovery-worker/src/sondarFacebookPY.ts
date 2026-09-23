@@ -12,7 +12,7 @@
  * Uso:  npx tsx src/sondarFacebookPY.ts
  */
 import { HEADERS, janelaPrincipal, montarUrlBuscaFacebook, extrairIdsDaBusca, extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
-import { lerPreco, lerProcedencia, ehAnuncioDeCompra } from "./precoParaguai.js";
+import { lerPrecoComContexto, lerProcedencia, ehAnuncioDeCompra } from "./precoParaguai.js";
 
 const URL_BASE =
   process.argv[2] ??
@@ -72,7 +72,9 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
   for (const id of ids.slice(0, AMOSTRA)) {
     try {
       const detalhe = await baixar(`https://www.facebook.com/marketplace/item/${id}/?locale=es_LA`);
-      const r = extrairAnuncioFacebook(detalhe, id);
+      // ★ SEM exigir cilindrada: no Paraguai não há FIPE para casar, e essa
+      // regra derrubava 6 de cada 10 anúncios da amostra.
+      const r = extrairAnuncioFacebook(detalhe, id, { exigirMotor: false });
       const a = r.anuncio;
 
       if (!a) {
@@ -98,7 +100,7 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
       const comOffset = blocoPreco.match(/"amount_with_offset":"(\d+)"/)?.[1] ?? null;
       const amount = blocoPreco.match(/"amount":"([\d.]+)"/)?.[1] ?? null;
 
-      const preco = lerPreco(txt);
+      const preco = lerPrecoComContexto(txt, `${a.titulo ?? ""} ${a.descricao ?? ""}`);
       const proc = lerProcedencia(`${a.titulo ?? ""} ${a.descricao ?? ""}`);
       const compra = ehAnuncioDeCompra(a.titulo ?? "", a.descricao ?? "");
 
@@ -110,7 +112,7 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
       if (compra) compras++;
 
       const etiqueta = preco.ok
-        ? `${preco.moeda} ${preco.valor.toLocaleString("es-PY")}${preco.corrigido ? " ⚠️corrigido" : ""}`
+        ? `${preco.moeda} ${preco.valor.toLocaleString("es-PY")} [${preco.confianca}]${preco.corrigido ? " ⚠️" : ""}`
         : `❌ ${preco.motivo}`;
       console.log(`  • ${(a.titulo ?? "sem título").slice(0, 44).padEnd(44)} | ${etiqueta.padEnd(22)} | ${proc}${compra ? " | 🚩COMPRA" : ""}`);
       console.log(`      texto: "${txt}" | currency: ${moedaFb ?? "—"} | with_offset: ${comOffset ?? "—"} | amount: ${amount ?? "—"}`);

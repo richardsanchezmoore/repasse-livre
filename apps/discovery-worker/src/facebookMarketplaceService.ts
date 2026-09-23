@@ -471,7 +471,34 @@ export function combustivelDoTexto(texto: string | null): string | null {
  * Parseia o HTML de um anúncio do FB Marketplace. `itemId` = id da URL.
  * Retorna {anuncio, descartar}. Descarta se não achar motor/versão (regra do usuário).
  */
-export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoParseFacebook {
+/**
+ * Opções do extrator.
+ *
+ * ★★ `exigirMotor` existe por causa do Paraguai (23/09/2026). A regra "sem
+ * cilindrada declarada, descarta" nasceu para NÃO CHUTAR A FIPE: sem saber se
+ * é 1.0 ou 1.6, casar a tabela errada inflaria a margem, que era o pecado
+ * capital do produto brasileiro. Melhor pular que mentir.
+ *
+ * No Paraguai não existe FIPE para casar — a referência é a tabela que a gente
+ * mesmo vai construir a partir do que capturar. Aí a regra inverte de sinal:
+ * medido na sonda de Ciudad del Este, ela descartava **6 de 10 anúncios**, ou
+ * seja, jogava fora 60% do mercado em troca de uma proteção que ali não
+ * protege nada.
+ *
+ * Nas palavras do Gustavo: *"lá nós é que iremos descobrir padrões e iremos
+ * absorvendo dados para nossa tabela"*. Primeiro guarda, depois entende.
+ */
+export interface OpcoesExtracao {
+  /** false = captura crua, sem exigir cilindrada. Padrão true (Brasil/FIPE). */
+  exigirMotor?: boolean;
+}
+
+export function extrairAnuncioFacebook(
+  html: string,
+  itemId: string,
+  opcoes: OpcoesExtracao = {}
+): ResultadoParseFacebook {
+  const exigirMotor = opcoes.exigirMotor ?? true;
   // Título/descrição vêm do og: (sempre do principal) com fallback no Relay.
   const titulo = ogMeta(html, "title") ?? campoUnicoAncorado(html, "marketplace_listing_title");
   if (!titulo) return { anuncio: null, descartar: true, motivoDescarte: "sem_titulo" };
@@ -528,8 +555,9 @@ export function extrairAnuncioFacebook(html: string, itemId: string): ResultadoP
     for (const m of txt.matchAll(/\b([0-9]\.[0-9])\b/g)) motorCandidatos.push({ motor: m[1], fonte });
   }
   const motor = escolherMotor(motorCandidatos);
-  // Sem motor em NENHUMA frente → descarta (regra do usuário: melhor pular que chutar a FIPE).
-  if (!motor) return { anuncio: null, descartar: true, motivoDescarte: "sem_motor" };
+  // Sem motor em NENHUMA frente → descarta, mas SÓ quando a FIPE está em jogo.
+  // Ver OpcoesExtracao.exigirMotor: no Paraguai isso derrubava 6 de cada 10.
+  if (!motor && exigirMotor) return { anuncio: null, descartar: true, motivoDescarte: "sem_motor" };
 
   // Texto de versão mais rico p/ o fuzzy da FIPE (trim estruturado > modelo digitado > título).
   const versaoTexto = trimEstr ?? modeloEstr ?? parsearTitulo(titulo).modelo;

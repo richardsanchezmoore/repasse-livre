@@ -44,7 +44,9 @@ const FAIXA = {
 const TETO_DOLAR_CRIVEL = 300_000;
 
 const RX_GUARANI = /(?:\bGs\.?|₲|\bGuaran[ií]e?s?\b|\bPYG\b)/i;
-const RX_DOLAR = /(?:US\s?\$|\bUSD\b|\bU\$S\b|(?<![A-Za-z])\$)/i;
+// O "$" pode vir ANTES ou DEPOIS do número — "$ 30.000" e "30.000$" convivem
+// nos anúncios paraguaios (observado pelo Gustavo em 23/09).
+const RX_DOLAR = /(?:US\s?\$|\bUSD\b|\bU\$S\b|(?<![A-Za-z])\$|\d\s?\$)/i;
 
 /**
  * ★★ REAL = CARRO BRASILEIRO, e isso é regra de mercado, não de formatação.
@@ -203,7 +205,14 @@ export type ConfiancaMoeda = "simbolo" | "descricao" | "grandeza";
 /** Faixa cinzenta: alto demais para guarani de carro, alto demais para dólar. */
 const ZONA_CINZENTA = { min: 500_000, max: 5_000_000 };
 
-const RX_DIZ_DOLAR = /(d[oó]lar|d[oó]lares|\bdolar\b|\busd\b|\bu\$s\b|verdes?\b)/i;
+/**
+ * ⚠️ No Paraguai, um "$" sozinho É DÓLAR. Observação do Gustavo (23/09):
+ * *"muitas vezes quando se referem a dólar eles colocam somente $ ao lado ou
+ * DEPOIS do número do preço"*. Não há ambiguidade local como haveria no
+ * Brasil: o guarani se escreve ₲ ou Gs., nunca com cifrão. Por isso o padrão
+ * cobre os dois lados — "$ 30.000" e "30.000$".
+ */
+const RX_DIZ_DOLAR = /(d[oó]lar|d[oó]lares|\bdolar\b|\busd\b|\bu\$s\b|verdes?\b|(?<![A-Za-z])\$\s?\d|\d\s?\$)/i;
 const RX_DIZ_GUARANI = /(guaran[ií]|\bgs\b|mill[oó]n|millones|\bmil[lh][oó]es\b)/i;
 
 export function lerPrecoComContexto(

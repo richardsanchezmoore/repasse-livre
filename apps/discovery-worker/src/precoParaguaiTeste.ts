@@ -29,7 +29,9 @@ const CASOS: Caso[] = [
   ["\u20b2110.000.000", "PYG 110000000", "REAL — FB CDE, cru do JSON"],
   ["\u20b2273.405.420", "PYG 273405420", "REAL — Kia Cerato 2020/21"],
   ["Gs 45.000.000", "PYG 45000000", "sem ponto depois do Gs"],
-  ["$ 12.500", "USD 12500", "cifrão solto"],
+  ["$ 12.500", "USD 12500", "cifrão solto ANTES"],
+  ["30.000$", "USD 30000", "cifrão DEPOIS — observação do Gustavo"],
+  ["12.500 $", "USD 12500", "cifrão depois, com espaço"],
 
   // ---------- real = carro brasileiro, outro mercado ----------
   // ⚠️ Sem a regra da moeda, "R$ 50.000" caía na regra de grandeza e virava
@@ -122,6 +124,7 @@ const CONTEXTO: [preco: string, descricao: string, esperado: string, nota?: stri
   ["85.000.000", "", "PYG 85000000 grandeza", "milhões só existe em guarani"],
   ["24.500", "", "USD 24500 grandeza", "milhares só faz sentido em dólar"],
   ["2.000.000", "", "X fora_de_faixa", "ZONA CINZENTA: recusar é melhor que chutar"],
+  ["30.000", "Sorento 2026 full, 30.000$ negociable", "USD 30000 descricao", "cifrão depois, na descrição"],
 ];
 
 console.log("\n=== MOEDA PELO CONTEXTO (símbolo > descrição > grandeza) ===");
