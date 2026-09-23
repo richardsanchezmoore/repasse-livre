@@ -20,6 +20,10 @@ const CASOS: Caso[] = [
   ["₲ 120.000.000", "PYG 120000000", "REAL — WebAuto, Kia Sonet 2022"],
   ["US$ 39.800", "USD 39800", "REAL — WebAuto, Ford Territory 2024"],
   ["USD 18.900", "USD 18900"],
+  // Formato do Facebook de Ciudad del Este: símbolo COLADO, sem "Gs.".
+  ["₲75.000.000", "PYG 75000000", "REAL — FB Marketplace CDE, 23/09"],
+  ["₲49.000.000", "PYG 49000000", "REAL — FB Marketplace CDE"],
+  ["₲13.500", "X preco_isca", "REAL — FB CDE: treze mil guaranis é R$11, não é carro"],
   ["Gs 45.000.000", "PYG 45000000", "sem ponto depois do Gs"],
   ["$ 12.500", "USD 12500", "cifrão solto"],
 

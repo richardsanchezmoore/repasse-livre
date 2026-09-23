@@ -166,9 +166,14 @@ async function carregarConfig(): Promise<ConfigFb> {
     ativo: ativo === "true",
     regioes,
     filtros: {
-      minPreco: minPreco ?? "15000",
-      maxPreco: maxPreco ?? "400000",
-      minAno: minAno ?? "1995",
+      // ⚠️ VAZIO = SEM FILTRO, e não "volta pro padrão brasileiro".
+      // Antes eram "15000" / "400000" / "1995". Como `lerConfig` devolve null
+      // quando o campo é limpo no painel, o `??` reaplicava a régua brasileira
+      // — e em guarani ela descarta o mercado inteiro em silêncio. Quem limpa
+      // o campo está dizendo "não filtre", e é isso que tem que acontecer.
+      minPreco: minPreco ?? "",
+      maxPreco: maxPreco ?? "",
+      minAno: minAno ?? "",
       sort: sort ?? "creation_time_descend",
     },
     faixas: parseFaixasPreco(faixasRaw),

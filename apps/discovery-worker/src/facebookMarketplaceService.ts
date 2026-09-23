@@ -274,14 +274,22 @@ export function montarUrlBuscaFacebook(urlBase: string, f: FiltrosFacebook, raio
     .replace(/&{2,}/g, "&")
     .replace(/[?&]$/, "");
   const sep = base.includes("?") ? "&" : "?";
-  const p = new URLSearchParams({
-    radius: raio,
-    minPrice: f.minPreco,
-    maxPrice: f.maxPreco,
-    minYear: f.minAno,
-    sortBy: f.sort,
-    topLevelVehicleType: "car_truck",
-  });
+  // ⚠️ FILTRO VAZIO É OMITIDO, não mandado vazio. Medido em 23/09: com
+  // `minPrice=&maxPrice=&minYear=` na query, o Facebook responde **HTTP 400** e
+  // a run inteira morre. Isso aparece quando os campos são limpos no painel
+  // para captar no Paraguai, onde a régua em reais não faz sentido.
+  //
+  // ⚠️ E a outra ponta é pior porque é SILENCIOSA: `lerConfig` devolve null
+  // para campo vazio (proposital, por causa de um MAX_PAGINAS=0 antigo), então
+  // o `??` de quem chama reaplica o padrão brasileiro (15000–400000). O
+  // anúncio paraguaio em guarani cai fora inteiro e o log não acusa nada.
+  // Por isso o padrão de quem chama passou a ser "" = sem filtro.
+  const p = new URLSearchParams({ radius: raio });
+  if (f.minPreco.trim()) p.set("minPrice", f.minPreco.trim());
+  if (f.maxPreco.trim()) p.set("maxPrice", f.maxPreco.trim());
+  if (f.minAno.trim()) p.set("minYear", f.minAno.trim());
+  if (f.sort.trim()) p.set("sortBy", f.sort.trim());
+  p.set("topLevelVehicleType", "car_truck");
   return `${base}${sep}${p.toString()}`;
 }
 
