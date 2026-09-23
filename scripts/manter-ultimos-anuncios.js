@@ -62,21 +62,39 @@ const hora = () => new Date().toLocaleTimeString("pt-BR");
 
   if (!sobra) { console.log("nada a fazer."); await c.end(); return; }
 
-  // Mostra o que fica, para conferir antes de qualquer estrago.
+  // ★★ PESO POR FONTE. Dividir igualmente entre as quatro seria tratar OLX e
+  // Webmotors como se fossem continuar existindo — e o Gustavo lembrou em
+  // 23/09: **não existe OLX no Paraguai**, nem Webmotors. As únicas fontes de
+  // lá são Facebook Marketplace e Mercado Livre.
+  // Então a amostra que fica é enviesada de propósito PARA O FUTURO: o dobro
+  // das duas que vão operar, e um resto pequeno das duas que só servem como
+  // lembrete de como o motor lida com outro formato de anúncio.
+  const PESO = { FACEBOOK: 2, MERCADO_LIVRE: 2, OLX: 0.5, WEBMOTORS: 0.5 };
   const fontes = (await q("select distinct fonte from public.opportunities where fonte is not null")).map((x) => x.fonte);
-  const porFonte = POR_FONTE ? Math.max(1, Math.floor(MANTER / fontes.length)) : null;
-  if (POR_FONTE) console.log(hora(), "   modo POR FONTE:", porFonte, "de cada uma de", fontes.length, "fontes");
+  const somaPesos = fontes.reduce((s, f) => s + (PESO[f] ?? 1), 0);
+  const cotaDe = (f) => Math.max(1, Math.round((MANTER * (PESO[f] ?? 1)) / somaPesos));
+  const porFonte = POR_FONTE ? cotaDe : null;
+  if (POR_FONTE) {
+    console.log(hora(), "   modo POR FONTE, com peso (FB e ML valem 4x OLX/Webmotors):");
+    fontes.forEach((f) => console.log("            cota:", String(f).padEnd(16), cotaDe(f)));
+  }
 
+  // A cota é diferente por fonte, então o SQL recebe a lista de pares.
+  const pares = fontes.map((f) => [f, POR_FONTE ? cotaDe(f) : MANTER]);
   const ficam = await q(
     POR_FONTE
-      ? `select fonte, count(*) n from (
-           select fonte, row_number() over (partition by fonte order by data_captura desc) rn
-             from public.opportunities
-         ) x where rn <= $1 group by fonte order by 2 desc`
+      ? `select x.fonte, count(*) n from (
+           select o.fonte, row_number() over (partition by o.fonte order by o.data_captura desc) rn
+             from public.opportunities o
+         ) x
+         join (values ${pares.map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2}::int)`).join(",")}) as c(fonte, cota)
+           on c.fonte = x.fonte
+         where x.rn <= c.cota
+         group by x.fonte order by 2 desc`
       : `select fonte, count(*) n from (
            select fonte from public.opportunities order by data_captura desc limit $1
          ) x group by fonte order by 2 desc`,
-    [POR_FONTE ? porFonte : MANTER]
+    POR_FONTE ? pares.flat() : [MANTER]
   );
   ficam.forEach((r) => console.log("            fica:", String(r.fonte).padEnd(16), r.n));
   console.log(hora(), "   total que fica:", ficam.reduce((s, r) => s + Number(r.n), 0));
@@ -92,10 +110,15 @@ const hora = () => new Date().toLocaleTimeString("pt-BR");
       POR_FONTE
         ? `delete from public.opportunities
             where id in (
-              select id from (
-                select id, row_number() over (partition by fonte order by data_captura desc) rn
-                  from public.opportunities
-              ) x where rn > $1 limit $2
+              select x.id from (
+                select o.id, o.fonte,
+                       row_number() over (partition by o.fonte order by o.data_captura desc) rn
+                  from public.opportunities o
+              ) x
+              left join (values ${pares.map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2}::int)`).join(",")}) as c(fonte, cota)
+                on c.fonte = x.fonte
+              where x.rn > coalesce(c.cota, 0)
+              limit ${LOTE}
             )`
         : `delete from public.opportunities
             where id in (
@@ -103,7 +126,7 @@ const hora = () => new Date().toLocaleTimeString("pt-BR");
                order by data_captura desc
               offset $1 limit $2
             )`,
-      [POR_FONTE ? porFonte : MANTER, LOTE]
+      POR_FONTE ? pares.flat() : [MANTER, LOTE]
     );
     if (!rowCount) break;
     apagados += rowCount;
