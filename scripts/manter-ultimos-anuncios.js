@@ -69,14 +69,32 @@ const hora = () => new Date().toLocaleTimeString("pt-BR");
   // Então a amostra que fica é enviesada de propósito PARA O FUTURO: o dobro
   // das duas que vão operar, e um resto pequeno das duas que só servem como
   // lembrete de como o motor lida com outro formato de anúncio.
-  const PESO = { FACEBOOK: 2, MERCADO_LIVRE: 2, OLX: 0.5, WEBMOTORS: 0.5 };
+  //   0      → apaga essa fonte INTEIRA
+  //   "tudo" → mantém tudo o que existe dela
+  //   número → fatia proporcional de MANTER
+  //
+  // OLX e Webmotors vão a ZERO (decisão do Gustavo em 23/09: "pode até mesmo
+  // apagar todos"). Nenhuma das duas existe no Paraguai, e guardar amostra de
+  // um formato de anúncio que nunca mais vai ser raspado é só peso morto.
+  // "Inserção Direta" são os 6 anúncios que ele mesmo cadastrou à mão — ficam
+  // todos, porque não dá para recapturar o que não veio de scraper.
+  const PESO = { FACEBOOK: 1, MERCADO_LIVRE: 1, OLX: 0, WEBMOTORS: 0, "Inserção Direta": "tudo" };
   const fontes = (await q("select distinct fonte from public.opportunities where fonte is not null")).map((x) => x.fonte);
-  const somaPesos = fontes.reduce((s, f) => s + (PESO[f] ?? 1), 0);
-  const cotaDe = (f) => Math.max(1, Math.round((MANTER * (PESO[f] ?? 1)) / somaPesos));
+  const comCota = fontes.filter((f) => typeof (PESO[f] ?? 1) === "number" && (PESO[f] ?? 1) > 0);
+  const somaPesos = comCota.reduce((s, f) => s + (PESO[f] ?? 1), 0) || 1;
+  const cotaDe = (f) => {
+    const p = PESO[f] ?? 1;
+    if (p === "tudo") return 2000000000;
+    if (!p) return 0;
+    return Math.max(1, Math.round((MANTER * p) / somaPesos));
+  };
   const porFonte = POR_FONTE ? cotaDe : null;
   if (POR_FONTE) {
-    console.log(hora(), "   modo POR FONTE, com peso (FB e ML valem 4x OLX/Webmotors):");
-    fontes.forEach((f) => console.log("            cota:", String(f).padEnd(16), cotaDe(f)));
+    console.log(hora(), "   modo POR FONTE — só FB e ML sobrevivem (são as fontes do Paraguai):");
+    fontes.forEach((f) => {
+      const c = cotaDe(f);
+      console.log("            cota:", String(f).padEnd(16), c === 0 ? "0 (apaga tudo)" : c > 1e9 ? "tudo" : c);
+    });
   }
 
   // A cota é diferente por fonte, então o SQL recebe a lista de pares.
