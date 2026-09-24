@@ -120,6 +120,11 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
   // remover — desligar antes de apagar, como no resto do projeto.
   const [pais, setPais] = useState<"BR" | "PY">(() => (regioes.some((r) => ehPY(r.uf)) ? "PY" : "BR"));
   const contaPais = (p: "BR" | "PY") => regioes.filter((r) => paisDaUf(r.uf) === p).length;
+  // ⚠️ O filtro de preço do Facebook é na MOEDA DA PRAÇA — medido em 24/09:
+  // com minPrice=8000000 na praça de Ciudad del Este, o menor resultado foi
+  // exatamente ₲8.000.000. Rotular como R$ no Paraguai levava a digitar
+  // valor brasileiro e descartar o mercado inteiro em silêncio.
+  const moedaDaPraca = pais === "PY" ? "₲" : "R$";
 
   const abas = useMemo(
     () =>
@@ -186,11 +191,11 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
       {/* Limites globais (compõem a URL de todas as regiões) */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, marginBottom: 8 }}>
         <div>
-          <label style={rotuloCampo}>Preço mínimo (R$)</label>
+          <label style={rotuloCampo}>Preço mínimo ({moedaDaPraca})</label>
           <input style={inputEstilo} inputMode="numeric" value={minPreco} onChange={(e) => { setMinPreco(e.target.value); marcarSujo(); }} placeholder="15000" />
         </div>
         <div>
-          <label style={rotuloCampo}>Preço máximo (R$)</label>
+          <label style={rotuloCampo}>Preço máximo ({moedaDaPraca})</label>
           <input style={inputEstilo} inputMode="numeric" value={maxPreco} onChange={(e) => { setMaxPreco(e.target.value); marcarSujo(); }} placeholder="400000" />
         </div>
         <div>
@@ -279,10 +284,12 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
 
       {pais === "PY" && (
         <p style={{ margin: "0 0 10px", padding: "8px 12px", fontSize: 12.5, lineHeight: 1.5, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8 }}>
-          ⚠️ <strong>Os filtros de preço abaixo estão em REAIS.</strong> Anúncio
-          paraguaio sai em guarani ou dólar — com o mínimo em 15.000 e o máximo em
-          400.000, o filtro descarta o mercado inteiro <strong>em silêncio</strong>
-          (o log não acusa, só não aparece anúncio). Ajuste antes de ligar.
+          ⚠️ <strong>O filtro de preço aqui é em GUARANI</strong> (medido: pedindo
+          8.000.000 na praça de Ciudad del Este, o menor resultado veio exatamente
+          ₲8.000.000). <strong>Use mínimo 1.000 e máximo vazio.</strong> Esse piso
+          mata os anúncios "GRATIS" e as iscas de ₲1/₲40 sem queimar quem digitou
+          o preço em dólar no campo em guarani — metade da praça faz isso, e o
+          menor sobrevivente é ₲5.000, que é um carro de US$ 5.000.
         </p>
       )}
 
@@ -400,8 +407,8 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
                 style={{ ...inputEstilo, flex: "0 0 116px", ...(r.precoMax.trim() ? { borderColor: "#059669", background: "#f0fdf4" } : null) }}
                 inputMode="numeric"
                 value={r.precoMax}
-                aria-label="Preço máximo próprio (R$) — vazio usa o Geral"
-                title={`Teto de preço só desta região. Vazio = usa o Geral (R$ ${maxPreco || "—"}).`}
+                aria-label={`Preço máximo próprio (${moedaDaPraca}) — vazio usa o Geral`}
+                title={`Teto de preço só desta região. Vazio = usa o Geral (${moedaDaPraca} ${maxPreco || "—"}).`}
                 placeholder={`máx: ${maxPreco || "—"}`}
                 onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], precoMax: e.target.value }; setRegioes(n); marcarSujo(); }}
               />
