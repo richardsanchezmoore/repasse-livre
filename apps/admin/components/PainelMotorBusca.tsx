@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { Check, Loader2, Plus, Trash2, MapPin, Car, Copy, Layers } from "lucide-react";
 import { salvarConfigWorker } from "@/app/actions";
+import { DEPARTAMENTOS_PY, municipiosDe, ehPY, paisDaUf, rotuloUf } from "@/lib/paraguai";
 
 /**
  * Aba "Motor de Busca" — configuração das FONTES de captação que dependem de URL
@@ -36,42 +37,16 @@ const RAIOS = ["1", "2", "5", "10", "20", "25", "40", "60", "80", "100", "250", 
 const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
 /**
- * Departamentos do Paraguai, com prefixo "PY-" DE PROPÓSITO.
+ * Divisão do Paraguai vem de lib/paraguai.ts, com o censo de 2022. Ali cada
+ * departamento carrega SEUS municípios — é o que amarra cidade a departamento
+ * e resolve a bagunça que o Gustavo apontou em 23/09 ("todos puxam as mesmas
+ * cidades confundindo com departamentos").
  *
- * ⚠️ Sem o prefixo haveria colisão feia com as UFs brasileiras: AP é Amapá e
- * também Alto Paraná; AM é Amazonas e também Amambay; CE é Ceará e também
- * Central; SP é São Paulo e também San Pedro. Como o campo `uf` é um só e
- * entra no slug da região, duas praças de países diferentes viveriam com a
- * mesma identidade — e a captação de uma sobrescreveria a outra.
- *
- * O prefixo também é o que deixa o país ser DEDUZIDO do dado que já existe,
- * sem migração de formato: nenhuma região brasileira antiga precisa mudar.
+ * ⚠️ Os códigos levam prefixo "PY-" de propósito: sem ele há colisão com as
+ * UFs brasileiras (AP é Amapá e Alto Paraná; AM é Amazonas e Amambay; CE é
+ * Ceará e Central; SP é São Paulo e San Pedro). Como a UF entra no slug da
+ * região, duas praças de países diferentes teriam a mesma identidade.
  */
-const DEPARTAMENTOS_PY: { cod: string; nome: string }[] = [
-  { cod: "PY-ASU", nome: "Asunción" },
-  { cod: "PY-CEN", nome: "Central" },
-  { cod: "PY-APA", nome: "Alto Paraná (CDE)" },
-  { cod: "PY-ITA", nome: "Itapúa (Encarnación)" },
-  { cod: "PY-AMA", nome: "Amambay (Pedro Juan)" },
-  { cod: "PY-CAG", nome: "Caaguazú" },
-  { cod: "PY-CAN", nome: "Canindeyú" },
-  { cod: "PY-CON", nome: "Concepción" },
-  { cod: "PY-COR", nome: "Cordillera" },
-  { cod: "PY-GUA", nome: "Guairá" },
-  { cod: "PY-MIS", nome: "Misiones" },
-  { cod: "PY-NEE", nome: "Ñeembucú" },
-  { cod: "PY-PAR", nome: "Paraguarí" },
-  { cod: "PY-PHA", nome: "Pdte. Hayes" },
-  { cod: "PY-SPE", nome: "San Pedro" },
-  { cod: "PY-CAZ", nome: "Caazapá" },
-  { cod: "PY-BOQ", nome: "Boquerón" },
-  { cod: "PY-APY", nome: "Alto Paraguay" },
-];
-
-const ehPY = (uf: string) => uf.startsWith("PY-");
-const paisDaUf = (uf: string) => (ehPY(uf) ? "PY" : "BR");
-const rotuloUf = (uf: string) =>
-  ehPY(uf) ? (DEPARTAMENTOS_PY.find((d) => d.cod === uf)?.nome ?? uf.slice(3)) : uf || "? sem UF";
 
 /** MESMA lógica do worker (facebookMain.slug). */
 function slugify(s: string): string {
@@ -325,6 +300,11 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
               style={{ padding: "5px 12px", fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: "pointer", border: `1px solid ${ativa ? "#059669" : uf === "" ? "#fca5a5" : "#e5e7eb"}`, background: ativa ? "#ecfdf5" : "#fff", color: ativa ? "#059669" : uf === "" ? "#dc2626" : "#6b7280" }}
             >
               {rotuloUf(uf)}{n > 0 && <span style={{ fontWeight: 500, opacity: 0.7 }}> ({n})</span>}
+              {ehPY(uf) && (
+                <span style={{ fontWeight: 500, opacity: 0.55, fontSize: 11.5 }}>
+                  {" · "}{((DEPARTAMENTOS_PY.find((d) => d.cod === uf)?.pop ?? 0) / 1000).toFixed(0)}k hab
+                </span>
+              )}
             </button>
           );
         })}
@@ -337,7 +317,7 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
           <option value="">{pais === "PY" ? "+ departamento" : "+ estado"}</option>
           {pais === "PY"
             ? DEPARTAMENTOS_PY.filter((d) => !abas.includes(d.cod)).map((d) => (
-                <option key={d.cod} value={d.cod}>{d.nome}</option>
+                <option key={d.cod} value={d.cod}>{d.nome} · {(d.pop / 1000).toFixed(0)}k hab</option>
               ))
             : UFS.filter((u) => !abas.includes(u)).map((u) => (
                 <option key={u} value={u}>{u}</option>
@@ -358,12 +338,33 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
         r.uf === ufAtiva ? (
           <div key={i} style={{ marginBottom: 10 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input
-                style={{ ...inputEstilo, flex: "0 0 128px" }}
-                value={r.nome}
-                placeholder="Passo Fundo"
-                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
-              />
+              {/* ★ No Paraguai a cidade é ESCOLHIDA, não digitada: a lista sai
+                  do departamento da própria linha. Sem isso dava para cadastrar
+                  Encarnación dentro de Alto Paraná e nada reclamava — e a
+                  região nascia com o slug errado. No Brasil segue texto livre,
+                  que é como as 28 praças foram cadastradas. */}
+              {pais === "PY" ? (
+                <select
+                  style={{ ...inputEstilo, flex: "0 0 190px" }}
+                  value={r.nome}
+                  aria-label="Cidade"
+                  onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
+                >
+                  <option value="">— escolha a cidade —</option>
+                  {municipiosDe(r.uf).map((m) => (
+                    <option key={m.nome} value={m.nome}>
+                      {m.nome} · {(m.pop / 1000).toFixed(0)}k{m.capital ? " ★" : ""}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  style={{ ...inputEstilo, flex: "0 0 128px" }}
+                  value={r.nome}
+                  placeholder="Passo Fundo"
+                  onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], nome: e.target.value }; setRegioes(n); marcarSujo(); }}
+                />
+              )}
               <input
                 style={{ ...inputEstilo, flex: 1, minWidth: 150, fontFamily: "ui-monospace, monospace", fontSize: 12.5 }}
                 value={r.url}
@@ -374,7 +375,14 @@ export function PainelMotorBusca({ configs }: { configs: Record<string, string> 
                 style={{ ...inputEstilo, flex: pais === "PY" ? "0 0 150px" : "0 0 62px" }}
                 value={r.uf}
                 aria-label="Estado (UF)"
-                onChange={(e) => { const n = [...regioes]; n[i] = { ...n[i], uf: e.target.value }; setRegioes(n); marcarSujo(); }}
+                onChange={(e) => {
+                  const n = [...regioes];
+                  // ⚠️ Trocar o departamento ZERA a cidade: manter "Encarnación"
+                  // depois de mudar para Alto Paraná deixaria a linha mentindo.
+                  const mudouDepto = n[i].uf !== e.target.value;
+                  n[i] = { ...n[i], uf: e.target.value, nome: mudouDepto && ehPY(e.target.value) ? "" : n[i].nome };
+                  setRegioes(n); marcarSujo();
+                }}
               >
                 {pais === "PY"
                   ? DEPARTAMENTOS_PY.map((d) => <option key={d.cod} value={d.cod}>{d.nome}</option>)
