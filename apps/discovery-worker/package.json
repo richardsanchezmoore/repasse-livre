@@ -32,7 +32,8 @@
     "backfill:anunciante": "tsx src/backfillTipoAnunciante.ts",
     "migrar": "tsx src/rodarMigracoes.ts",
     "typecheck": "tsc --noEmit",
-    "testar:preco-py": "npx tsx src/precoParaguaiTeste.ts"
+    "testar:preco-py": "npx tsx src/precoParaguaiTeste.ts",
+    "capturar:py": "npx tsx src/capturarParaguai.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
