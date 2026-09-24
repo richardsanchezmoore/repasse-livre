@@ -23,7 +23,12 @@ const CASOS: Caso[] = [
   // Formato do Facebook de Ciudad del Este: símbolo COLADO, sem "Gs.".
   ["₲75.000.000", "PYG 75000000", "REAL — FB Marketplace CDE, 23/09"],
   ["₲49.000.000", "PYG 49000000", "REAL — FB Marketplace CDE"],
-  ["₲13.500", "X preco_isca", "REAL — FB CDE: treze mil guaranis é R$11, não é carro"],
+  // ★ ESCALA AMBÍGUA, medida em 24/09: metade da praça de CDE tem ₲ carimbado
+  // num número que só faz sentido em dólar. NÃO é isca — é dado bom com
+  // rótulo errado, e chamar de isca jogaria fora metade do mercado.
+  ["₲13.500", "X escala_ambigua", "REAL — Cruze LTZ 2018 por ₲15.500 = US$15.500"],
+  ["₲1", "X preco_isca", "isca de verdade fica abaixo de ₲1.000"],
+  ["₲40", "X preco_isca", "REAL — ClasiPar"],
   // ★ Como o símbolo CHEGA do JSON do Facebook: escapado. Sem desescapar,
   // o "20b2" entra como dígito e 110 milhões viram 202 BILHÕES.
   ["\u20b2110.000.000", "PYG 110000000", "REAL — FB CDE, cru do JSON"],
@@ -134,6 +139,10 @@ const CONTEXTO: [preco: string, descricao: string, esperado: string, nota?: stri
   ["24.500", "", "USD 24500 grandeza", "milhares só faz sentido em dólar"],
   ["2.000.000", "", "X fora_de_faixa", "ZONA CINZENTA: recusar é melhor que chutar"],
   ["30.000", "Sorento 2026 full, 30.000$ negociable", "USD 30000 descricao", "cifrão depois, na descrição"],
+  // ★★ A INTELIGÊNCIA: a descrição resolve a escala ambígua.
+  ["₲15.500", "2018 Chevrolet Cruze LTZ, 15.500 dólares", "USD 15500 descricao", "REAL CDE — recuperado"],
+  ["₲25.000", "Toyota Allion 2002, 25 millones", "PYG 25000000 descricao", "o vendedor digitou em milhares"],
+  ["₲15.500", "", "X escala_ambigua", "sem pista: NÃO chutar"],
 ];
 
 console.log("\n=== MOEDA PELO CONTEXTO (símbolo > descrição > grandeza) ===");

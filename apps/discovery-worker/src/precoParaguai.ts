@@ -27,6 +27,7 @@ export type MotivoDescarte =
   | "sem_preco"        // não achei número nenhum
   | "preco_isca"       // Gs. 1, US$ 1,00 — vendedor fugindo do filtro
   | "outro_mercado"    // anunciado em REAL → é carro brasileiro
+  | "escala_ambigua"   // ₲ com número de dólar: o valor é real, a escala não
   | "fora_de_faixa";   // valor que não descreve carro em nenhuma das moedas
 
 /**
@@ -42,6 +43,16 @@ const FAIXA = {
 
 /** Acima disto, "dólar" quase certamente é guarani digitado no campo errado. */
 const TETO_DOLAR_CRIVEL = 300_000;
+
+/**
+ * Faixa em que um valor marcado com ₲ é ambíguo: alto demais para ser isca
+ * (₲1, ₲40) e baixo demais para ser preço de carro em guarani, mas bem no
+ * meio da faixa de preço de carro em DÓLAR.
+ *
+ * O piso em 1.000 preserva a detecção de isca de verdade; o teto em 500.000
+ * é o mesmo da faixa de dólar, acima do qual volta a ser guarani plausível.
+ */
+const LIMIAR_ESCALA = { min: 1_000, max: 500_000 };
 
 const RX_GUARANI = /(?:\bGs\.?|₲|\bGuaran[ií]e?s?\b|\bPYG\b)/i;
 // O "$" pode vir ANTES ou DEPOIS do número — "$ 30.000" e "30.000$" convivem
@@ -145,7 +156,12 @@ export function lerPreco(bruto: string): LeituraPreco {
   // "RAM 1500 RHO 2025 — US$. 1,00". É o vendedor escapando do filtro de preço
   // de quem busca por faixa. Entra na média como se fosse oferta e a arrasta
   // para baixo — um desses num modelo raro já estraga a linha da tabela.
-  const isca = (ehGuarani && valor < FAIXA.PYG.min) || (ehDolar && valor < FAIXA.USD.min);
+  // ⚠️ ORDEM IMPORTA. Em guarani, "abaixo do mínimo" NÃO é sinônimo de isca:
+  // entre ₲1.000 e ₲500.000 mora a escala ambígua (dólar digitado no campo em
+  // guarani), que é METADE da praça de Ciudad del Este. Tratar aquilo como
+  // isca jogaria fora dado bom — por isso a isca em guarani é só o que está
+  // ABAIXO da faixa ambígua: ₲1, ₲40, ₲130 e afins.
+  const isca = (ehGuarani && valor < LIMIAR_ESCALA.min) || (ehDolar && valor < FAIXA.USD.min);
   if (isca) {
     return { ok: false, motivo: "preco_isca", valorBruto: valor, moedaBruta: ehGuarani ? "PYG" : "USD" };
   }
@@ -163,6 +179,35 @@ export function lerPreco(bruto: string): LeituraPreco {
 
   if (ehGuarani) {
     if (valor > FAIXA.PYG.max) return { ok: false, motivo: "fora_de_faixa", valorBruto: valor, moedaBruta: "PYG" };
+
+    // ★★ ESCALA AMBÍGUA — medido no Marketplace de Ciudad del Este (24/09) e
+    // é METADE da página, não exceção.
+    //
+    //   "₲15.500 — 2018 Chevrolet Cruze LTZ"   → ₲15.500 são treze reais.
+    //                                             US$ 15.500 é o preço certo.
+    //   "₲25.000 — 2002 Toyota Allion"          → aqui US$ 25.000 é caro demais;
+    //                                             provavelmente são ₲25.000.000.
+    //
+    // O vendedor digita o número certo na escala errada, e o Facebook carimba ₲
+    // porque é a moeda da praça. Os dois casos acima têm a MESMA cara e leitura
+    // diferente — só o modelo e o ano desempatam, que é justamente o que a
+    // tabela de referência vai saber fazer quando existir.
+    //
+    // Enquanto não existe: NÃO CHUTAR. Devolve o valor cru marcado como
+    // ambíguo. O anúncio continua sendo capturado e fica no banco; o que ele
+    // não pode é entrar na mediana carregando uma escala inventada.
+    // ⚠️ Chamar isso de "isca" seria pior: isca é lixo, isto é dado bom com
+    // rótulo errado — e jogar fora metade da praça mataria a tabela.
+    if (valor >= LIMIAR_ESCALA.min && valor <= LIMIAR_ESCALA.max) {
+      return { ok: false, motivo: "escala_ambigua", valorBruto: valor, moedaBruta: "PYG" };
+    }
+
+    // Entre a faixa ambígua e o piso do guarani (₲500 mil a ₲5 milhões) não
+    // existe carro: são R$420 a R$4.200. Nem dólar digitado, nem guarani real.
+    if (valor < FAIXA.PYG.min) {
+      return { ok: false, motivo: "fora_de_faixa", valorBruto: valor, moedaBruta: "PYG" };
+    }
+
     return { ok: true, valor, moeda: "PYG" };
   }
 
@@ -220,6 +265,29 @@ export function lerPrecoComContexto(
   descricao = ""
 ): LeituraPreco & { confianca?: ConfiancaMoeda } {
   const direto = lerPreco(textoPreco);
+  const ctxInicial = `${textoPreco} ${descricao}`;
+
+  // ★★ A INTELIGÊNCIA (nome do Gustavo, 24/09): quando o ₲ carimba um número
+  // que só faz sentido em dólar, a DESCRIÇÃO costuma resolver. Metade da
+  // praça de Ciudad del Este cai aqui, então recuperar esses anúncios vale
+  // mais que qualquer outra regra deste arquivo.
+  //
+  // "₲15.500" num Cruze 2018 cuja descrição diz "15.500 dólares" ou traz um
+  // "$" solto deixa de ser ambíguo. Sem pista nenhuma, continua ambíguo — e
+  // aí fica fora da mediana até a própria tabela poder arbitrar pelo
+  // modelo/ano, que é exatamente o que ela vai saber fazer quando existir.
+  if (!direto.ok && direto.motivo === "escala_ambigua") {
+    const valorAmb = direto.valorBruto ?? 0;
+    if (RX_DIZ_DOLAR.test(descricao) && valorAmb >= FAIXA.USD.min && valorAmb <= FAIXA.USD.max) {
+      return { ok: true, valor: valorAmb, moeda: "USD", confianca: "descricao", corrigido: "moeda_trocada" };
+    }
+    // A descrição fala em milhões: o vendedor digitou o valor em milhares de
+    // guarani ("25.000" querendo dizer ₲25.000.000).
+    if (RX_DIZ_GUARANI.test(descricao) && valorAmb * 1_000 <= FAIXA.PYG.max) {
+      return { ok: true, valor: valorAmb * 1_000, moeda: "PYG", confianca: "descricao", corrigido: "moeda_trocada" };
+    }
+    return direto;
+  }
 
   // Teve símbolo? Então está resolvido, e com a melhor evidência possível.
   const tinhaSimbolo = RX_GUARANI.test(desescapar(textoPreco)) || RX_DOLAR.test(desescapar(textoPreco)) || RX_REAL.test(desescapar(textoPreco));
