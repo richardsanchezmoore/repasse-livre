@@ -322,6 +322,100 @@ export function lerPrecoComContexto(
 }
 
 /**
+ * ★★★ ENTREGA NO CAMPO DE PREÇO — o maior envenenador da amostra paraguaia.
+ *
+ * Achado na primeira captação real (24/09): o Gustavo olhou uma "Hyundai
+ * Tucson 2016 por ₲15.000.000" e disse que não fecha — uma Tucson não custa
+ * R$12.700. A descrição explicou:
+ *
+ *   "✅ Entrega ₲ 15.000.000 ✅ Cuota ₲ 3.265.000"
+ *
+ * O número no campo de preço é a ENTRADA do financiamento, não o carro. E não
+ * é caso isolado: **um terço da amostra** faz isso, e as revendas põem no
+ * próprio TÍTULO — "20 Millones De Entrega", "Entrega Mínima 20.000.000GS",
+ * "Entrega de USD 12.000 - 36 cuotas". É estratégia de busca: aparecer barato.
+ *
+ * Isso é pior que isca de ₲1. A isca se reconhece de longe; a entrega tem
+ * valor PLAUSÍVEL de carro e entra na mediana sem levantar suspeita,
+ * arrastando a referência do modelo para baixo. É exatamente o erro que
+ * tornaria a nossa tabela tão pouco confiável quanto a do Carden.
+ *
+ * ⚠️ Vocabulário LOCAL: no Brasil é "entrada" e "parcela"; aqui é "entrega" e
+ * "cuota". Traduzir o padrão brasileiro não teria pegado nada.
+ */
+const RX_ENTREGA = /\b(entrega|entrada)\b/i;
+// ⚠️ SEM `\b` no fim — TERCEIRA vez que esse tropeço aparece neste arquivo.
+// `\b(financi)\b` não casa em "FINANCIADO" nem em "Financiación", porque
+// entre o "i" e a letra seguinte não existe limite de palavra. Prefixo de
+// raiz nunca leva `\b` no fim.
+const RX_FINANCIAMENTO = /\b(financi|cuotas?\b|refuerzos?\b|sin\s+requisitos|a\s+sola\s+c[eé]dula|informconf)/i;
+
+/**
+ * O preço anunciado é a entrega de um financiamento?
+ *
+ * Exige DOIS sinais: a palavra "entrega/entrada" perto de um número parecido
+ * com o preço, E sinal de financiamento no texto. Só "entrega" não basta —
+ * "entrega inmediata" é outra coisa e é comum.
+ */
+export function precoEhEntrega(descricao: string, titulo: string, preco: number): boolean {
+  const t = `${titulo} ${descricao}`;
+  if (!preco || !RX_ENTREGA.test(t)) return false;
+  if (!RX_FINANCIAMENTO.test(t)) return false;
+
+  // ⚠️ VARREDURA POR JANELA, e não um regex com alternação.
+  // A primeira versão usava `(?:entrega)...(\d+)|(\d+)...(?:entrega)` e falhava
+  // justamente no caso real: em "FINANCIADO HASTA 48 MESES ✅ Entrega ₲
+  // 15.000.000", o segundo ramo casava o "48" com aquela mesma palavra
+  // "Entrega" e CONSUMIA o token — então o primeiro ramo nunca chegava ao
+  // 15.000.000. Alternação que compete pelo mesmo termo é armadilha; olhar a
+  // vizinhança de cada ocorrência é previsível.
+  const marcas = [...t.matchAll(/\b(entrega|entrada)\b/gi)];
+  for (const marca of marcas) {
+    const i = marca.index ?? 0;
+    const janela = t.slice(Math.max(0, i - 40), i + 60);
+    for (const num of janela.matchAll(/([\d][\d.,]{1,})/g)) {
+      const cru = num[1].replace(/[.,]/g, "");
+      const n = Number(cru);
+      if (!Number.isFinite(n) || n <= 0) continue;
+      // "20 millones de entrega" → o 20 vale 20.000.000
+      const candidatos = /mill/i.test(janela) ? [n, n * 1_000_000] : [n];
+      for (const c of candidatos) {
+        if (Math.abs(c - preco) <= Math.max(1, preco * 0.05)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * ★ RESGATE: o preço DE VERDADE costuma estar escrito na descrição.
+ *
+ * "💰 Precio: 80.000.000 Gs", "Precio Usd 13.500", "26.500 Usd", "135 Millones".
+ * Quando o campo traz a entrega, isto recupera o anúncio em vez de descartá-lo
+ * — e num mercado onde só um terço tem preço limpo, recuperar importa.
+ */
+export function precoDeclarado(descricao: string): LeituraPreco | null {
+  if (!descricao) return null;
+  const t = desescapar(descricao).replace(/\+/g, " ");
+  const padroes = [
+    // ⚠️ O ponto NÃO pode entrar na classe de exclusão: "Precio: 80.000.000"
+    // seria cortado no primeiro ponto e viraria "80".
+    /precio[:\s]*([^\n;]{2,40})/i,
+    /valor[:\s]*([^\n.;]{2,40})/i,
+    /(?:^|\s)(?:gs\.?|₲|us\$|usd)\s*[\d.,]{4,}/i,
+    /([\d.,]{2,})\s*mill[oó]n(?:es)?/i,
+  ];
+  for (const rx of padroes) {
+    const m = t.match(rx);
+    if (!m) continue;
+    const trecho = (m[1] ?? m[0]).trim();
+    const r = lerPrecoComContexto(trecho, t);
+    if (r.ok) return r;
+  }
+  return null;
+}
+
+/**
  * ⚠️ ANÚNCIO DE COMPRA travestido de venda. Real, no ClasiPar: "COMPRO CONTADO
  * HYUNDAI TUCSON — Gs. 1" aparece na listagem de autos à venda. Não é oferta,
  * é procura — e o preço nem é preço. Tem que sair antes de qualquer média.
