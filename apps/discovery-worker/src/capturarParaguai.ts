@@ -305,7 +305,29 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error("[py] falha geral:", e);
-  process.exitCode = 1;
-});
+/**
+ * ⚠️⚠️ FECHAR O NAVEGADOR SEMPRE — bug achado em 03/10/2026, e ele matava a
+ * captação inteira em silêncio.
+ *
+ * A varredura da noite TERMINOU o trabalho às 00:35 ("40 salvos") e o processo
+ * continuou vivo às 09:5x — 9h30 pendurado. Causa: `fecharContexto()` só era
+ * chamado no caminho de sessão inválida; no fim normal o contexto persistente
+ * do Playwright ficava aberto, o event loop do Node nunca drenava e o processo
+ * nunca saía.
+ *
+ * O dano real não é o processo parado: é que o Agendador de Tarefas, com
+ * "não iniciar nova instância se já estiver em execução", PULA todas as
+ * rodadas seguintes. Uma única run pendurada mata o cron de 4h10 para sempre,
+ * sem erro em lugar nenhum — o log só para de crescer.
+ *
+ * `finally` e não `then`: tem que fechar também quando falha, senão o modo de
+ * erro deixa o mesmo zumbi.
+ */
+main()
+  .catch((e) => {
+    console.error("[py] falha geral:", e);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await fecharContexto().catch(() => {});
+  });
