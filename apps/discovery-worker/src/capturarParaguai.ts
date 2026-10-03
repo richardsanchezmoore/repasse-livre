@@ -49,6 +49,39 @@ const slug = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 const slugRegiao = (r: RegiaoPY) => [slug(r.nome), r.uf ? r.uf.toLowerCase() : ""].filter(Boolean).join("-");
 const dormir = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+interface FaixaPreco { min: number; max: number }
+
+/**
+ * ★★★ PAGINAÇÃO POR FAIXA DE PREÇO — e a pergunta do Gustavo que levou até aqui.
+ *
+ * A busca do Marketplace devolve **24 itens e para**. Eu comecei a inventar
+ * autoscroll; ele perguntou *"mas por que não seguimos o comportamento que
+ * usávamos antes? E funcionava?"* — e tinha razão: o motor brasileiro nunca
+ * rolou a página. Ele FATIA A BUSCA POR PREÇO, e cada faixa é uma requisição
+ * que devolve os seus próprios 24. Está em facebookMain.ts desde sempre.
+ *
+ * Medido no navegador antes de descobrir isso: scroll por JS e scroll de mouse
+ * real, dez tentativas, altura travada em 2.602px e nenhum item novo. A rolagem
+ * infinita simplesmente não entrega para sessão automatizada. A faixa entrega.
+ *
+ * ⚠️⚠️ E AQUI ENTRA O QUE SÓ O DADO PARAGUAIO MOSTRA: metade da praça de Ciudad
+ * del Este digita DÓLAR no campo que o Facebook carimba como guarani. Um
+ * Corolla Cross 2026 de concessionária aparece como "PYG33.000" — são US$
+ * 33.000. Esses anúncios vivem ABAIXO de qualquer faixa sensata em guarani, e
+ * uma primeira faixa começando em 5 milhões os perderia TODOS, em silêncio.
+ *
+ * Por isso as duas primeiras faixas são baixas de propósito: elas existem para
+ * pescar a população de preço em dólar, não para pescar carro barato.
+ */
+function parseFaixas(raw: string | null | undefined, piso: number, teto: number): FaixaPreco[] {
+  if (!raw?.trim()) return [{ min: piso, max: teto }];
+  const faixas = raw.split(",").map((seg) => {
+    const [a, b] = seg.split("-").map((x) => x.trim());
+    return { min: Number(a || 0) || piso, max: b ? Number(b) : teto };
+  }).filter((f) => Number.isFinite(f.min) && Number.isFinite(f.max) && f.max > f.min);
+  return faixas.length ? faixas : [{ min: piso, max: teto }];
+}
 const log = (...a: unknown[]) => console.log(new Date().toLocaleTimeString("pt-BR"), ...a);
 
 /**
@@ -86,13 +119,14 @@ const linkPublico = (id: string) => `https://www.facebook.com/marketplace/item/$
 
 async function main() {
   const alvo = process.argv[2];
-  const [regioesRaw, minPreco, maxPreco, minAno, maxItensRaw, pacingRaw] = await Promise.all([
+  const [regioesRaw, minPreco, maxPreco, minAno, maxItensRaw, pacingRaw, faixasRaw] = await Promise.all([
     lerConfig("FACEBOOK_REGIOES"),
     lerConfig("FACEBOOK_FILTRO_MIN_PRECO"),
     lerConfig("FACEBOOK_FILTRO_MAX_PRECO"),
     lerConfig("FACEBOOK_FILTRO_MIN_ANO"),
     lerConfig("FACEBOOK_MAX_ITENS"),
     lerConfig("FACEBOOK_PACING_MS"),
+    lerConfig("FACEBOOK_FAIXAS_PRECO"),
   ]);
 
   let todas: RegiaoPY[] = [];
@@ -127,22 +161,50 @@ async function main() {
     return;
   }
 
+  // Piso 1.000 de propósito: é onde moram os anúncios com preço em dólar
+  // digitado no campo guarani. Teto aberto (2 bilhões de Gs cobre importado de
+  // luxo) quando o painel não define.
+  const faixas = parseFaixas(faixasRaw, Number(filtros.minPreco || 1000), Number(filtros.maxPreco || 2_000_000_000));
+
   log(`praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
   for (const regiao of regioes) {
     const marca = slugRegiao(regiao);
-    const url = montarUrlBuscaFacebook(regiao.url, filtros, regiao.raio ?? "60");
-    log(`\n▶ ${regiao.nome} (${marca})`);
+    log(`\n▶ ${regiao.nome} (${marca}) — ${faixas.length} faixa(s) de preço`);
 
-    let html: string;
-    try {
-      html = await baixar(url);
-    } catch (e) {
-      log(`  ✗ busca falhou: ${(e as Error).message}`);
-      continue;
+    // ⚠️ Dedup ENTRE as faixas da mesma rodada: as bordas se tocam e o mesmo
+    // anúncio aparece em duas. Sem isto, o relatório conta o dobro e o livro-
+    // razão leva escrita à toa.
+    const vistosNaRodada = new Set<string>();
+    const ids: string[] = [];
+
+    for (const faixa of faixas) {
+      const url = montarUrlBuscaFacebook(
+        regiao.url,
+        { ...filtros, minPreco: String(faixa.min), maxPreco: String(faixa.max) },
+        regiao.raio ?? "60"
+      );
+      let htmlFaixa: string;
+      try {
+        htmlFaixa = await baixar(url);
+      } catch (e) {
+        log(`  ✗ faixa ${faixa.min}-${faixa.max} falhou: ${(e as Error).message}`);
+        continue;
+      }
+      const novosDaFaixa = extrairIdsDaBusca(htmlFaixa).filter((id) => !vistosNaRodada.has(id));
+      novosDaFaixa.forEach((id) => vistosNaRodada.add(id));
+      ids.push(...novosDaFaixa);
+      log(`    faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}: ${novosDaFaixa.length} novo(s) na faixa`);
+      // ⚠️ Pausa ENTRE faixas: são várias buscas seguidas na mesma praça, e é
+      // justamente o padrão que mais chama atenção. O pacing do painel vale
+      // aqui também.
+      await dormir(pacing);
     }
 
-    const ids = extrairIdsDaBusca(html);
+    if (!ids.length) {
+      log("  0 na página · 0 novos");
+      continue;
+    }
     const jaVistos = await buscarIdsVistosFacebook(ids);
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
     log(`  ${ids.length} na página · ${novos.length} novos`);
