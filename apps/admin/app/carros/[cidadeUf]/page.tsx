@@ -21,7 +21,7 @@ import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo, type Chave
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { buscarTagsMarcas } from "@/lib/tags";
-import { caminhoMarca, urlMarca, COLUNAS_CARTAO } from "@/lib/site";
+import { caminhoMarca, urlMarca, COLUNAS_CARTAO, metadataEraAnterior } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -107,6 +107,8 @@ export async function generateMetadata({
   return {
     title: titulo,
     description: descricao,
+    // ★ Página de localidade da era anterior sai do índice (ver lib/site.ts).
+    ...metadataEraAnterior(contexto.filtroEstado),
     alternates: { canonical: contexto.url },
     openGraph: {
       title: titulo,

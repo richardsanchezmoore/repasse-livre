@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/auto-publicar",
-      "schedule": "*/15 * * * *"
+      "schedule": "5 * * * *"
     }
   ]
 }

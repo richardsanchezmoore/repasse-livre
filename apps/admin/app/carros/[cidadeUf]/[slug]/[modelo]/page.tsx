@@ -19,7 +19,7 @@ import { resolverLocalidade } from "@/lib/localidade";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { caminhoModelo, urlModelo, COLUNAS_CARTAO } from "@/lib/site";
+import { caminhoModelo, urlModelo, COLUNAS_CARTAO, metadataEraAnterior } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -74,6 +74,7 @@ export async function generateMetadata({
   return {
     title: titulo,
     description: descricao,
+    ...metadataEraAnterior(localidade.filtroEstado),
     alternates: { canonical: url },
     openGraph: { title: titulo, description: descricao, url, images: foto ? [foto] : undefined },
     twitter: { card: "summary_large_image", title: titulo, description: descricao, images: foto ? [foto] : undefined },

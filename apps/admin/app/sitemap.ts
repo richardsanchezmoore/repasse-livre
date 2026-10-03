@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { supabaseAdmin } from "@/lib/supabase";
-import { URL_BASE_SITE, urlCidade, urlEstado, urlMarca, urlModelo, urlOportunidade } from "@/lib/site";
+import { URL_BASE_SITE, PAIS_DO_SITE, urlCidade, urlEstado, urlMarca, urlModelo, urlOportunidade } from "@/lib/site";
 import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
 import { MIN_ANUNCIOS_MODELO } from "@/components/DiscoveriesBoard";
 import { gerarSlugCidade, slugify } from "@/lib/slug";
@@ -26,7 +26,8 @@ const TAMANHO_PAGINA = 1000;
 // ⚠️ NÃO APAGA NADA. As 934 brasileiras continuam na base e no painel; só param
 // de ser anunciadas. Se o Brasil voltar, troca a env — mesma lógica do
 // "desligar por flag, não apagar" que já vale para Webmotors e OLX.
-const PAIS_DO_SITE = process.env.NEXT_PUBLIC_PAIS_SITE ?? "PY";
+// (PAIS_DO_SITE vem de lib/site.ts — fonte única, usada também pelo noindex
+// das páginas da era anterior.)
 
 type LinhaSitemap = Pick<
   Oportunidade,

@@ -3,6 +3,42 @@ import type { Oportunidade } from "./types";
 
 export const URL_BASE_SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://repasselivre.com").replace(/\/$/, "");
 
+/**
+ * ★★ O PAÍS QUE O SITE ANUNCIA — e por que isso existe (02/10/2026).
+ *
+ * A conta do Supabase estourou o egress (5,47 de 5 GB) com DOIS usuários ativos
+ * no mês. Não era gente, era robô: das oportunidades aprovadas, 934 são BR e 66
+ * são PY. O buscador rastreava todo dia ~2.800 URLs de estoque brasileiro da
+ * era Repasse Livre, e cada visita puxava dado do banco.
+ *
+ * ⚠️ O CORTE NÃO PODE SER POR DOMÍNIO. O Auto Radar PY roda HOJE no próprio
+ * repasselivre.com — a troca para autoradarpy.com vem depois. Separar pelo
+ * endereço desindexaria o site vivo. Quem separa as duas eras é o DADO.
+ *
+ * ⚠️ NÃO APAGA NADA: o conteúdo brasileiro continua no ar e no painel, só sai
+ * do índice. Para trazer o Brasil de volta é mudar a env, sem deploy de código
+ * — mesma lógica do "desligar por flag, não apagar" de Webmotors e OLX.
+ */
+export const PAIS_DO_SITE = process.env.NEXT_PUBLIC_PAIS_SITE ?? "PY";
+
+/**
+ * De que país é um estado. O Paraguai aparece como "PY-ASU", "PY-CDE"...;
+ * o Brasil como UF de duas letras ("RS", "SP"). Sem prefixo = Brasil.
+ */
+export const paisDoEstado = (estado?: string | null): string =>
+  /^PY(-|$)/i.test(String(estado ?? "").trim()) ? "PY" : "BR";
+
+/** Conteúdo de país que o site não anuncia mais. */
+export const ehEraAnterior = (estado?: string | null): boolean =>
+  paisDoEstado(estado) !== PAIS_DO_SITE;
+
+/**
+ * Spread no objeto de metadata: tira do índice mas MANTÉM o follow, para o
+ * robô continuar atravessando os links e achando as páginas do Paraguai.
+ */
+export const metadataEraAnterior = (estado?: string | null) =>
+  ehEraAnterior(estado) ? ({ robots: { index: false, follow: true } } as const) : {};
+
 // Colunas LEVES pras listagens/cards (páginas SEO). Evita ler as pesadas
 // (fotos_secundarias, descricao, atributos_olx, copiloto_parecer, opcionais…),
 // que inflam a tabela pra ~58MB e faziam a leitura por página estourar o Disk IO.
