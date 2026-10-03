@@ -11,6 +11,23 @@ export const revalidate = 3600;
 
 const TAMANHO_PAGINA = 1000;
 
+// ★★ SÓ O PAÍS VIVO É ANUNCIADO AO BUSCADOR (02/10/2026).
+//
+// O que motivou: a conta do Supabase estourou o egress (5,47 de 5 GB) com DOIS
+// usuários ativos no mês. Não era gente, era robô — e o sitemap é o convite.
+// Medido na base: das oportunidades aprovadas, 934 são BR e 66 são PY. Ou seja,
+// 93% do que o buscador rastreava todo dia era estoque brasileiro da era
+// Repasse Livre, que não serve mais ao produto.
+//
+// ⚠️ O CORTE NÃO PODE SER POR DOMÍNIO. O Auto Radar PY roda HOJE no próprio
+// repasselivre.com (a troca para autoradarpy.com vem depois) — eu quase
+// desindexei o site vivo tentando separar pelo domínio. Quem separa é o DADO.
+//
+// ⚠️ NÃO APAGA NADA. As 934 brasileiras continuam na base e no painel; só param
+// de ser anunciadas. Se o Brasil voltar, troca a env — mesma lógica do
+// "desligar por flag, não apagar" que já vale para Webmotors e OLX.
+const PAIS_DO_SITE = process.env.NEXT_PUBLIC_PAIS_SITE ?? "PY";
+
 type LinhaSitemap = Pick<
   Oportunidade,
   "id" | "veiculo" | "versao" | "ano" | "cidade" | "estado" | "origem_tipo" | "data_captura"
@@ -29,6 +46,7 @@ async function buscarTodasOportunidadesAprovadas(): Promise<LinhaSitemap[]> {
       .from("opportunities")
       .select("id, veiculo, versao, ano, cidade, estado, origem_tipo, data_captura")
       .eq("status", "aprovada")
+      .eq("pais", PAIS_DO_SITE)
       .order("data_captura", { ascending: false })
       .range(inicio, inicio + TAMANHO_PAGINA - 1);
 
