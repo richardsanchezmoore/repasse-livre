@@ -18,15 +18,17 @@
  * tem uma única palavra em espanhol. Por isso "Recien Importado", "Sin
  * Requisitos", "20 Millones" e "Entrega A Sola Cédula" entram no nome do modelo.
  *
- * ★★ DECISÃO DE PRODUTO, apoiada em pesquisa (en.wikipedia.org/wiki/Toyota_Premio,
- * en.wikipedia.org/wiki/Toyota_Platz): os nomes JDM **NÃO são traduzidos**.
- *   - Allion e Premio são gêmeos EXCLUSIVOS do Japão, nunca exportados;
- *   - Axio é o "Corolla Axio", JDM, MENOR e MAIS BARATO que o Corolla global;
- *   - Vitz é o nome japonês do Yaris, e Platz é o Vitz sedã;
- *   - Ractis é mini-MPV derivado do Vitz, sucessor do FunCargo.
- * Juntar Axio com Corolla, ou Vitz com Yaris, misturaria faixas de preço
- * diferentes e faria a tabela mentir. O mercado paraguaio os chama pelo nome
- * japonês; a tabela também vai.
+ * ★★★ REGRA QUE MANDA AQUI (Gustavo, 03/10/2026): nunca traduzir, nunca cruzar
+ * com o Brasil. "É um mundo à parte o Paraguay."
+ *
+ * Eu havia escrito que Vitz "é o Yaris japonês". Ele corrigiu: não é — são
+ * carros esteticamente bem diferentes. Dividir plataforma não é ser o mesmo
+ * carro para quem compra, e é o comprador que forma o preço.
+ *
+ * Então o normalizador não converte nome nenhum. Allion é Allion, Axio é Axio,
+ * Vitz é Vitz. O catálogo (catalogoJdmParaguai.ts) deliberadamente NÃO tem
+ * campo de equivalência, para que ninguém vá buscar "referência" na base
+ * brasileira. A referência é a que esta base vai construir.
  */
 
 /** Tira acento e baixa a caixa, para comparar sem susto. */
