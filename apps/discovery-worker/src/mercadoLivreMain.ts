@@ -99,6 +99,30 @@ async function executarComRegistro(categoriaUrlBase: string, jaReexecutou = fals
 }
 
 async function main(): Promise<void> {
+  // ⚠️⚠️ CHAVE GERAL DA ERA BRASIL — MERCADOLIVRE_ATIVO, criada em 03/10/2026.
+  //
+  // O Gustavo viu no site "Oportunidades no Brasil" com carro brasileiro novo
+  // entrando e pediu: "temos que parar toda captação Brasil". A medição deu
+  // 276 anúncios da OLX num único dia (último 11:47) e o Webmotors em
+  // TEMPESTADE DE RETRY — uma execução a cada ~3,5s, todas com erro.
+  //
+  // ★ Desligar por FLAG e não apagar o código: o Auto Radar PY é o sucessor do
+  // Repasse Livre, não um projeto novo, e o motor brasileiro pode voltar a
+  // servir se um dia abrirmos outra praça. Apagar seria perder o que já está
+  // provado em produção.
+  //
+  // ⚠️ AUSENTE = DESLIGADO, de propósito. Só a string "true" liga. Assim um
+  // ambiente novo (ou uma tabela sem a chave) nasce sem captar Brasil, em vez
+  // de nascer captando e alguém descobrir pelo site.
+  //
+  // ⚠️ NÃO confundir com FACEBOOK_ATIVO: aquele hoje serve o PARAGUAI
+  // (FACEBOOK_REGIOES só tem praças paraguaias, locale es_LA). Desligar o
+  // Facebook mataria a captação que a gente QUER.
+  const ativo = ((await lerConfig("MERCADOLIVRE_ATIVO")) ?? "").trim() === "true";
+  if (!ativo) {
+    console.log("[ml] desligado (MERCADOLIVRE_ATIVO ≠ true). Era Brasil pausada — nada a fazer.");
+    return;
+  }
   const categoriaUrlBase =
     (await lerConfig("MERCADOLIVRE_CATEGORY_URL")) ??
     process.env.MERCADOLIVRE_CATEGORY_URL ??
