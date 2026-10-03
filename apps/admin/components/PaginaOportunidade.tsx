@@ -5,6 +5,7 @@ import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
 import { formatarPublicacaoRelativa, formatarKm, formatarMoeda } from "@/lib/formatadores";
+import { PrecoAnuncio } from "@/components/PrecoAnuncio";
 import { ocultarTelefonesNaDescricao } from "@/lib/mascaras";
 import { urlOportunidade } from "@/lib/site";
 import { lerAtributo, chavesFonte, type CampoCanonico } from "@/lib/atributos";
@@ -206,7 +207,7 @@ export async function PaginaOportunidade({
         <div className="precos-grupo precos-grupo-pagina">
           <div className="linha-preco linha-preco-anuncio">
             <span className="preco-rotulo">Oferta</span>
-            <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
+            <PrecoAnuncio className="preco-valor" valor={oportunidade.preco} moeda={oportunidade.moeda} />
           </div>
           <div className="linha-preco linha-preco-fipe">
             <span className="preco-rotulo">FIPE</span>

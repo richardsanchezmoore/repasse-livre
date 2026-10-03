@@ -7,6 +7,12 @@ export type OrigemTipo = "descoberta" | "insercao_direta";
 export interface Oportunidade {
   id: string;
   fonte: string;
+  // ★ Campos do mercado paraguaio. `moeda` é o que torna o preço um FATO: no
+  // Paraguai o anúncio sai em guarani ou dólar, e preço sem moeda é número solto.
+  // Sem isto o site mostrava ₲220.000.000 como "R$ 220.000.000".
+  moeda?: string | null;
+  pais?: string | null;
+  procedencia?: string | null;
   link_origem: string;
   veiculo: string;
   versao: string | null;

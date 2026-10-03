@@ -474,7 +474,31 @@ export function mencionaTroca(titulo: string, descricao = ""): boolean {
  * Por isso isto não é uma observação no anúncio: é campo de captura, tão
  * essencial quanto o preço.
  */
-export type Procedencia = "importado" | "uso_local" | "desconhecida";
+/**
+ * ★★★ SÃO TRÊS POPULAÇÕES, NÃO DUAS — corrigido em 02/10/2026 com dado real.
+ *
+ * O desenho de setembro tinha duas curvas (importado vs uso local), copiando o
+ * vocabulário local e o "Representante: Sí/No" do Carden. Abrindo um anúncio
+ * de Ciudad del Este pelo navegador logado, apareceu a terceira:
+ *
+ *   "Corolla Cross 2026 Híbrido 0km ... 🏢 Concesionaria: Majestic Cars HVN
+ *    👤 Asesor Comercial: David Lopez ... Garantía de motor y caja por 1 año"
+ *
+ * Isso voltava como "desconhecida". E jogar um 0km de concessionária na curva
+ * de "importado" seria pior que deixar fora: um Corolla Cross zero e um usado
+ * recém-chegado de Iquique não disputam o mesmo comprador nem o mesmo preço.
+ * Misturados, inflam a curva do importado e fazem a tabela mentir justamente
+ * no segmento mais caro.
+ *
+ *   zero_km    concessionária / representante oficial, carro novo
+ *   importado  usado que acabou de entrar (Japão/Coreia via Iquique)
+ *   uso_local  já rodou no Paraguai, normalmente de particular
+ *
+ * ⚠️ A tabela tem que sair segmentada nas TRÊS desde o primeiro dia. É o mesmo
+ * erro do Carden, que chama de "representante" uma diferença que é de
+ * quilometragem — só que ao contrário: aqui a diferença é de PRODUTO.
+ */
+export type Procedencia = "zero_km" | "importado" | "uso_local" | "desconhecida";
 
 // ⚠️ SEM `\b` na frente. Em JavaScript, `\b` não enxerga letra acentuada como
 // caractere de palavra: `/\b[uú]nico/` NÃO casa em " único dueño", porque
@@ -485,15 +509,29 @@ export type Procedencia = "importado" | "uso_local" | "desconhecida";
 const RX_IMPORTADO = /(reci[eé]n\s+importad|importad[oa]s?|iquique|rec[ií]en\s+llegad|sin\s+rodar\s+en\s+py|0\s?km\s+importad)/i;
 const RX_USO_LOCAL = /(uso\s+local|rodado\s+en\s+(py|paraguay)|[uú]nico\s+due[nñ]o|uso\s+n[aá]utico|chapa\s+paraguaya|con\s+uso\b)/i;
 
+// ★ Sinais de CONCESSIONÁRIA / carro novo, colhidos do anúncio real da
+// Majestic Cars HVN. "0km" sozinho basta quando não vem acompanhado de
+// "importado" — a ordem no leitor abaixo cuida disso.
+// ⚠️ "financio"/"cuotas" NÃO entram aqui: particular paraguaio também parcela,
+// e confundir forma de pagamento com tipo de vendedor erra para o lado caro.
+const RX_ZERO_KM = /(concesionari|concessionári|representante\s+oficial|asesor\s+comercial|\b0\s?km\b|cero\s+kil[oó]metro|sin\s+rodar|garant[ií]a\s+de\s+(motor|f[aá]brica)|a[nñ]o\s+modelo\s+20(2[5-9]|3\d))/i;
+
 export function lerProcedencia(texto: string): Procedencia {
   const t = texto || "";
+  const zero = RX_ZERO_KM.test(t);
   const imp = RX_IMPORTADO.test(t);
   const loc = RX_USO_LOCAL.test(t);
-  // Diz os dois: "importado, único dueño" é carro importado que já teve dono
-  // aqui. Na dúvida vale o uso local, que é a curva mais barata — errar para
-  // baixo mantém a tabela conservadora.
-  if (imp && loc) return "uso_local";
-  if (imp) return "importado";
+
+  // ⚠️ ORDEM: uso local vence tudo. "0km importado, único dueño" é contradição
+  // de anúncio — e, diante de contradição, a curva mais BARATA é o palpite
+  // seguro: errar para baixo deixa a tabela conservadora, errar para cima faz
+  // ela prometer valor que o carro não tem.
   if (loc) return "uso_local";
+
+  // "0km importado" é o importador trazendo novo: a curva que descreve isso é
+  // a de importado, não a da concessionária oficial.
+  if (zero && imp) return "importado";
+  if (zero) return "zero_km";
+  if (imp) return "importado";
   return "desconhecida";
 }

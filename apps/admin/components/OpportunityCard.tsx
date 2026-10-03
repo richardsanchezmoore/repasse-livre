@@ -17,6 +17,7 @@ import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { formatarWhatsapp } from "@/lib/mascaras";
 import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
+import { PrecoAnuncio } from "@/components/PrecoAnuncio";
 import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 import { caminhoOportunidade } from "@/lib/site";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
@@ -223,7 +224,7 @@ export function OpportunityCard({
           <div className="precos-grupo">
             <div className="linha-preco linha-preco-anuncio">
               <span className="preco-rotulo">Oferta</span>
-              <span className="preco-valor">{formatarMoeda(oportunidade.preco)}</span>
+              <PrecoAnuncio className="preco-valor" valor={oportunidade.preco} moeda={oportunidade.moeda} />
             </div>
             <div className="linha-preco linha-preco-fipe">
               <span className="preco-rotulo">FIPE</span>
