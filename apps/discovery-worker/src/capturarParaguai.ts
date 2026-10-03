@@ -30,6 +30,7 @@ import {
   montarVeiculoPadrao,
 } from "./facebookMarketplaceService.js";
 import { lerPrecoComContexto, lerProcedencia, ehAnuncioDeCompra, mencionaTroca } from "./precoParaguai.js";
+import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -50,10 +51,33 @@ const slugRegiao = (r: RegiaoPY) => [slug(r.nome), r.uf ? r.uf.toLowerCase() : "
 const dormir = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const log = (...a: unknown[]) => console.log(new Date().toLocaleTimeString("pt-BR"), ...a);
 
+/**
+ * ★★★ POR QUE ISTO PASSOU A USAR NAVEGADOR LOGADO (02/10/2026)
+ *
+ * Esta função era um `fetch` anônimo e funcionou por meses — no Brasil. Parou,
+ * e o modo como parou é o que importa: **sem erro nenhum**. A captação saía com
+ * exit 0 e gravava "0 na página" nas cinco praças, de hora em hora, durante
+ * dias. Falha silenciosa é pior que falha barulhenta.
+ *
+ * Sondado ao vivo, o anônimo devolve HTTP 200 com redirect para
+ * /login/?next=... e um único __typename: "CAAFetaManualLoginRenderer".
+ *
+ * ⚠️ E NÃO É COISA DO PARAGUAI — o Gustavo levantou essa dúvida e o teste deu
+ * razão a ele pela metade: comparando as duas praças brasileiras antigas com as
+ * paraguaias, **as quatro estão igualmente fechadas**. O Facebook trancou as
+ * listagens por cidade para visitante anônimo, em todo lugar. Funcionava;
+ * não funciona mais.
+ *
+ * Testadas e também fechadas: /marketplace/category/vehicles, /search?query=,
+ * a cidade sem subcategoria, e até a página de ITEM. A única coisa que ainda
+ * abre é a raiz /marketplace/, que devolve seis itens aleatórios sem filtro de
+ * lugar nem de categoria ("Tree bookshelf") — inútil para a tabela.
+ *
+ * Sobrou sessão real. Ver navegadorFacebook.ts para o desenho (perfil
+ * persistente em vez de cookie copiado, e por que a conta tem que ser dedicada).
+ */
 async function baixar(url: string): Promise<string> {
-  const r = await fetch(url, { headers: HEADERS });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.text();
+  return baixarLogado(url);
 }
 
 /** ⚠️ O ₲ chega escapado no JSON do FB. Ver desescapar() em precoParaguai. */
@@ -91,6 +115,18 @@ async function main() {
   // ⚠️ Vazio = SEM filtro. O padrão brasileiro (15000-400000) em guarani
   // descartaria o mercado inteiro em silêncio.
   const filtros = { minPreco: minPreco ?? "", maxPreco: maxPreco ?? "", minAno: minAno ?? "", sort: "creation_time_descend" };
+  // ⚠️⚠️ CHECA A SESSÃO ANTES DE VARRER. Sem isto, sessão caída vira "0 na
+  // página" em todas as praças e exit 0 — o relatório diz que rodou, o painel
+  // não acusa nada, e só se descobre dias depois olhando o banco vazio. Falhar
+  // aqui, alto e cedo, é o ponto inteiro.
+  if (!(await sessaoValida())) {
+    log("❌ SESSÃO DO FACEBOOK CAÍDA — nada será capturado.");
+    log("   Rode:  npx tsx src/navegadorFacebook.ts login");
+    await fecharContexto();
+    process.exitCode = 2;
+    return;
+  }
+
   log(`praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
   for (const regiao of regioes) {
