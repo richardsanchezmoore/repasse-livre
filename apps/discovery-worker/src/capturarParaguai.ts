@@ -31,6 +31,7 @@ import {
 } from "./facebookMarketplaceService.js";
 import { lerPrecoComContexto, lerProcedencia, ehAnuncioDeCompra, mencionaTroca } from "./precoParaguai.js";
 import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
+import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -209,7 +210,7 @@ async function main() {
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
     log(`  ${ids.length} na página · ${novos.length} novos`);
 
-    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0 };
+    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0 , semFoto: 0 };
 
     for (const id of novos) {
       try {
@@ -249,6 +250,31 @@ async function main() {
         }
 
         const fotos = a.fotos.slice(0, 10);
+
+        // ★★ RE-HOSPEDAR AS FOTOS — lembrado pelo Gustavo em 03/10/2026, e ele
+        // estava certo: o link do fbcdn CADUCA (tem `oe=` com validade) e vira
+        // 403 em poucos dias. Medido hoje: 175 dos 176 registros paraguaios
+        // ainda apontavam para o fbcdn cru, contra 245 de 245 re-hospedados no
+        // lado brasileiro. O catálogo PY inteiro ia ficar sem imagem.
+        //
+        // O mecanismo já existia desde julho (fotosFacebook.ts, sharp → bucket)
+        // — o motor paraguaio simplesmente nunca o chamava.
+        //
+        // ⚠️ DIFERENÇA DELIBERADA EM RELAÇÃO AO BRASIL: lá, falha de
+        // re-hospedagem DESCARTA o veículo ("sem foto não entra"). Aqui NÃO.
+        // O produto paraguaio é a TABELA DE PREÇO, e o que a alimenta é preço +
+        // modelo + ano + km, não a foto. Jogar fora um preço porque a imagem
+        // falhou seria perder o dado que importa para salvar a aparência.
+        //
+        // Mas também não guardo o link cru: ele morre e vira imagem quebrada,
+        // que é pior que imagem nenhuma. Sem foto permanente → `null`, e a
+        // tela mostra o espaço vazio.
+        const itemId = itemIdDoLink(linkPublico(id));
+        const reh = itemId && fotos.length
+          ? await rehospedarFotosFacebook(itemId, fotos)
+          : null;
+        if (!reh && fotos.length) conta.semFoto++;
+
         const { error } = await supabase.from("opportunities").upsert(
           {
             fonte: "FACEBOOK",
@@ -269,8 +295,8 @@ async function main() {
             fipe_valor: null,
             margem_percentual: null,
             classificacao: null,
-            foto_principal: fotos[0] ?? null,
-            fotos_secundarias: fotos.slice(1),
+            foto_principal: reh?.foto_principal ?? null,
+            fotos_secundarias: reh?.fotos_secundarias ?? [],
             descricao: a.descricao,
             origem_tipo: "descoberta",
             status: "descoberta",
@@ -301,7 +327,7 @@ async function main() {
       }
     }
 
-    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro`);
+    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto`);
   }
 }
 
