@@ -32,7 +32,7 @@
  */
 
 /** Tira acento e baixa a caixa, para comparar sem susto. */
-import { NOMES_JDM, canonicoJdm, segmentoJdm, type SegmentoPY } from "./catalogoJdmParaguai.js";
+import { NOMES_JDM, canonicoJdm, segmentoJdm, marcaJdm, type SegmentoPY } from "./catalogoJdmParaguai.js";
 
 const chave = (s: string): string =>
   String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -258,12 +258,19 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null):
   // no mesmo grupo, senão a mediana se divide em dois n pequenos.
   const canonico = canonicoJdm(modelo) ?? modelo;
 
+  // ⚠️ A marca VEM DA FICHA quando o modelo é do catálogo. O normalizador
+  // injeta a lista inteira do catálogo dentro da lista da Toyota, então sem
+  // isto uma Delica viraria "Toyota Delica" e um Morning, "Toyota Morning".
+  const marcaFicha = marcaJdm(modelo);
+  if (marcaFicha) marca = marcaFicha;
+  const marcaFinal = chave(marca).replace(/\s+/g, " ");
+
   return {
     marca: marca ? titlecase(marca) : null,
     modelo: canonico ? titlecase(canonico) : null,
     segmento: segmentoJdm(modelo),
     versao: versao ? titlecase(versao).slice(0, 40) : null,
     ano,
-    chaveAgrupamento: marca && canonico ? `${marcaK}|${chave(canonico)}` : null,
+    chaveAgrupamento: marca && canonico ? `${marcaFinal}|${chave(canonico)}` : null,
   };
 }
