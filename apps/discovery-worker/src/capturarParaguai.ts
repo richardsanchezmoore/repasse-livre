@@ -169,9 +169,25 @@ async function main() {
 
   log(`praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
-  for (const regiao of regioes) {
+  // ★★ REPESCAGEM DE PRAÇA ZERADA — 03/10/2026.
+  //
+  // Encarnación devolveu 0 em TODAS as 23 faixas numa rodada, com ritmo normal
+  // (~25s entre faixas) e ZERO erro no log. Investigado depois: a URL funciona
+  // com todos os filtros, inclusive com faixa de preço, e a praça seguinte
+  // (Luque) rodou normal logo em seguida — então não foi bloqueio sustentado.
+  //
+  // ⚠️ NÃO SEI A CAUSA, e é por isso que isto existe. Praça viva com 23 faixas
+  // sempre devolve alguma coisa; zero em TODAS é anomalia, não resultado. Em vez
+  // de adivinhar o motivo, a rodada repete quem veio zerada: conserta seja qual
+  // for a causa, e só custa uma praça a mais quando o problema de fato acontece.
+  //
+  // Sem isto a falha é SILENCIOSA — o log diz "0 na página", a rodada segue, e a
+  // praça some da coleta do dia sem ninguém perceber. Foi o que aconteceu.
+  const zeradas: typeof regioes = [];
+
+  const varrerRegiao = async (regiao: (typeof regioes)[number], repescagem = false): Promise<void> => {
     const marca = slugRegiao(regiao);
-    log(`\n▶ ${regiao.nome} (${marca}) — ${faixas.length} faixa(s) de preço`);
+    log(`\n▶ ${regiao.nome} (${marca}) — ${faixas.length} faixa(s) de preço${repescagem ? " [REPESCAGEM]" : ""}`);
 
     // ⚠️ Dedup ENTRE as faixas da mesma rodada: as bordas se tocam e o mesmo
     // anúncio aparece em duas. Sem isto, o relatório conta o dobro e o livro-
@@ -204,7 +220,9 @@ async function main() {
 
     if (!ids.length) {
       log("  0 na página · 0 novos");
-      continue;
+      // ⚠️ Só agenda repescagem se não for ela própria — senão vira laço infinito.
+      if (!repescagem) zeradas.push(regiao);
+      return;
     }
     const jaVistos = await buscarIdsVistosFacebook(ids);
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
@@ -328,6 +346,17 @@ async function main() {
     }
 
     log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto`);
+  };
+
+  for (const regiao of regioes) await varrerRegiao(regiao);
+
+  if (zeradas.length) {
+    // ⚠️ Pausa maior antes de repescar. Se a causa for alguma proteção do lado
+    // do Facebook, repetir na hora só confirma o padrão; esperar um pouco é a
+    // tentativa mais barata de sair da janela ruim.
+    log(`\n↻ ${zeradas.length} praça(s) vieram ZERADAS: ${zeradas.map((r) => r.nome).join(", ")} — repescando em 60s`);
+    await dormir(60000);
+    for (const regiao of zeradas) await varrerRegiao(regiao, true);
   }
 }
 
