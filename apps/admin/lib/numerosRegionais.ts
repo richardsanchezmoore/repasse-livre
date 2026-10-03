@@ -2,6 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { NOME_POR_UF, PREPOSICAO_POR_UF } from "@/lib/estados";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 /**
  * "Prova regional" pra landing de anúncio: contagem de oportunidades por estado.
@@ -24,7 +25,7 @@ async function contar(uf: string): Promise<NumeroEstado> {
     supabaseAdmin
       .from("opportunities")
       .select("*", { count: "exact", head: true })
-      .eq("status", "aprovada")
+      .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
       .eq("estado", uf);
 
   const [abaixo, novas] = await Promise.all([

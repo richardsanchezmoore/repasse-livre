@@ -2,6 +2,7 @@ import { extrairMarca } from "./marca";
 import { gerarSlugCidade } from "./slug";
 import { caminhoCidade, caminhoMarca } from "./site";
 import { supabaseAdmin } from "./supabase";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 const LIMITE_AMOSTRA = 1000;
 const QUANTIDADE_SUGESTOES = 6;
@@ -25,7 +26,7 @@ export async function buscarSugestoes404(): Promise<Sugestoes404> {
   const { data } = await supabaseAdmin
     .from("opportunities")
     .select("veiculo, cidade, estado")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .order("data_ordenacao", { ascending: false, nullsFirst: false })
     .limit(LIMITE_AMOSTRA);
 

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { extrairMarca } from "@/lib/marca";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 /**
  * Lista de marcas da NOSSA base (ofertas aprovadas) com contagem, pro filtro de
@@ -22,7 +23,7 @@ async function computar(): Promise<MarcaContagem[]> {
   const { data, error } = await supabaseAdmin
     .from("opportunities")
     .select("veiculo")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .limit(AMOSTRA);
   if (error || !data) return [];
 

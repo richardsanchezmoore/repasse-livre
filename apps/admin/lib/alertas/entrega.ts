@@ -1,6 +1,7 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
 import { enviarEmailResend, renderAlerta, type AnuncioEmail } from "./email";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 /**
  * ENTREGA dos alertas por e-mail. O matching (matching.ts) só registra os pares
@@ -72,7 +73,7 @@ async function entregar(pares: ParPendente[], frequencia: "na_hora" | "diario"):
     .from("opportunities")
     .select(CAMPOS_ANUNCIO)
     .in("id", oppIds)
-    .eq("status", "aprovada"); // se saiu do ar entre o match e o envio, não alerta
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE); // se saiu do ar entre o match e o envio, não alerta
   const porId = new Map<string, AnuncioEmail>();
   for (const a of (anuncios ?? []) as AnuncioEmail[]) porId.set(a.id, a);
 

@@ -31,7 +31,7 @@ import { redirecionarOuNotFound } from "@/lib/redirecionamentos";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade, COLUNAS_CARTAO, metadataEraAnterior } from "@/lib/site";
+import { caminhoMarca, caminhoOportunidade, urlMarca, urlOportunidade, COLUNAS_CARTAO, metadataEraAnterior, PAIS_DO_SITE } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -176,7 +176,7 @@ async function PaginaMarca({
   let consulta = supabaseAdmin
     .from("opportunities")
     .select(COLUNAS_CARTAO, { count: "exact" })
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("estado", localidade.filtroEstado)
     .ilike("veiculo", `${marcaResolvida.marca}%`);
   if (localidade.filtroCidade) {

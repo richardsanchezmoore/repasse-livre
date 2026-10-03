@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "./supabase";
 import type { ChaveSeoPagina, ConfigSeoPagina } from "./seoVariaveis";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 export type { ChaveSeoPagina, ConfigSeoPagina } from "./seoVariaveis";
 export { CHAVES_SEO_PAGINAS, VARIAVEIS_SEO, substituirVariaveisSeo } from "./seoVariaveis";
@@ -28,7 +29,7 @@ export async function buscarFotoDestaque(filtro: {
   let consulta = supabaseAdmin
     .from("opportunities")
     .select("foto_principal")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .not("foto_principal", "is", null);
   if (filtro.estado) consulta = consulta.eq("estado", filtro.estado);
   if (filtro.cidade) consulta = consulta.eq("cidade", filtro.cidade);

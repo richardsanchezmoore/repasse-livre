@@ -18,6 +18,7 @@ import { Paginacao } from "./Paginacao";
 import { RegistradorIdsVisiveis } from "./RegistradorIdsVisiveis";
 import { SeletorEstadoBreadcrumb } from "./SeletorEstadoBreadcrumb";
 import { SeletorLocal } from "./SeletorLocal";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 export type Aba = "descobertas" | "enviadas" | "aprovadas" | "rejeitadas" | "favoritos";
 export type Ordem = "recente" | "margem" | "menor_valor" | "maior_valor" | "proximidade";
@@ -191,7 +192,7 @@ async function buscarOportunidades(
 
   let consulta = supabaseAdmin.from("opportunities").select("*", { count: "exact" });
   const filtro = FILTRO_POR_ABA[aba];
-  consulta = consulta.eq("status", filtro.status);
+  consulta = consulta.eq("status", filtro.status).eq("pais", PAIS_DO_SITE);
   if (filtro.origem_tipo) {
     consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
   }
@@ -264,7 +265,7 @@ export async function buscarOportunidadePorId(
   // Público só enxerga aprovadas. Admin (incluirNaoAprovadas=true) enxerga
   // também Descobertas/etc., pra revisar a página individual antes de aprovar.
   let consulta = supabaseAdmin.from("opportunities").select("*").eq("id", id);
-  if (!incluirNaoAprovadas) consulta = consulta.eq("status", "aprovada");
+  if (!incluirNaoAprovadas) consulta = consulta.eq("status", "aprovada").eq("pais", PAIS_DO_SITE);
   const { data, error } = await consulta.maybeSingle();
   if (error) {
     throw new Error(`Falha ao buscar oportunidade: ${error.message}`);
@@ -299,7 +300,7 @@ export async function buscarEstadosDisponiveis(
   }
 
   const filtro = FILTRO_POR_ABA[aba];
-  let consulta = supabaseAdmin.from("opportunities").select("estado").eq("status", filtro.status).not("estado", "is", null);
+  let consulta = supabaseAdmin.from("opportunities").select("estado").eq("status", filtro.status).eq("pais", PAIS_DO_SITE).not("estado", "is", null);
   if (filtro.origem_tipo) {
     consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
   }
@@ -331,7 +332,7 @@ export async function buscarCidadePorSlug(cidadeUf: string): Promise<CidadeResol
   const { data, error } = await supabaseAdmin
     .from("opportunities")
     .select("cidade")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("estado", dividido.estado)
     .not("cidade", "is", null);
   if (error) {
@@ -372,7 +373,7 @@ export async function buscarEstadoPorSlug(estadoSlug: string): Promise<EstadoRes
   const { count, error } = await supabaseAdmin
     .from("opportunities")
     .select("*", { count: "exact", head: true })
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("estado", uf);
   if (error) {
     throw new Error(`Falha ao contar oportunidades do estado: ${error.message}`);
@@ -403,7 +404,7 @@ export async function buscarMarcaPorSlug(
   let consultaAmostra = supabaseAdmin
     .from("opportunities")
     .select("veiculo")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .limit(filtro.estado ? LIMITE_AMOSTRA_MARCA : LIMITE_AMOSTRA_MARCA_NACIONAL);
   if (filtro.estado) {
     consultaAmostra = consultaAmostra.eq("estado", filtro.estado);
@@ -432,7 +433,7 @@ export async function buscarMarcaPorSlug(
   let consultaTotal = supabaseAdmin
     .from("opportunities")
     .select("*", { count: "exact", head: true })
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .ilike("veiculo", `${marcaCanonica}%`);
   if (filtro.estado) {
     consultaTotal = consultaTotal.eq("estado", filtro.estado);
@@ -473,7 +474,7 @@ export async function buscarModeloPorSlug(
   let amostra = supabaseAdmin
     .from("opportunities")
     .select("veiculo")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .limit(filtro.estado ? LIMITE_AMOSTRA_MARCA : LIMITE_AMOSTRA_MARCA_NACIONAL);
   if (filtro.estado) amostra = amostra.eq("estado", filtro.estado);
   if (filtro.cidade) amostra = amostra.eq("cidade", filtro.cidade);
@@ -503,7 +504,7 @@ export async function buscarModeloPorSlug(
   let consultaTotal = supabaseAdmin
     .from("opportunities")
     .select("*", { count: "exact", head: true })
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .ilike("veiculo", `${marcaCanonica} ${modeloCanonico}%`);
   if (filtro.estado) consultaTotal = consultaTotal.eq("estado", filtro.estado);
   if (filtro.cidade) consultaTotal = consultaTotal.eq("cidade", filtro.cidade);
@@ -535,7 +536,7 @@ export async function contarOportunidades(usuario: Usuario | null = null): Promi
       let consulta = supabaseAdmin
         .from("opportunities")
         .select("*", { count: "exact", head: true })
-        .eq("status", filtro.status);
+        .eq("status", filtro.status).eq("pais", PAIS_DO_SITE);
       if (filtro.origem_tipo) {
         consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
       }
@@ -553,7 +554,7 @@ export async function buscarCidadesDoEstado(uf: string): Promise<string[]> {
   const { data } = await supabaseAdmin
     .from("opportunities")
     .select("cidade")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("estado", uf)
     .not("cidade", "is", null);
   const formas = new Map<string, Map<string, number>>();

@@ -1,5 +1,6 @@
 import { extrairMarca } from "./marca";
 import { supabaseAdmin } from "./supabase";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 const LIMITE_AMOSTRA = 500;
 const QUANTIDADE_TAGS = 3;
@@ -14,7 +15,7 @@ export async function buscarTagsMarcas(filtro: { cidade?: string; estado: string
   let consulta = supabaseAdmin
     .from("opportunities")
     .select("veiculo")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("estado", filtro.estado)
     .limit(LIMITE_AMOSTRA);
   if (filtro.cidade) {

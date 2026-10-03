@@ -9,6 +9,7 @@ import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
 import type { Oportunidade } from "@/lib/types";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 const LIMITE_RELACIONADAS = 6;
 
@@ -18,7 +19,7 @@ function construirConsultaBase(padraoMarcaModelo: string, idExcluido: string) {
   return supabaseAdmin
     .from("opportunities")
     .select("*")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .ilike("veiculo", padraoMarcaModelo)
     .neq("id", idExcluido);
 }

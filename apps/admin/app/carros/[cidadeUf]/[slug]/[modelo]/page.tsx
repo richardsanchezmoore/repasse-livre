@@ -19,7 +19,7 @@ import { resolverLocalidade } from "@/lib/localidade";
 import { buscarConfigSeo, buscarFotoDestaque, substituirVariaveisSeo } from "@/lib/seo";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { caminhoModelo, urlModelo, COLUNAS_CARTAO, metadataEraAnterior } from "@/lib/site";
+import { caminhoModelo, urlModelo, COLUNAS_CARTAO, metadataEraAnterior, PAIS_DO_SITE } from "@/lib/site";
 import { buscarSeoTexto, textoSeoFallback } from "@/lib/seoTexto";
 import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -114,7 +114,7 @@ export default async function PaginaModeloRoute({
   let consulta = supabaseAdmin
     .from("opportunities")
     .select(COLUNAS_CARTAO, { count: "exact" })
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("estado", localidade.filtroEstado)
     .ilike("veiculo", `${resolvido.marca} ${resolvido.modelo}%`);
   if (localidade.filtroCidade) {

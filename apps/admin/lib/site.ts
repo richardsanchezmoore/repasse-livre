@@ -22,6 +22,17 @@ export const URL_BASE_SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://repas
 export const PAIS_DO_SITE = process.env.NEXT_PUBLIC_PAIS_SITE ?? "PY";
 
 /**
+ * O nome do país por extenso, para a interface.
+ *
+ * ⚠️ Existe porque o seletor do topo tinha "Brasil" CHUMBADO como rótulo e
+ * como opção: o Gustavo abriu o Auto Radar e leu "Oportunidades no Brasil" em
+ * cima de uma lista inteira de carros de Ciudad del Este. O filtro de dado já
+ * estava certo; era a palavra que mentia.
+ */
+export const NOME_DO_PAIS: string =
+  ({ PY: "Paraguai", BR: "Brasil", AR: "Argentina" } as Record<string, string>)[PAIS_DO_SITE] ?? PAIS_DO_SITE;
+
+/**
  * De que país é um estado. O Paraguai aparece como "PY-ASU", "PY-CDE"...;
  * o Brasil como UF de duas letras ("RS", "SP"). Sem prefixo = Brasil.
  */

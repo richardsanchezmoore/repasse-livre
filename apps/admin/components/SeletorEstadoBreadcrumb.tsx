@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import { salvarEstadoPreferido } from "@/lib/estadoPreferido";
 import type { Aba } from "./DiscoveriesBoard";
+import { NOME_DO_PAIS } from "@/lib/site";
 
 /**
  * Versão "imediata" do filtro de estado, no próprio cabeçalho da lista —
@@ -69,7 +70,7 @@ export function SeletorEstadoBreadcrumb({
         aria-expanded={aberto}
         aria-label="Filtrar por estado"
       >
-        {titulo} no <strong>{estadoAtivo || "Brasil"}</strong>
+        {titulo} no <strong>{estadoAtivo || NOME_DO_PAIS}</strong>
         <ChevronDown size={15} strokeWidth={2.5} className={aberto ? "seletor-estado-seta-aberta" : ""} />
       </button>
 
@@ -80,7 +81,7 @@ export function SeletorEstadoBreadcrumb({
             onClick={() => selecionarEstado(undefined)}
             className={`seletor-estado-opcao ${!estadoAtivo ? "seletor-estado-opcao-ativa" : ""}`}
           >
-            Brasil
+            {NOME_DO_PAIS}
           </button>
           {estadosDisponiveis.map((uf) => (
             <button

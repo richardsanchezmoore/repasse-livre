@@ -1,6 +1,7 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
 import { enviarAlertasNaHora } from "./entrega";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 /**
  * MATCHING de alertas: dado um anúncio recém-APROVADO, acha as buscas salvas ativas
@@ -99,7 +100,7 @@ export async function registrarAlertasParaAprovados(ids: string[]): Promise<numb
       .from("opportunities")
       .select("id, veiculo, preco, estado, ano, km, margem_percentual")
       .in("id", ids)
-      .eq("status", "aprovada"); // garante que só alerta o que ficou público de fato
+      .eq("status", "aprovada").eq("pais", PAIS_DO_SITE); // garante que só alerta o que ficou público de fato
     if (!anuncios || anuncios.length === 0) return 0;
 
     const pendentes: { busca_id: string; opportunity_id: string }[] = [];

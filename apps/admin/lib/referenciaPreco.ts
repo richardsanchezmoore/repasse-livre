@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { NOME_POR_UF } from "@/lib/estados";
 import { regiaoDoEstado, escopoDoEstado } from "@/lib/regiao";
+import { PAIS_DO_SITE } from "@/lib/site";
 
 /**
  * "Preços de referência Repasse Livre": posiciona o preço de um anúncio dentro
@@ -63,7 +64,7 @@ export async function buscarReferenciaPreco(
   const { data, error } = await supabaseAdmin
     .from("opportunities")
     .select("preco, fipe_valor, estado")
-    .eq("status", "aprovada")
+    .eq("status", "aprovada").eq("pais", PAIS_DO_SITE)
     .eq("fipe_codigo", codigoFipe)
     .eq("ano", ano);
 
