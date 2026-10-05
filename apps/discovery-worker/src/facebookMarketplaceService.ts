@@ -574,7 +574,22 @@ export function extrairAnuncioFacebook(
   // city_page). O lat/long segue na janela.
   const janLoc = janelaPrincipal(html);
   const reLoc = /"reverse_geocode":\{[^}]*?"city":"([^"]+)"[^}]*?"state":"([^"]+)"/;
-  const loc = janLoc.match(reLoc) ?? html.match(reLoc);
+  // ⚠️⚠️ O FALLBACK PARA O HTML INTEIRO FOI REMOVIDO — 05/10/2026.
+  //
+  // Era `janLoc.match(reLoc) ?? html.match(reLoc)`, apostando que o primeiro
+  // reverse_geocode da página é o do anúncio principal. Isso valeu no Brasil em
+  // agosto; no Paraguai NÃO vale: quando a janela do principal não traz a
+  // localização, o primeiro da página é de um dos ~24 RELACIONADOS.
+  //
+  // Medido: a primeira rodada de Pedro Juan Caballero gravou 9 anúncios como
+  // "Foz do Iguaçu" com UF PY-AMA. Foz fica a ~500 km de Pedro Juan — não é raio,
+  // é a cidade do vizinho. (Nossa conta navegou muito Ciudad del Este, e Foz é
+  // colada nela, então é ela que aparece nos relacionados.)
+  //
+  // ★ Cidade errada é pior que cidade ausente: ela MISTURA MERCADOS na tabela de
+  // preço, que é o produto. Sem a janela, devolve null — e quem chama usa o nome
+  // da praça que buscou, que é aproximadamente certo por construção.
+  const loc = janLoc.match(reLoc);
   const reLL = /"latitude":([\-\d.]+),"longitude":([\-\d.]+)/;
   const ll = janLoc.match(reLL) ?? html.match(reLL);
 

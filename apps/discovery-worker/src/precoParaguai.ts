@@ -28,7 +28,9 @@ export type MotivoDescarte =
   | "preco_isca"       // Gs. 1, US$ 1,00 — vendedor fugindo do filtro
   | "outro_mercado"    // anunciado em REAL → é carro brasileiro
   | "escala_ambigua"   // ₲ com número de dólar: o valor é real, a escala não
-  | "fora_de_faixa";   // valor que não descreve carro em nenhuma das moedas
+  | "fora_de_faixa"    // valor que não descreve carro em nenhuma das moedas
+  | "telefone"        // o "preço" é um celular paraguaio
+  | "entrada_financiamento"; // o número é a ENTRADA, não o preço do carro
 
 /**
  * Faixas plausíveis para um CARRO. Deliberadamente largas: a função corta
@@ -40,6 +42,51 @@ const FAIXA = {
   // US$ 500 é sucata; US$ 500 mil cobre qualquer coisa que se anuncie por lá.
   USD: { min: 500, max: 500_000 },
 } as const;
+
+/**
+ * ★★ CELULAR PARAGUAIO LIDO COMO PREÇO — achado em 05/10/2026.
+ *
+ * Um anúncio "Cars sur automores" entrou com ₲992.363.005. O Gustavo reconheceu
+ * na hora: "992.363.005 é número de celular daqui". É o 0992 363 005 sem o zero.
+ *
+ * ⚠️ A guarda de faixa NÃO pega: ₲992 milhões ≈ US$ 123 mil, valor plausível
+ * para carro de luxo. O que denuncia é a FORMA — preço paraguaio é redondo
+ * (medido: 54 de 98 preços em guarani são múltiplos exatos de 5 milhões), e
+ * nenhum vendedor pede 992 milhões e 363 mil e 5 guaranis.
+ *
+ * A regra olha só a parte alta, onde mora o telefone: acima de ₲100 milhões, um
+ * preço de verdade é redondo em pelo menos 100 mil.
+ */
+const pareceTelefonePY = (valor: number): boolean =>
+  valor >= 100_000_000 && valor % 100_000 !== 0;
+
+/**
+ * ★★ ENTRADA DE FINANCIAMENTO LIDA COMO PREÇO — mesmo dia.
+ *
+ * "FINANCIO CON 13.245.000 DE ENTREGA" virou um carro de ₲13.245.000. O número
+ * é real, mas é a ENTRADA, não o preço — o carro custa muito mais.
+ *
+ * ⚠️ Descartar é melhor que salvar barato: um "carro" de ₲13 milhões no meio da
+ * amostra puxa a mediana do modelo para baixo e faz a referência mentir no lado
+ * que mais dói, o de quem vai comprar achando que pagou caro.
+ */
+/**
+ * ⚠️ AMARRADA AO NÚMERO, não ao anúncio. Muito anúncio legítimo diz "Financio"
+ * E tem preço de verdade no campo — rejeitar todos eles seria pior que o
+ * problema. O que denuncia é o número COLADO na palavra:
+ *
+ *     "FINANCIO CON 13.245.000 DE ENTREGA"   → 13.245.000 é entrada
+ *     "Kia Rio 2017 1.4 Mec — Financio"      → preço de verdade, passa
+ *
+ * Só descarta quando o valor lido é exatamente o que está grudado em
+ * "de entrega" / "de entrada" / "de anticipo".
+ */
+const RX_VALOR_DE_ENTRADA =
+  /([\d][\d.,]{3,})\s*(?:gs\.?|₲)?\s*(?:de\s+)?(entrega|entrada|anticipo|refuerzo)\b/i;
+
+/** O mesmo número, escrito de trás pra frente: "entrega de 13.245.000". */
+const RX_ENTRADA_DE_VALOR =
+  /\b(entrega|entrada|anticipo|refuerzo)\s+(?:de\s+)?([\d][\d.,]{3,})/i;
 
 /** Acima disto, "dólar" quase certamente é guarani digitado no campo errado. */
 const TETO_DOLAR_CRIVEL = 300_000;
@@ -266,6 +313,24 @@ export function lerPrecoComContexto(
 ): LeituraPreco & { confianca?: ConfiancaMoeda } {
   const direto = lerPreco(textoPreco);
   const ctxInicial = `${textoPreco} ${descricao}`;
+
+  // ★★ GUARDAS DE FORMA — rodam ANTES de qualquer interpretação de moeda,
+  // porque um telefone e uma entrada são números perfeitamente válidos: nenhuma
+  // regra de faixa ou de símbolo vai pegá-los.
+  const valorCru = numeroPY(desescapar(textoPreco));
+  if (valorCru !== null && valorCru > 0) {
+    // 1) celular paraguaio
+    if (pareceTelefonePY(valorCru)) {
+      return { ok: false, motivo: "telefone", valorBruto: valorCru, moedaBruta: "PYG" };
+    }
+    // 2) o valor lido é a ENTRADA que está escrita no texto
+    const mA = RX_VALOR_DE_ENTRADA.exec(ctxInicial);
+    const mB = RX_ENTRADA_DE_VALOR.exec(ctxInicial);
+    const numEntrada = numeroPY(mA?.[1] ?? mB?.[2] ?? "");
+    if (numEntrada !== null && numEntrada === valorCru) {
+      return { ok: false, motivo: "entrada_financiamento", valorBruto: valorCru, moedaBruta: "PYG" };
+    }
+  }
 
   // ★★ A INTELIGÊNCIA (nome do Gustavo, 24/09): quando o ₲ carimba um número
   // que só faz sentido em dólar, a DESCRIÇÃO costuma resolver. Metade da
