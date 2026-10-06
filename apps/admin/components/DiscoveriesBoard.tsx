@@ -190,7 +190,35 @@ async function buscarOportunidades(
     return { itens: semParecer((data ?? []) as Oportunidade[]), total: count ?? 0 };
   }
 
-  let consulta = supabaseAdmin.from("opportunities").select("*", { count: "exact" });
+/**
+ * ★★ COLUNAS DA LISTAGEM — medido em 06/10/2026, depois do projeto Supabase ser
+ * cortado por `exceed_egress_quota`.
+ *
+ * A home é `force-dynamic` + `force-no-store`: toda visita bate no banco, sem
+ * cache. E pedia `select("*")`, trazendo colunas que a listagem NUNCA mostra.
+ *
+ *   uma página (40 cards) com select("*")        ~64 KB
+ *   a mesma página só com o que a tela usa       ~12 KB
+ *
+ * Mais de 5× de desperdício em cada visita — e a 64 KB bastam ~1.250 visitas
+ * por dia para os ~80 MB/dia que o gráfico de egress mostrava e que a limpeza
+ * de 23/09 não explicava. Robô de busca faz isso sozinho.
+ *
+ * ⚠️ As quatro que saíram, e por quê (média por linha, medida):
+ *   descricao          496 B  → só a página de detalhe mostra
+ *   atributos_olx      618 B  → idem
+ *   fotos_secundarias  361 B  → o card mostra só a foto principal
+ *   copiloto_parecer     —    → é do Copiloto, nunca da listagem
+ *
+ * ★ A lista é por EXCLUSÃO de propósito: parte de todas as colunas e tira essas
+ * quatro. Uma lista "só do que a tela usa" seria mais enxuta e mais arriscada —
+ * esquecer uma coluna quebra o card em produção, e o ganho extra é pequeno.
+ * Quem precisar das pesadas (detalhe, Copiloto) busca por id.
+ */
+const COLUNAS_LISTAGEM =
+  "id, fonte, moeda, pais, procedencia, link_origem, veiculo, versao, ano, cambio, km, cidade, estado, preco, fipe_valor, fipe_codigo, fipe_data_referencia, margem_percentual, classificacao, foto_principal, status, origem_tipo, whatsapp, nome_remetente, perfil_remetente, motivo_venda, sinistro_leilao, favorito, data_captura, data_publicacao_origem, ultimo_visto, anunciante_profissional";
+
+  let consulta = supabaseAdmin.from("opportunities").select(COLUNAS_LISTAGEM, { count: "exact" });
   const filtro = FILTRO_POR_ABA[aba];
   consulta = consulta.eq("status", filtro.status).eq("pais", PAIS_DO_SITE);
   if (filtro.origem_tipo) {
