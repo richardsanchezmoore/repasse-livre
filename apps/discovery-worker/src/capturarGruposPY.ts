@@ -51,6 +51,9 @@ chromium.use(StealthPlugin());
 /** Um post de grupo, já interpretado. */
 export interface AnuncioGrupo {
   grupo: string;
+  /** Permalink do post. ⚠️ Null quando o card não expôs o <a> — sem ele o
+   *  anúncio não é clicável e não tem chave estável anti-duplicata. */
+  link: string | null;
   autor: string | null;
   quando: string | null;
   texto: string;
@@ -94,12 +97,12 @@ function partirCabecalho(texto: string): { autor: string | null; quando: string 
   return n ? { autor: n[1].trim(), quando: null, corpo: n[2].trim() } : { autor: null, quando: null, corpo: texto };
 }
 
-export function interpretarPost(grupo: string, bruto: string): AnuncioGrupo {
+export function interpretarPost(grupo: string, bruto: string, link: string | null = null): AnuncioGrupo {
   const texto = limparPost(bruto);
   const { autor, quando, corpo } = partirCabecalho(texto);
 
   const base: AnuncioGrupo = {
-    grupo, autor, quando, texto: corpo,
+    grupo, link, autor, quando, texto: corpo,
     marca: null, modelo: null, ano: null, preco: null, moeda: null,
     confianca: null, procedencia: null, aceitaTroca: false, descarte: null,
   };
@@ -159,23 +162,38 @@ async function main() {
       await page.keyboard.press("Escape").catch(() => {});
       await page.waitForTimeout(1500);
 
-      const acumulado = new Set<string>();
+      const acumulado = new Map<string, { texto: string; link: string | null }>();
       for (let i = 0; i <= ROLAGENS; i++) {
         if (i > 0) {
           await page.mouse.wheel(0, 3000);
           await page.waitForTimeout(PAUSA_MS);
         }
+        // ★ Pega o PERMALINK junto com o texto. Sem ele o anúncio entra na base
+        // sem ser clicável, e `link_origem` — que é a chave anti-duplicata — não
+        // teria valor estável. O link do post vive num <a> para
+        // /groups/<id>/posts/<idPost> dentro do próprio card.
         const lote = await page.evaluate(() => {
           const feed = document.querySelector('[role="feed"]');
-          if (!feed) return [] as string[];
-          return [...feed.children]
-            .map((f) => (f as HTMLElement).innerText ?? "")
-            .filter((t) => t.length > 40);
+          if (!feed) return [] as { texto: string; link: string | null }[];
+          return [...feed.children].map((f) => {
+            const el = f as HTMLElement;
+            const a = [...el.querySelectorAll("a[href]")]
+              .map((x) => (x as HTMLAnchorElement).href)
+              .find((h) => /\/groups\/[^/]+\/(posts|permalink)\/\d+/.test(h));
+            return { texto: el.innerText ?? "", link: a ? a.split("?")[0] : null };
+          }).filter((x) => x.texto.length > 40);
         });
-        for (const p of lote) acumulado.add(p);
+        // ⚠️ A chave do Set é o TEXTO: o mesmo post pode aparecer com e sem link
+        // conforme o momento da rolagem, e eu quero guardar a versão COM link.
+        for (const p of lote) {
+          const anterior = acumulado.get(p.texto);
+          if (!anterior || (!anterior && p.link) || (anterior && !anterior.link && p.link)) {
+            acumulado.set(p.texto, p);
+          }
+        }
       }
 
-      const interpretados = [...acumulado].map((p) => interpretarPost(g.nome, p));
+      const interpretados = [...acumulado.values()].map((p) => interpretarPost(g.nome, p.texto, p.link));
       const bons = interpretados.filter((a) => !a.descarte);
       const porMotivo: Record<string, number> = {};
       for (const a of interpretados) if (a.descarte) porMotivo[a.descarte] = (porMotivo[a.descarte] ?? 0) + 1;
@@ -184,7 +202,8 @@ async function main() {
       fs.writeFileSync(arquivo, JSON.stringify(interpretados, null, 1));
 
       console.log(`\n▶ ${g.nome}`);
-      console.log(`   ${acumulado.size} posts colhidos · ${bons.length} com preço E modelo`);
+      const comLink = [...acumulado.values()].filter((p) => p.link).length;
+      console.log(`   ${acumulado.size} posts colhidos (${comLink} com link) · ${bons.length} com preço E modelo`);
       console.log(`   descartes: ${Object.entries(porMotivo).map(([k, v]) => `${k}=${v}`).join(" · ") || "nenhum"}`);
       for (const a of bons.slice(0, 5)) {
         console.log(`     ✓ ${String(a.marca ?? "?")} ${String(a.modelo)} ${a.ano ?? ""} — ${a.moeda} ${Number(a.preco).toLocaleString("es-PY")}`);

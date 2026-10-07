@@ -125,7 +125,11 @@ const MODELOS: Record<string, string[]> = {
   skua: ["skua"],
   ktm: ["duke", "adventure", "890", "390"],
   yamaha: ["ybr", "fazer", "crypton", "xtz"],
-  honda_moto: ["crf", "cg", "xr", "titan", "bros"],
+  // ⚠️ Chave distinta de `honda` porque a Honda faz carro E moto, e um "CG" não
+  // pode casar na lista de carros. Mas a chave é INTERNA: sem o apelido abaixo
+  // ela vazava para a tela como marca "Honda_moto" — pego ao medir o backfill,
+  // antes de gravar isso em 183 registros.
+  honda_moto: ["crf", "cg", "xr", "titan", "bros", "pop", "biz"],
 };
 
 /**
@@ -150,6 +154,19 @@ const MARCAS_ALFANUMERICAS = new Set(["mercedes-benz", "bmw", "audi", "volvo", "
 const RX_MODELO_ALFANUMERICO = /^(?:[a-z]{1,3}\s?\d{2,3}[a-z]{0,3}|\d{3}[a-z]{1,3})$/i;
 
 /** Marcas que vêm erradas ou escondidas no título paraguaio. */
+/**
+ * ⚠️ APELIDO DE EXIBIÇÃO para chaves INTERNAS do dicionário.
+ *
+ * Algumas chaves existem para separar listas que não podem se misturar — a
+ * Honda faz carro e moto, e um "CG" não pode casar na lista de carros. Mas a
+ * chave é detalhe de implementação: sem este mapa, "honda_moto" ia para a TELA
+ * como nome de marca. Peguei medindo o backfill, antes de gravar em 183
+ * registros.
+ */
+const APELIDO_MARCA: Record<string, string> = {
+  honda_moto: "Honda",
+};
+
 const MARCA_CORRIGIDA: Record<string, string> = {
   camaro: "Chevrolet", silverado: "Chevrolet",
   "range rover": "Land Rover", "range": "Land Rover",
@@ -265,8 +282,10 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null):
   if (marcaFicha) marca = marcaFicha;
   const marcaFinal = chave(marca).replace(/\s+/g, " ");
 
+  const marcaExibida = APELIDO_MARCA[chave(marca)] ?? marca;
+
   return {
-    marca: marca ? titlecase(marca) : null,
+    marca: marcaExibida ? titlecase(marcaExibida) : null,
     modelo: canonico ? titlecase(canonico) : null,
     segmento: segmentoJdm(modelo),
     versao: versao ? titlecase(versao).slice(0, 40) : null,
