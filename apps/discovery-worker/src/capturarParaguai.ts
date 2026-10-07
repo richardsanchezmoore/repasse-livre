@@ -22,6 +22,7 @@
  * Uso:  npx tsx src/capturarParaguai.ts [slug-da-regiao]
  */
 import "dotenv/config";
+import fs from "node:fs";
 import {
   HEADERS,
   extrairAnuncioFacebook,
@@ -120,7 +121,65 @@ async function baixar(url: string): Promise<string> {
 const itemUrl = (id: string) => `https://www.facebook.com/marketplace/item/${id}/?locale=es_LA`;
 const linkPublico = (id: string) => `https://www.facebook.com/marketplace/item/${id}`;
 
+/**
+ * ★★★ TRAVA CONTRA RODADA SOBREPOSTA — medido em 07/10/2026, não previsto.
+ *
+ * A tarefa RL-fb-py-todas começou às 09:15 e às 13:15 AINDA estava rodando
+ * (ainda salvando: último anúncio às 12:33). A próxima dispara 13:25. Ou seja:
+ * duas varreduras no mesmo perfil, ao mesmo tempo, todo ciclo.
+ *
+ * ⚠️⚠️ E ISSO NÃO É SÓ DESPERDÍCIO. Duas instâncias de Chrome no MESMO
+ * `user-data-dir` brigam pelo diretório — é o modo clássico de corromper
+ * sessão. Andamos culpando o Facebook pelas mortes de sessão; esta é uma causa
+ * nossa, e explica por que o login morria sem motivo aparente.
+ *
+ * ⚠️ SAIR COM CÓDIGO 0, não erro: "já tem uma rodando" é funcionamento normal
+ * da trava, e exit≠0 encheria o histórico da tarefa agendada de falha vermelha
+ * — que é justamente o sinal que a gente usa para saber que algo quebrou.
+ *
+ * ⚠️ A trava é por PID VIVO, não pela existência do arquivo: force-kill e queda
+ * de energia deixam arquivo órfão, e trava que não se solta sozinha é pior que
+ * trava nenhuma — para a captação em silêncio até alguém notar.
+ */
+const ARQUIVO_TRAVA = "C:/claude/fb-sessao-py.lock";
+
+function tomarTrava(): boolean {
+  try {
+    const cru = fs.readFileSync(ARQUIVO_TRAVA, "utf8");
+    const { pid, inicio } = JSON.parse(cru) as { pid: number; inicio: string };
+    let vivo = false;
+    try {
+      // sinal 0 não mata: só pergunta se o processo existe (vale no Windows).
+      process.kill(pid, 0);
+      vivo = true;
+    } catch {
+      vivo = false;
+    }
+    if (vivo && pid !== process.pid) {
+      const horas = (Date.now() - new Date(inicio).getTime()) / 3_600_000;
+      log(`⛔ já existe uma varredura rodando (pid ${pid}, há ${horas.toFixed(1)}h). Saindo sem fazer nada.`);
+      return false;
+    }
+    log(`(trava órfã do pid ${pid} descartada — processo não existe mais)`);
+  } catch {
+    /* sem arquivo, ou arquivo torto: caminho livre */
+  }
+  fs.writeFileSync(ARQUIVO_TRAVA, JSON.stringify({ pid: process.pid, inicio: new Date().toISOString() }));
+  return true;
+}
+
+function soltarTrava(): void {
+  try {
+    const { pid } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number };
+    // ⚠️ Só apaga a PRÓPRIA trava: se outra rodada já tomou, apagar aqui a
+    // liberaria para uma terceira entrar junto.
+    if (pid === process.pid) fs.unlinkSync(ARQUIVO_TRAVA);
+  } catch {
+    /* já foi */
+  }
+}
 async function main() {
+  if (!tomarTrava()) return;
   const alvo = process.argv[2];
   const [regioesRaw, minPreco, maxPreco, minAno, maxItensRaw, pacingRaw, faixasRaw] = await Promise.all([
     lerConfig("FACEBOOK_REGIOES"),
@@ -419,4 +478,5 @@ main()
   })
   .finally(async () => {
     await fecharContexto().catch(() => {});
+    soltarTrava();
   });
