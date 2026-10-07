@@ -261,6 +261,40 @@ export async function registrarVistoFacebook(itemId: string, status: string): Pr
   if (error) console.warn(`[fb_vistos] upsert ${itemId} falhou: ${error.message}`);
 }
 
+/**
+ * TELEMETRIA DE ORDENAÇÃO: o que uma busca devolveu, na ordem.
+ *
+ * ★ Existe para responder a pergunta do Gustavo — *"estamos pegando anúncios
+ * frescos a cada visita ou aleatórios, com o Facebook forçando 'perto de você'
+ * / 'recém anunciado'?"* — que hoje é inrespondível, porque `fb_vistos` só
+ * registra a PRIMEIRA vez que vimos cada id e a dedup salta o resto. Ver a
+ * migração 0089 para o desenho e o motivo de ser uma linha por BUSCA.
+ *
+ * ⚠️ NUNCA deixa a captação cair. É medição, não produto: se a tabela não
+ * existir ainda (migração não aplicada), avisa uma vez e segue. Perder a
+ * telemetria é barato; perder a rodada não.
+ */
+let avisouFbBuscas = false;
+export async function registrarBuscaFacebook(
+  rodada: string,
+  praca: string,
+  faixaMin: number,
+  faixaMax: number,
+  ids: string[],
+): Promise<void> {
+  const { error } = await supabase.from("fb_buscas").insert({
+    rodada,
+    praca,
+    faixa_min: faixaMin,
+    faixa_max: faixaMax,
+    ids,
+    total: ids.length,
+  });
+  if (error && !avisouFbBuscas) {
+    avisouFbBuscas = true;
+    console.warn(`[fb_buscas] telemetria desligada nesta rodada: ${error.message}`);
+  }
+}
 export async function linkOrigemJaExiste(linkOrigem: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("opportunities")

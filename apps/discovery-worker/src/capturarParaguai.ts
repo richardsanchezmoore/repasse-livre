@@ -37,6 +37,7 @@ import {
   buscarIdsVistosFacebook,
   lerConfig,
   registrarVistoFacebook,
+  registrarBuscaFacebook,
   supabase,
 } from "./supabaseClient.js";
 
@@ -186,6 +187,10 @@ async function main() {
   // praça some da coleta do dia sem ninguém perceber. Foi o que aconteceu.
   const zeradas: typeof regioes = [];
 
+  // ★ Carimbo ÚNICO da rodada: é o que agrupa as ~132 buscas de uma varredura
+  // só, e sem ele não há como comparar rodada com rodada.
+  const rodada = new Date().toISOString();
+
   const varrerRegiao = async (regiao: (typeof regioes)[number], repescagem = false): Promise<void> => {
     const marca = slugRegiao(regiao);
     log(`\n▶ ${regiao.nome} (${marca}) — ${faixas.length} faixa(s) de preço${repescagem ? " [REPESCAGEM]" : ""}`);
@@ -209,7 +214,16 @@ async function main() {
         log(`  ✗ faixa ${faixa.min}-${faixa.max} falhou: ${(e as Error).message}`);
         continue;
       }
-      const novosDaFaixa = extrairIdsDaBusca(htmlFaixa).filter((id) => !vistosNaRodada.has(id));
+      // ★★ O QUE O FACEBOOK DEVOLVEU, NA ORDEM E SEM FILTRO NOSSO.
+      //
+      // ⚠️ Registrar DEPOIS da dedup destruiria o sinal: o que denuncia se ele
+      // honra `creation_time_descend` ou rotaciona com "perto de você" é a
+      // POSIÇÃO de cada id, e a dedup remove justamente os repetidos — que são
+      // a evidência. Ver migração 0089.
+      const cruDaFaixa = extrairIdsDaBusca(htmlFaixa);
+      await registrarBuscaFacebook(rodada, marca, faixa.min, faixa.max, cruDaFaixa);
+
+      const novosDaFaixa = cruDaFaixa.filter((id) => !vistosNaRodada.has(id));
       novosDaFaixa.forEach((id) => vistosNaRodada.add(id));
       ids.push(...novosDaFaixa);
       log(`    faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}: ${novosDaFaixa.length} novo(s) na faixa`);
