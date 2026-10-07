@@ -32,6 +32,7 @@ import {
 import { lerPrecoComContexto, lerProcedencia, ehAnuncioDeCompra, mencionaTroca } from "./precoParaguai.js";
 import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
+import { normalizarVeiculoPY } from "./modeloParaguai.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -267,6 +268,17 @@ async function main() {
           continue;
         }
 
+        // ★★ NORMALIZA NA CAPTAÇÃO, não só no backfill — lacuna vista em
+        // 07/10/2026: a rodada agendada trouxe 86 anúncios novos e TODOS
+        // entraram sem marca/modelo/segmento, porque só o backfill preenchia
+        // essas colunas. Do jeito antigo, cada rodada exigiria um backfill
+        // depois, e a tabela de preço viveria sempre desatualizada.
+        //
+        // ⚠️ Guarda o título cru em `veiculo_bruto` ANTES de gravar o limpo: o
+        // dicionário vai melhorar, e sem o original não há como reprocessar.
+        const tituloCru = montarVeiculoPadrao(a) || a.titulo || "";
+        const norm = normalizarVeiculoPY(tituloCru);
+
         const fotos = a.fotos.slice(0, 10);
 
         // ★★ RE-HOSPEDAR AS FOTOS — lembrado pelo Gustavo em 03/10/2026, e ele
@@ -298,7 +310,15 @@ async function main() {
             fonte: "FACEBOOK",
             pais: "PY",
             link_origem: linkPublico(id),
-            veiculo: montarVeiculoPadrao(a) || a.titulo,
+            // Nome limpo quando o catálogo reconhece; o cru quando não — nunca
+            // um palpite, que contaminaria a mediana.
+            veiculo: norm.marca && norm.modelo
+              ? [norm.marca, norm.modelo, norm.ano ?? a.ano].filter(Boolean).join(" ")
+              : tituloCru,
+            veiculo_bruto: tituloCru,
+            marca: norm.marca,
+            modelo: norm.modelo,
+            segmento: norm.segmento,
             versao: a.versaoTexto ?? a.motor,
             ano: a.ano,
             cambio: a.cambio,
