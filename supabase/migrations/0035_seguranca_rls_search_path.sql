@@ -15,7 +15,17 @@ alter table fipe_historico      enable row level security;
 alter table fipe_mapa_aprendido enable row level security;
 alter table bi_snapshot_diario  enable row level security;
 alter table bi_recalculo_fipe   enable row level security;
-alter table schema_migrations   enable row level security;
+-- ⚠️ CONDICIONAL desde 06/10/2026: `schema_migrations` é a tabela do runner
+-- ANTIGO e não existe num projeto novo — esta linha derrubou a migração 0035 na
+-- migração para o projeto wmeggxmzroundpkcthxk, com as 34 anteriores já
+-- aplicadas. Uma migração tem que poder rodar num banco vazio; depender de
+-- artefato de ferramenta a torna irreproduzível.
+do $$
+begin
+  if to_regclass('public.schema_migrations') is not null then
+    execute 'alter table schema_migrations enable row level security';
+  end if;
+end $$;
 
 -- (B) 15 WARNINGS "Function Search Path Mutable": funções public sem search_path
 --     fixo herdam o do chamador (risco de search_path hijacking). Pina um
