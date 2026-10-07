@@ -8,3 +8,9 @@ dist/
 # Dumps de scrape (Bright Data) — não versionar
 docs/sd_*.json
 scripts/fb-watchdog.log
+
+# ⚠️ Arquivo temporario de migracao de banco: contem senha e service_role key.
+# Sem esta linha, `.gitignore` so cobria ".env" exato e este escaparia.
+.env.novo-banco
+.env.*
+!.env.example
