@@ -1,0 +1,12 @@
+import "dotenv/config";
+import { supabase } from "./supabaseClient.js";
+const { data } = await supabase.from("opportunities").select("km, preco, ano").eq("pais","PY").limit(2000);
+const l = (data ?? []).filter(o => o.km != null);
+const conta = new Map<number, number>();
+for (const o of l) conta.set(Number(o.km), (conta.get(Number(o.km)) ?? 0) + 1);
+const top = [...conta.entries()].sort((a,b)=>b[1]-a[1]);
+console.log(`${l.length} anúncios com km preenchido · ${conta.size} valores DISTINTOS`);
+console.log(`\nos 8 valores mais repetidos:`);
+top.slice(0,8).forEach(([v,n]) => console.log(`  ${String(v).padStart(8)} km → ${String(n).padStart(4)} anúncios  (${Math.round(n/l.length*100)}%)`));
+const doisValores = top.slice(0,2).reduce((a,[,n])=>a+n,0);
+console.log(`\nos DOIS valores mais comuns cobrem ${Math.round(doisValores/l.length*100)}% da base`);
