@@ -43,6 +43,7 @@ import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./na
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
 import { CATALOGO_JDM } from "./catalogoJdmParaguai.js";
+import { CATALOGO_MERCADO } from "./catalogoMercadoPY.js";
 import { conferirAnoModelo } from "./anoModeloPY.js";
 import { geracaoDoAno } from "./geracoesPY.js";
 import {
@@ -235,7 +236,21 @@ function localDaRegiao(url: string): string | null {
  * em primeiro lugar na pergunta 1, e os outros 58 nunca rodariam.
  */
 async function escolherTermos(limite: number): Promise<string[]> {
-  const candidatos = CATALOGO_JDM.map((m) => m.nomes[0]);
+  // ★★ OS DOIS CATÁLOGOS. O JDM é a tese (frota japonesa) e busca pelo nome
+  // solto, porque "vitz" e "premio" são distintivos. O de mercado cobre o resto
+  // — ~47% da base que não tinha termo nenhum — e decide por entrada se precisa
+  // da marca junto, porque "soul", "fit" e "gol" sozinhos trazem vara de pesca.
+  //
+  // ⚠️ TERMO ≠ MODELO, e confundir os dois quebra a fila. A busca pode ser
+  // "kia soul" enquanto o modelo gravado no banco é "Soul": a cobertura tem que
+  // ser medida pelo MODELO e a busca feita pelo TERMO.
+  const candidatos: { termo: string; modelo: string }[] = [
+    ...CATALOGO_JDM.map((m) => ({ termo: m.nomes[0], modelo: m.nomes[0] })),
+    ...CATALOGO_MERCADO.map((m) => ({
+      termo: m.comMarca ? `${m.marca.toLowerCase()} ${m.nomes[0]}` : m.nomes[0],
+      modelo: m.nomes[0],
+    })),
+  ];
 
   const desde = new Date(Date.now() - 24 * 3_600_000).toISOString();
   const { data: recentes } = await supabase
@@ -245,20 +260,25 @@ async function escolherTermos(limite: number): Promise<string[]> {
     .not("termo", "is", null);
   const jaFoi = new Set((recentes ?? []).map((r) => String(r.termo)));
 
-  // ⚠️ Uma consulta só para a cobertura toda: 59 contagens separadas seriam 59
-  // idas ao banco por rodada, e já estourei o egress deste projeto uma vez.
+  // ⚠️ Uma consulta só para a cobertura toda: uma contagem por modelo seriam
+  // ~160 idas ao banco por rodada, e já estourei o egress deste projeto uma vez.
   const { data: base } = await supabase.from("opportunities").select("modelo").eq("pais", "PY");
   const cobertura = new Map<string, number>();
   for (const linha of base ?? []) {
     const m = String(linha.modelo ?? "").toLowerCase();
     if (!m) continue;
-    for (const c of candidatos) if (m.includes(c) || c.includes(m)) cobertura.set(c, (cobertura.get(c) ?? 0) + 1);
+    for (const c of candidatos) {
+      if (m === c.modelo || m.includes(c.modelo) || c.modelo.includes(m)) {
+        cobertura.set(c.termo, (cobertura.get(c.termo) ?? 0) + 1);
+      }
+    }
   }
 
   return candidatos
-    .filter((c) => !jaFoi.has(c))
-    .sort((a, b) => (cobertura.get(a) ?? 0) - (cobertura.get(b) ?? 0))
-    .slice(0, limite);
+    .filter((c) => !jaFoi.has(c.termo))
+    .sort((a, b) => (cobertura.get(a.termo) ?? 0) - (cobertura.get(b.termo) ?? 0))
+    .slice(0, limite)
+    .map((c) => c.termo);
 }
 async function main() {
   if (!tomarTrava()) return;
