@@ -394,7 +394,31 @@ export function lerPrecoComContexto(
 
   // Degrau 3: grandeza. Só resolve fora da zona cinzenta.
   if (valor > ZONA_CINZENTA.max && valor <= FAIXA.PYG.max) return { ok: true, valor, moeda: "PYG", confianca: "grandeza" };
-  if (valor >= FAIXA.USD.min && valor < ZONA_CINZENTA.min) return { ok: true, valor, moeda: "USD", confianca: "grandeza" };
+
+  // ⚠️⚠️ TETO MAIS APERTADO QUANDO A MOEDA É PALPITE — achado em 08/10/2026.
+  //
+  // A faixa de dólar vai até 500.000 porque, COM SÍMBOLO, US$ 500 mil cobre
+  // qualquer coisa que se anuncie. Mas aqui a moeda não foi lida: foi deduzida
+  // da grandeza. Dar a um palpite a mesma folga de uma leitura produziu isto,
+  // medido na base:
+  //
+  //   "Chevrolet Luv 1997 Desarme 2.3"  → USD 450.000
+  //   "Toyota Tercel 1997 Desarme"      → USD 450.000
+  //   "Mahindra En 2010 Desarme 2.6"    → USD 350.000
+  //
+  // São anúncios de PEÇA (desarme = desmanche) a ₲450.000, uns US$ 60 — lidos
+  // como 450 mil dólares. Erro de mil vezes, e punha uma Luv desmontada como o
+  // carro mais caro do Paraguai.
+  //
+  // ★ Acima de US$ 150 mil, guarani é MUITO mais provável que dólar: carro de
+  // US$ 150 mil no Paraguai é raridade de leilão, enquanto ₲150.000 é preço de
+  // peça e aparece o tempo todo. Quando o palpite fica arriscado, recusar é a
+  // resposta certa — o anúncio continua no banco sem preço, e não contamina a
+  // mediana carregando uma moeda inventada.
+  const TETO_DOLAR_POR_PALPITE = 150_000;
+  if (valor >= FAIXA.USD.min && valor <= TETO_DOLAR_POR_PALPITE && valor < ZONA_CINZENTA.min) {
+    return { ok: true, valor, moeda: "USD", confianca: "grandeza" };
+  }
 
   // Dentro da zona cinzenta ninguém sabe. Recusar é melhor que chutar: um
   // palpite errado aqui entra na mediana e não dá sinal nenhum de que entrou.
@@ -540,6 +564,33 @@ export function ehAnuncioDeCompra(titulo: string, descricao = ""): boolean {
  */
 export function mencionaTroca(titulo: string, descricao = ""): boolean {
   return RX_TROCA.test(`${titulo} ${descricao}`);
+}
+
+/**
+ * ★ CARRO PARA DESMANCHE — achado na base em 08/10/2026.
+ *
+ *   "Chevrolet Luv 1997 Desarme 2.3"   "Toyota Tercel 1997 Desarme"
+ *   "Mahindra En 2010 Desarme 2.6"     "Chevrolet Luv 1994 Desarme 2.3"
+ *
+ * ⚠️ Não é carro à venda: é carro sendo VENDIDO EM PEÇAS, e o preço que aparece
+ * é o de uma peça. Entrou na base como se fosse veículo inteiro e, somado ao
+ * teto frouxo do palpite de moeda, virou "Luv 1997 por US$ 450.000".
+ *
+ * ⚠️ EXIGE NO TÍTULO: o vendedor que desmancha põe a palavra lá, porque é isso
+ * que ele está oferecendo.
+ *
+ * ⚠️⚠️ E TRATA A NEGAÇÃO, que é o oposto exato. *"Toyota Premio 2006 impecable,
+ * NO ES PARA DESARME"* é o vendedor garantindo que o carro está inteiro — e a
+ * primeira versão disto barrava justamente ele. Eu tinha escrito o aviso no
+ * comentário e não tinha implementado; só apareceu porque testei a frase.
+ */
+const RX_DESMANCHE = /\b(desarme|desarmadero|desguace|chatarra|para\s+repuestos?)\b/i;
+const RX_NEGA_DESMANCHE = /\b(no|sin|nunca|jam[aá]s)\s+(es\s+)?(para\s+)?(desarm|desguace|chatarra)/i;
+
+export function ehAnuncioDeDesmanche(titulo: string): boolean {
+  const t = titulo ?? "";
+  if (RX_NEGA_DESMANCHE.test(t)) return false;
+  return RX_DESMANCHE.test(t);
 }
 
 /**

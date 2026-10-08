@@ -34,6 +34,7 @@ import {
   lerPrecoComContexto,
   lerProcedencia,
   ehAnuncioDeCompra,
+  ehAnuncioDeDesmanche,
   mencionaTroca,
   precoEhEntrega,
   precoDeclarado,
@@ -414,7 +415,7 @@ async function main() {
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
     log(`  ${ids.length} na página · ${novos.length} novos`);
 
-    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0, naoVeiculo: 0 };
+    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0, naoVeiculo: 0, desmanche: 0 };
 
     for (const id of novos) {
       try {
@@ -455,6 +456,17 @@ async function main() {
         if (ehAnuncioDeCompra(a.titulo ?? "", a.descricao ?? "")) {
           conta.compra++;
           await registrarVistoFacebook(id, "anuncio_de_compra");
+          await dormir(pacing);
+          continue;
+        }
+
+        // ★ CARRO PARA DESMANCHE não é carro à venda: é carro vendido em
+        // PEÇAS, e o preço que aparece é o de uma peça. Achado na base em
+        // 08/10/2026 — "Chevrolet Luv 1997 Desarme" a US$ 450.000, que era
+        // ₲450.000 de uma peça lido como dólar. Os dois defeitos se somaram.
+        if (ehAnuncioDeDesmanche(a.titulo ?? "")) {
+          conta.desmanche++;
+          await registrarVistoFacebook(id, "desmanche");
           await dormir(pacing);
           continue;
         }
@@ -650,7 +662,7 @@ async function main() {
       }
     }
 
-    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto · ${conta.naoVeiculo} sem ano (modo termo)`);
+    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.desmanche} desmanche · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto · ${conta.naoVeiculo} sem ano (modo termo)`);
   };
 
   for (const regiao of regioes) await varrerRegiao(regiao);
