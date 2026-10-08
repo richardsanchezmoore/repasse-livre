@@ -342,6 +342,32 @@ export interface ResultadoParseFacebook {
   motivoDescarte?: "sem_motor" | "sem_titulo" | "nao_eh_veiculo" | "isca_loja";
 }
 
+/**
+ * ⚠️⚠️ NÃO EXISTE MARCADOR DE CATEGORIA NA PÁGINA DO ANÚNCIO — testado e
+ * descartado em 08/10/2026. Está escrito aqui para ninguém tentar de novo.
+ *
+ * O problema: a busca por PALAVRA-CHAVE (`/search/?query=`) ignora qualquer
+ * restrição de categoria, então "century" devolve vara de pesca, relógio e
+ * multivitamínico junto com o carro. Cinco variantes de URL testadas
+ * (`topLevelVehicleType`, `/vehicles/`, `/carros/`, `category=vehicles`):
+ * quatro devolveram os MESMOS 14 ids, a quinta ignorou a palavra.
+ *
+ * Então tentei achar a categoria no HTML do item. Duas tentativas, ambas
+ * MEDIDAS e ambas falsas:
+ *
+ *   1. presença de campos `vehicle_*` → a página traz ~21 anúncios
+ *      RELACIONADOS, e os campos vazam deles. Resultado real: as 6 páginas de
+ *      vara de pesca PASSARAM e um Toyota Voxy foi BARRADO.
+ *
+ *   2. `seo_virtual_category` / `marketplace_listing_category` → a primeira
+ *      vem `null` tanto na vara quanto no carro, e a segunda nem existe.
+ *
+ * ★ O que funcionou está em capturarParaguai: exigir ANO no modo termo.
+ * Medido: 2% da base não tem ano, e nesses 2% mora o lixo (óleo de motor,
+ * página de revenda, vara de pesca) — enquanto carro paraguaio praticamente
+ * sempre declara o ano, porque é o que define o preço.
+ */
+
 const MOTOR_RE = /\b([0-9]\.[0-9])\b/;
 const ANO_RE = /\b(19[89]\d|20[0-4]\d)\b/;
 // Sinais de anúncio de LOJA/ISCA (preço-campo = entrada, não o carro). Cada regex = 1 sinal;

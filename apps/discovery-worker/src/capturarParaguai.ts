@@ -414,15 +414,42 @@ async function main() {
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
     log(`  ${ids.length} na página · ${novos.length} novos`);
 
-    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0 };
+    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0, naoVeiculo: 0 };
 
     for (const id of novos) {
       try {
         const detalhe = await baixar(itemUrl(id));
+
         // ★ SEM exigir cilindrada: no Paraguai não há FIPE para casar e essa
         // regra derrubava 6 de cada 10 anúncios.
         const { anuncio: a } = extrairAnuncioFacebook(detalhe, id, { exigirMotor: false });
         if (!a) { conta.erro++; await registrarVistoFacebook(id, "sem_parse"); await dormir(pacing); continue; }
+
+        // ★★★ PORTÃO DO MODO TERMO: SEM ANO, NÃO ENTRA.
+        //
+        // A busca por palavra-chave não aceita restrição de categoria — cinco
+        // variantes de URL testadas em 08/10/2026, todas ignoram (a lápide com
+        // o detalhe está em facebookMarketplaceService). Então "century" traz
+        // vara de pesca, relógio e multivitamínico, e o normalizador, vendo a
+        // palavra no catálogo JDM, gravou nove deles como "Toyota Century" —
+        // um a USD 240.000. Todos removidos à mão depois.
+        //
+        // ★ O ANO é o discriminador, e a medição é limpa: 2% da base não tem
+        // ano, e é nesses 2% que mora o lixo (óleo de motor, página de
+        // revenda, vara). Carro paraguaio praticamente sempre declara o ano,
+        // porque é o que define o preço.
+        //
+        // ⚠️ E o custo é aceitável POR CONSTRUÇÃO: a referência é por
+        // modelo+ano, então anúncio sem ano não serve para a tabela de
+        // qualquer jeito. O portão só recusa o que já não ia ser usado.
+        //
+        // ⚠️ No modo faixa isto NÃO roda: lá a URL de categoria já restringe.
+        if (MODO === "termo" && !a.ano) {
+          conta.naoVeiculo++;
+          await registrarVistoFacebook(id, "sem_ano_modo_termo");
+          await dormir(pacing);
+          continue;
+        }
 
         const contexto = `${a.titulo ?? ""} ${a.descricao ?? ""}`;
         if (ehAnuncioDeCompra(a.titulo ?? "", a.descricao ?? "")) {
@@ -623,7 +650,7 @@ async function main() {
       }
     }
 
-    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto`);
+    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto · ${conta.naoVeiculo} sem ano (modo termo)`);
   };
 
   for (const regiao of regioes) await varrerRegiao(regiao);
