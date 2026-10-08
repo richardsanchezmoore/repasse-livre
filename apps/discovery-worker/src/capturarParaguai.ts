@@ -34,6 +34,7 @@ import { lerPrecoComContexto, lerProcedencia, ehAnuncioDeCompra, mencionaTroca }
 import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
+import { CATALOGO_JDM } from "./catalogoJdmParaguai.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -178,6 +179,77 @@ function soltarTrava(): void {
     /* já foi */
   }
 }
+/**
+ * ★★★ MODO TERMO — o catálogo JDM vira plano de busca (07/10/2026).
+ *
+ * A sonda provou que a varredura por categoria + faixa NÃO enxerga a frota
+ * japonesa: hiace, aqua, crown, noah, wish e alphard devolveram 248 anúncios
+ * em CDE e Asunción, e NENHUM estava na base de 307. Dois segmentos inteiros
+ * do catálogo (van_luxo, sedan_luxo) zerados. A busca por palavra-chave é
+ * outro índice do Facebook, e acha o que o índice de categoria não acha.
+ *
+ * ⚠️ NÃO SUBSTITUI a varredura por faixa, SOMA a ela. A faixa pega o que
+ * chega de qualquer marca, inclusive o que não está no catálogo; o termo pega
+ * o que o catálogo sabe que existe e a faixa não mostra. Ligar um e desligar
+ * o outro trocaria um buraco por outro.
+ *
+ * Liga com PY_MODO=termo.
+ */
+const MODO = (process.env.PY_MODO ?? "faixa").toLowerCase();
+
+/** Quantos termos por rodada. Teto baixo: é a conta do Gustavo e ela é usável. */
+const TERMOS_POR_RODADA = Number(process.env.PY_TERMOS_POR_RODADA ?? 10);
+
+interface Busca {
+  rotulo: string;
+  url: string;
+  min: number;
+  max: number;
+  termo: string | null;
+}
+
+/** O trecho de praça da URL do painel: /marketplace/<aqui>/carros/... */
+function localDaRegiao(url: string): string | null {
+  return url.match(/\/marketplace\/([^/?#]+)/)?.[1] ?? null;
+}
+
+/**
+ * ★ QUAIS TERMOS VARRER AGORA — a fila sai do próprio banco, sem cursor.
+ *
+ * Duas perguntas, nesta ordem:
+ *   1. qual modelo do catálogo tem MENOS anúncio na base?  → vai na frente
+ *   2. qual termo já foi buscado nas últimas 24h?          → fica para depois
+ *
+ * ⚠️ A pergunta 2 não é educação com o Facebook, é o que impede a fila de
+ * travar: um modelo que de fato não circula no Paraguai ficaria eternamente
+ * em primeiro lugar na pergunta 1, e os outros 58 nunca rodariam.
+ */
+async function escolherTermos(limite: number): Promise<string[]> {
+  const candidatos = CATALOGO_JDM.map((m) => m.nomes[0]);
+
+  const desde = new Date(Date.now() - 24 * 3_600_000).toISOString();
+  const { data: recentes } = await supabase
+    .from("fb_buscas")
+    .select("termo")
+    .gte("executada_em", desde)
+    .not("termo", "is", null);
+  const jaFoi = new Set((recentes ?? []).map((r) => String(r.termo)));
+
+  // ⚠️ Uma consulta só para a cobertura toda: 59 contagens separadas seriam 59
+  // idas ao banco por rodada, e já estourei o egress deste projeto uma vez.
+  const { data: base } = await supabase.from("opportunities").select("modelo").eq("pais", "PY");
+  const cobertura = new Map<string, number>();
+  for (const linha of base ?? []) {
+    const m = String(linha.modelo ?? "").toLowerCase();
+    if (!m) continue;
+    for (const c of candidatos) if (m.includes(c) || c.includes(m)) cobertura.set(c, (cobertura.get(c) ?? 0) + 1);
+  }
+
+  return candidatos
+    .filter((c) => !jaFoi.has(c))
+    .sort((a, b) => (cobertura.get(a) ?? 0) - (cobertura.get(b) ?? 0))
+    .slice(0, limite);
+}
 async function main() {
   if (!tomarTrava()) return;
   const alvo = process.argv[2];
@@ -250,9 +322,18 @@ async function main() {
   // só, e sem ele não há como comparar rodada com rodada.
   const rodada = new Date().toISOString();
 
+  const termosDaRodada = MODO === "termo" ? await escolherTermos(TERMOS_POR_RODADA) : [];
+  if (MODO === "termo") {
+    if (!termosDaRodada.length) {
+      log("todos os termos do catálogo já foram buscados nas últimas 24h — nada a fazer.");
+      return;
+    }
+    log(`MODO TERMO — ${termosDaRodada.length} termo(s): ${termosDaRodada.join(", ")}`);
+  }
+
   const varrerRegiao = async (regiao: (typeof regioes)[number], repescagem = false): Promise<void> => {
     const marca = slugRegiao(regiao);
-    log(`\n▶ ${regiao.nome} (${marca}) — ${faixas.length} faixa(s) de preço${repescagem ? " [REPESCAGEM]" : ""}`);
+    log(`\n▶ ${regiao.nome} (${marca}) — ${MODO === "termo" ? `${termosDaRodada.length} termo(s)` : `${faixas.length} faixa(s) de preço`}${repescagem ? " [REPESCAGEM]" : ""}`);
 
     // ⚠️ Dedup ENTRE as faixas da mesma rodada: as bordas se tocam e o mesmo
     // anúncio aparece em duas. Sem isto, o relatório conta o dobro e o livro-
@@ -260,17 +341,39 @@ async function main() {
     const vistosNaRodada = new Set<string>();
     const ids: string[] = [];
 
-    for (const faixa of faixas) {
-      const url = montarUrlBuscaFacebook(
-        regiao.url,
-        { ...filtros, minPreco: String(faixa.min), maxPreco: String(faixa.max) },
-        regiao.raio ?? "60"
-      );
+    // ★ A ÚNICA coisa que muda entre os dois modos é a lista de URLs; dedup,
+    // livro-razão, abertura do anúncio, preço, foto e gravação são os mesmos.
+    const local = localDaRegiao(regiao.url);
+    const buscas: Busca[] =
+      MODO === "termo" && local
+        ? termosDaRodada.map((termo) => ({
+            rotulo: `termo "${termo}"`,
+            // ⚠️ URL IGUAL À DA SONDA que funcionou. Nada de parâmetro a mais:
+            // foi assim que ela achou 248 anúncios, e não vou melhorar no
+            // escuro uma coisa que já está provada.
+            url: `https://www.facebook.com/marketplace/${local}/search/?query=${encodeURIComponent(termo)}&locale=es_LA`,
+            min: 0,
+            max: 0,
+            termo,
+          }))
+        : faixas.map((faixa) => ({
+            rotulo: `faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}`,
+            url: montarUrlBuscaFacebook(
+              regiao.url,
+              { ...filtros, minPreco: String(faixa.min), maxPreco: String(faixa.max) },
+              regiao.raio ?? "60",
+            ),
+            min: faixa.min,
+            max: faixa.max,
+            termo: null,
+          }));
+
+    for (const busca of buscas) {
       let htmlFaixa: string;
       try {
-        htmlFaixa = await baixar(url);
+        htmlFaixa = await baixar(busca.url);
       } catch (e) {
-        log(`  ✗ faixa ${faixa.min}-${faixa.max} falhou: ${(e as Error).message}`);
+        log(`  ✗ ${busca.rotulo} falhou: ${(e as Error).message}`);
         continue;
       }
       // ★★ O QUE O FACEBOOK DEVOLVEU, NA ORDEM E SEM FILTRO NOSSO.
@@ -280,12 +383,12 @@ async function main() {
       // POSIÇÃO de cada id, e a dedup remove justamente os repetidos — que são
       // a evidência. Ver migração 0089.
       const cruDaFaixa = extrairIdsDaBusca(htmlFaixa);
-      await registrarBuscaFacebook(rodada, marca, faixa.min, faixa.max, cruDaFaixa);
+      await registrarBuscaFacebook(rodada, marca, busca.min, busca.max, cruDaFaixa, busca.termo);
 
       const novosDaFaixa = cruDaFaixa.filter((id) => !vistosNaRodada.has(id));
       novosDaFaixa.forEach((id) => vistosNaRodada.add(id));
       ids.push(...novosDaFaixa);
-      log(`    faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}: ${novosDaFaixa.length} novo(s) na faixa`);
+      log(`    ${busca.rotulo}: ${cruDaFaixa.length} na página, ${novosDaFaixa.length} novo(s)`);
       // ⚠️ Pausa ENTRE faixas: são várias buscas seguidas na mesma praça, e é
       // justamente o padrão que mais chama atenção. O pacing do painel vale
       // aqui também.

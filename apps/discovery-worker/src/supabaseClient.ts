@@ -281,12 +281,15 @@ export async function registrarBuscaFacebook(
   faixaMin: number,
   faixaMax: number,
   ids: string[],
+  /** Palavra-chave que gerou a busca; null na varredura por faixa. */
+  termo: string | null = null,
 ): Promise<void> {
   const { error } = await supabase.from("fb_buscas").insert({
     rodada,
     praca,
     faixa_min: faixaMin,
     faixa_max: faixaMax,
+    termo,
     ids,
     total: ids.length,
   });
