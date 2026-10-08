@@ -98,7 +98,68 @@ export const GERACOES: Record<string, Geracao[]> = {
     { codigo: "AE20", de: 2009, ate: 2017, confianca: "estimado", nota: "⚠️ corte NÃO confirmado em fonte" },
   ],
 
+  // ══════════════════════════════════════════════════════════════════════
+  // ★★ OS QUE DOMINAM A BASE — adicionados em 08/10/2026.
+  //
+  // ⚠️ ERRO MEU, e vale registrar: a primeira versão deste arquivo cobriu os
+  // modelos que a sonda tinha acabado de descobrir que FALTAVAM (hiace, aqua,
+  // crown…) e nenhum dos que a base já tem aos montes. Resultado medido: ZERO
+  // dos 307 anúncios caía numa geração conhecida. Dicionário tem que cobrir
+  // primeiro o que já está na mão.
+  // ══════════════════════════════════════════════════════════════════════
+
+  // 32 anúncios na base, anos 2000–2015 — o carro mais comum da praça.
+  vitz: [
+    { codigo: "XP10", de: 1999, ate: 2005, confianca: "firme" },
+    { codigo: "XP90", de: 2005, ate: 2010, confianca: "estimado", nota: "⚠️ fontes divergem entre 2010 e 2011 para o fim" },
+    { codigo: "XP130", de: 2010, ate: 2019, confianca: "estimado", nota: "⚠️ fontes divergem: 2010 ou 2012 para o início; a linha Vitz acaba em 2019 e vira Yaris" },
+  ],
+  ractis: [
+    { codigo: "XP100", de: 2005, ate: 2010, confianca: "firme", nota: "sucessor do Yaris Verso (FunCargo)" },
+    { codigo: "XP120", de: 2010, ate: 2016, confianca: "estimado", nota: "⚠️ jan/2010–jun/2016 numa fonte; a Wikipédia leva a linha até dez/2017" },
+  ],
+  // ★ Premio e Allion são o MESMO carro com grades diferentes — mesmas gerações,
+  // e por isso as duas entradas são idênticas de propósito, não copiadas por
+  // descuido. Os dois encerram a linhagem do Corona em 2021.
+  premio: [
+    { codigo: "T240", de: 2001, ate: 2007, confianca: "firme", nota: "produção dez/2001 – jun/2007" },
+    { codigo: "T260", de: 2007, ate: 2021, confianca: "firme" },
+  ],
+  allion: [
+    { codigo: "T240", de: 2001, ate: 2007, confianca: "firme" },
+    { codigo: "T260", de: 2007, ate: 2021, confianca: "firme" },
+  ],
+
+  // ── Toyota: os de conhecimento geral, ainda a conferir em fonte ──────────
+  // ⚠️ Todos `estimado`: não passaram pela pesquisa desta rodada. Estão aqui
+  // porque uma geração aproximada agrupa melhor que ano nenhum — mas quem
+  // publicar número em cima deles precisa saber que a borda pode andar um ano.
+  auris: [
+    { codigo: "E150", de: 2006, ate: 2012, confianca: "estimado" },
+    { codigo: "E180", de: 2012, ate: 2018, confianca: "estimado" },
+  ],
+  "corolla runx": [{ codigo: "E120", de: 2001, ate: 2006, confianca: "estimado", nota: "geração única" }],
+  ist: [
+    { codigo: "XP60", de: 2002, ate: 2007, confianca: "estimado" },
+    { codigo: "XP110", de: 2007, ate: 2016, confianca: "estimado" },
+  ],
+  "corolla axio": [
+    { codigo: "E140", de: 2006, ate: 2012, confianca: "estimado" },
+    { codigo: "E160", de: 2012, ate: 2021, confianca: "estimado" },
+  ],
+  funcargo: [{ codigo: "XP20", de: 1999, ate: 2005, confianca: "estimado", nota: "vira Ractis em 2005" }],
+  platz: [{ codigo: "XP10", de: 1999, ate: 2005, confianca: "estimado", nota: "sedã do Vitz XP10" }],
+
   // ── Toyota: sedã de luxo ────────────────────────────────────────────────
+  // ★ "Crown Athlete" é ACABAMENTO do Crown, não modelo à parte — mesmas
+  // gerações. Fica com entrada própria porque é assim que o anúncio paraguaio
+  // escreve, e são 15 na base contra zero de "crown" puro.
+  "crown athlete": [
+    { codigo: "S170", de: 1999, ate: 2003, confianca: "firme" },
+    { codigo: "S180", de: 2003, ate: 2008, confianca: "firme" },
+    { codigo: "S200", de: 2008, ate: 2012, confianca: "firme" },
+    { codigo: "S210", de: 2012, ate: 2018, confianca: "firme" },
+  ],
   crown: [
     { codigo: "S170", de: 1999, ate: 2003, confianca: "firme", nota: "a geração mais exportada; motores 2.0, 2.5 e 3.0 seis-em-linha" },
     { codigo: "S180", de: 2003, ate: 2008, confianca: "firme" },

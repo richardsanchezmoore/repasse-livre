@@ -569,7 +569,14 @@ async function main() {
             // Paraguai quase todo ANO tem amostra pequena demais para publicar
             // mediana, e geração junta os anos que são o mesmo carro.
             geracao: ger?.codigo ?? null,
-            ano_suspeito: conf.problema !== null,
+            // ⚠️ SÓ as duas que são erro DO ANÚNCIO. `conferirAnoModelo` também
+            // devolve "modelo_sem_faixa" e "ano_ausente", e nenhuma das duas é
+            // ano suspeito: a primeira é o NOSSO dicionário que não cobre o
+            // modelo (a própria função diz isso no comentário dela), a segunda é
+            // anúncio sem ano. Usar `problema !== null` marcou 178 de 306 linhas
+            // — 58% — e uma bandeira que acende em mais da metade da base é
+            // ruído que ninguém olha.
+            ano_suspeito: conf.problema === "antes_de_existir" || conf.problema === "depois_do_fim",
             versao: a.versaoTexto ?? a.motor,
             ano: a.ano,
             cambio: a.cambio,
