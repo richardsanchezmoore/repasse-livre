@@ -254,6 +254,17 @@ const SEM_FOTO = process.env.PY_SEM_FOTO === "1";
 const ROLAGENS = Number(process.env.PY_ROLAGENS ?? 20);
 
 /**
+ * ⚠️⚠️ PAUSA DA ROLAGEM ≠ PACING ENTRE BUSCAS. Confundi as duas e custou caro:
+ * o `pacing` do painel (1.500ms) é a educação ENTRE buscas, e usá-lo como
+ * espera entre rolagens fez a colheita parar em 38 ids onde cabiam 500 — sem
+ * erro no log, porque parecia fim de lista.
+ *
+ * O Facebook precisa de ~2s para montar o lote seguinte. Este número responde
+ * a isso, não à política de ritmo.
+ */
+const PAUSA_ROLAGEM = Number(process.env.PY_PAUSA_ROLAGEM ?? 2500);
+
+/**
  * ⚠️ O teto por praça vem do painel (FACEBOOK_MAX_ITENS, 40). Num mutirão
  * isso corta a colheita pela metade — mas mudar a config mexeria também na
  * rodada de rotina, que não é o que se quer. Env ganha da config, e só aqui.
@@ -480,7 +491,7 @@ async function main() {
       let cruDaFaixa: string[];
       try {
         cruDaFaixa = AUTOLOAD
-          ? await coletarIdsComRolagem(busca.url, ROLAGENS, pacing)
+          ? await coletarIdsComRolagem(busca.url, ROLAGENS, PAUSA_ROLAGEM)
           : extrairIdsDaBusca(await baixar(busca.url));
       } catch (e) {
         if (e instanceof SessaoExpirada) throw e;

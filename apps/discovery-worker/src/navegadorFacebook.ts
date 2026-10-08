@@ -162,7 +162,15 @@ export async function coletarIdsComRolagem(
     for (let i = 0; i <= rolagens; i++) {
       if (i > 0) {
         await page.mouse.wheel(0, 2800);
-        await page.waitForTimeout(pausaMs);
+        // ⚠️⚠️ ROLAGEM SECA GANHA MAIS TEMPO, não menos. Medido em 08/10/2026:
+        // com pausa de 1.500ms a colheita parou em 38 ids; com 2.200ms, 500. A
+        // diferença de 700ms era a diferença entre 8% e 100% — e sem erro nenhum
+        // no log, porque "parei de achar id novo" parece fim de lista.
+        //
+        // Então, quando um passo não traz nada, o seguinte espera o DOBRO antes
+        // de desistir. Rede lenta e GraphQL demorado deixam de ser confundidos
+        // com fim de lista, que é o jeito mais caro de errar aqui.
+        await page.waitForTimeout(secas > 0 ? pausaMs * 2 : pausaMs);
       }
       const lote = await page.evaluate(() =>
         [...document.querySelectorAll<HTMLAnchorElement>('a[href*="/marketplace/item/"]')]
@@ -172,7 +180,8 @@ export async function coletarIdsComRolagem(
       const antes = vistos.size;
       for (const id of lote) if (!vistos.has(id)) { vistos.add(id); ordem.push(id); }
       secas = vistos.size === antes ? secas + 1 : 0;
-      if (secas >= 2) break;
+      // ⚠️ TRÊS secas, não duas: com duas, um engasgo de rede encerra a colheita.
+      if (secas >= 3) break;
     }
     return ordem;
   } finally {
