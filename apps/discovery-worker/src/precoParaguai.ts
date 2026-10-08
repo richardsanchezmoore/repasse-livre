@@ -371,9 +371,24 @@ export function lerPrecoComContexto(
     if (valor >= faixa.min && valor <= faixa.max) return { ok: true, valor, moeda, confianca: "descricao" };
     // A descrição diz uma coisa e a grandeza diz outra. "40 millones" com o
     // número 40 é o caso clássico: o vendedor escreveu o valor por extenso.
+    //
+    // ⚠️⚠️ O PISO AQUI NÃO É DETALHE — sem ele este resgate RESSUSCITA ISCA.
+    //
+    // Caso real, capturado em 08/10/2026: "Toyota Crown Athlete 2014" com ₲1 no
+    // campo (isca clássica) e "Entrega de 36 millones" na descrição. O `/mill/`
+    // casava com a palavra da ENTREGA, o ₲1 virava ₲1.000.000, e o anúncio
+    // entrava no banco como um Crown de US$ 130 — a pechincha do século num
+    // site cujo produto é justamente dizer quanto vale o carro.
+    //
+    // Checar só o teto deixa passar tudo que é pequeno demais. O resgate só faz
+    // sentido quando o resultado é preço CRÍVEL de carro, então ele tem que
+    // passar pelos DOIS lados da faixa: ₲40 → ₲40.000.000 entra; ₲1 → ₲1.000.000
+    // não, porque ₲1 milhão não é carro em lugar nenhum.
     if (moeda === "PYG" && valor < faixa.min && /mill/i.test(ctx)) {
       const emMilhoes = valor * 1_000_000;
-      if (emMilhoes <= faixa.max) return { ok: true, valor: emMilhoes, moeda: "PYG", confianca: "descricao" };
+      if (emMilhoes >= faixa.min && emMilhoes <= faixa.max) {
+        return { ok: true, valor: emMilhoes, moeda: "PYG", confianca: "descricao" };
+      }
     }
   }
 

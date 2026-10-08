@@ -30,7 +30,14 @@ import {
   montarUrlBuscaFacebook,
   montarVeiculoPadrao,
 } from "./facebookMarketplaceService.js";
-import { lerPrecoComContexto, lerProcedencia, ehAnuncioDeCompra, mencionaTroca } from "./precoParaguai.js";
+import {
+  lerPrecoComContexto,
+  lerProcedencia,
+  ehAnuncioDeCompra,
+  mencionaTroca,
+  precoEhEntrega,
+  precoDeclarado,
+} from "./precoParaguai.js";
 import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
@@ -405,7 +412,7 @@ async function main() {
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
     log(`  ${ids.length} na página · ${novos.length} novos`);
 
-    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0 , semFoto: 0 };
+    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0 };
 
     for (const id of novos) {
       try {
@@ -442,6 +449,43 @@ async function main() {
           await registrarVistoFacebook(id, preco.motivo);
           await dormir(pacing);
           continue;
+        }
+
+        // ★★★ A ENTREGA NÃO É O PREÇO — guarda ligada em 08/10/2026.
+        //
+        // ⚠️⚠️ `precoEhEntrega` e `precoDeclarado` existiam desde setembro, com
+        // a medição no próprio comentário — *um terço da amostra* põe a entrada
+        // do financiamento no campo de preço — e NUNCA FORAM CHAMADAS. O
+        // mecanismo estava pronto e o motor passava ao largo dele.
+        //
+        // É o pior tipo de erro para este produto: a entrega tem valor
+        // PLAUSÍVEL de carro, entra na mediana sem levantar suspeita e arrasta
+        // a referência do modelo para baixo. Isca de ₲1 a gente vê; entrega de
+        // ₲20 milhões num carro de ₲60 milhões, não.
+        //
+        // ★ Descartar seria desperdício: o preço de verdade quase sempre está
+        // escrito na descrição ("Precio: 80.000.000 Gs"). Tenta resgatar
+        // primeiro, descarta só quando não há o que resgatar.
+        let valorFinal = preco.valor;
+        let moedaFinal = preco.moeda;
+        let confiancaFinal: string | null = preco.confianca ?? null;
+
+        if (precoEhEntrega(a.descricao ?? "", a.titulo ?? "", preco.valor)) {
+          const resgate = precoDeclarado(a.descricao ?? "");
+          if (resgate?.ok) {
+            valorFinal = resgate.valor;
+            moedaFinal = resgate.moeda;
+            // ⚠️ Marca a procedência do número: preço resgatado da descrição
+            // não tem a mesma força do que veio do campo, e quem montar a
+            // tabela precisa poder decidir se aceita.
+            confiancaFinal = "resgatado_da_descricao";
+            conta.resgatados++;
+          } else {
+            conta.entregas++;
+            await registrarVistoFacebook(id, "preco_e_entrega");
+            await dormir(pacing);
+            continue;
+          }
         }
 
         // ★★ NORMALIZA NA CAPTAÇÃO, não só no backfill — lacuna vista em
@@ -501,8 +545,8 @@ async function main() {
             km: a.km,
             cidade: a.cidade ?? regiao.nome,
             estado: regiao.uf ?? null,
-            preco: preco.valor,
-            moeda: preco.moeda,
+            preco: valorFinal,
+            moeda: moedaFinal,
             procedencia: lerProcedencia(contexto),
             // ⚠️ FIPE e margem ficam NULAS de propósito: no Paraguai não há
             // contra o que comparar até a nossa tabela existir.
@@ -519,7 +563,7 @@ async function main() {
               ...(mencionaTroca(a.titulo ?? "", a.descricao ?? "")
                 ? { aceita_troca: { label: "Aceita troca", value: "Sim" } }
                 : {}),
-              confianca_moeda: { label: "Confiança da moeda", value: preco.confianca ?? "simbolo" },
+              confianca_moeda: { label: "Confiança da moeda", value: confiancaFinal ?? "simbolo" },
             },
             anunciante_profissional: a.sellerType === "DEALER" ? true : a.sellerType === "PRIVATE_SELLER" ? false : null,
             ultimo_visto: new Date().toISOString(),
@@ -541,7 +585,7 @@ async function main() {
       }
     }
 
-    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto`);
+    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto`);
   };
 
   for (const regiao of regioes) await varrerRegiao(regiao);
