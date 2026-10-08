@@ -84,8 +84,50 @@ const RX_NAO_E_CARRO =
 const RX_RODAPE =
   /\b(ver mais|ver tradu[cç][aã]o|comente como|todas as rea[cç][oõ]es|curtir|comentar|compartilhar|responder)\b/gi;
 
+/**
+ * ★★ TEXTO OFUSCADO — medido em 08/10/2026, e explica o funil inteiro.
+ *
+ * 55 de 76 posts caíam em "sem preço". Fui ler os descartados e não eram posts
+ * sem preço: eram ILEGÍVEIS —
+ *
+ *   "e͏ S͏ o͏ n͏ u͏ f͏ a͏ 7͏ ͏ u͏ 7͏ 3͏ m͏ 8͏ u͏ 0͏ 1͏ 2͏ l͏ 6͏ ͏ à͏ 5͏ 2͏ 5͏ f͏"
+ *
+ * ⚠️ É antiscraping do Facebook: caracteres reais intercalados com `U+034F`
+ * (combining grapheme joiner) e letras-chamariz, montados por CSS para ficarem
+ * certos na tela e embaralhados no `innerText`.
+ *
+ * ⚠️⚠️ NÃO DÁ PARA DESEMBARALHAR daqui, e tentar seria pior: um palpite sobre
+ * qual caractere é real produziria modelo e preço inventados, que é o veneno
+ * exato desta base. O certo é RECONHECER e contar à parte — assim o relatório
+ * para de dizer "sem preço" para 55 posts e passa a dizer a verdade.
+ */
+const RX_ZERO_WIDTH = /[͏​-‏⁠﻿­]/g;
+
+export function textoIlegivel(t: string): boolean {
+  const limpo = t.replace(/\s+/g, "");
+  if (limpo.length < 20) return false;
+  // A assinatura: quase todo caractere isolado por espaço. Num texto normal a
+  // média de letras por "palavra" é 4+; no ofuscado fica perto de 1.
+  const palavras = t.trim().split(/\s+/);
+  const media = limpo.length / Math.max(1, palavras.length);
+  return palavras.length >= 20 && media < 1.6;
+}
+
+/** Elementos do feed que NÃO são post: controle de UI, notificação, barra lateral. */
+const RX_NAO_E_POST =
+  /^(classificar feed|indicador de status|.{0,40}comentou (nessa|nesta)|sugest|patrocinad|destaques? do grupo)/i;
+
+export function naoEhPost(t: string): boolean {
+  return RX_NAO_E_POST.test(t.trim());
+}
+
 function limparPost(bruto: string): string {
   return bruto
+    // ★ NFKD primeiro: vendedor paraguaio escreve em Unicode matemático
+    // ("𝓐𝓼𝓮𝓼𝓸𝓻𝓪 𝓭𝓮 𝓿𝓮𝓷𝓽𝓪𝓼") e nenhum regex nosso casa com isso. A
+    // normalização traz de volta para ASCII sem perder nada.
+    .normalize("NFKD")
+    .replace(RX_ZERO_WIDTH, "")
     .replace(/(?:Facebook\s*)+/g, " ")   // alt das imagens
     .replace(RX_RODAPE, " ")
     .replace(/\s+/g, " ")
@@ -110,6 +152,10 @@ export function interpretarPost(grupo: string, bruto: string, link: string | nul
     confianca: null, procedencia: null, aceitaTroca: false, descarte: null,
   };
 
+  if (naoEhPost(texto)) return { ...base, descarte: "nao_e_post" };
+  // ⚠️ Antes de qualquer leitura: texto ofuscado não é post sem preço, e
+  // contá-lo como tal escondia 55 de 76 descartes atrás do rótulo errado.
+  if (textoIlegivel(texto)) return { ...base, descarte: "texto_ofuscado" };
   if (corpo.length < 15) return { ...base, descarte: "curto_demais" };
   if (RX_NAO_E_CARRO.test(corpo)) return { ...base, descarte: "nao_e_carro" };
   if (ehAnuncioDeCompra(corpo, "")) return { ...base, descarte: "procura_nao_oferta" };
@@ -196,9 +242,42 @@ function soltarTrava(): void {
  * contagem de ofertas de um modelo e, pior, puxando a mediana para o preço
  * que mais se repete. Post sem link fica no JSON e só.
  */
-async function gravarNoBanco(anuncios: AnuncioGrupo[]): Promise<{ novos: number; repetidos: number; semLink: number }> {
+/**
+ * ★★ CHAVE DE RESERVA quando o post não expõe permalink — 08/10/2026.
+ *
+ * ⚠️ MEDIDO e é grave: em "autitos baratitos" só 19 de 75 posts traziam o
+ * `<a>` do permalink, e no "Aiyellow CDE" foram ZERO de 85. A regra antiga
+ * ("sem link não entra") jogava fora 56 posts bons de um grupo e 85 do outro —
+ * descartando por falta de CHAVE, não por falta de dado.
+ *
+ * ★ O texto do post é uma chave estável o bastante: o Facebook não o reescreve,
+ * e o mesmo anúncio volta idêntico a cada rolagem. Um hash dele mais o grupo dá
+ * uma chave determinística que sobrevive entre rodadas.
+ *
+ * ⚠️ O QUE SE PERDE, e por que vale: a chave não é clicável até o post. O link
+ * guardado leva ao GRUPO, não ao anúncio. Para um site cujo produto é a
+ * REFERÊNCIA DE PREÇO, perder o clique de 75% dos posts é muito menos grave que
+ * perder o preço deles.
+ *
+ * ⚠️ Dois riscos, os dois cobertos: revendas que copiam o mesmo texto colidem
+ * numa chave só — e isso é o comportamento certo, é uma oferta só; e post
+ * editado vira registro novo, mas a mediana já colapsa por (preço, cidade), que
+ * é a guarda contra contagem dupla. Ver referenciaPrecoPY.
+ */
+function chaveDoPost(a: AnuncioGrupo, grupoUrl: string): string {
+  if (a.link) return a.link;
+  // djb2: curto, determinístico e sem dependência — não precisa de criptografia,
+  // precisa de estabilidade.
+  let h = 5381;
+  const base = `${a.grupo}|${a.texto}`;
+  for (let i = 0; i < base.length; i++) h = ((h << 5) + h + base.charCodeAt(i)) | 0;
+  return `${grupoUrl}#post-${(h >>> 0).toString(36)}`;
+}
+
+async function gravarNoBanco(anuncios: AnuncioGrupo[], grupoUrl: string): Promise<{ novos: number; repetidos: number; semLink: number }> {
   const semLink = anuncios.filter((a) => !a.link).length;
-  const comLink = anuncios.filter((a) => a.link);
+  // ★ Todos entram agora: quem não tem permalink ganha chave derivada do texto.
+  const comLink = anuncios.map((a) => ({ ...a, link: chaveDoPost(a, grupoUrl) }));
   if (!comLink.length) return { novos: 0, repetidos: 0, semLink };
 
   const links = comLink.map((a) => a.link as string);
@@ -305,13 +384,13 @@ async function main() {
       const arquivo = path.join(SAIDA, `${g.nome.replace(/\W+/g, "-").toLowerCase()}.json`);
       fs.writeFileSync(arquivo, JSON.stringify(interpretados, null, 1));
 
-      const r = await gravarNoBanco(bons);
+      const r = await gravarNoBanco(bons, g.url);
       totalNovos += r.novos;
 
       console.log(`\n▶ ${g.nome}`);
       const comLink = [...acumulado.values()].filter((p) => p.link).length;
       console.log(`   ${acumulado.size} posts colhidos (${comLink} com link) · ${bons.length} com preço E modelo`);
-      console.log(`   ★ ${r.novos} NOVOS no banco · ${r.repetidos} já tínhamos · ${r.semLink} sem link (só no JSON)`);
+      console.log(`   ★ ${r.novos} NOVOS no banco · ${r.repetidos} já tínhamos · ${r.semLink} sem permalink (chave derivada do texto)`);
       console.log(`   descartes: ${Object.entries(porMotivo).map(([k, v]) => `${k}=${v}`).join(" · ") || "nenhum"}`);
       for (const a of bons.slice(0, 5)) {
         console.log(`     ✓ ${String(a.marca ?? "?")} ${String(a.modelo)} ${a.ano ?? ""} — ${a.moeda} ${Number(a.preco).toLocaleString("es-PY")}`);
@@ -326,9 +405,25 @@ async function main() {
   console.log(`\n=== ${totalNovos} anúncio(s) novo(s) de grupo no banco · JSON em ${SAIDA} ===`);
 }
 
-main()
-  .catch((e) => { console.error("falhou:", e.message); process.exitCode = 1; })
-  .finally(async () => {
-    await fecharContexto().catch(() => {});
-    soltarTrava();
-  });
+/**
+ * ⚠️⚠️ SÓ RODA QUANDO É O ARQUIVO EXECUTADO, nunca quando é importado.
+ *
+ * Este arquivo é as duas coisas: script da varredura E módulo que exporta
+ * `interpretarPost` para reprocessar o JSON já colhido. Sem esta guarda, um
+ * `import { interpretarPost }` dispara `main()` — e eu descobri isso do pior
+ * jeito em 08/10/2026, escrevendo um teste que só ia reler um JSON de disco e
+ * acabou fazendo uma raspagem inteira no Facebook sem eu pedir.
+ *
+ * ⚠️ Numa conta que precisa ser preservada, raspagem acidental é exatamente o
+ * tipo de coisa que não pode depender de eu lembrar.
+ */
+const ehEntrada = process.argv[1]?.replace(/\\/g, "/").endsWith("capturarGruposPY.ts");
+
+if (ehEntrada) {
+  main()
+    .catch((e) => { console.error("falhou:", e.message); process.exitCode = 1; })
+    .finally(async () => {
+      await fecharContexto().catch(() => {});
+      soltarTrava();
+    });
+}
