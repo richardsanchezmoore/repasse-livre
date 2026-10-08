@@ -233,6 +233,24 @@ const MODO = (process.env.PY_MODO ?? "faixa").toLowerCase();
  * depois cabe na primeira carga.
  */
 const AUTOLOAD = process.env.PY_AUTOLOAD === "1";
+
+/**
+ * ⚠️ PULAR A RE-HOSPEDAGEM DE FOTO no mutirão (PY_SEM_FOTO=1).
+ *
+ * Medido: cada anúncio custa ~37s, e boa parte disso é baixar e re-hospedar
+ * as fotos. Num mutirão de milhares, isso é a diferença entre uma noite e
+ * uma semana.
+ *
+ * ★ E o próprio arquivo já tinha a razão escrita: *"o produto paraguaio é a
+ * TABELA DE PREÇO, e o que a alimenta é preço + modelo + ano + km, não a
+ * foto"*. No mutirão a prioridade é preço; a foto vem depois.
+ *
+ * ⚠️⚠️ MAS A FOTO CADUCA. O link do fbcdn tem validade e vira 403 em poucos
+ * dias — foi o que deixou o catálogo inteiro sem imagem em outubro. Então
+ * `backfillFotosPY` TEM que rodar logo depois; passar da validade significa
+ * voltar ao Facebook anúncio por anúncio, ou perder a imagem de vez.
+ */
+const SEM_FOTO = process.env.PY_SEM_FOTO === "1";
 const ROLAGENS = Number(process.env.PY_ROLAGENS ?? 20);
 
 /**
@@ -420,6 +438,29 @@ async function main() {
             max: 0,
             termo,
           }))
+        : AUTOLOAD
+        ? [{
+            // ★★★ SOB AUTOLOAD, FATIAR POR PREÇO NÃO SERVE — medido 08/10/2026.
+            //
+            // Três variantes da mesma praça (sem faixa, 30–45M, 70–90M) com 20
+            // rolagens devolveram 390, 375 e 410 ids — e a sobreposição entre
+            // elas foi de 100%. União: 412. O Facebook IGNORA o filtro de preço
+            // depois do primeiro lote e passa a servir feed genérico; conferi 12
+            // anúncios da faixa 70–90M e 9 estavam fora dela.
+            //
+            // ⚠️ Ou seja: as 23 faixas eram CONTORNO para não conseguirmos rolar.
+            // Com rolagem, 23 buscas devolvem o mesmo que 1 — e custam 23 vezes
+            // mais exposição numa conta que precisa ser preservada.
+            rotulo: "praça inteira (autoload)",
+            url: montarUrlBuscaFacebook(
+              regiao.url,
+              { ...filtros, minPreco: "", maxPreco: "" },
+              regiao.raio ?? "60",
+            ),
+            min: 0,
+            max: 0,
+            termo: null,
+          }]
         : faixas.map((faixa) => ({
             rotulo: `faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}`,
             url: montarUrlBuscaFacebook(
@@ -644,7 +685,7 @@ async function main() {
         // que é pior que imagem nenhuma. Sem foto permanente → `null`, e a
         // tela mostra o espaço vazio.
         const itemId = itemIdDoLink(linkPublico(id));
-        const reh = itemId && fotos.length
+        const reh = !SEM_FOTO && itemId && fotos.length
           ? await rehospedarFotosFacebook(itemId, fotos)
           : null;
         if (!reh && fotos.length) conta.semFoto++;
