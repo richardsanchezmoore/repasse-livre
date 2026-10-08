@@ -39,7 +39,13 @@ import {
   precoEhEntrega,
   precoDeclarado,
 } from "./precoParaguai.js";
-import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
+import {
+  baixarLogado,
+  sessaoValida,
+  fecharContexto,
+  SessaoExpirada,
+  coletarIdsComRolagem,
+} from "./navegadorFacebook.js";
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
 import { CATALOGO_JDM } from "./catalogoJdmParaguai.js";
@@ -208,6 +214,34 @@ function soltarTrava(): void {
  */
 const MODO = (process.env.PY_MODO ?? "faixa").toLowerCase();
 
+/**
+ * ★★★ AUTOLOAD / MUTIRÃO — PY_AUTOLOAD=1.
+ *
+ * ★ Pedido do Gustavo (08/10/2026): *"devemos fazer um mutirão de pesquisa
+ * com o AutoLoad, pois assim também conseguiremos aprimorar nossa tabela e
+ * acelerar o lançamento. Se ficarmos esperando dia a dia vamos perder muitos
+ * dias desnecessários, podemos utilizar os inúmeros já publicados"*.
+ *
+ * ⚠️ A conta que sustenta isso: a varredura diária traz ~4,3 anúncios novos
+ * por rodada, e a página de categoria devolve ~13 ids sem rolagem. O mercado
+ * paraguaio já tem milhares PUBLICADOS — esperar o fluxo diário é deixar o
+ * estoque existente na mesa.
+ *
+ * ⚠️ É varredura de BACKLOG, não de rotina: roda sob demanda, não no cron.
+ * Rolar muito, em muitas praças, todo dia, é o padrão que chama atenção — e
+ * depois que o backlog entrou, a rolagem rende pouco, porque o que chega
+ * depois cabe na primeira carga.
+ */
+const AUTOLOAD = process.env.PY_AUTOLOAD === "1";
+const ROLAGENS = Number(process.env.PY_ROLAGENS ?? 20);
+
+/**
+ * ⚠️ O teto por praça vem do painel (FACEBOOK_MAX_ITENS, 40). Num mutirão
+ * isso corta a colheita pela metade — mas mudar a config mexeria também na
+ * rodada de rotina, que não é o que se quer. Env ganha da config, e só aqui.
+ */
+const MAX_ITENS_ENV = Number(process.env.PY_MAX_ITENS ?? 0);
+
 /** Quantos termos por rodada. Teto baixo: é a conta do Gustavo e ela é usável. */
 const TERMOS_POR_RODADA = Number(process.env.PY_TERMOS_POR_RODADA ?? 10);
 
@@ -308,7 +342,7 @@ async function main() {
     return;
   }
 
-  const maxItens = Number(maxItensRaw ?? 40);
+  const maxItens = MAX_ITENS_ENV > 0 ? MAX_ITENS_ENV : Number(maxItensRaw ?? 40);
   const pacing = Number(pacingRaw ?? 2500);
   // ⚠️ Vazio = SEM filtro. O padrão brasileiro (15000-400000) em guarani
   // descartaria o mercado inteiro em silêncio.
@@ -330,7 +364,7 @@ async function main() {
   // luxo) quando o painel não define.
   const faixas = parseFaixas(faixasRaw, Number(filtros.minPreco || 1000), Number(filtros.maxPreco || 2_000_000_000));
 
-  log(`praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
+  log(`${AUTOLOAD ? `★ MUTIRÃO (autoload, ${ROLAGENS} rolagens) · ` : ""}praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
   // ★★ REPESCAGEM DE PRAÇA ZERADA — 03/10/2026.
   //
@@ -399,10 +433,16 @@ async function main() {
           }));
 
     for (const busca of buscas) {
-      let htmlFaixa: string;
+      // ★ COM AUTOLOAD os ids vêm do DOM, rolando; sem ele, do HTML da
+      // primeira carga. ⚠️ Depois de rolar o JSON do GraphQL não acompanha,
+      // então ler o HTML devolveria os mesmos ~13 de sempre.
+      let cruDaFaixa: string[];
       try {
-        htmlFaixa = await baixar(busca.url);
+        cruDaFaixa = AUTOLOAD
+          ? await coletarIdsComRolagem(busca.url, ROLAGENS, pacing)
+          : extrairIdsDaBusca(await baixar(busca.url));
       } catch (e) {
+        if (e instanceof SessaoExpirada) throw e;
         log(`  ✗ ${busca.rotulo} falhou: ${(e as Error).message}`);
         continue;
       }
@@ -412,7 +452,6 @@ async function main() {
       // honra `creation_time_descend` ou rotaciona com "perto de você" é a
       // POSIÇÃO de cada id, e a dedup remove justamente os repetidos — que são
       // a evidência. Ver migração 0089.
-      const cruDaFaixa = extrairIdsDaBusca(htmlFaixa);
       await registrarBuscaFacebook(rodada, marca, busca.min, busca.max, cruDaFaixa, busca.termo);
 
       const novosDaFaixa = cruDaFaixa.filter((id) => !vistosNaRodada.has(id));

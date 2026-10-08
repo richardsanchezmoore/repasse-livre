@@ -106,6 +106,80 @@ export async function baixarLogado(url: string, esperaMs = 2500): Promise<string
   }
 }
 
+/**
+ * ★★★ AUTOLOAD — rola a busca e colhe TUDO, não só o que vem na primeira carga.
+ *
+ * ⚠️⚠️ O PROBLEMA QUE ISTO RESOLVE, medido em 07/10/2026: a página de categoria
+ * devolve **~13 ids** na carga inicial, com ou sem filtro. A gente vinha
+ * dimensionando faixas e saturação sobre 24, e o teto real era quase metade. O
+ * resto do estoque está atrás da rolagem que nunca fazíamos.
+ *
+ * ★ E é o caminho para o MUTIRÃO que o Gustavo pediu (08/10): *"não adianta
+ * esperar dia a dia, vamos perder muitos dias desnecessários, podemos utilizar
+ * os inúmeros já publicados"*. A varredura diária pega ~4,3 anúncios novos por
+ * rodada; o mercado já tem milhares publicados. O backlog é o caminho rápido
+ * para a tabela ter massa.
+ *
+ * ═══ POR QUE LER DO DOM E NÃO DO HTML ═══
+ *
+ * ⚠️ Depois de rolar, o JSON do GraphQL NÃO acompanha: só o primeiro lote está
+ * no `page.content()`. Os anúncios seguintes entram direto no DOM. Ler o HTML
+ * depois da rolagem devolveria os mesmos 13 — foi exatamente assim que a
+ * captação de grupos me enganou antes.
+ *
+ * ⚠️ E ACUMULA A CADA PASSO, porque a lista é VIRTUALIZADA: o Facebook remove
+ * do DOM o que sai da tela. Colher só no fim devolve a última janela, não o
+ * conjunto.
+ *
+ * ═══ A PARADA ANTECIPADA NÃO É OTIMIZAÇÃO ═══
+ *
+ * ⚠️ Quando duas rolagens seguidas não trazem id novo, o fim da lista chegou e
+ * continuar rolando é só exposição a troco de nada — numa conta que precisa ser
+ * preservada, isso importa mais que o tempo economizado.
+ */
+export async function coletarIdsComRolagem(
+  url: string,
+  rolagens = 20,
+  pausaMs = 2200,
+): Promise<string[]> {
+  const ctx = await abrirContexto(true);
+  const page: Page = await ctx.newPage();
+  const vistos = new Set<string>();
+  const ordem: string[] = [];
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
+    await page.waitForTimeout(2000);
+
+    const html = await page.content();
+    if (RX_MURO_LOGIN.test(html) || /\/login\//.test(page.url())) throw new SessaoExpirada();
+
+    // ⚠️ Um painel de notificações abre sozinho e segura a lista em esqueleto —
+    // mordeu na captação de grupos e morderia aqui igual.
+    await page.keyboard.press("Escape").catch(() => {});
+
+    let secas = 0;
+    for (let i = 0; i <= rolagens; i++) {
+      if (i > 0) {
+        await page.mouse.wheel(0, 2800);
+        await page.waitForTimeout(pausaMs);
+      }
+      const lote = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLAnchorElement>('a[href*="/marketplace/item/"]')]
+          .map((a) => a.href.match(/\/marketplace\/item\/(\d+)/)?.[1])
+          .filter((x): x is string => Boolean(x)),
+      );
+      const antes = vistos.size;
+      for (const id of lote) if (!vistos.has(id)) { vistos.add(id); ordem.push(id); }
+      secas = vistos.size === antes ? secas + 1 : 0;
+      if (secas >= 2) break;
+    }
+    return ordem;
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
 /** A sessão está de pé? Usado pelo cron para falhar ALTO em vez de salvar zero. */
 export async function sessaoValida(): Promise<boolean> {
   try {
