@@ -42,6 +42,8 @@ import { baixarLogado, sessaoValida, fecharContexto, SessaoExpirada } from "./na
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
 import { CATALOGO_JDM } from "./catalogoJdmParaguai.js";
+import { conferirAnoModelo } from "./anoModeloPY.js";
+import { geracaoDoAno } from "./geracoesPY.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -499,6 +501,30 @@ async function main() {
         const tituloCru = montarVeiculoPadrao(a) || a.titulo || "";
         const norm = normalizarVeiculoPY(tituloCru);
 
+        // ★★ O DICIONÁRIO ENCOSTA NO DADO AQUI — ligado em 08/10/2026.
+        //
+        // ⚠️⚠️ `conferirAnoModelo` existia desde 05/10 e era chamado só pelo
+        // backfill e pelos testes. A captação nunca consultava, então anúncio
+        // novo com ano impossível entrava liso e o dicionário não cumpria o
+        // que o Gustavo pediu dele: *"já sabermos quando o anúncio está
+        // errado"*. Segunda vez no mesmo dia que acho mecanismo pronto fora do
+        // caminho quente (a outra foi a guarda de entrega).
+        //
+        // ⚠️ SINALIZA, NÃO REJEITA. No Paraguai o ano do anúncio pode ser o da
+        // IMPORTAÇÃO, não o de fabricação — um "Vitz 2021" pode ser um 2018
+        // que entrou por Iquique em 2021. Descartar jogaria fora anúncio bom e
+        // calaria justamente o sinal que a gente quer estudar.
+        // ⚠️ `a.ano` vem do Facebook e pode chegar como string ("2014"). Number()
+        // aqui, porque um ano em texto faria as duas conferências abaixo
+        // silenciarem sem erro — o pior desfecho possível para uma validação.
+        const anoCru = a.ano ?? norm.ano ?? null;
+        const anoNum = anoCru == null || anoCru === "" ? null : Number(anoCru);
+        const ano = Number.isFinite(anoNum) ? (anoNum as number) : null;
+
+        const conf = conferirAnoModelo(norm.modelo?.toLowerCase() ?? null, ano);
+        const ger = geracaoDoAno(norm.modelo, ano);
+        if (conf.aviso) log(`    ⚠️ ${conf.aviso}`);
+
         const fotos = a.fotos.slice(0, 10);
 
         // ★★ RE-HOSPEDAR AS FOTOS — lembrado pelo Gustavo em 03/10/2026, e ele
@@ -539,6 +565,11 @@ async function main() {
             marca: norm.marca,
             modelo: norm.modelo,
             segmento: norm.segmento,
+            // ★ A chave de agrupamento que faltava para a referência: no
+            // Paraguai quase todo ANO tem amostra pequena demais para publicar
+            // mediana, e geração junta os anos que são o mesmo carro.
+            geracao: ger?.codigo ?? null,
+            ano_suspeito: conf.problema !== null,
             versao: a.versaoTexto ?? a.motor,
             ano: a.ano,
             cambio: a.cambio,
