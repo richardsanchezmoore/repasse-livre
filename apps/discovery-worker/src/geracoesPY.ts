@@ -150,6 +150,41 @@ export const GERACOES: Record<string, Geracao[]> = {
   funcargo: [{ codigo: "XP20", de: 1999, ate: 2005, confianca: "estimado", nota: "vira Ractis em 2005" }],
   platz: [{ codigo: "XP10", de: 1999, ate: 2005, confianca: "estimado", nota: "sedã do Vitz XP10" }],
 
+  // ══════════════════════════════════════════════════════════════════════
+  // NÃO-JDM QUE CIRCULAM NA PRAÇA — coreanos e o Fortuner (08/10/2026).
+  //
+  // ⚠️ O catálogo é JDM por tese, mas a BASE não é só JDM: 88 anúncios (29%)
+  // estão em modelos sem geração, e os coreanos lideram. Estes quatro foram
+  // pesquisados; Gol, Camaro, Mustang, RAM e C300 ficam de fora por enquanto —
+  // não quero enchê-lo de palpite para subir um número de cobertura.
+  // ══════════════════════════════════════════════════════════════════════
+  sportage: [
+    { codigo: "JE/KM", de: 2004, ate: 2010, confianca: "estimado" },
+    { codigo: "SL", de: 2010, ate: 2016, confianca: "firme", nota: "o redesenho de Peter Schreyer" },
+    { codigo: "QL", de: 2016, ate: 2021, confianca: "estimado", nota: "⚠️ fontes divergem entre 2021 e 2022; varia por mercado" },
+    { codigo: "NQ5", de: 2021, ate: null, confianca: "firme" },
+  ],
+  // ⚠️ O Rio é o caso em que as fontes MAIS divergem: a Wikipédia conta 4
+  // gerações (1999–2023), a Carvana conta 3 a partir de 2009, e um banco de
+  // dados conta 11 porque separa facelift. Fico com o corte da Wikipédia e
+  // marco tudo estimado — publicar mediana por geração de Rio exige cuidado.
+  rio: [
+    { codigo: "JB", de: 2005, ate: 2011, confianca: "estimado", nota: "⚠️ fontes divergem muito na contagem de gerações do Rio" },
+    { codigo: "UB", de: 2011, ate: 2017, confianca: "estimado" },
+    { codigo: "YB", de: 2017, ate: 2023, confianca: "estimado" },
+  ],
+  // Morning é o nome coreano do Picanto — e é assim que o anúncio paraguaio
+  // escreve, porque o carro vem da Coreia, não da Europa.
+  morning: [
+    { codigo: "SA", de: 2003, ate: 2011, confianca: "firme", nota: "produção set/2003 – 2011" },
+    { codigo: "TA", de: 2011, ate: 2017, confianca: "estimado" },
+    { codigo: "JA", de: 2017, ate: null, confianca: "estimado" },
+  ],
+  fortuner: [
+    { codigo: "AN50/AN60", de: 2004, ate: 2015, confianca: "firme" },
+    { codigo: "AN150/AN160", de: 2015, ate: null, confianca: "firme", nota: "fontes russas separam um facelift a partir de 2020, mesmo código" },
+  ],
+
   // ── Toyota: sedã de luxo ────────────────────────────────────────────────
   // ★ "Crown Athlete" é ACABAMENTO do Crown, não modelo à parte — mesmas
   // gerações. Fica com entrada própria porque é assim que o anúncio paraguaio
