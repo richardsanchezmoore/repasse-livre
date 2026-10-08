@@ -1,9 +1,8 @@
 import "dotenv/config";
 import fs from "node:fs";
-import { chromium } from "playwright-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-
-chromium.use(StealthPlugin());
+// ★ Mesmo navegador do resto do motor: um lugar só para stealth, viewport e
+// caminho de sessão.
+import { abrirContexto, fecharContexto } from "./navegadorFacebook.js";
 
 /**
  * De quais GRUPOS o perfil participa.
@@ -31,13 +30,29 @@ const ROTAS = [
   ["discover", "https://www.facebook.com/groups/"],
 ];
 
-const ctx = await chromium.launchPersistentContext("C:/claude/fb-sessao-py", {
-  headless: true,
-  viewport: { width: 1366, height: 1000 },
-  locale: "es-PY",
-  timezoneId: "America/Asuncion",
-  args: ["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-});
+/**
+ * ⚠️ MESMA TRAVA da captação. Este script abre o MESMO `user-data-dir`, e duas
+ * instâncias de Chrome no mesmo diretório brigam — foi a causa medida em
+ * 07/10/2026 das mortes de sessão que andávamos culpando o Facebook.
+ */
+const ARQUIVO_TRAVA = "C:/claude/fb-sessao-py.lock";
+function tomarTrava(): boolean {
+  try {
+    const { pid } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number };
+    try { process.kill(pid, 0); if (pid !== process.pid) { console.log(`⛔ perfil ocupado (pid ${pid}). Saindo.`); return false; } } catch { /* órfã */ }
+  } catch { /* sem trava */ }
+  fs.writeFileSync(ARQUIVO_TRAVA, JSON.stringify({ pid: process.pid, inicio: new Date().toISOString() }));
+  return true;
+}
+function soltarTrava(): void {
+  try {
+    const { pid } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number };
+    if (pid === process.pid) fs.unlinkSync(ARQUIVO_TRAVA);
+  } catch { /* já foi */ }
+}
+
+if (!tomarTrava()) process.exit(0);
+const ctx = await abrirContexto();
 
 const achados = new Map<string, string>();
 
@@ -86,4 +101,5 @@ for (const [id, nome] of lista) {
 }
 fs.writeFileSync("C:/claude/grupos-do-perfil.json", JSON.stringify(lista, null, 1));
 console.log(`\nsalvo em C:/claude/grupos-do-perfil.json`);
-await ctx.close();
+await fecharContexto().catch(() => {});
+soltarTrava();
