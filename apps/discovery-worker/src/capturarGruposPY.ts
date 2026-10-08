@@ -1,13 +1,16 @@
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
-import { chromium } from "playwright-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
+// ★ Reusa o MESMO navegador do resto do motor em vez de abrir o próprio.
+// Antes este arquivo chamava chromium.launchPersistentContext direto, o que
+// duplicava stealth, viewport e caminho de sessão — três lugares para errar
+// quando o Facebook mudar alguma coisa, em vez de um.
+import { abrirContexto, fecharContexto, sessaoValida } from "./navegadorFacebook.js";
+import { supabase } from "./supabaseClient.js";
 import { lerProcedencia, ehAnuncioDeCompra, mencionaTroca } from "./precoParaguai.js";
 import { acharPrecoEmTexto } from "./precoTextoLivrePY.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
 
-chromium.use(StealthPlugin());
 
 /**
  * CAPTAÇÃO DE GRUPOS DO FACEBOOK — Paraguai.
@@ -143,15 +146,122 @@ const ROLAGENS = Number(process.env.GRUPO_ROLAGENS ?? 25);
 const PAUSA_MS = Number(process.env.GRUPO_PAUSA_MS ?? 3500);
 const SAIDA = process.env.GRUPO_SAIDA ?? "C:/claude/backup-autoradar/grupos";
 
+/**
+ * ★★★ A TRAVA É A MESMA DA VARREDURA DE MARKETPLACE, de propósito.
+ *
+ * Medido em 07/10/2026: duas instâncias de Chrome no MESMO `user-data-dir`
+ * brigam pelo diretório, e é assim que a sessão morre — andamos meses
+ * culpando o Facebook por isso. Este extrator abre o mesmo perfil que a
+ * captação de Marketplace, então tem que entrar na mesma fila.
+ *
+ * ⚠️ Sai com código 0 quando já há alguém rodando: é funcionamento normal da
+ * trava, e exit≠0 encheria o histórico da tarefa agendada de falha vermelha.
+ */
+const ARQUIVO_TRAVA = "C:/claude/fb-sessao-py.lock";
+
+function tomarTrava(): boolean {
+  try {
+    const { pid, inicio } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number; inicio: string };
+    let vivo = false;
+    try { process.kill(pid, 0); vivo = true; } catch { vivo = false; }
+    if (vivo && pid !== process.pid) {
+      const horas = (Date.now() - new Date(inicio).getTime()) / 3_600_000;
+      console.log(`⛔ já há uma varredura no perfil (pid ${pid}, há ${horas.toFixed(1)}h). Saindo.`);
+      return false;
+    }
+  } catch {
+    /* sem trava, ou arquivo torto: caminho livre */
+  }
+  fs.writeFileSync(ARQUIVO_TRAVA, JSON.stringify({ pid: process.pid, inicio: new Date().toISOString() }));
+  return true;
+}
+
+function soltarTrava(): void {
+  try {
+    const { pid } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number };
+    if (pid === process.pid) fs.unlinkSync(ARQUIVO_TRAVA);
+  } catch { /* já foi */ }
+}
+
+/**
+ * ★★ GRAVA NO BANCO — mudança de 08/10/2026.
+ *
+ * Este extrator nasceu gravando só JSON, e o motivo estava escrito no
+ * cabeçalho: o projeto Supabase estava cortado por `exceed_egress_quota`. ★ A
+ * migração para o projeto novo resolveu isso, então a razão de ser do JSON
+ * acabou — ele fica como artefato de depuração, não como destino.
+ *
+ * ⚠️⚠️ SÓ ENTRA POST COM PERMALINK. Sem link não existe chave estável, e sem
+ * chave estável o mesmo post entra de novo a cada rodada — inflando a
+ * contagem de ofertas de um modelo e, pior, puxando a mediana para o preço
+ * que mais se repete. Post sem link fica no JSON e só.
+ */
+async function gravarNoBanco(anuncios: AnuncioGrupo[]): Promise<{ novos: number; repetidos: number; semLink: number }> {
+  const semLink = anuncios.filter((a) => !a.link).length;
+  const comLink = anuncios.filter((a) => a.link);
+  if (!comLink.length) return { novos: 0, repetidos: 0, semLink };
+
+  const links = comLink.map((a) => a.link as string);
+  const { data: existentes } = await supabase
+    .from("opportunities")
+    .select("link_origem")
+    .in("link_origem", links);
+  const ja = new Set((existentes ?? []).map((r) => String(r.link_origem)));
+
+  const novos = comLink.filter((a) => !ja.has(a.link as string));
+  if (!novos.length) return { novos: 0, repetidos: comLink.length, semLink };
+
+  const linhas = novos.map((a) => ({
+    fonte: "FACEBOOK_GRUPO",
+    pais: "PY",
+    link_origem: a.link,
+    veiculo: [a.marca, a.modelo, a.ano].filter(Boolean).join(" "),
+    veiculo_bruto: a.texto.slice(0, 300),
+    marca: a.marca,
+    modelo: a.modelo,
+    ano: a.ano,
+    preco: a.preco,
+    moeda: a.moeda,
+    descricao: a.texto,
+    procedencia: a.procedencia,
+    origem_tipo: "grupo",
+    status: "descoberta",
+    // ⚠️ Grupo não tem foto re-hospedada nem cidade: o post não expõe praça, e
+    // inventar a do grupo seria afirmar o que não sabemos. Null é a resposta
+    // honesta, e a referência de preço agrupa por modelo+ano, não por cidade.
+    foto_principal: null,
+    cidade: null,
+    atributos_olx: {
+      ...(a.aceitaTroca ? { aceita_troca: { label: "Aceita troca", value: "Sim" } } : {}),
+      ...(a.confianca ? { confianca_moeda: { label: "Confiança da moeda", value: a.confianca } } : {}),
+      origem_grupo: { label: "Grupo", value: a.grupo },
+    },
+  }));
+
+  const { error } = await supabase.from("opportunities").upsert(linhas, { onConflict: "link_origem" });
+  if (error) {
+    console.log(`   ✗ gravação falhou: ${error.message}`);
+    return { novos: 0, repetidos: comLink.length - novos.length, semLink };
+  }
+  return { novos: novos.length, repetidos: comLink.length - novos.length, semLink };
+}
+
 async function main() {
+  if (!tomarTrava()) return;
   fs.mkdirSync(SAIDA, { recursive: true });
-  const ctx = await chromium.launchPersistentContext("C:/claude/fb-sessao-py", {
-    headless: true,
-    viewport: { width: 1366, height: 900 },
-    locale: "es-PY",
-    timezoneId: "America/Asuncion",
-    args: ["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-  });
+
+  // ⚠️ Mesma blindagem da captação de Marketplace: sessão caída vira
+  // '0 posts' em todos os grupos com exit 0 — o log diz que rodou e só se
+  // descobre dias depois olhando o banco vazio.
+  if (!(await sessaoValida())) {
+    console.log("❌ SESSÃO DO FACEBOOK CAÍDA — nada será capturado.");
+    console.log("   Rode:  C:\\claude\\login-fb-py.cmd");
+    process.exitCode = 2;
+    return;
+  }
+
+  const ctx = await abrirContexto();
+  let totalNovos = 0;
 
   for (const g of GRUPOS) {
     const page = await ctx.newPage();
@@ -168,10 +278,6 @@ async function main() {
           await page.mouse.wheel(0, 3000);
           await page.waitForTimeout(PAUSA_MS);
         }
-        // ★ Pega o PERMALINK junto com o texto. Sem ele o anúncio entra na base
-        // sem ser clicável, e `link_origem` — que é a chave anti-duplicata — não
-        // teria valor estável. O link do post vive num <a> para
-        // /groups/<id>/posts/<idPost> dentro do próprio card.
         const lote = await page.evaluate(() => {
           const feed = document.querySelector('[role="feed"]');
           if (!feed) return [] as { texto: string; link: string | null }[];
@@ -183,13 +289,11 @@ async function main() {
             return { texto: el.innerText ?? "", link: a ? a.split("?")[0] : null };
           }).filter((x) => x.texto.length > 40);
         });
-        // ⚠️ A chave do Set é o TEXTO: o mesmo post pode aparecer com e sem link
+        // ⚠️ A chave do Set é o TEXTO: o mesmo post aparece com e sem link
         // conforme o momento da rolagem, e eu quero guardar a versão COM link.
         for (const p of lote) {
           const anterior = acumulado.get(p.texto);
-          if (!anterior || (!anterior && p.link) || (anterior && !anterior.link && p.link)) {
-            acumulado.set(p.texto, p);
-          }
+          if (!anterior || (!anterior.link && p.link)) acumulado.set(p.texto, p);
         }
       }
 
@@ -201,9 +305,13 @@ async function main() {
       const arquivo = path.join(SAIDA, `${g.nome.replace(/\W+/g, "-").toLowerCase()}.json`);
       fs.writeFileSync(arquivo, JSON.stringify(interpretados, null, 1));
 
+      const r = await gravarNoBanco(bons);
+      totalNovos += r.novos;
+
       console.log(`\n▶ ${g.nome}`);
       const comLink = [...acumulado.values()].filter((p) => p.link).length;
       console.log(`   ${acumulado.size} posts colhidos (${comLink} com link) · ${bons.length} com preço E modelo`);
+      console.log(`   ★ ${r.novos} NOVOS no banco · ${r.repetidos} já tínhamos · ${r.semLink} sem link (só no JSON)`);
       console.log(`   descartes: ${Object.entries(porMotivo).map(([k, v]) => `${k}=${v}`).join(" · ") || "nenhum"}`);
       for (const a of bons.slice(0, 5)) {
         console.log(`     ✓ ${String(a.marca ?? "?")} ${String(a.modelo)} ${a.ano ?? ""} — ${a.moeda} ${Number(a.preco).toLocaleString("es-PY")}`);
@@ -215,8 +323,12 @@ async function main() {
     }
   }
 
-  await ctx.close();
-  console.log(`\nJSON em ${SAIDA}`);
+  console.log(`\n=== ${totalNovos} anúncio(s) novo(s) de grupo no banco · JSON em ${SAIDA} ===`);
 }
 
-main().catch((e) => { console.error("falhou:", e.message); process.exitCode = 1; });
+main()
+  .catch((e) => { console.error("falhou:", e.message); process.exitCode = 1; })
+  .finally(async () => {
+    await fecharContexto().catch(() => {});
+    soltarTrava();
+  });
