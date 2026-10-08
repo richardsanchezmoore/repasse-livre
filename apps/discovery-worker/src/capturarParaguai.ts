@@ -449,29 +449,6 @@ async function main() {
             max: 0,
             termo,
           }))
-        : AUTOLOAD
-        ? [{
-            // ★★★ SOB AUTOLOAD, FATIAR POR PREÇO NÃO SERVE — medido 08/10/2026.
-            //
-            // Três variantes da mesma praça (sem faixa, 30–45M, 70–90M) com 20
-            // rolagens devolveram 390, 375 e 410 ids — e a sobreposição entre
-            // elas foi de 100%. União: 412. O Facebook IGNORA o filtro de preço
-            // depois do primeiro lote e passa a servir feed genérico; conferi 12
-            // anúncios da faixa 70–90M e 9 estavam fora dela.
-            //
-            // ⚠️ Ou seja: as 23 faixas eram CONTORNO para não conseguirmos rolar.
-            // Com rolagem, 23 buscas devolvem o mesmo que 1 — e custam 23 vezes
-            // mais exposição numa conta que precisa ser preservada.
-            rotulo: "praça inteira (autoload)",
-            url: montarUrlBuscaFacebook(
-              regiao.url,
-              { ...filtros, minPreco: "", maxPreco: "" },
-              regiao.raio ?? "60",
-            ),
-            min: 0,
-            max: 0,
-            termo: null,
-          }]
         : faixas.map((faixa) => ({
             rotulo: `faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}`,
             url: montarUrlBuscaFacebook(

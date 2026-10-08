@@ -109,10 +109,26 @@ export async function baixarLogado(url: string, esperaMs = 2500): Promise<string
 /**
  * ★★★ AUTOLOAD — rola a busca e colhe TUDO, não só o que vem na primeira carga.
  *
- * ⚠️⚠️ O PROBLEMA QUE ISTO RESOLVE, medido em 07/10/2026: a página de categoria
- * devolve **~13 ids** na carga inicial, com ou sem filtro. A gente vinha
- * dimensionando faixas e saturação sobre 24, e o teto real era quase metade. O
- * resto do estoque está atrás da rolagem que nunca fazíamos.
+ * ⚠️⚠️ O PROBLEMA QUE ISTO RESOLVE, medido em 07–08/10/2026: a página devolve
+ * **~13 ids** na carga inicial, e — isto é o que custou meio dia para eu
+ * entender — **esses primeiros são os MENOS filtrados**.
+ *
+ * ★★★ A MEDIDA QUE INVERTEU TUDO. Faixa densa ₲30–45M em Ciudad del Este:
+ *
+ *     os 14 primeiros, SEM rolar  →  0 dentro da faixa, 6 fora
+ *     os 361 que SÓ a rolagem deu →  7 de 8 DENTRO da faixa
+ *
+ * O Facebook enche o TOPO com sugestão e entrega o resultado filtrado conforme
+ * se desce. Quem lê só a primeira carga está lendo recomendação, não busca.
+ *
+ * ⚠️ Eu havia concluído o contrário — que a rolagem "cancelava" o filtro — a
+ * partir de uma amostra tirada de uma faixa ESCASSA (₲70–90M), onde quase tudo
+ * é preenchimento. O Gustavo não aceitou a conclusão ("de prática de uso a
+ * rolagem não cancela os filtros") e estava certo: faixa escassa é preenchida,
+ * faixa densa é entregue de verdade — depois da rolagem.
+ *
+ * ★ Então faixa e rolagem andam JUNTAS. A faixa filtra, a rolagem alcança o que
+ * foi filtrado.
  *
  * ★ E é o caminho para o MUTIRÃO que o Gustavo pediu (08/10): *"não adianta
  * esperar dia a dia, vamos perder muitos dias desnecessários, podemos utilizar
