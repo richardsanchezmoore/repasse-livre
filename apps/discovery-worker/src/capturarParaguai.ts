@@ -615,7 +615,38 @@ async function main() {
         // ⚠️ Só aceita o resgate se ele próprio for válido. Um "precio" lido
         // torto da descrição seria pior que o descarte: entra na mediana sem
         // aviso nenhum.
-        const resgateCampo = preco.ok ? null : precoDeclarado(a.descricao ?? "");
+        // ★★★ A DESCRIÇÃO VENCE QUANDO O CAMPO É INCOERENTE — 09/10/2026.
+        //
+        // ⚠️ Caso real que o Gustavo pegou no site: Land Cruiser Prado 2018
+        // gravado a **USD 1.234**, com a descrição dizendo "Precio; 85.000
+        // dólares". O campo trouxe 1234 — isca de dígitos em sequência — e o
+        // leitor aceitou, porque 1.234 cabe na faixa genérica de dólar.
+        //
+        // ⚠️⚠️ O ERRO DE DESENHO era buscar na descrição SÓ quando o campo
+        // falhava. Isca não falha: ela passa com valor plausível. Por isso a
+        // descrição precisa ser consultada SEMPRE que declarar preço, e vencer
+        // quando a distância for grande demais para ser arredondamento.
+        //
+        // ★ Cinco vezes é o limiar: duas leituras do mesmo carro podem divergir
+        // por taxa de câmbio, desconto ou erro de digitação, mas não por 5×.
+        // Acima disso uma das duas é isca, e a que o vendedor ESCREVEU por
+        // extenso é a que ele quer que o comprador saiba.
+        //
+        // ⚠️ Só compara MESMA MOEDA. Campo em guarani contra descrição em dólar
+        // exigiria cotação, e chutar conversão aqui criaria um erro novo para
+        // consertar um velho.
+        const declarado = precoDeclarado(a.descricao ?? "");
+        const campoIncoerente =
+          preco.ok &&
+          declarado?.ok &&
+          declarado.moeda === preco.moeda &&
+          Math.max(declarado.valor, preco.valor) / Math.min(declarado.valor, preco.valor) > 5;
+
+        if (campoIncoerente) {
+          log(`    ⚠️ campo ${preco.moeda} ${preco.valor.toLocaleString("es-PY")} vs descrição ${declarado!.valor.toLocaleString("es-PY")} — fica a descrição`);
+        }
+
+        const resgateCampo = preco.ok ? (campoIncoerente ? declarado : null) : declarado;
         const veioDaDescricao = Boolean(resgateCampo?.ok);
         if (veioDaDescricao) conta.resgatados++;
 
@@ -634,7 +665,7 @@ async function main() {
         // A leitura que vale daqui para baixo: a do campo quando serve, a da
         // descrição quando o campo era isca.
         const lido =
-          preco.ok
+          preco.ok && !campoIncoerente
             ? { valor: preco.valor, moeda: preco.moeda, confianca: preco.confianca ?? null }
             : {
                 valor: (resgateCampo as { ok: true; valor: number }).valor,

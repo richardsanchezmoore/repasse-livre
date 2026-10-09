@@ -504,19 +504,85 @@ export function precoDeclarado(descricao: string): LeituraPreco | null {
   const padroes = [
     // ⚠️ O ponto NÃO pode entrar na classe de exclusão: "Precio: 80.000.000"
     // seria cortado no primeiro ponto e viraria "80".
-    /precio[:\s]*([^\n;]{2,40})/i,
-    /valor[:\s]*([^\n.;]{2,40})/i,
+    //
+    // ⚠️⚠️ E O SEPARADOR NÃO É SÓ ":" — custou um Land Cruiser Prado 2018 em
+    // 09/10/2026. O vendedor escreveu **"Precio; 85.000 dólares"**, com PONTO E
+    // VÍRGULA, e o padrão antigo (`precio[:\s]*`) não casava: o ";" não estava
+    // entre os separadores aceitos E ainda era excluído do trecho capturado.
+    // Resultado: o anúncio entrou com o ₲1.234 do campo, que é isca.
+    //
+    // ★ Quem digita no celular usa o que estiver à mão — ";", "-", "=", "→".
+    // Aceitar a pontuação é mais barato que perder o anúncio.
+    /precio\s*[:;=\-–—>]*\s*([^\n;]{2,40})/i,
+    /valor\s*[:;=\-–—>]*\s*([^\n.;]{2,40})/i,
     /(?:^|\s)(?:gs\.?|₲|us\$|usd)\s*[\d.,]{4,}/i,
     /([\d.,]{2,})\s*mill[oó]n(?:es)?/i,
   ];
   for (const rx of padroes) {
     const m = t.match(rx);
     if (!m) continue;
-    const trecho = (m[1] ?? m[0]).trim();
+    const bruto = (m[1] ?? m[0]).trim();
+    const trecho = primeiroValor(bruto);
+    if (!trecho) continue;
+    if (pareceAno(trecho)) continue;
     const r = lerPrecoComContexto(trecho, t);
     if (r.ok) return r;
   }
   return null;
+}
+
+/**
+ * ★★ RECORTA O PRIMEIRO VALOR do trecho, em vez de entregar 40 caracteres.
+ *
+ * ⚠️ Medido numa simulação em seco de 09/10/2026 — que por sorte rodava sem
+ * gravar. Três estragos, todos da mesma origem:
+ *
+ *   "USD 29.900 * Motor híbrido enchufable 1."  → 299.001
+ *        o "1" do fim do trecho colava no número e virava outro valor
+ *   "[hidden information]gs Año 2018 Motor 3."  → 2018
+ *        o Facebook OCULTOU o preço e a gente pegou o ano que veio depois
+ *   "gs 2014"                                    → 2.014.000
+ *        o modelo se chama "Gs" e casou como se fosse "guaraníes"
+ *
+ * ★ A regra: do trecho sai UM token numérico, o primeiro, com a moeda que
+ * estiver colada nele — e nada mais. Texto depois do número é descrição do
+ * carro, não parte do preço.
+ */
+function primeiroValor(bruto: string): string | null {
+  // ⚠️ Preço oculto pelo Facebook não é preço. Sem isto, o número seguinte na
+  // frase (quase sempre o ano) toma o lugar dele.
+  if (/\[hidden information\]|\[informaci[oó]n oculta\]/i.test(bruto)) return null;
+  const m = bruto.match(/((?:us\$|usd|gs\.?|₲)\s*)?(\d[\d.,]{1,14})(\s*(?:gs\.?|₲|usd|d[oó]lares?|mill[oó]n(?:es)?))?/i);
+  if (!m) return null;
+  return [m[1], m[2], m[3]].filter(Boolean).join("").trim();
+}
+
+/**
+ * ★★ O TRECHO É UM ANO DISFARÇADO DE PREÇO?
+ *
+ * ⚠️ Achado numa simulação em seco de 09/10/2026, que por sorte rodava sem
+ * gravar: a correção em massa queria trocar o preço de um "Chevrolet S10 2023"
+ * para ₲2.023.000 e de um "Mazda 2018 BT50" para ₲20.183.000. São os ANOS,
+ * capturados logo depois da palavra "Precio" e lidos como valor.
+ *
+ * A causa foi minha: ao alargar os separadores aceitos (";", "-", "="), o
+ * padrão passou a engolir até 40 caracteres depois de "Precio", e nesse pedaço
+ * costuma vir "año 2023".
+ *
+ * ★ A regra: número de quatro dígitos na faixa de ano-modelo, SEM moeda colada,
+ * é ano. Preço de carro no Paraguai ou tem sete dígitos em guarani, ou vem com
+ * símbolo, ou está escrito "85.000 dólares" — nunca é um "2023" solto.
+ *
+ * ⚠️ Com moeda explícita o número volta a valer: "US$ 2023" é improvável, mas
+ * é uma afirmação do vendedor, e não cabe a este guarda desmenti-la.
+ */
+function pareceAno(trecho: string): boolean {
+  const limpo = trecho.trim();
+  if (/\b(gs\.?|₲|guaran|us\$|usd|d[oó]lar|mill)/i.test(limpo)) return false;
+  const numeros = limpo.match(/\d[\d.,]*/g) ?? [];
+  if (numeros.length !== 1) return false;
+  const n = Number(numeros[0].replace(/[.,]/g, ""));
+  return Number.isFinite(n) && n >= 1990 && n <= 2030;
 }
 
 /**
