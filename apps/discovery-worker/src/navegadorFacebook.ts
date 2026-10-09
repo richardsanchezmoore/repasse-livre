@@ -175,6 +175,7 @@ export async function coletarIdsComRolagem(
     await page.keyboard.press("Escape").catch(() => {});
 
     let secas = 0;
+    let produziu = false;
     for (let i = 0; i <= rolagens; i++) {
       if (i > 0) {
         await page.mouse.wheel(0, 2800);
@@ -195,9 +196,27 @@ export async function coletarIdsComRolagem(
       );
       const antes = vistos.size;
       for (const id of lote) if (!vistos.has(id)) { vistos.add(id); ordem.push(id); }
-      secas = vistos.size === antes ? secas + 1 : 0;
-      // ⚠️ TRÊS secas, não duas: com duas, um engasgo de rede encerra a colheita.
-      if (secas >= 3) break;
+      const rendeu = vistos.size > antes;
+      if (rendeu) produziu = true;
+      secas = rendeu ? 0 : secas + 1;
+
+      // ⚠️⚠️ A PARADA SÓ VALE DEPOIS DE UMA ROLAGEM PRODUTIVA — custou uma praça
+      // inteira em 09/10/2026 para eu enxergar.
+      //
+      // Ciudad del Este, primeira praça do mutirão, devolveu 14 ids por faixa
+      // (exatamente o número SEM rolagem) enquanto Asunción, na mesma execução e
+      // com as mesmas opções, devolveu 502. A diferença estava no relógio: 38s
+      // por faixa em CDE contra 90s em Asunción.
+      //
+      // ★ A causa: no ARRANQUE o navegador acabou de abrir e a grade ainda não
+      // montou. As três primeiras rolagens não acham id novo — não porque a
+      // lista acabou, mas porque ela ainda não existe — e a parada antecipada
+      // encerrava ali. "Seca no começo" e "fim de lista" são indistinguíveis
+      // para o contador, e o preço de confundi-los é perder a praça em silêncio.
+      //
+      // Enquanto nada rendeu, as rolagens secas não contam: o laço vai até o
+      // limite de `rolagens`, que já é o teto de paciência.
+      if (produziu && secas >= 3) break;
     }
     return ordem;
   } finally {
