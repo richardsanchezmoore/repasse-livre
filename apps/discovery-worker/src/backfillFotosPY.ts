@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient.js";
 import { baixarLogado, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
 import { extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
+import { precoImplausivel } from "./limitePrecoPY.js";
 
 /**
  * BACKFILL DE FOTOS depois da troca de projeto Supabase.
@@ -57,7 +58,7 @@ async function main() {
   if (!tomarTrava()) return;
   const { data, error } = await supabase
     .from("opportunities")
-    .select("id, link_origem, veiculo, foto_principal")
+    .select("id, link_origem, veiculo, foto_principal, preco, moeda, ano")
     .eq("pais", "PY")
     .like("link_origem", "%/marketplace/item/%")   // post de grupo não tem página de anúncio
     .order("data_captura", { ascending: false })
@@ -65,12 +66,28 @@ async function main() {
   if (error) throw new Error(error.message);
 
   // ⚠️ Só os que precisam: foto nula, ou apontando para o bucket MORTO.
-  const alvos = (data ?? []).filter((o) => {
+  const precisam = (data ?? []).filter((o) => {
     const f = o.foto_principal as string | null;
     return !f || f.includes("chuvlvwctwkeviencfuy");
   });
 
-  console.log(`${(data ?? []).length} anúncios de Marketplace · ${alvos.length} precisam de foto\n`);
+  // ★★ SÓ OS QUE TÊM PREÇO COERENTE — regra do Gustavo (09/10/2026):
+  // *"não adianta fazer backfill de fotos de anúncios que não estão com
+  // preços coerentes"*.
+  //
+  // ⚠️ Não é só ordem de execução, é economia dupla: cada foto é download,
+  // sharp e upload no bucket. Gastar isso num anúncio que o raio já acusa
+  // como implausível é trabalho perdido duas vezes — uma agora, outra quando
+  // o anúncio for corrigido ou sair.
+  //
+  // ⚠️ O raio SINALIZA, não apaga: o anúncio continua na base esperando
+  // revisão. O que ele não ganha é foto, que é o recurso caro.
+  const alvos = precisam.filter(
+    (o) => !precoImplausivel(Number(o.preco), o.ano == null ? null : Number(o.ano), String(o.moeda)),
+  );
+  const pulados = precisam.length - alvos.length;
+
+  console.log(`${(data ?? []).length} anúncios de Marketplace · ${alvos.length} vão receber foto · ${pulados} pulados por preço implausível\n`);
 
   let ok = 0, semFoto = 0, foraDoAr = 0, erro = 0;
 
