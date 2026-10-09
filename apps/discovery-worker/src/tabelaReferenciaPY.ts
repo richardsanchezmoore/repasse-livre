@@ -95,7 +95,7 @@ async function main() {
     porAno.set(k, [...(porAno.get(k) ?? []), o]);
   }
 
-  const refs: (ReferenciaPY & { chave: string; porGeracao: boolean })[] = [];
+  const refs: (ReferenciaPY & { chave: string; porGeracao: boolean; agrupado?: string })[] = [];
   const usados = new Set<Linha>();
 
   for (const [k, lote] of porAno) {
@@ -116,6 +116,76 @@ async function main() {
       refs.push({ ...calc, chave: ano, porGeracao: false });
       lote.forEach((o) => usados.add(o));
     }
+  }
+
+  // ─── passo 1b: ★★★ ANO QUE INVERTE NÃO MERECIA LINHA ───
+  //
+  // ★ Gustavo (09/10/2026), olhando a tabela: *"com linhas próprias de ano não
+  // se pode deixar um ano inferior ser de valor maior que o ano mais novo...
+  // soaria como distorção de mercado"*. Vitz 2006 a ₲37,7M e 2007 a ₲36,0M.
+  // Ele propôs forçar o ano novo a ficar 2% acima.
+  //
+  // ⚠️ MEDI ANTES DE APLICAR, e a medição desaconselha o remédio: das 16
+  // inversões da base, **13 têm as faixas do miolo SE TOCANDO** — ou seja, a
+  // diferença não se sustenta na amostra. E as 3 "separadas" são pior: Corolla
+  // Axio 2008 tem faixa 20–20 (cinco anúncios no mesmo preço, reanúncio) e
+  // Ractis 2010 a ₲20M contra a geração XP120 em ₲52,5M é dado sujo.
+  //
+  // Nenhuma é distorção de MERCADO. São amostra insuficiente e contaminação.
+  //
+  // ⚠️⚠️ Forçar +2% inventaria um número que nenhum vendedor pediu — e o que
+  // nos separa do Carden é mostrar o que o mercado diz, com o n à vista. Pior:
+  // maquiaria justamente o sinal de que o dado ainda não dá para aquele ano.
+  //
+  // ★ A inversão não é defeito a corrigir; é PROVA de que o ano não merecia
+  // linha. Então ele perde a linha, e os anúncios caem na geração — que é
+  // coerente por construção. Some sozinho quando o n crescer e a diferença,
+  // se for real, se sustentar.
+  // ★ O MÉTODO: pooling de vizinhos que violam a ordem (PAVA, regressão
+  // isotônica). Dois anos que o dado não separa recebem a MÉDIA PONDERADA dos
+  // dois, pelo n de cada um. Ninguém inventa degrau, ninguém perde linha, e a
+  // tabela nunca inverte.
+  //
+  // ⚠️ Por que ponderada pelo n: um ano com 9 ofertas sabe mais que um com 3, e
+  // a média simples deixaria o menor puxar tanto quanto o maior.
+  const porModelo = new Map<string, typeof refs>();
+  for (const r of refs.filter((x) => !x.porGeracao)) {
+    (porModelo.get(r.modelo) ?? porModelo.set(r.modelo, []).get(r.modelo)!).push(r);
+  }
+  let pooled = 0;
+  for (const [, lista] of porModelo) {
+    const anos = lista.sort((a, b) => Number(a.chave) - Number(b.chave));
+    // Blocos: cada um começa como um ano só e vai engolindo o vizinho enquanto
+    // a ordem estiver violada. É o pool-adjacent-violators clássico.
+    const blocos: { itens: typeof anos; valor: number; peso: number }[] = anos.map((a) => ({
+      itens: [a],
+      valor: a.mediana,
+      peso: a.n,
+    }));
+    for (let i = 1; i < blocos.length; ) {
+      if (blocos[i].valor >= blocos[i - 1].valor) { i++; continue; }
+      const a = blocos[i - 1], b = blocos[i];
+      const peso = a.peso + b.peso;
+      blocos.splice(i - 1, 2, {
+        itens: [...a.itens, ...b.itens],
+        valor: (a.valor * a.peso + b.valor * b.peso) / peso,
+        peso,
+      });
+      // ⚠️ volta um passo: o bloco novo pode agora violar contra o anterior.
+      i = Math.max(1, i - 1);
+    }
+    for (const b of blocos) {
+      if (b.itens.length < 2) continue;
+      pooled += b.itens.length;
+      for (const it of b.itens) {
+        it.mediana = Math.round(b.valor);
+        it.agrupado = b.itens.map((x) => x.chave).join("+");
+      }
+    }
+  }
+  if (pooled) {
+    console.log(`★ ${pooled} linha(s) de ano agrupada(s) por não se separarem na amostra`);
+    console.log(`   (recebem a média ponderada pelo n — a tabela não inverte e nenhuma linha se perde)\n`);
   }
 
   // ─── passo 2: a linha da GERAÇÃO ───
@@ -153,7 +223,7 @@ async function main() {
     // significa nada para quem tem um Vitz 2007 na mão e quer saber se a linha
     // serve para ele — e essa é a pergunta que o selo vai responder.
     const faixaAnos = r.porGeracao ? intervaloDaGeracao(r.modelo, r.chave) : null;
-    const marca = r.porGeracao ? (faixaAnos ? `geração ${faixaAnos}` : "geração") : "ano";
+    const marca = r.porGeracao ? (faixaAnos ? `geração ${faixaAnos}` : "geração") : r.agrupado ? `anos ${r.agrupado}` : "ano";
     const infl = r.anuncios > r.n ? `  ⚠️ ${r.anuncios} anúncios → ${r.n} ofertas` : "";
     const forca = r.confianca === "boa" ? "" : " ·fraca";
     console.log(
