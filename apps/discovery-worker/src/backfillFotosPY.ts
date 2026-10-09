@@ -1,4 +1,5 @@
 import "dotenv/config";
+import fs from "node:fs";
 import { supabase } from "./supabaseClient.js";
 import { baixarLogado, fecharContexto, SessaoExpirada } from "./navegadorFacebook.js";
 import { extrairAnuncioFacebook } from "./facebookMarketplaceService.js";
@@ -29,7 +30,31 @@ const LIMITE = Number(process.env.FOTOS_LIMITE ?? 400);
 
 const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * ⚠️ MESMA TRAVA do resto do motor. Quarto script a abrir o mesmo
+ * `user-data-dir` — duas instâncias de Chrome no mesmo diretório brigam, e
+ * foi essa a causa medida das mortes de sessão. Um backfill de 736 anúncios
+ * segura o perfil por horas; sem a trava, qualquer varredura que dispare no
+ * meio arruína as duas.
+ */
+const ARQUIVO_TRAVA = "C:/claude/fb-sessao-py.lock";
+function tomarTrava(): boolean {
+  try {
+    const { pid } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number };
+    try { process.kill(pid, 0); if (pid !== process.pid) { console.log(`⛔ perfil ocupado (pid ${pid}). Saindo.`); return false; } } catch { /* órfã */ }
+  } catch { /* sem trava */ }
+  fs.writeFileSync(ARQUIVO_TRAVA, JSON.stringify({ pid: process.pid, inicio: new Date().toISOString() }));
+  return true;
+}
+function soltarTrava(): void {
+  try {
+    const { pid } = JSON.parse(fs.readFileSync(ARQUIVO_TRAVA, "utf8")) as { pid: number };
+    if (pid === process.pid) fs.unlinkSync(ARQUIVO_TRAVA);
+  } catch { /* já foi */ }
+}
+
 async function main() {
+  if (!tomarTrava()) return;
   const { data, error } = await supabase
     .from("opportunities")
     .select("id, link_origem, veiculo, foto_principal")
@@ -95,4 +120,6 @@ async function main() {
   await fecharContexto();
 }
 
-main().catch(async (e) => { console.error("falhou:", e.message); await fecharContexto().catch(() => {}); process.exitCode = 1; });
+main()
+  .catch(async (e) => { console.error("falhou:", e.message); process.exitCode = 1; })
+  .finally(async () => { await fecharContexto().catch(() => {}); soltarTrava(); });
