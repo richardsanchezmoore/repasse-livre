@@ -131,8 +131,21 @@ const log = (...a: unknown[]) => console.log(new Date().toLocaleTimeString("pt-B
  * Sobrou sessão real. Ver navegadorFacebook.ts para o desenho (perfil
  * persistente em vez de cookie copiado, e por que a conta tem que ser dedicada).
  */
+/**
+ * ⚠️ ESPERA DA PÁGINA DO ANÚNCIO, sob variável por causa do MUTIRÃO.
+ *
+ * O padrão (2.500ms) é conservador e certo para a rodada de rotina, que vê
+ * poucos anúncios. No mutirão ele vira o gargalo: medido, cada anúncio custa
+ * ~30s, e 11 praças dariam 27 horas.
+ *
+ * ⚠️ Mexer nisto é mexer no RITMO DA CONTA do Gustavo, não só no relógio —
+ * por isso é escolha explícita por execução (PY_ESPERA_ITEM), nunca um valor
+ * novo no padrão. Quem roda o mutirão decide; a rotina segue como estava.
+ */
+const ESPERA_ITEM = Number(process.env.PY_ESPERA_ITEM ?? 2500);
+
 async function baixar(url: string): Promise<string> {
-  return baixarLogado(url);
+  return baixarLogado(url, ESPERA_ITEM);
 }
 
 /** ⚠️ O ₲ chega escapado no JSON do FB. Ver desescapar() em precoParaguai. */
@@ -372,7 +385,9 @@ async function main() {
   }
 
   const maxItens = MAX_ITENS_ENV > 0 ? MAX_ITENS_ENV : Number(maxItensRaw ?? 40);
-  const pacing = Number(pacingRaw ?? 2500);
+  // ⚠️ Mesma lógica da espera: env ganha da config SÓ quando passada, para o
+  // mutirão não alterar o ritmo da rodada agendada.
+  const pacing = Number(process.env.PY_PACING ?? pacingRaw ?? 2500);
   // ⚠️ Vazio = SEM filtro. O padrão brasileiro (15000-400000) em guarani
   // descartaria o mercado inteiro em silêncio.
   const filtros = { minPreco: minPreco ?? "", maxPreco: maxPreco ?? "", minAno: minAno ?? "", sort: "creation_time_descend" };
@@ -391,7 +406,18 @@ async function main() {
   // Piso 1.000 de propósito: é onde moram os anúncios com preço em dólar
   // digitado no campo guarani. Teto aberto (2 bilhões de Gs cobre importado de
   // luxo) quando o painel não define.
-  const faixas = parseFaixas(faixasRaw, Number(filtros.minPreco || 1000), Number(filtros.maxPreco || 2_000_000_000));
+  // ★ PY_FAIXAS sobrepõe a lista do painel SÓ nesta execução.
+  //
+  // ⚠️ Serve ao mutirão: com rolagem profunda, 23 faixas estreitas × 25
+  // rolagens × 11 praças dariam ~5h só de busca, e faixa larga alcança o
+  // mesmo estoque porque a rolagem é que vai fundo — a faixa só precisa
+  // separar as grandezas. Mexer na config do painel mudaria também a rodada
+  // de rotina, que não é o que se quer.
+  const faixas = parseFaixas(
+    process.env.PY_FAIXAS || faixasRaw,
+    Number(filtros.minPreco || 1000),
+    Number(filtros.maxPreco || 2_000_000_000),
+  );
 
   log(`${AUTOLOAD ? `★ MUTIRÃO (autoload, ${ROLAGENS} rolagens) · ` : ""}praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
