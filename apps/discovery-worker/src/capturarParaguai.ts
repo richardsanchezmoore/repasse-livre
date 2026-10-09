@@ -53,6 +53,7 @@ import { CATALOGO_JDM } from "./catalogoJdmParaguai.js";
 import { CATALOGO_MERCADO } from "./catalogoMercadoPY.js";
 import { conferirAnoModelo } from "./anoModeloPY.js";
 import { geracaoDoAno } from "./geracoesPY.js";
+import { precoImplausivel } from "./limitePrecoPY.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -850,7 +851,24 @@ async function main() {
           conta.salvos++;
           await registrarVistoFacebook(id, "salvo");
           // ★ O preço entra no livro de observações, que sobrevive ao anúncio.
-          await registrarObservacaoPreco({
+          //
+          // ⚠️ MAS SÓ DEPOIS DE TODAS AS VALIDAÇÕES, inclusive o RAIO — e esta
+          // última faltava. O anúncio pode entrar na base com preço duvidoso,
+          // porque a listagem é revisável e o raio só SINALIZA; a série, não.
+          // Ela é imutável e dura anos, então a porta dela é a mais estreita
+          // das duas.
+          //
+          // ⚠️ Era inconsistência minha: o script que populou o livro já
+          // aplicava o raio, a captação não. Duas portas com critérios
+          // diferentes para a mesma tabela imutável.
+          const duvidoso =
+            precoImplausivel(valorFinal, ano, moedaFinal) ||
+            conf.problema === "antes_de_existir" ||
+            conf.problema === "depois_do_fim";
+          if (duvidoso) {
+            log(`    ⚠️ fora da série: preço/ano duvidoso (segue na base para revisão)`);
+          } else {
+            await registrarObservacaoPreco({
             itemId: id,
             modelo: norm.modelo,
             geracao: ger?.codigo ?? null,
@@ -858,8 +876,9 @@ async function main() {
             preco: valorFinal,
             moeda: moedaFinal,
             cidade: a.cidade ?? null,
-            confianca: confiancaFinal,
-          });
+              confianca: confiancaFinal,
+            });
+          }
           log(`  ✓ ${(a.titulo ?? "").slice(0, 40).padEnd(40)} ${moedaFinal} ${valorFinal.toLocaleString("es-PY")} [${confiancaFinal}]`);
         }
         await dormir(pacing);
