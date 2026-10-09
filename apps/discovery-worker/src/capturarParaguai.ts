@@ -45,6 +45,7 @@ import {
   fecharContexto,
   SessaoExpirada,
   coletarIdsComRolagem,
+  saidaEhParaguai,
 } from "./navegadorFacebook.js";
 import { rehospedarFotosFacebook, itemIdDoLink } from "./fotosFacebook.js";
 import { normalizarVeiculoPY } from "./modeloParaguai.js";
@@ -358,6 +359,20 @@ async function escolherTermos(limite: number): Promise<string[]> {
 }
 async function main() {
   if (!tomarTrava()) return;
+
+  // ⚠️ DE ONDE ESTAMOS SAINDO? O Proton do Gustavo sobe sozinho e, em
+  // 09/10/2026, trocou o IP para Miami no meio de um reprocesso. Varredura
+  // de horas sem ninguém olhando não pode descobrir isso depois.
+  const saida = await saidaEhParaguai();
+  if (saida && !saida.ok) {
+    log(`❌ SAÍDA NÃO É PARAGUAIA: ${saida.onde}`);
+    log("   VPN ligada? Desligue antes de varrer — IP de datacenter leva muro do Facebook,");
+    log("   e salto de país em sessão ativa é padrão de conta comprometida.");
+    soltarTrava();
+    process.exitCode = 3;
+    return;
+  }
+  if (saida) log(`saída: ${saida.onde}`);
   const alvo = process.argv[2];
   const [regioesRaw, minPreco, maxPreco, minAno, maxItensRaw, pacingRaw, faixasRaw] = await Promise.all([
     lerConfig("FACEBOOK_REGIOES"),

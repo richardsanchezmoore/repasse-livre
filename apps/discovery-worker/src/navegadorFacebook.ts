@@ -224,6 +224,41 @@ export async function coletarIdsComRolagem(
   }
 }
 
+/**
+ * ★★★ DE ONDE ESTAMOS SAINDO? — guarda de IP, 09/10/2026.
+ *
+ * ⚠️⚠️ ACONTECEU: no meio de um reprocesso, o IP de saída virou **Miami,
+ * Flórida, ASN M247** — provedor de VPN. O Proton do Gustavo sobe sozinho, e
+ * ninguém percebeu até eu conferir por outro motivo.
+ *
+ * Três coisas se somam e nenhuma é pequena:
+ *   · IP de DATACENTER leva muro do Facebook — é por isso que esta captação
+ *     roda local, no residencial, e não na Railway;
+ *   · a sessão era PARAGUAIA e saltou para os EUA no meio de uma raspagem,
+ *     que é o padrão clássico de conta comprometida;
+ *   · M247 é ASN de VPN muito marcado.
+ *
+ * ★ Então a captação confere antes de começar. Numa conta que precisa ser
+ * preservada, parar é mais barato que continuar — e o Gustavo deixa a máquina
+ * ligada horas a fio, sem ninguém olhando.
+ *
+ * ⚠️ FALHA ABERTA de propósito: se o serviço de IP não responder, a captação
+ * SEGUE. A guarda existe contra VPN ligada por engano, não contra rede
+ * instável; travar tudo porque um endpoint de terceiro caiu seria trocar um
+ * risco raro por uma parada garantida.
+ */
+export async function saidaEhParaguai(): Promise<{ ok: boolean; onde: string } | null> {
+  try {
+    const r = await fetch("https://ipinfo.io/json", { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return null;
+    const j = (await r.json()) as { ip?: string; country?: string; city?: string; org?: string };
+    const onde = `${j.city ?? "?"}/${j.country ?? "?"} · ${j.org ?? "?"} · ${j.ip ?? "?"}`;
+    return { ok: j.country === "PY", onde };
+  } catch {
+    return null; // sem resposta → não bloqueia
+  }
+}
+
 /** A sessão está de pé? Usado pelo cron para falhar ALTO em vez de salvar zero. */
 export async function sessaoValida(): Promise<boolean> {
   try {
