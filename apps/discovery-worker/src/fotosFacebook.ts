@@ -12,13 +12,28 @@ import { supabase } from "./supabaseClient.js";
  * Estratégia (decisão do usuário): re-hospeda as 5 PRIMEIRAS (controle de disco — FB é a
  * fonte principal e só cresce), MAS mantém as demais cruas do fbcdn nas secundárias pra o
  * anúncio ficar "rico" nos primeiros dias; quando expiram, `limparFbExpiradas()` (cron)
- * remove os links mortos e sobram só as 5 permanentes. A foto_principal é SEMPRE re-hospedada.
+ * remove os links mortos e sobram só as 3 permanentes. A foto_principal é SEMPRE re-hospedada.
  */
 
 const execFileAsync = promisify(execFile);
 const PROXY_URL = process.env.FACEBOOK_PROXY_URL ?? process.env.PROXY_URL ?? "";
 const BUCKET = "oportunidades-fotos";
-const MAX_REHOSPEDAR = 5;
+/**
+ * ★ TRÊS, não cinco — decisão do Gustavo em 09/10/2026: *"as fotos a gente deve
+ * cair para 3 salvas apenas por ora, e as demais mantemos apenas o link"*.
+ *
+ * O desenho já era esse (re-hospeda N, guarda o link cru do resto); mudou o N.
+ *
+ * ⚠️ POR QUE AGORA: o mutirão vai multiplicar a base por vários, e cada foto
+ * re-hospedada é download + sharp + upload no bucket. Cinco por anúncio, em
+ * milhares de anúncios, é o que transforma o backfill de fotos numa segunda
+ * noite inteira — e é custo de armazenamento que cresce junto.
+ *
+ * Três cobre o que a tela precisa (capa + duas), e as demais continuam
+ * aparecendo pelo link cru do fbcdn enquanto ele vive. Quando expiram,
+ * `limparFbExpiradas()` remove os mortos e sobram as três permanentes.
+ */
+const MAX_REHOSPEDAR = 3;
 
 const UA_CHROME =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -76,9 +91,9 @@ async function subirFoto(itemId: string, indice: number, bytes: Buffer): Promise
 }
 
 /**
- * Re-hospeda até 5 fotos e monta os campos finais. Retorna null se nem a PRINCIPAL baixou
+  * Re-hospeda até MAX_REHOSPEDAR fotos e monta os campos finais. Retorna null se nem a PRINCIPAL baixou
  * (ex.: já expirou no backfill) → aí o chamador mantém o que tinha (ou pula).
- * fotos_secundarias = [permanentes 2..5] + [cruas 6..10] (as extras somem sozinhas ao expirar).
+ * fotos_secundarias = [permanentes 2..3] + [cruas 4..10] (as extras somem sozinhas ao expirar).
  */
 export async function rehospedarFotosFacebook(
   itemId: string,
