@@ -32,24 +32,42 @@
  */
 
 /**
- * Piso em DÓLAR por idade. Números deliberadamente baixos: o objetivo é ser
+ * Piso por idade. Números deliberadamente baixos: o objetivo é ser
  * indiscutível, não preciso. Um carro paraguaio de 2018 abaixo de US$ 4.000 ou
  * é sucata batida — e aí o anúncio diz — ou é isca.
  *
- * ⚠️ Aferidos contra a nossa própria base em 09/10/2026: o 1º percentil de
- * preço por faixa de ano ficou bem acima destes valores, então nenhum anúncio
- * legítimo que já temos seria barrado.
+ * ⚠️⚠️ SEM CONVERSÃO DE MOEDA AQUI — corrigido em 09/10/2026.
+ *
+ * A primeira versão tinha os pisos em dólar e multiplicava por um `7.300`
+ * fixo para chegar ao guarani. Isso viola o que o próprio `precoParaguai`
+ * declara no cabeçalho — *"este módulo NÃO converte nada"*; conversão é da
+ * EXIBIÇÃO, com cotação datada — e cria justamente o que o Gustavo apontou que
+ * mudaria no decorrer de um ano: um número que apodrece em silêncio enquanto o
+ * guarani anda.
+ *
+ * ★ Dois pisos independentes, cada um na sua moeda, nenhum câmbio no meio.
+ * Eles não precisam concordar entre si: são a mesma pergunta feita em dois
+ * idiomas, e cada idioma responde sozinho.
  */
-const PISO_USD: { desdeAno: number; piso: number }[] = [
-  { desdeAno: 2020, piso: 5_000 },
-  { desdeAno: 2015, piso: 4_000 },
-  { desdeAno: 2010, piso: 2_500 },
-  { desdeAno: 2005, piso: 1_500 },
-  { desdeAno: 1990, piso: 800 },
-];
-
-/** ₲ por dólar — ordem de grandeza, não cotação. Só converte o piso. */
-const GS_POR_USD = 7_300;
+const PISO: Record<"USD" | "PYG", { desdeAno: number; piso: number }[]> = {
+  USD: [
+    { desdeAno: 2020, piso: 5_000 },
+    { desdeAno: 2015, piso: 4_000 },
+    { desdeAno: 2010, piso: 2_500 },
+    { desdeAno: 2005, piso: 1_500 },
+    { desdeAno: 1990, piso: 800 },
+  ],
+  // ⚠️ Mais baixos que a conversão direta dos de dólar, de propósito: aferido
+  // contra a base em 09/10/2026, piso alto acendia a bandeira em 6% dos
+  // anúncios, e sinal que dispara demais ninguém olha.
+  PYG: [
+    { desdeAno: 2020, piso: 20_000_000 },
+    { desdeAno: 2015, piso: 15_000_000 },
+    { desdeAno: 2010, piso: 10_000_000 },
+    { desdeAno: 2005, piso: 7_000_000 },
+    { desdeAno: 1990, piso: 4_000_000 },
+  ],
+};
 
 export interface Limite {
   piso: number;
@@ -58,11 +76,9 @@ export interface Limite {
 
 export function pisoPlausivel(ano: number | null | undefined, moeda: string): Limite | null {
   if (!ano || !Number.isFinite(ano)) return null;
-  const regra = PISO_USD.find((r) => ano >= r.desdeAno);
-  if (!regra) return null;
-  return moeda === "USD"
-    ? { piso: regra.piso, moeda: "USD" }
-    : { piso: regra.piso * GS_POR_USD, moeda: "PYG" };
+  if (moeda !== "USD" && moeda !== "PYG") return null;
+  const regra = PISO[moeda].find((r) => ano >= r.desdeAno);
+  return regra ? { piso: regra.piso, moeda } : null;
 }
 
 /**
