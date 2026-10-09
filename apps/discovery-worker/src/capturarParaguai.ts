@@ -594,7 +594,32 @@ async function main() {
         const textoPreco = win.match(/"formatted_price":\{"text":"([^"]+)"/)?.[1] ?? String(a.precoCampo ?? "");
         const preco = lerPrecoComContexto(textoPreco, contexto);
 
-        if (!preco.ok) {
+        // ★★★ ANTES DE DESCARTAR, PROCURAR O PREÇO NA DESCRIÇÃO — 09/10/2026.
+        //
+        // ⚠️⚠️ ISTO ERA O MAIOR VAZAMENTO DA CAPTAÇÃO: 208 de 719 anúncios
+        // processados no mutirão (29%) morriam em `fora_de_faixa`. Fui conferir
+        // na fonte e o JSON do Facebook confirma o campo:
+        //
+        //     Toyota Hilux 2008 → listing_price {"currency":"PYG","amount":"105"}
+        //
+        // ₲105. É isca, igual ao ₲1 do Crown — o vendedor põe um número
+        // simbólico para forçar o contato. O descarte estava CERTO.
+        //
+        // ★ Só que quem faz isso quase sempre escreve o preço de verdade no
+        // corpo: *"Precio: 80.000.000 Gs"*. E a função que lê isso —
+        // `precoDeclarado` — já existia e só era chamada no caso de ENTREGA de
+        // financiamento. Para isca, nada: descartava direto.
+        //
+        // ⚠️ É o terceiro caso do mesmo padrão nesta base (ver a regra do
+        // "mecanismo pronto que o motor não chama"). Aqui custou 29% da safra.
+        // ⚠️ Só aceita o resgate se ele próprio for válido. Um "precio" lido
+        // torto da descrição seria pior que o descarte: entra na mediana sem
+        // aviso nenhum.
+        const resgateCampo = preco.ok ? null : precoDeclarado(a.descricao ?? "");
+        const veioDaDescricao = Boolean(resgateCampo?.ok);
+        if (veioDaDescricao) conta.resgatados++;
+
+        if (!preco.ok && !(resgateCampo && resgateCampo.ok)) {
           if (preco.motivo === "escala_ambigua") conta.ambiguos++;
           else if (preco.motivo === "preco_isca") conta.iscas++;
           else conta.semPreco++;
@@ -605,6 +630,17 @@ async function main() {
           await dormir(pacing);
           continue;
         }
+
+        // A leitura que vale daqui para baixo: a do campo quando serve, a da
+        // descrição quando o campo era isca.
+        const lido =
+          preco.ok
+            ? { valor: preco.valor, moeda: preco.moeda, confianca: preco.confianca ?? null }
+            : {
+                valor: (resgateCampo as { ok: true; valor: number }).valor,
+                moeda: (resgateCampo as { ok: true; moeda: string }).moeda,
+                confianca: "resgatado_da_descricao" as string | null,
+              };
 
         // ★★★ A ENTREGA NÃO É O PREÇO — guarda ligada em 08/10/2026.
         //
@@ -621,11 +657,11 @@ async function main() {
         // ★ Descartar seria desperdício: o preço de verdade quase sempre está
         // escrito na descrição ("Precio: 80.000.000 Gs"). Tenta resgatar
         // primeiro, descarta só quando não há o que resgatar.
-        let valorFinal = preco.valor;
-        let moedaFinal = preco.moeda;
-        let confiancaFinal: string | null = preco.confianca ?? null;
+        let valorFinal = lido.valor;
+        let moedaFinal = lido.moeda;
+        let confiancaFinal: string | null = lido.confianca;
 
-        if (precoEhEntrega(a.descricao ?? "", a.titulo ?? "", preco.valor)) {
+        if (precoEhEntrega(a.descricao ?? "", a.titulo ?? "", lido.valor)) {
           const resgate = precoDeclarado(a.descricao ?? "");
           if (resgate?.ok) {
             valorFinal = resgate.valor;
@@ -766,7 +802,7 @@ async function main() {
         else {
           conta.salvos++;
           await registrarVistoFacebook(id, "salvo");
-          log(`  ✓ ${(a.titulo ?? "").slice(0, 40).padEnd(40)} ${preco.moeda} ${preco.valor.toLocaleString("es-PY")} [${preco.confianca}]`);
+          log(`  ✓ ${(a.titulo ?? "").slice(0, 40).padEnd(40)} ${moedaFinal} ${valorFinal.toLocaleString("es-PY")} [${confiancaFinal}]`);
         }
         await dormir(pacing);
       } catch (e) {
