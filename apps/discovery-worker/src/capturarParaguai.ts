@@ -828,8 +828,24 @@ async function main() {
             fipe_valor: null,
             margem_percentual: null,
             classificacao: null,
-            foto_principal: reh?.foto_principal ?? null,
-            fotos_secundarias: reh?.fotos_secundarias ?? [],
+            // ★★ SEM RE-HOSPEDAR ≠ SEM FOTO — corrigido em 09/10/2026, e o
+            // Gustavo tinha razão: *"não faz sentido fazermos a captação sem
+            // sequer o link das fotos... ao menos os anúncios já ficam
+            // visualmente OK e não custa nada a não ser inserir o link"*.
+            //
+            // ⚠️ O caro é re-hospedar (download + sharp + upload no bucket). O
+            // LINK CRU não custa nada, e sem ele o anúncio nasce sem imagem
+            // nenhuma — o que, num site de carro, é o mesmo que não existir.
+            //
+            // A estrutura já fazia isso para as fotos 4 a 10; só não estendia
+            // para quando a re-hospedagem está desligada. Agora o mutirão grava
+            // tudo cru e o backfill troca as 3 primeiras por permanentes.
+            //
+            // ⚠️ O link do fbcdn CADUCA em poucos dias (tem `oe=` com validade).
+            // Por isso o backfill PRECISA passar depois — ver a guarda que o
+            // faz enxergar links crus como "precisa de foto".
+            foto_principal: reh?.foto_principal ?? fotos[0] ?? null,
+            fotos_secundarias: reh?.fotos_secundarias ?? fotos.slice(1, 10),
             descricao: a.descricao,
             origem_tipo: "descoberta",
             status: "descoberta",

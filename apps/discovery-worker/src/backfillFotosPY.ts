@@ -68,7 +68,19 @@ async function main() {
   // ⚠️ Só os que precisam: foto nula, ou apontando para o bucket MORTO.
   const precisam = (data ?? []).filter((o) => {
     const f = o.foto_principal as string | null;
-    return !f || f.includes("chuvlvwctwkeviencfuy");
+    // ⚠️⚠️ LINK CRU DO FBCDN TAMBÉM PRECISA — e esta linha quase virou uma
+    // bomba-relógio em 09/10/2026.
+    //
+    // A captação rápida (PY_SEM_FOTO=1) passou a gravar o link cru do Facebook
+    // para o anúncio já nascer com imagem. Só que o teste antigo era "foto
+    // nula", e link cru NÃO é nulo — esses anúncios ficariam invisíveis para o
+    // backfill, e o fbcdn CADUCA em poucos dias (tem `oe=` com validade).
+    //
+    // O resultado seria o pior possível: anúncio que parece ter foto hoje e
+    // amanhã mostra imagem quebrada, sem ninguém ser avisado, porque o
+    // mecanismo de conserto não o enxergava.
+    const cru = Boolean(f && /fbcdn\.net|\.fbcdn\./i.test(f));
+    return !f || cru || f.includes("chuvlvwctwkeviencfuy");
   });
 
   // ★★ SÓ OS QUE TÊM PREÇO COERENTE — regra do Gustavo (09/10/2026):
