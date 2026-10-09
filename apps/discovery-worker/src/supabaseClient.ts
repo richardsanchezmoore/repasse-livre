@@ -298,6 +298,54 @@ export async function registrarBuscaFacebook(
     console.warn(`[fb_buscas] telemetria desligada nesta rodada: ${error.message}`);
   }
 }
+/**
+ * GRAVA A OBSERVAÇÃO DE PREÇO — o ativo que sobrevive ao anúncio.
+ *
+ * ★ Gustavo (09/10/2026): *"não podemos nunca desperdiçar os preços... o
+ * histórico modelo/preço preservado e utilizável por muito tempo, como faz a
+ * tabela FIPE"*. O anúncio é efêmero — 57% dos que revisitamos num dia já não
+ * existiam — e a observação é fato datado que não deixa de ser verdade.
+ *
+ * ⚠️ NUNCA DERRUBA A CAPTAÇÃO. É registro histórico, não produto: se a tabela
+ * não existir ou o insert falhar, avisa uma vez e a rodada segue. Perder uma
+ * observação é barato; perder a rodada inteira não.
+ *
+ * ⚠️ `unique (item_id, mes)` + ignoreDuplicates: a mesma oferta revisitada no
+ * mesmo mês é UMA observação. Sem isso, anúncio reaberto cinco vezes pesaria
+ * cinco vezes na mediana do mês.
+ */
+let avisouObs = false;
+export async function registrarObservacaoPreco(o: {
+  itemId: string;
+  modelo: string | null;
+  geracao: string | null;
+  ano: number | null;
+  preco: number;
+  moeda: string;
+  cidade: string | null;
+  confianca: string | null;
+}): Promise<void> {
+  const agora = new Date();
+  const mes = `${agora.getUTCFullYear()}-${String(agora.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  const { error } = await supabase.from("py_observacoes_preco").upsert(
+    {
+      item_id: o.itemId,
+      mes,
+      modelo: o.modelo ? o.modelo.toLowerCase() : null,
+      geracao: o.geracao,
+      ano: o.ano,
+      preco: o.preco,
+      moeda: o.moeda,
+      cidade: o.cidade,
+      confianca: o.confianca,
+    },
+    { onConflict: "item_id,mes", ignoreDuplicates: true },
+  );
+  if (error && !avisouObs) {
+    avisouObs = true;
+    console.warn(`[observacoes] livro de preços desligado nesta rodada: ${error.message}`);
+  }
+}
 export async function linkOrigemJaExiste(linkOrigem: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("opportunities")

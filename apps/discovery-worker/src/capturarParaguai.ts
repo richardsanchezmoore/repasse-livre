@@ -58,6 +58,7 @@ import {
   lerConfig,
   registrarVistoFacebook,
   registrarBuscaFacebook,
+  registrarObservacaoPreco,
   supabase,
 } from "./supabaseClient.js";
 
@@ -848,6 +849,17 @@ async function main() {
         else {
           conta.salvos++;
           await registrarVistoFacebook(id, "salvo");
+          // ★ O preço entra no livro de observações, que sobrevive ao anúncio.
+          await registrarObservacaoPreco({
+            itemId: id,
+            modelo: norm.modelo,
+            geracao: ger?.codigo ?? null,
+            ano,
+            preco: valorFinal,
+            moeda: moedaFinal,
+            cidade: a.cidade ?? null,
+            confianca: confiancaFinal,
+          });
           log(`  ✓ ${(a.titulo ?? "").slice(0, 40).padEnd(40)} ${moedaFinal} ${valorFinal.toLocaleString("es-PY")} [${confiancaFinal}]`);
         }
         await dormir(pacing);
