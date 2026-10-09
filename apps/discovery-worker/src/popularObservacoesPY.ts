@@ -34,6 +34,29 @@ import { precoImplausivel } from "./limitePrecoPY.js";
  */
 const LOTE = 500;
 
+/**
+ * ★★ NADA ANTES DE OUTUBRO DE 2026 ENTRA NA SÉRIE.
+ *
+ * ⚠️ Não é recorte arbitrário: até 07/10 a captação lia os ~13 primeiros ids
+ * da página, e em 08/10 descobrimos que esses primeiros são SUGESTÃO do
+ * Facebook, não resultado de busca — o resultado filtrado só aparece depois
+ * da rolagem. Setembro não registrou o mercado; registrou o painel de
+ * recomendação.
+ *
+ * O estrago aparecia na própria série: Vitz XP90 a ₲15,0M em setembro (n=3)
+ * contra ₲41,3M em outubro (n=28). Leria como alta de 175% num mês, e seria
+ * mentira gravada numa tabela que dura anos.
+ *
+ * ⚠️ Os ANÚNCIOS de setembro continuam na base — decisão do Gustavo, e está
+ * certa: eles são estoque real que existiu. O que não entra é a OBSERVAÇÃO,
+ * porque ela afirma algo sobre o MERCADO que o método daquela época não era
+ * capaz de afirmar.
+ *
+ * ★ Remover este corte quando a série tiver anos seria tentador e errado: o
+ * viés não some com o tempo, fica no primeiro ponto da curva para sempre.
+ */
+const INICIO_SERIE = "2026-10-01";
+
 async function main() {
   const { data, error } = await supabase
     .from("opportunities")
@@ -44,7 +67,7 @@ async function main() {
   if (error) throw new Error(error.message);
   const linhas = data ?? [];
 
-  let semId = 0, implausiveis = 0, anoSuspeito = 0;
+  let semId = 0, implausiveis = 0, anoSuspeito = 0, antesDaSerie = 0;
   const obs: Record<string, unknown>[] = [];
 
   for (const o of linhas) {
@@ -55,6 +78,7 @@ async function main() {
       implausiveis++;
       continue;
     }
+    if (String(o.data_captura) < INICIO_SERIE) { antesDaSerie++; continue; }
     const d = new Date(String(o.data_captura));
     const mes = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
     const modelo = o.modelo ? String(o.modelo).toLowerCase() : null;
@@ -76,7 +100,7 @@ async function main() {
 
   console.log(`${linhas.length} anúncios com preço`);
   console.log(`  ${obs.length} viram observação`);
-  console.log(`  ${implausiveis} fora pelo raio · ${anoSuspeito} com ano suspeito · ${semId} sem id\n`);
+  console.log(`  ${implausiveis} fora pelo raio · ${anoSuspeito} ano suspeito · ${semId} sem id · ${antesDaSerie} antes de ${INICIO_SERIE}\n`);
 
   let gravadas = 0;
   for (let i = 0; i < obs.length; i += LOTE) {
