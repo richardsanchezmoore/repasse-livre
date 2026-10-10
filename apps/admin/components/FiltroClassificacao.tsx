@@ -12,6 +12,7 @@ import { ModalMarcas } from "./ModalMarcas";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba, Ordem } from "./DiscoveriesBoard";
 import type { MarcaContagem } from "@/lib/marcas";
+import { PRACA_TEM_TABELA_PRONTA } from "@/lib/site";
 
 const TOP_MARCAS = 9;
 
@@ -23,7 +24,14 @@ const ROTULO_ORDEM: Record<Ordem, string> = {
   proximidade: "Perto de mim",
 };
 
-const ORDENS_BASE: Ordem[] = ["recente", "margem", "menor_valor", "maior_valor"];
+/**
+ * ⚠️ "Maior Margem" ordena por `margem_percentual`, que é margem sobre a FIPE.
+ * No Paraguai essa coluna é nula em todo registro: a opção existia e não
+ * ordenava nada — o leitor clicava e a lista ficava igual.
+ */
+const ORDENS_BASE: Ordem[] = PRACA_TEM_TABELA_PRONTA
+  ? ["recente", "margem", "menor_valor", "maior_valor"]
+  : ["recente", "menor_valor", "maior_valor"];
 
 export function FiltroClassificacao({
   aba,
@@ -181,16 +189,22 @@ export function FiltroClassificacao({
 
   return (
     <div className="filtro-classificacao">
+      {/* ★ Sem as faixas de margem sobra só o chip "Todas", que não filtra
+          nada — e um botão que abre uma fileira de um item só. Os dois somem
+          juntos: o painel de Filtros e a ordenação continuam. */}
+      {PRACA_TEM_TABELA_PRONTA && (
       <button
         type="button"
         className="filtro-toggle-mobile"
         onClick={() => setChipsAbertos((aberto) => !aberto)}
         aria-expanded={chipsAbertos}
       >
-        <span>{ativa ? rotuloClassificacaoFiltro(ativa, piso) : "Margem FIPE"}</span>
+        <span>{ativa ? rotuloClassificacaoFiltro(ativa, piso) : PRACA_TEM_TABELA_PRONTA ? "Margem FIPE" : "Ofertas"}</span>
         <ChevronDown size={16} strokeWidth={2.25} className={chipsAbertos ? "filtro-toggle-seta-aberta" : ""} />
       </button>
+      )}
 
+      {PRACA_TEM_TABELA_PRONTA && (
       <div className={`filtro-chips ${chipsAbertos ? "filtro-chips-aberto" : ""}`}>
         <button
           type="button"
@@ -199,17 +213,22 @@ export function FiltroClassificacao({
         >
           Todas
         </button>
-        {CLASSIFICACOES.map((classificacao) => (
-          <button
-            type="button"
-            key={classificacao}
-            onClick={() => selecionar(classificacao)}
-            className={`filtro-chip ${ativa === classificacao ? "filtro-chip-ativo" : ""}`}
-          >
-            {rotuloClassificacaoFiltro(classificacao, piso)}
-          </button>
-        ))}
+        {/* ⚠⚠ Bronze 3%+ / Prata 10%+ / Ouro 15%+ / Diamante 20%+ são faixas de
+            margem SOBRE A FIPE. Num site paraguaio os quatro filtravam para
+            lista vazia — pior que inúteis, pareciam o site quebrado. */}
+        {PRACA_TEM_TABELA_PRONTA &&
+          CLASSIFICACOES.map((classificacao) => (
+            <button
+              type="button"
+              key={classificacao}
+              onClick={() => selecionar(classificacao)}
+              className={`filtro-chip ${ativa === classificacao ? "filtro-chip-ativo" : ""}`}
+            >
+              {rotuloClassificacaoFiltro(classificacao, piso)}
+            </button>
+          ))}
       </div>
+      )}
 
       <div className="filtro-ordenacao">
         <span className="filtro-ordenacao-label">

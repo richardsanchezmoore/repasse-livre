@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Calendar, Check, Gauge, MapPin, ExternalLink, Tag, ShieldAlert, Settings2, Lock } from "lucide-react";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
+import { temReferenciaFipe } from "@/lib/site";
 import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
@@ -94,6 +95,8 @@ export async function PaginaOportunidade({
   const fotos = [...new Set(
     [oportunidade.foto_principal, ...oportunidade.fotos_secundarias].filter((url): url is string => !!url)
   )];
+  // ★ Mesma regra do card: a moldura FIPE só existe onde há FIPE.
+  const comFipe = temReferenciaFipe(oportunidade);
   const classificacao = oportunidade.classificacao as Classificacao | null;
   const { rotulo: rotuloFonte, classe: classeFonte } = infoFonte(oportunidade.fonte);
   const classeClassificacao = classificacao
@@ -170,7 +173,8 @@ export async function PaginaOportunidade({
       <div className="pagina-oportunidade-corpo">
         <div className="pagina-oportunidade-selos">
           <span className={`selo-fonte selo-fonte-inline ${classeFonte}`}>{rotuloFonte}</span>
-          {classificacao && (
+          {/* ⚠️ Bronze/Prata/Ouro/Diamante são faixas de margem sobre a FIPE. */}
+          {classificacao && comFipe && (
             <span className={`selo-classificacao ${classeClassificacao} selo-classificacao-inline`}>
               {ROTULO_CLASSIFICACAO[classificacao]}
             </span>
@@ -182,6 +186,7 @@ export async function PaginaOportunidade({
           <p className="pagina-oportunidade-subtitulo">{oportunidade.veiculo}</p>
         )}
 
+        {comFipe && (
         <div className="destaque-margem">
           <p className="destaque-margem-valor-rotulo">Ganho</p>
           <p className="destaque-margem-valor">{formatarMoeda(diferencaValor)}</p>
@@ -192,6 +197,7 @@ export async function PaginaOportunidade({
           </p>
           {mesRefFipe && <span className="selo-mes-fipe">FIPE ref. {mesRefFipe}</span>}
         </div>
+        )}
 
         {avisoQuedaFipe && (
           <div className="aviso-queda-fipe">
@@ -208,18 +214,29 @@ export async function PaginaOportunidade({
           <div className="linha-preco linha-preco-anuncio">
             <PrecoAnuncio className="preco-valor" valor={oportunidade.preco} moeda={oportunidade.moeda} />
           </div>
-          <div className="linha-preco linha-preco-fipe">
-            <span className="preco-rotulo">FIPE</span>
-            <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
-          </div>
+          {comFipe && (
+            <div className="linha-preco linha-preco-fipe">
+              <span className="preco-rotulo">FIPE</span>
+              <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
+            </div>
+          )}
         </div>
 
-        <PainelComparativo
-          historico={historicoFipe}
-          referencia={referenciaPreco}
-          precoAnuncio={oportunidade.preco}
-          copiloto={copilotoNode}
-        />
+        {/* ⚠️ O painel comparativo é histórico da FIPE + referência derivada
+            dela. Sem FIPE ele desenha um gráfico vazio.
+            ⚠️⚠️ Mas o COPILOTO mora dentro dele: esconder o painel inteiro
+            sumiria com um recurso PAGO sem avisar ninguém. Por isso, sem FIPE,
+            o parecer continua na página — só o gráfico sai. */}
+        {comFipe ? (
+          <PainelComparativo
+            historico={historicoFipe}
+            referencia={referenciaPreco}
+            precoAnuncio={oportunidade.preco}
+            copiloto={copilotoNode}
+          />
+        ) : (
+          copilotoNode
+        )}
 
         <dl className="pagina-oportunidade-ficha">
           <div className="pagina-oportunidade-ficha-item pagina-oportunidade-ficha-item-linha">

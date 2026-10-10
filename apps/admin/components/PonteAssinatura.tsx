@@ -42,7 +42,9 @@ export function PonteAssinatura() {
           <Gem size={14} fill="#00c845" strokeWidth={0} /> Repasse Livre PRO
         </div>
         <h2 style={{ fontWeight: 800, fontSize: "clamp(19px,2.6vw,25px)", lineHeight: 1.2, letterSpacing: "-.01em", margin: "0 0 10px" }}>
-          Descubra dezenas de carros abaixo da FIPE todo dia.
+          {/* ⚠️ A isca do PRO não pode prometer comparação com a FIPE num país
+              onde ela não existe. O que entregamos hoje é chegar antes. */}
+          Descubra dezenas de carros novos todo dia, antes dos outros.
         </h2>
         <p style={{ fontSize: "clamp(14px,1.6vw,16px)", lineHeight: 1.55, color: "#b9c6cf", margin: 0 }}>
           O Repasse Livre entrega <b style={{ color: "#fff" }}>a análise pronta</b> — no seu estado, na sua busca, com

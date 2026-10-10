@@ -1,5 +1,6 @@
 import { Radar, Gem, Zap, Banknote } from "lucide-react";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
+import { PRACA_TEM_TABELA_PRONTA } from "@/lib/site";
 
 function milhar(n: number): string {
   return n.toLocaleString("pt-BR");
@@ -21,11 +22,31 @@ export async function KpisTopo() {
   const k = await buscarKpisTopo();
   // Legenda de "Novos": 168h vira "7 dias"; senão "Xh".
   const legNovos = k.novosHoras >= 168 ? `${Math.round(k.novosHoras / 24)} dias` : `${k.novosHoras}h`;
+  /**
+   * ⚠⚠ DOIS DESTES KPIs ERAM MENTIRA NO PARAGUAI — e um deles de um jeito
+   * pior do que parecia:
+   *
+   *   • "Economia de mercado" soma `fipe_valor - preco`, e `fipe_valor` é NULO
+   *     em 100% dos registros paraguaios. Mostrava "R$ 0" — em REAL, num site
+   *     paraguaio.
+   *   • "Abaixo da FIPE" não filtra FIPE nenhuma: a RPC devolve `count(*)` de
+   *     tudo que não foi rejeitado (ver migration 0086). O NÚMERO estava certo,
+   *     o RÓTULO é que mentia. Então ele não sai — passa a dizer o que é.
+   *
+   * ★ Por isso o Paraguai mostra TRÊS cartões e não quatro: um número a menos
+   * é melhor do que um número falso. O quarto volta quando a NOSSA tabela de
+   * referência estiver persistida — aí ele vira "modelos na tabela", que é o
+   * número que realmente mede o produto.
+   */
   const cards = [
     { rotulo: `Ofertas mapeadas · ${k.mapeadasDias} dias`, valor: milhar(k.mapeados), Icone: Radar, title: `${milhar(k.mapeados)} anúncios varridos em ${k.mapeadasDias} dias (inclui os descartados)` },
-    { rotulo: "Abaixo da FIPE", valor: milhar(k.abaixoFipe), Icone: Gem, title: `${milhar(k.abaixoFipe)} oportunidades ativas abaixo da tabela FIPE` },
-    { rotulo: `Novos · últimas ${legNovos}`, valor: milhar(k.novos), Icone: Zap, title: `${milhar(k.novos)} novas oportunidades abaixo da FIPE nas últimas ${legNovos}` },
-    { rotulo: `Economia de mercado · ${k.mapeadasDias} dias`, valor: economiaCompacta(k.economia), Icone: Banknote, title: `R$ ${milhar(Math.round(k.economia))} de ganho somado vs. FIPE nos anúncios dos últimos ${k.mapeadasDias} dias` },
+    PRACA_TEM_TABELA_PRONTA
+      ? { rotulo: "Abaixo da FIPE", valor: milhar(k.abaixoFipe), Icone: Gem, title: `${milhar(k.abaixoFipe)} oportunidades ativas abaixo da tabela FIPE` }
+      : { rotulo: "Ofertas ativas", valor: milhar(k.abaixoFipe), Icone: Gem, title: `${milhar(k.abaixoFipe)} anúncios ativos na base` },
+    { rotulo: `Novos · últimas ${legNovos}`, valor: milhar(k.novos), Icone: Zap, title: `${milhar(k.novos)} ofertas novas nas últimas ${legNovos}` },
+    ...(PRACA_TEM_TABELA_PRONTA
+      ? [{ rotulo: `Economia de mercado · ${k.mapeadasDias} dias`, valor: economiaCompacta(k.economia), Icone: Banknote, title: `R$ ${milhar(Math.round(k.economia))} de ganho somado vs. FIPE nos anúncios dos últimos ${k.mapeadasDias} dias` }]
+      : []),
   ];
 
   return (

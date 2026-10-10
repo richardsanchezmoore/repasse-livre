@@ -121,3 +121,31 @@ export function urlModelo(
 ): string {
   return `${URL_BASE_SITE}${caminhoModelo(localidade, marca, modelo)}`;
 }
+
+/**
+ * ═══ A MOLDURA FIPE SÓ APARECE ONDE EXISTE FIPE (Gustavo, 10/10/2026) ═══
+ *
+ * ★★★ NO PARAGUAI NÃO EXISTE FIPE. Não é que a nossa não bateu: a tabela não
+ * existe no país — é justamente por isso que o Auto Radar PY tem razão de ser,
+ * porque lá o produto deixa de achar desconto contra uma referência pronta e
+ * passa a CRIAR a referência.
+ *
+ * ⚠️ O que estava NO AR: todo card paraguaio mostrava a mobília vazia da era
+ * brasileira — "Ganho —", "Margem de % abaixo da FIPE", "FIPE —", e os selos
+ * Bronze/Prata/Ouro/Diamante, que são faixas de margem sobre a FIPE. Num site
+ * paraguaio isso não é só inútil: anuncia que o site é de outro mercado.
+ *
+ * ⚠️⚠️ O CORTE É POR DADO, NUNCA POR PAÍS CHUMBADO NEM POR DOMÍNIO — mesma
+ * regra que separou as duas eras no `PAIS_DO_SITE` acima. Um anúncio brasileiro
+ * sem casamento de FIPE também não deve mostrar "FIPE —": o teste certo é se
+ * existe valor, e é só isso que esta função pergunta.
+ *
+ * ★ Quando a NOSSA tabela de referência estiver persistida, é aqui que entra o
+ * par desta função — e o selo vira *"3% por debajo de la tabla AutoRadarPY"*.
+ * Hoje `tabelaReferenciaPY.ts` só imprime; não há valor no banco para mostrar.
+ */
+export const temReferenciaFipe = (o: { fipe_valor?: number | null }): boolean =>
+  o.fipe_valor != null && Number.isFinite(o.fipe_valor) && o.fipe_valor > 0;
+
+/** O site inteiro trabalha contra uma tabela de referência? (Brasil sim, Paraguai ainda não.) */
+export const PRACA_TEM_TABELA_PRONTA = PAIS_DO_SITE === "BR";

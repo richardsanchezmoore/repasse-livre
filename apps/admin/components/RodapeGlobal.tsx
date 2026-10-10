@@ -37,7 +37,9 @@ export function RodapeGlobal() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Repasse Livre" className="rodape-global-logo" />
           <p className="rodape-global-tagline">
-            Oportunidades de carros anunciados abaixo da tabela FIPE, atualizadas todos os dias.
+            {/* ⚠️ A tagline do rodapé aparece em TODA página — era a menção
+                de FIPE mais visível que sobrava no site. */}
+            Carros à venda no Paraguai, com preço de referência por modelo e ano.
           </p>
         </div>
         <nav className="rodape-global-links" aria-label="Links do rodapé">

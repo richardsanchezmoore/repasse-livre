@@ -68,7 +68,11 @@ export function BarraPonteScroll() {
         >
           <Gem size={18} fill="#00c845" strokeWidth={0} style={{ flex: "none" }} />
           <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.35, color: "#d6e2ec" }}>
-            <b style={{ color: "#fff" }}>Dezenas de carros abaixo da FIPE</b> todo dia — no seu estado, com alerta na hora.
+            {/* ⚠️ Era "Dezenas de carros abaixo da FIPE" — a barra aparece em
+                TODA página de anúncio paraguaia, e prometia comparação com uma
+                tabela que não existe no país. A promessa agora é a que
+                cumprimos hoje: chegar antes, com aviso. */}
+            <b style={{ color: "#fff" }}>Dezenas de carros novos</b> todo dia — na sua cidade, com alerta na hora.
           </span>
           <span
             style={{

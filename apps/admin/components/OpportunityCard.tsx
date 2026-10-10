@@ -19,7 +19,7 @@ import { formatarWhatsapp } from "@/lib/mascaras";
 import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
 import { PrecoAnuncio } from "@/components/PrecoAnuncio";
 import { ImagemThumbnail } from "@/components/ImagemThumbnail";
-import { caminhoOportunidade } from "@/lib/site";
+import { caminhoOportunidade, temReferenciaFipe } from "@/lib/site";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
 
@@ -103,6 +103,10 @@ export function OpportunityCard({
   const classeClassificacao = classificacao
     ? CLASSE_CLASSIFICACAO[classificacao] ?? "selo-classificacao-oportunidade"
     : "selo-classificacao-oportunidade";
+
+  // ★ A moldura FIPE (selo, Ganho, margem, linha FIPE) só existe onde há FIPE.
+  // No Paraguai não há — ver `temReferenciaFipe` em lib/site.ts.
+  const comFipe = temReferenciaFipe(oportunidade);
 
   const diferencaValor =
     oportunidade.fipe_valor !== null ? oportunidade.fipe_valor - oportunidade.preco : null;
@@ -189,7 +193,9 @@ export function OpportunityCard({
 
       <div className="card-conteudo">
       <div className="linha-fonte-classificacao">
-        {classificacao && (
+        {/* ⚠️ Bronze/Prata/Ouro/Diamante SÃO faixas de margem sobre a FIPE.
+            Sem FIPE o selo não significa nada — some junto com ela. */}
+        {classificacao && comFipe && (
           <span className={`selo-classificacao ${classeClassificacao}`}>
             {ROTULO_CLASSIFICACAO[classificacao]}
           </span>
@@ -211,24 +217,30 @@ export function OpportunityCard({
         >
           <p className="titulo">{titulo}</p>
 
-          <div className="destaque-margem">
-            <p className="destaque-margem-valor-rotulo">Ganho</p>
-            <p className="destaque-margem-valor">{formatarMoeda(diferencaValor)}</p>
-            <p className="destaque-margem-percentual">
-              <span className="destaque-margem-percentual-rotulo">Margem de</span>{" "}
-              {oportunidade.margem_percentual?.toFixed(1)}%{" "}
-              <span className="destaque-margem-percentual-rotulo">abaixo da FIPE</span>
-            </p>
-          </div>
+          {/* ⚠️ Moldura FIPE só onde existe FIPE — ver `temReferenciaFipe`.
+              No Paraguai isto não aparece, porque a tabela não existe lá. */}
+          {comFipe && (
+            <div className="destaque-margem">
+              <p className="destaque-margem-valor-rotulo">Ganho</p>
+              <p className="destaque-margem-valor">{formatarMoeda(diferencaValor)}</p>
+              <p className="destaque-margem-percentual">
+                <span className="destaque-margem-percentual-rotulo">Margem de</span>{" "}
+                {oportunidade.margem_percentual?.toFixed(1)}%{" "}
+                <span className="destaque-margem-percentual-rotulo">abaixo da FIPE</span>
+              </p>
+            </div>
+          )}
 
           <div className="precos-grupo">
             <div className="linha-preco linha-preco-anuncio">
               <PrecoAnuncio className="preco-valor" valor={oportunidade.preco} moeda={oportunidade.moeda} />
             </div>
-            <div className="linha-preco linha-preco-fipe">
-              <span className="preco-rotulo">FIPE</span>
-              <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
-            </div>
+            {comFipe && (
+              <div className="linha-preco linha-preco-fipe">
+                <span className="preco-rotulo">FIPE</span>
+                <span>{formatarMoeda(oportunidade.fipe_valor)}</span>
+              </div>
+            )}
           </div>
 
           <p className="data-local">
@@ -327,11 +339,18 @@ export function OpportunityCard({
         >
           <div className="card-overlay-tease">
             <p className="card-overlay-tease-titulo">{titulo}</p>
-            <p className="card-overlay-tease-ganho-rotulo">Ganho</p>
-            <p className="card-overlay-tease-ganho">{formatarMoeda(diferencaValor)}</p>
-            <p className="card-overlay-tease-margem">
-              Margem de {oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE
-            </p>
+            {/* ⚠️ A isca do overlay também era FIPE pura: "Ganho —" e "Margem de
+                % abaixo da FIPE" num card paraguaio vendiam o plano com um número
+                que não existe. Sem FIPE, a isca passa a ser o próprio preço. */}
+            {comFipe ? (
+              <>
+                <p className="card-overlay-tease-ganho-rotulo">Ganho</p>
+                <p className="card-overlay-tease-ganho">{formatarMoeda(diferencaValor)}</p>
+                <p className="card-overlay-tease-margem">
+                  Margem de {oportunidade.margem_percentual?.toFixed(1)}% abaixo da FIPE
+                </p>
+              </>
+            ) : null}
           </div>
 
           <div className="card-overlay-painel">
