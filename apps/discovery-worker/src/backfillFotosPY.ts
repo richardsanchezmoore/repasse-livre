@@ -29,6 +29,24 @@ import { precoImplausivel } from "./limitePrecoPY.js";
 const PAUSA_MS = Number(process.env.FOTOS_PAUSA_MS ?? 4000);
 const LIMITE = Number(process.env.FOTOS_LIMITE ?? 400);
 
+/**
+ * ⚠️⚠️ ESPERA DA PÁGINA — 2.000ms estavam MATANDO anúncio vivo.
+ *
+ * Medido em 10/10/2026, depois de o Gustavo questionar minha afirmação de que
+ * 222 anúncios estavam mortos: numa amostra de 20 marcados como fora do ar,
+ * **ZERO estavam removidos** e **12 (60%) estavam vivos e com foto**. Honda
+ * Navi com 5, Mustang com 8, Corolla Runx com 6 — todos lá.
+ *
+ * A página do anúncio monta as fotos por GraphQL DEPOIS do primeiro paint.
+ * Com 2s a gente lia a casca e concluía "sem foto na página (vendido?)".
+ *
+ * ★ Terceira vez na semana que espera curta demais produz conclusão errada: na
+ * rolagem, 700ms separavam 38 de 500 ids; na leitura do HTML, lia-se a casca.
+ * O padrão é sempre o mesmo — o Facebook responde rápido e COMPLETA depois, e
+ * quem lê no meio conclui que não há nada.
+ */
+const ESPERA_MS = Number(process.env.FOTOS_ESPERA_MS ?? 5000);
+
 const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
@@ -108,7 +126,7 @@ async function main() {
     if (!id) { erro++; continue; }
 
     try {
-      const html = await baixarLogado(o.link_origem as string, 2000);
+      const html = await baixarLogado(o.link_origem as string, ESPERA_MS);
       // ⚠️ extrairAnuncioFacebook devolve { anuncio, descartar }, não o anúncio
       // direto. As fotos ficam em .anuncio.fotos.
       const r = extrairAnuncioFacebook(html, id);
