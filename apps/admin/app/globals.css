@@ -8855,3 +8855,71 @@ button.bemvindo-secundario {
   border-radius: 2px;
   box-shadow: 0 0 0 1px rgba(17, 24, 39, 0.12);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELO DA TABELA AUTORADARPY — ocupa o lugar que era da moldura FIPE.
+
+   ★★ "3% por debajo de la tabla AutoRadarPy" — desenho do Gustavo. É o produto
+   aparecendo no card: no Paraguai não existe FIPE, então a referência é a
+   nossa, construída das observações de preço.
+
+   ⚠️ As três faixas têm pesos visuais DIFERENTES de propósito. "Abaixo" é a
+   notícia e ganha cor; "no preço de mercado" é o caso mais comum e tem que ser
+   discreto, senão o olho para em todo card e nenhum se destaca; "acima" existe
+   por honestidade — esconder o caro e mostrar só o barato faria da tabela
+   propaganda, não referência.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.selo-referencia {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 8px 0 2px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+}
+
+.selo-referencia-texto {
+  font-size: 13.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* ⚠️ O escopo é letra miúda, mas NÃO é letra miúda defensiva: é o que diz
+   contra o que o preço foi comparado, e isso é metade da credibilidade. */
+.selo-referencia-escopo {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+/* ★ Abaixo da faixa do miolo: é a notícia. */
+.selo-referencia-abaixo {
+  background: #eaf7ef;
+  border-color: #c9e9d6;
+  color: #11693c;
+}
+
+/* O caso mais comum — presente, discreto, sem roubar a cena. */
+.selo-referencia-no_miolo {
+  background: #f5f7fa;
+  border-color: #e6eaf0;
+  color: #5b6577;
+}
+
+/* ⚠️ Âmbar e não vermelho: o anúncio não está errado, está acima da referência.
+   E o vermelho é a cor de erro da interface — ver a nota sobre a marca. */
+.selo-referencia-acima {
+  background: #fdf5e9;
+  border-color: #f2e2c6;
+  color: #8a5a12;
+}
+
+@media (max-width: 640px) {
+  .selo-referencia { padding: 6px 9px; }
+  .selo-referencia-texto { font-size: 12.5px; }
+}

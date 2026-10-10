@@ -12,6 +12,11 @@ export interface Oportunidade {
   // Sem isto o site mostrava ₲220.000.000 como "R$ 220.000.000".
   moeda?: string | null;
   pais?: string | null;
+  // ★ `modelo` e `geracao` são o que casa o anúncio com a linha da NOSSA tabela
+  // de referência (lib/tabelaReferencia.ts). São colunas leves — cabem no
+  // COLUNAS_CARTAO sem o custo que as pesadas (fotos, descrição) têm.
+  modelo?: string | null;
+  geracao?: string | null;
   procedencia?: string | null;
   link_origem: string;
   veiculo: string;

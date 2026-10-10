@@ -12,6 +12,7 @@ import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import { cidadesDaRegiao } from "@/lib/regioes";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
+import { buscarTabelaReferencia, indexarTabela, linhaParaAnuncio, posicaoNaTabela, rotuloEscopo } from "@/lib/tabelaReferencia";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
 import { Paginacao } from "./Paginacao";
@@ -636,6 +637,10 @@ export async function Board({
     : usuario
       ? await buscarIdsFavoritados(usuario.id)
       : new Set<string>();
+  // ★★ A tabela de referência, UMA leitura por página, cacheada por 30 min.
+  // ⚠️ Dezenas de linhas no mês — cabe em memória. Consultar por card seria
+  // 40 consultas iguais numa listagem, que é o padrão que estourou o egress.
+  const indiceTabela = indexarTabela(await buscarTabelaReferencia());
   const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
   const inicioIntervalo = total === 0 ? 0 : (pagina - 1) * ITENS_POR_PAGINA + 1;
   const fimIntervalo = Math.min(pagina * ITENS_POR_PAGINA, total);
@@ -686,16 +691,22 @@ export async function Board({
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />
       <div className="board-lista">
         {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
-        {oportunidades.map((oportunidade) => (
+        {oportunidades.map((oportunidade) => {
+          // ★★ A posição na tabela é calculada AQUI, no servidor, com o índice já
+          // em memória — uma leitura por página, não uma por card.
+          const pos = posicaoNaTabela(oportunidade.preco, linhaParaAnuncio(indiceTabela, oportunidade));
+          return (
           <OpportunityCard
             key={oportunidade.id}
+            referencia={pos ? { percentual: pos.percentual, faixa: pos.faixa, escopo: rotuloEscopo(pos.linha) } : null}
             oportunidade={(oportunidade.margem_percentual ?? 0) > margemPremium ? sanitizarCardBloqueado(oportunidade) : oportunidade}
             favoritado={idsFavoritados.has(oportunidade.id)}
             isAdmin={ehAdmin}
             usuarioLogado={Boolean(usuario)}
             bloqueado={(oportunidade.margem_percentual ?? 0) > margemPremium}
           />
-        ))}
+          );
+        })}
       </div>
       <Paginacao aba={aba} filtros={filtros} paginaAtual={pagina} totalPaginas={totalPaginas} />
     </section>

@@ -33,7 +33,9 @@
     "migrar": "tsx src/rodarMigracoes.ts",
     "typecheck": "tsc --noEmit",
     "testar:preco-py": "npx tsx src/precoParaguaiTeste.ts",
-    "capturar:py": "npx tsx src/capturarParaguai.ts"
+    "capturar:py": "npx tsx src/capturarParaguai.ts",
+    "tabela": "tsx src/publicarTabelaPY.ts",
+    "tabela:gravar": "tsx src/publicarTabelaPY.ts --gravar"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

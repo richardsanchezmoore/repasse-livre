@@ -20,6 +20,7 @@ import { formatarDataCaptura, formatarMoeda } from "@/lib/formatadores";
 import { PrecoAnuncio } from "@/components/PrecoAnuncio";
 import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 import { caminhoOportunidade, temReferenciaFipe } from "@/lib/site";
+import { SeloReferencia } from "./SeloReferencia";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
 import { useTextos } from "@/lib/useIdioma";
@@ -30,6 +31,7 @@ export function OpportunityCard({
   isAdmin,
   usuarioLogado,
   bloqueado = false,
+  referencia = null,
 }: {
   oportunidade: Oportunidade;
   favoritado: boolean;
@@ -37,6 +39,10 @@ export function OpportunityCard({
   usuarioLogado: boolean;
   /** Oferta premium travada pra este usuário (margem > limite e não é premium/admin). */
   bloqueado?: boolean;
+  /** ★ Vem PRONTA do servidor: o card é cliente e não fala com o banco.
+   *  ⚠️ Calcular aqui faria uma consulta por card — o padrão que estourou o
+   *  egress em 02/10. O Board lê a tabela UMA vez e distribui. */
+  referencia?: { percentual: number; faixa: "abaixo" | "no_miolo" | "acima"; escopo: string } | null;
 }) {
   const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();
@@ -218,6 +224,13 @@ export function OpportunityCard({
           }}
         >
           <p className="titulo">{titulo}</p>
+
+          {/* ★★ O selo da NOSSA tabela — é o que ocupa o lugar que era da FIPE.
+              Sai só quando há linha de confiança boa; senão o card mostra o
+              preço e mais nada, que é melhor que um selo que não se sustenta. */}
+          {referencia && (
+            <SeloReferencia percentual={referencia.percentual} faixa={referencia.faixa} escopo={referencia.escopo} />
+          )}
 
           {/* ⚠️ Moldura FIPE só onde existe FIPE — ver `temReferenciaFipe`.
               No Paraguai isto não aparece, porque a tabela não existe lá. */}

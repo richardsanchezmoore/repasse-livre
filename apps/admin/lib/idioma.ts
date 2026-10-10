@@ -144,6 +144,9 @@ const PT = {
 
   // ─── card ───
   via: "Via",
+  abaixoDaTabela: "abaixo da tabela AutoRadarPy",
+  acimaDaTabela: "acima da tabela AutoRadarPy",
+  noPrecoDeMercado: "No preço de mercado",
   compartilhar: "Compartilhar",
   hoje: "Hoje",
   hojeAs: "Hoje às",
@@ -220,6 +223,11 @@ const ES: { [K in keyof typeof PT]: string } = {
   ofertasRotulo: "Anuncios",
 
   via: "Vía",
+  // ★ O selo que o Gustavo desenhou, nas palavras dele: "3% por debajo de la
+  // tabla AutoRadarPY". Fica em espanhol porque é a praça.
+  abaixoDaTabela: "por debajo de la tabla AutoRadarPy",
+  acimaDaTabela: "por encima de la tabla AutoRadarPy",
+  noPrecoDeMercado: "En el precio de mercado",
   compartilhar: "Compartir",
   hoje: "Hoy",
   hojeAs: "Hoy a las",
