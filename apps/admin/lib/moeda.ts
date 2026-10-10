@@ -27,7 +27,77 @@
  * arredondamento, é duas ordens de grandeza de erro, e estava no ar.
  */
 
-export type CodigoMoeda = "PYG" | "USD" | "BRL";
+export type CodigoMoeda = "PYG" | "USD" | "BRL" | "ARS";
+
+export type Moeda = { codigo: CodigoMoeda; nome: string; simbolo: string };
+
+/**
+ * ★★ DUAS SEMPRE NA TELA, DUAS DENTRO DA CAIXA (desenho do Gustavo, 10/10/2026):
+ * *"serão duas moedas sempre expostas e duas no 'Escolher Moeda'"*.
+ *
+ * ★ O par fixo não é preferência: no Paraguai o anúncio SÓ sai em guarani ou em
+ * dólar. Então a moeda do anúncio é sempre uma das duas, e a outra é a leitura —
+ * nenhuma das duas é escolha do usuário, é o par da praça.
+ *
+ * ⚠️ Por isso `MOEDAS_FIXAS` tem exatamente 2 itens e `parDaMoeda` depende
+ * disso. Mexer aqui sem mexer lá quebra a segunda linha do preço.
+ */
+export const MOEDAS_FIXAS: Moeda[] = [
+  { codigo: "PYG", nome: "Guaraní", simbolo: "₲" },
+  { codigo: "USD", nome: "Dólar", simbolo: "US$" },
+];
+
+/**
+ * As moedas de VISITANTE — terceira linha, opcional, escolhida na caixinha.
+ *
+ * ★ Real pelos brasileiros de Foz e Ciudad del Este; peso porque, como o
+ * Gustavo lembrou, *"tem muitos argentinos no Paraguai"*.
+ *
+ * ⚠️ O peso vem pela taxa OFICIAL da fonte. A Argentina tem histórico de
+ * mercado paralelo, e quando o vão é grande o número não corresponde ao que o
+ * argentino realmente troca. A caixinha avisa — mesma regra do "≈": referência,
+ * nunca promessa.
+ */
+export const MOEDAS_OPCIONAIS: Moeda[] = [
+  { codigo: "BRL", nome: "Real", simbolo: "R$" },
+  { codigo: "ARS", nome: "Peso argentino", simbolo: "AR$" },
+];
+
+/** O par da praça: dado o que o anúncio pediu, qual é a moeda da leitura. */
+export function parDaMoeda(moedaDoAnuncio: string | null | undefined): CodigoMoeda {
+  return normalizarMoeda(moedaDoAnuncio) === "USD" ? "PYG" : "USD";
+}
+
+const CHAVE_MOEDA = "autoradar:moeda-extra";
+/** ⚠️ Evento próprio: é como os cards já montados sabem que a escolha mudou. */
+export const EVENTO_MOEDA = "autoradar:moeda-mudou";
+
+/**
+ * A moeda EXTRA escolhida, ou `null` para nenhuma.
+ *
+ * ⚠️ `null` é o padrão de propósito: o par guarani/dólar já cobre o paraguaio,
+ * que é a maioria. Terceira linha em todo card para servir visitante seria o
+ * mesmo erro que o site cometia convertendo tudo para real.
+ *
+ * ⚠️ localStorage LANÇA em janela privada e com dados de site bloqueados. Toda
+ * leitura e escrita vai em try/catch, e a ausência cai em `null` em vez de
+ * quebrar a página.
+ */
+export function lerMoedaEscolhida(): CodigoMoeda | null {
+  try {
+    const v = localStorage.getItem(CHAVE_MOEDA);
+    if (v && MOEDAS_OPCIONAIS.some((m) => m.codigo === v)) return v as CodigoMoeda;
+  } catch { /* sem storage: segue sem moeda extra */ }
+  return null;
+}
+
+export function escolherMoeda(m: CodigoMoeda | null): void {
+  try {
+    if (m) localStorage.setItem(CHAVE_MOEDA, m);
+    else localStorage.removeItem(CHAVE_MOEDA);
+  } catch { /* sem storage: vale só nesta página */ }
+  try { window.dispatchEvent(new CustomEvent(EVENTO_MOEDA, { detail: m })); } catch { /* SSR */ }
+}
 
 export const MOEDA_PADRAO: CodigoMoeda = "PYG";
 
@@ -38,7 +108,7 @@ export function normalizarMoeda(bruto?: string | null): CodigoMoeda {
   return MOEDA_PADRAO;
 }
 
-const SIMBOLO: Record<CodigoMoeda, string> = { PYG: "₲", USD: "US$", BRL: "R$" };
+const SIMBOLO: Record<CodigoMoeda, string> = { PYG: "₲", USD: "US$", BRL: "R$", ARS: "AR$" };
 
 /**
  * Preço na própria moeda do anúncio.
@@ -86,9 +156,11 @@ const FONTES: { nome: string; url: string; ler: (j: any) => Partial<Record<Codig
     url: "https://open.er-api.com/v6/latest/BRL",
     // base BRL: rates.X = quantas unidades de X valem 1 real → invertemos
     ler: (j) => {
-      const pyg = Number(j?.rates?.PYG), usd = Number(j?.rates?.USD);
+      const pyg = Number(j?.rates?.PYG), usd = Number(j?.rates?.USD), ars = Number(j?.rates?.ARS);
       if (!Number.isFinite(pyg) || !Number.isFinite(usd) || pyg <= 0 || usd <= 0) return null;
-      return { PYG: 1 / pyg, USD: 1 / usd };
+      // ⚠️ ARS é opcional: se a fonte não trouxer, o seletor some a opção em
+      // vez de mostrar número errado.
+      return { PYG: 1 / pyg, USD: 1 / usd, ...(Number.isFinite(ars) && ars > 0 ? { ARS: 1 / ars } : {}) };
     },
   },
   {
@@ -122,7 +194,7 @@ export async function buscarCotacao(): Promise<Cotacao | null> {
       const taxas = fonte.ler(await r.json());
       if (!taxas?.PYG || !taxas?.USD) continue;
       return {
-        porReal: { PYG: taxas.PYG, USD: taxas.USD, BRL: 1 },
+        porReal: { PYG: taxas.PYG, USD: taxas.USD, BRL: 1, ARS: taxas.ARS ?? 0 },
         em: new Date().toISOString(),
         fonte: fonte.nome,
       };
@@ -163,6 +235,66 @@ export function formatarLeituraEmReal(
   if (emReal === null) return null;
   if (normalizarMoeda(moeda) === "BRL") return null;   // não repete a mesma moeda
   return `≈ ${emReal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}`;
+}
+
+/**
+ * ★★ LEITURA EM QUALQUER MOEDA — e, desde 10/10/2026, a do site é o DÓLAR.
+ *
+ * Decisão do Gustavo: *"moeda do anúncio grande e conversão em dólar pequena.
+ * A ideia do real sempre foi para os brasileiros se ambientarem, mas o
+ * percentual de brasileiros é pequeno para darmos tamanha relevância em todos
+ * os anúncios"*.
+ *
+ * ⚠️ Ele está certo, e o argumento vale além do público: o real estava ocupando
+ * espaço em TODO card para servir a uma minoria, num site paraguaio. O dólar é
+ * a moeda de referência de quem compra carro no Paraguai — metade dos anúncios
+ * já sai nela.
+ *
+ * ★ Se um dia o brasileiro voltar a importar, o lugar certo é um SELETOR de
+ * moeda: ele escolhe uma vez, em vez de a gente impor em cada anúncio.
+ *
+ * ⚠️ A ponte continua sendo o real, porque é nele que a cotação vem cotada
+ * (`porReal`). Converter PYG→USD é passar pelo real e voltar — o real deixa de
+ * aparecer na tela, mas segue sendo a unidade de conta interna.
+ */
+export const MOEDA_DE_LEITURA_PADRAO: CodigoMoeda = "USD";
+
+export function paraMoeda(
+  valor: number | null | undefined,
+  de: string | null | undefined,
+  para: CodigoMoeda,
+  cotacao: Cotacao | null,
+): number | null {
+  const emReal = paraReal(valor, de, cotacao);
+  if (emReal === null) return null;
+  if (para === "BRL") return emReal;
+  if (!cotacao) return null;
+  const taxa = cotacao.porReal[para];
+  if (!Number.isFinite(taxa) || taxa <= 0) return null;
+  return emReal / taxa;
+}
+
+/**
+ * "≈ US$ 25.600" — a leitura, pequena, ao lado do preço que o vendedor pediu.
+ *
+ * ⚠️ Devolve null quando a moeda de leitura é a do próprio anúncio: repetir
+ * "US$ 8.500 ≈ US$ 8.500" é ruído.
+ */
+export function formatarLeitura(
+  valor: number | null | undefined,
+  moeda: string | null | undefined,
+  cotacao: Cotacao | null,
+  alvo: CodigoMoeda = MOEDA_DE_LEITURA_PADRAO,
+): string | null {
+  if (normalizarMoeda(moeda) === alvo) return null;
+  const convertido = paraMoeda(valor, moeda, alvo, cotacao);
+  if (convertido === null) return null;
+  // ⚠️ Sem centavo, pelo mesmo motivo do real: 6% de spread entre compra e
+  // venda do guarani torna o centavo uma precisão que não existe.
+  const fmt = alvo === "BRL"
+    ? convertido.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
+    : `${SIMBOLO[alvo]} ${Math.round(convertido).toLocaleString("es-PY")}`;
+  return `≈ ${fmt}`;
 }
 
 /** Data curta da cotação, para ficar ao lado da leitura. */

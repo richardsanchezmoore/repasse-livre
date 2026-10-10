@@ -7,6 +7,8 @@ import Link from "next/link";
 import { registrarEvento } from "@/lib/eventosAnalytics";
 import { salvarEstadoPreferido } from "@/lib/estadoPreferido";
 import { BarraSelecaoMultipla } from "./BarraSelecaoMultipla";
+import { SeletorMoeda } from "./SeletorMoeda";
+import { SeletorIdioma } from "./SeletorIdioma";
 import { UserMenu } from "./UserMenu";
 import { useNavegacao } from "./NavegacaoProvider";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
@@ -191,6 +193,11 @@ export function TopBar({
         <Link href={hrefAnunciar} className="botao-anunciar-compacto" aria-label="Anunciar" title="Anunciar">
           <Plus size={18} strokeWidth={2.25} />
         </Link>
+        {/* ★ Idioma e moeda ficam FIXOS aqui, fora do modo de seleção: são
+            preferência de leitura, não ação sobre anúncio. Esconder no menu do
+            usuário obrigaria a estar logado para trocar de idioma. */}
+        {!modoSelecao && <SeletorMoeda />}
+        {!modoSelecao && <SeletorIdioma />}
         <UserMenu usuario={usuario} />
       </div>
     </div>

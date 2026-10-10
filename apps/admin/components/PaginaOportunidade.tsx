@@ -206,7 +206,6 @@ export async function PaginaOportunidade({
 
         <div className="precos-grupo precos-grupo-pagina">
           <div className="linha-preco linha-preco-anuncio">
-            <span className="preco-rotulo">Oferta</span>
             <PrecoAnuncio className="preco-valor" valor={oportunidade.preco} moeda={oportunidade.moeda} />
           </div>
           <div className="linha-preco linha-preco-fipe">
