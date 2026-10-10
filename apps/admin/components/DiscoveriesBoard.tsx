@@ -229,6 +229,22 @@ const COLUNAS_LISTAGEM =
   let consulta = supabaseAdmin.from("opportunities").select(COLUNAS_LISTAGEM, { count: "exact" });
   const filtro = FILTRO_POR_ABA[aba];
   consulta = consulta.eq("status", filtro.status).eq("pais", PAIS_DO_SITE);
+
+  // ★★ ANÚNCIO SEM FOTO NÃO VAI PARA A VITRINE (Gustavo, 10/10/2026).
+  //
+  // ⚠️ Medido: 336 dos 1.272 ativos estão sem `foto_principal` — e ZERO deles
+  // entre os 200 mais recentes. São legado de antes de a captura guardar o link,
+  // e sobem ao topo porque a lista ordena por data de PUBLICAÇÃO, não de captura.
+  //
+  // ⚠⚠ FILTRO, NÃO EXCLUSÃO. O anúncio segue no banco e a observação de preço
+  // segue no livro — ela é o ativo, não o card. Quando o backfill de fotos
+  // recuperar a imagem, o anúncio reaparece sozinho, sem nada ser desfeito.
+  //
+  // ⚠️ Só na vitrine pública: o painel do admin precisa enxergar o que entrou
+  // sem foto, senão o problema fica invisível justamente para quem o conserta.
+  if (aba === "aprovadas") {
+    consulta = consulta.not("foto_principal", "is", null);
+  }
   if (filtro.origem_tipo) {
     consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
   }

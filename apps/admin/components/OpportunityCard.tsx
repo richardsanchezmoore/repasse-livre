@@ -263,10 +263,15 @@ export function OpportunityCard({
               <Clock size={12} strokeWidth={1.75} className="icone-inline" />{" "}
               {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura, tx("hoje"))}
             </span>
-            <span className="data-local-item">
-              <MapPin size={13} strokeWidth={1.75} className="icone-inline" />{" "}
-              {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
-            </span>
+            {/* ⚠️ Sem cidade, a LINHA SOME — antes saia "— · —", que não informa
+                nada e faz o card parecer quebrado. São 117 anúncios de legado
+                (zero entre os 200 mais recentes: a captura atual já grava). */}
+            {(oportunidade.cidade || oportunidade.estado) && (
+              <span className="data-local-item">
+                <MapPin size={13} strokeWidth={1.75} className="icone-inline" />{" "}
+                {[oportunidade.cidade, oportunidade.estado].filter(Boolean).join(" · ")}
+              </span>
+            )}
           </p>
         </Link>
 
