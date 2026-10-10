@@ -42,7 +42,7 @@ export function OpportunityCard({
   /** ★ Vem PRONTA do servidor: o card é cliente e não fala com o banco.
    *  ⚠️ Calcular aqui faria uma consulta por card — o padrão que estourou o
    *  egress em 02/10. O Board lê a tabela UMA vez e distribui. */
-  referencia?: { percentual: number; faixa: "abaixo" | "no_miolo" | "acima"; escopo: string } | null;
+  referencia?: { percentual: number; faixa: "abaixo" | "no_miolo" | "acima"; escopo: { tipo: "ano" | "geracao"; chave: string; intervalo?: string | null; agrupados?: string | null } } | null;
 }) {
   const router = useRouter();
   const [pendente, iniciarTransicao] = useTransition();

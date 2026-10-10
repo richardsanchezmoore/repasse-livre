@@ -128,22 +128,3 @@ export function posicaoNaTabela(
     linha.q1 != null && preco < linha.q1 ? "abaixo" : linha.q3 != null && preco > linha.q3 ? "acima" : "no_miolo";
   return { percentual, faixa, linha };
 }
-
-/**
- * O rótulo do escopo — "referência 2012" ou "referência agrupada 2011–2012".
- *
- * ★ O Gustavo decidiu que o n NÃO aparece (*"mostrar ofertas enfraquece"*), mas
- * aprovou manter o escopo: *"o rótulo de escopo pode ficar"*. Faz sentido —
- * saber CONTRA O QUE se compara é metade da credibilidade do selo; saber que
- * foram 11 ofertas, não.
- */
-export function rotuloEscopo(linha: LinhaReferencia): string {
-  if (linha.escopo === "geracao") {
-    return linha.intervalo_anos ? `referência ${linha.intervalo_anos}` : "referência da geração";
-  }
-  if (linha.anos_agrupados) {
-    const anos = linha.anos_agrupados.split("+");
-    return `referência agrupada ${anos[0]}–${anos[anos.length - 1]}`;
-  }
-  return `referência ${linha.chave}`;
-}

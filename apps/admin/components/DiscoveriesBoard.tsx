@@ -12,7 +12,7 @@ import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import { cidadesDaRegiao } from "@/lib/regioes";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
-import { buscarTabelaReferencia, indexarTabela, linhaParaAnuncio, posicaoNaTabela, rotuloEscopo } from "@/lib/tabelaReferencia";
+import { buscarTabelaReferencia, indexarTabela, linhaParaAnuncio, posicaoNaTabela } from "@/lib/tabelaReferencia";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
 import { Paginacao } from "./Paginacao";
@@ -216,8 +216,15 @@ async function buscarOportunidades(
  * esquecer uma coluna quebra o card em produção, e o ganho extra é pequeno.
  * Quem precisar das pesadas (detalhe, Copiloto) busca por id.
  */
+// ⚠️ `modelo` e `geracao` são o que casa o anúncio com a linha da tabela de
+// referência. São LEVES (dois textos curtos) e entram sem o custo das pesadas.
+//
+// ⚠⚠ ESTA é a constante que a LISTAGEM usa — existe uma COLUNAS_CARTAO em
+// lib/site.ts, parecida e usada nas páginas SEO. Eu já adicionei coluna na
+// errada e o selo não apareceu em card nenhum, sem erro nenhum no console:
+// o campo simplesmente chegava `undefined` e o casamento falhava em silêncio.
 const COLUNAS_LISTAGEM =
-  "id, fonte, moeda, pais, procedencia, link_origem, veiculo, versao, ano, cambio, km, cidade, estado, preco, fipe_valor, fipe_codigo, fipe_data_referencia, margem_percentual, classificacao, foto_principal, status, origem_tipo, whatsapp, nome_remetente, perfil_remetente, motivo_venda, sinistro_leilao, favorito, data_captura, data_publicacao_origem, ultimo_visto, anunciante_profissional";
+  "id, fonte, moeda, pais, modelo, geracao, procedencia, link_origem, veiculo, versao, ano, cambio, km, cidade, estado, preco, fipe_valor, fipe_codigo, fipe_data_referencia, margem_percentual, classificacao, foto_principal, status, origem_tipo, whatsapp, nome_remetente, perfil_remetente, motivo_venda, sinistro_leilao, favorito, data_captura, data_publicacao_origem, ultimo_visto, anunciante_profissional";
 
   let consulta = supabaseAdmin.from("opportunities").select(COLUNAS_LISTAGEM, { count: "exact" });
   const filtro = FILTRO_POR_ABA[aba];
@@ -698,7 +705,7 @@ export async function Board({
           return (
           <OpportunityCard
             key={oportunidade.id}
-            referencia={pos ? { percentual: pos.percentual, faixa: pos.faixa, escopo: rotuloEscopo(pos.linha) } : null}
+            referencia={pos ? { percentual: pos.percentual, faixa: pos.faixa, escopo: { tipo: pos.linha.escopo, chave: pos.linha.chave, intervalo: pos.linha.intervalo_anos, agrupados: pos.linha.anos_agrupados } } : null}
             oportunidade={(oportunidade.margem_percentual ?? 0) > margemPremium ? sanitizarCardBloqueado(oportunidade) : oportunidade}
             favoritado={idsFavoritados.has(oportunidade.id)}
             isAdmin={ehAdmin}

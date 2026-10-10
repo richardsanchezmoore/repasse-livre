@@ -31,12 +31,30 @@ export function SeloReferencia({
 }: {
   percentual: number;
   faixa: "abaixo" | "no_miolo" | "acima";
-  escopo: string;
+  /**
+   * ⚠⚠ As PEÇAS do rótulo, não o rótulo pronto. A primeira versão montava
+   * a frase no servidor e ela saiu "REFERÊNCIA 2004–2010" — em português,
+   * no site em espanhol. O servidor não sabe o idioma da página (só recebe
+   * por prop, e o Board não recebe); o cliente sabe, pelo caminho.
+   */
+  escopo: { tipo: "ano" | "geracao"; chave: string; intervalo?: string | null; agrupados?: string | null };
 }) {
   const tx = useTextos();
   // ⚠️ Uma casa decimal, nunca duas: a mediana se move com cada anúncio novo, e
   // "3,47%" promete uma estabilidade que o número não tem.
   const n = Math.abs(percentual).toFixed(1).replace(".", ",");
+
+  // ★ "referencia 2012" / "referencia agrupada 2011–2012" / "referencia 2005–2010".
+  const rotulo = (() => {
+    if (escopo.tipo === "geracao") {
+      return escopo.intervalo ? `${tx("referenciaDe")} ${escopo.intervalo}` : tx("referenciaGeracao");
+    }
+    if (escopo.agrupados) {
+      const anos = escopo.agrupados.split("+");
+      return `${tx("referenciaAgrupada")} ${anos[0]}–${anos[anos.length - 1]}`;
+    }
+    return `${tx("referenciaDe")} ${escopo.chave}`;
+  })();
 
   const texto =
     faixa === "abaixo"
@@ -49,7 +67,7 @@ export function SeloReferencia({
     <div className={`selo-referencia selo-referencia-${faixa}`}>
       <span className="selo-referencia-texto">{texto}</span>
       {/* O escopo em letra miúda: "referência 2012", "referência 2005–2010". */}
-      <span className="selo-referencia-escopo">{escopo}</span>
+      <span className="selo-referencia-escopo">{rotulo}</span>
     </div>
   );
 }
