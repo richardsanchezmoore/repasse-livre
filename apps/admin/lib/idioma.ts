@@ -92,6 +92,70 @@ const PT = {
 
   // ─── idioma ───
   trocarIdioma: "Trocar idioma",
+
+  // ─── barra do topo ───
+  buscarVeiculo: "Buscar veículo...",
+  buscar: "Buscar",
+  fecharBusca: "Fechar busca",
+  todosEstados: "Todos os estados",
+  estadoCurto: "UF",
+  filtrarPorEstado: "Filtrar por estado",
+  paginaInicial: "Ir para a página inicial",
+  anunciar: "Anunciar",
+
+  // ─── menu lateral ───
+  explorar: "Explorar",
+  inicio: "Início",
+  oportunidades: "Oportunidades",
+  minhaArea: "Minha área",
+  favoritos: "Favoritos",
+  entrar: "Login",
+  criarConta: "Criar Conta",
+  blog: "Blog",
+  abrirMenu: "Abrir menu",
+  fecharMenu: "Fechar menu",
+
+  // ─── KPIs do topo ───
+  ofertasMapeadas: "Ofertas mapeadas",
+  ofertasAtivas: "Ofertas ativas",
+  novos: "Novos",
+  ultimas: "últimas",
+  dias: "dias",
+  kpiMapeadasAjuda: "anúncios varridos",
+  kpiAtivasAjuda: "anúncios ativos na base",
+  kpiNovosAjuda: "ofertas novas",
+
+  // ─── listagem ───
+  oportunidadesEm: "Oportunidades no",
+  emPais: "no",
+  nomePais: "Paraguai",
+  resultados: "resultados",
+  de: "de",
+  ordenarPor: "Ordenar por",
+  ordenar: "Ordenar",
+  filtros: "Filtros",
+  todas: "Todas",
+  maisRecente: "Mais recente",
+  menorValor: "Menor valor",
+  maiorValor: "Maior valor",
+  pertoDeMim: "Perto de mim",
+  maiorMargem: "Maior margem",
+  ofertasRotulo: "Ofertas",
+
+  // ─── card ───
+  via: "Via",
+  compartilhar: "Compartilhar",
+  hoje: "Hoje",
+  hojeAs: "Hoje às",
+  anunciadoEm: "Anunciado em",
+
+  // ─── rodapé ───
+  rodapeTagline: "Carros à venda no Paraguai, com preço de referência por modelo e ano.",
+  navegar: "Navegar",
+  legal: "Legal",
+  termosDeUso: "Termos de Uso",
+  privacidade: "Privacidade",
+  exclusaoDeDados: "Exclusão de dados",
 } as const;
 
 const ES: { [K in keyof typeof PT]: string } = {
@@ -106,6 +170,67 @@ const ES: { [K in keyof typeof PT]: string } = {
   avisoMoeda: "El precio destacado es siempre en la moneda del anuncio. La conversión es referencia del día — para el peso, tasa oficial.",
 
   trocarIdioma: "Cambiar idioma",
+
+  buscarVeiculo: "Buscar vehículo...",
+  buscar: "Buscar",
+  fecharBusca: "Cerrar búsqueda",
+  // ★ Paraguai se divide em DEPARTAMENTOS, não em estados. "Todos los estados"
+  // é tradução ao pé da letra de quem nunca esteve lá — entrega o site na hora.
+  todosEstados: "Todos los departamentos",
+  // ⚠️ "UF" é "Unidade Federativa", sigla BRASILEIRA. No Paraguai é departamento.
+  estadoCurto: "Dpto.",
+  filtrarPorEstado: "Filtrar por departamento",
+  paginaInicial: "Ir a la página principal",
+  anunciar: "Publicar",
+
+  explorar: "Explorar",
+  inicio: "Inicio",
+  oportunidades: "Oportunidades",
+  minhaArea: "Mi cuenta",
+  favoritos: "Favoritos",
+  entrar: "Ingresar",
+  criarConta: "Crear cuenta",
+  blog: "Blog",
+  abrirMenu: "Abrir menú",
+  fecharMenu: "Cerrar menú",
+
+  ofertasMapeadas: "Anuncios relevados",
+  ofertasAtivas: "Anuncios activos",
+  novos: "Nuevos",
+  ultimas: "últimas",
+  dias: "días",
+  kpiMapeadasAjuda: "anuncios recorridos",
+  kpiAtivasAjuda: "anuncios activos en la base",
+  kpiNovosAjuda: "anuncios nuevos",
+
+  oportunidadesEm: "Oportunidades en",
+  emPais: "en",
+  nomePais: "Paraguay",
+  resultados: "resultados",
+  de: "de",
+  ordenarPor: "Ordenar por",
+  ordenar: "Ordenar",
+  filtros: "Filtros",
+  todas: "Todas",
+  maisRecente: "Más reciente",
+  menorValor: "Menor precio",
+  maiorValor: "Mayor precio",
+  pertoDeMim: "Cerca mío",
+  maiorMargem: "Mayor margen",
+  ofertasRotulo: "Anuncios",
+
+  via: "Vía",
+  compartilhar: "Compartir",
+  hoje: "Hoy",
+  hojeAs: "Hoy a las",
+  anunciadoEm: "Publicado el",
+
+  rodapeTagline: "Autos a la venta en Paraguay, con precio de referencia por modelo y año.",
+  navegar: "Navegar",
+  legal: "Legal",
+  termosDeUso: "Términos de Uso",
+  privacidade: "Privacidad",
+  exclusaoDeDados: "Eliminación de datos",
 };
 
 const TEXTOS: Record<Idioma, { [K in keyof typeof PT]: string }> = { es: ES, pt: PT };

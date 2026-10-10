@@ -13,16 +13,19 @@ import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba, Ordem } from "./DiscoveriesBoard";
 import type { MarcaContagem } from "@/lib/marcas";
 import { PRACA_TEM_TABELA_PRONTA } from "@/lib/site";
+import { useTextos } from "@/lib/useIdioma";
 
 const TOP_MARCAS = 9;
 
-const ROTULO_ORDEM: Record<Ordem, string> = {
-  recente: "Mais recente",
-  margem: "Maior Margem",
-  menor_valor: "Menor valor",
-  maior_valor: "Maior Valor",
-  proximidade: "Perto de mim",
-};
+/** ⚠️ Função e não constante: o rótulo depende do idioma da página.
+ *  Constante no topo do módulo não tem como saber disso. */
+const rotuloOrdem = (tx: ReturnType<typeof useTextos>): Record<Ordem, string> => ({
+  recente: tx("maisRecente"),
+  margem: tx("maiorMargem"),
+  menor_valor: tx("menorValor"),
+  maior_valor: tx("maiorValor"),
+  proximidade: tx("pertoDeMim"),
+});
 
 /**
  * ⚠️ "Maior Margem" ordena por `margem_percentual`, que é margem sobre a FIPE.
@@ -62,6 +65,7 @@ export function FiltroClassificacao({
   piso: number;
   proximidadeDisponivel?: boolean;
 }) {
+  const tx = useTextos();
   // "Perto de mim" só aparece quando temos coordenada do usuário (ver
   // lib/geolocalizacao.ts) — sem isso a opção não faria sentido na lista.
   const ORDENS: Ordem[] = proximidadeDisponivel ? ["proximidade", ...ORDENS_BASE] : ORDENS_BASE;
@@ -211,7 +215,7 @@ export function FiltroClassificacao({
           onClick={() => selecionar(undefined)}
           className={`filtro-chip ${!ativa ? "filtro-chip-ativo" : ""}`}
         >
-          Todas
+          {tx("todas")}
         </button>
         {/* ⚠⚠ Bronze 3%+ / Prata 10%+ / Ouro 15%+ / Diamante 20%+ são faixas de
             margem SOBRE A FIPE. Num site paraguaio os quatro filtravam para
@@ -232,11 +236,11 @@ export function FiltroClassificacao({
 
       <div className="filtro-ordenacao">
         <span className="filtro-ordenacao-label">
-          <span className="filtro-ordenacao-label-completo">Ordenar por:</span>
-          <span className="filtro-ordenacao-label-curto">Ordenar</span>
+          <span className="filtro-ordenacao-label-completo">{tx("ordenarPor")}:</span>
+          <span className="filtro-ordenacao-label-curto">{tx("ordenar")}</span>
         </span>
-        <IconDropdown Icone={ArrowUpDown} rotulo="Ordenar" ativo={ordem !== "recente"}>
-          <p className="icon-dropdown-titulo">Ordenar por</p>
+        <IconDropdown Icone={ArrowUpDown} rotulo={tx("ordenar")} ativo={ordem !== "recente"}>
+          <p className="icon-dropdown-titulo">{tx("ordenarPor")}</p>
           {ORDENS.map((opcao) => (
             <button
               key={opcao}
@@ -244,7 +248,7 @@ export function FiltroClassificacao({
               className={`icon-dropdown-opcao ${opcao === ordem ? "icon-dropdown-opcao-ativa" : ""}`}
               onClick={() => selecionarOrdem(opcao)}
             >
-              {ROTULO_ORDEM[opcao]}
+              {rotuloOrdem(tx)[opcao]}
             </button>
           ))}
         </IconDropdown>
@@ -292,7 +296,7 @@ export function FiltroClassificacao({
                   className={`icon-dropdown-opcao ${!marcaLocal ? "icon-dropdown-opcao-ativa" : ""}`}
                   onClick={() => setMarcaLocal(undefined)}
                 >
-                  Todas
+                  {tx("todas")}
                 </button>
                 {marcasGrid.map((m) => (
                   <button

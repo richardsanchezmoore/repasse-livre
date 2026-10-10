@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
+import { useTextos } from "@/lib/useIdioma";
 
 // "Explorar" — filas do board. Favoritos saiu daqui: é área pessoal do usuário,
 // não uma fila de moderação (agrupado com Conta/Buscas mais abaixo).
@@ -50,6 +51,7 @@ export function Sidebar({
   role: "admin" | "publico" | null;
   usuarioLogado?: boolean;
 }) {
+  const tx = useTextos();
   const itensVisiveis = ITENS.filter((item) => !item.soAdmin || role === "admin");
   // Acessos do usuário logado (Conta, BIA, Buscas) — antes só no menu flutuante.
   const mostrarConta = usuarioLogado || role === "admin";
@@ -80,8 +82,8 @@ export function Sidebar({
             type="button"
             onClick={() => setAberto(true)}
             className="sidebar-hamburguer"
-            aria-label="Abrir menu"
-            title="Abrir menu"
+            aria-label={tx("abrirMenu")}
+            title={tx("abrirMenu")}
           >
             <Menu size={20} strokeWidth={1.75} />
           </button>
@@ -92,7 +94,7 @@ export function Sidebar({
               type="button"
               onClick={() => navegar("/")}
               className="sidebar-item"
-              title="Início"
+              title={tx("inicio")}
             >
               <span className="sidebar-icone" aria-hidden="true">
                 <Home size={18} strokeWidth={1.75} />
@@ -134,7 +136,7 @@ export function Sidebar({
             type="button"
             onClick={() => navegar("/?aba=favoritos")}
             className={`sidebar-item ${pathname === "/" && abaAtiva === "favoritos" ? "sidebar-item-ativo" : ""}`}
-            title="Favoritos"
+            title={tx("favoritos")}
           >
             <span className="sidebar-icone" aria-hidden="true">
               <Heart size={18} strokeWidth={1.75} />
@@ -264,13 +266,13 @@ export function Sidebar({
             type="button"
             onClick={() => setAberto(false)}
             className="sidebar-hamburguer"
-            aria-label="Fechar menu"
-            title="Fechar menu"
+            aria-label={tx("fecharMenu")}
+            title={tx("fecharMenu")}
           >
             <X size={20} strokeWidth={1.75} />
           </button>
         </div>
-        <p className="sidebar-grupo-titulo">Explorar</p>
+        <p className="sidebar-grupo-titulo">{tx("explorar")}</p>
         <ul className="sidebar-lista">
           <li>
             <button
@@ -281,7 +283,7 @@ export function Sidebar({
               <span className="sidebar-icone" aria-hidden="true">
                 <Home size={18} strokeWidth={1.75} />
               </span>
-              <span className="sidebar-rotulo">Início</span>
+              <span className="sidebar-rotulo">{tx("inicio")}</span>
             </button>
           </li>
           {itensVisiveis.map((item) => (
@@ -316,7 +318,7 @@ export function Sidebar({
         </ul>
         {/* Minha área — Favoritos + Buscas + Conta juntos (pessoal do usuário) */}
         <div className="sidebar-rodape">
-          <p className="sidebar-grupo-titulo">Minha área</p>
+          <p className="sidebar-grupo-titulo">{tx("minhaArea")}</p>
           <button
             type="button"
             onClick={() => navegarEFechar("/?aba=favoritos")}
@@ -325,7 +327,7 @@ export function Sidebar({
             <span className="sidebar-icone" aria-hidden="true">
               <Heart size={18} strokeWidth={1.75} />
             </span>
-            <span className="sidebar-rotulo">Favoritos</span>
+            <span className="sidebar-rotulo">{tx("favoritos")}</span>
             <span className="sidebar-contador">{contagens.favoritos}</span>
           </button>
           {mostrarConta && (
@@ -437,7 +439,7 @@ export function Sidebar({
               <span className="sidebar-icone" aria-hidden="true">
                 <Newspaper size={18} strokeWidth={1.75} />
               </span>
-              <span className="sidebar-rotulo">Blog</span>
+              <span className="sidebar-rotulo">{tx("blog")}</span>
             </button>
           </div>
         )}
@@ -447,7 +449,7 @@ export function Sidebar({
             <span className="sidebar-icone" aria-hidden="true">
               <Plus size={18} strokeWidth={1.75} />
             </span>
-            <span className="sidebar-rotulo">Anunciar</span>
+            <span className="sidebar-rotulo">{tx("anunciar")}</span>
           </Link>
           {!usuarioLogado && (
             <>
@@ -455,13 +457,13 @@ export function Sidebar({
                 <span className="sidebar-icone" aria-hidden="true">
                   <LogIn size={18} strokeWidth={1.75} />
                 </span>
-                <span className="sidebar-rotulo">Login</span>
+                <span className="sidebar-rotulo">{tx("entrar")}</span>
               </Link>
               <Link href="/cadastro" onClick={() => setAberto(false)} className="sidebar-item">
                 <span className="sidebar-icone" aria-hidden="true">
                   <UserPlus size={18} strokeWidth={1.75} />
                 </span>
-                <span className="sidebar-rotulo">Criar Conta</span>
+                <span className="sidebar-rotulo">{tx("criarConta")}</span>
               </Link>
             </>
           )}

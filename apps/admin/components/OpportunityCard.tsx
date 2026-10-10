@@ -22,6 +22,7 @@ import { ImagemThumbnail } from "@/components/ImagemThumbnail";
 import { caminhoOportunidade, temReferenciaFipe } from "@/lib/site";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Oportunidade } from "@/lib/types";
+import { useTextos } from "@/lib/useIdioma";
 
 export function OpportunityCard({
   oportunidade,
@@ -98,6 +99,7 @@ export function OpportunityCard({
     executarAcao(() => apagarOportunidade(oportunidade.id), "Falha ao apagar. Tente novamente.");
   }
 
+  const tx = useTextos();
   const { rotulo: rotuloFonte } = infoFonte(oportunidade.fonte);
   const classificacao = oportunidade.classificacao as Classificacao | null;
   const classeClassificacao = classificacao
@@ -200,7 +202,7 @@ export function OpportunityCard({
             {ROTULO_CLASSIFICACAO[classificacao]}
           </span>
         )}
-        {rotuloFonte && <span className="fonte-via">Via {rotuloFonte}</span>}
+        {rotuloFonte && <span className="fonte-via">{tx("via")} {rotuloFonte}</span>}
       </div>
 
       <div className="card-corpo">
@@ -246,7 +248,7 @@ export function OpportunityCard({
           <p className="data-local">
             <span className="data-local-item">
               <Clock size={12} strokeWidth={1.75} className="icone-inline" />{" "}
-              {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
+              {formatarDataCaptura(oportunidade.data_publicacao_origem ?? oportunidade.data_captura, tx("hoje"))}
             </span>
             <span className="data-local-item">
               <MapPin size={13} strokeWidth={1.75} className="icone-inline" />{" "}
@@ -315,7 +317,7 @@ export function OpportunityCard({
             </button>
           ))}
         <button onClick={aoCompartilhar} className="acao acao-compartilhar">
-          <Share2 size={14} strokeWidth={2} className="icone-inline" /> Compartilhar
+          <Share2 size={14} strokeWidth={2} className="icone-inline" /> {tx("compartilhar")}
         </button>
         {isAdmin && (
           <Link

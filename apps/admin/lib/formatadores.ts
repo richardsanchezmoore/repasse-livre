@@ -12,9 +12,23 @@ export function formatarKm(km: number | null | undefined): string {
 // texto sai diferente entre o servidor (Vercel roda em UTC) e o navegador
 // (horário de Brasília), e o React trava com erro de hidratação porque o
 // texto do server não bate com o do cliente.
-const FUSO_HORARIO = "America/Sao_Paulo";
+/**
+ * ⚠⚠ ERA "America/Sao_Paulo" NUM SITE PARAGUAIO. Um anúncio publicado às
+ * 23h30 de Ciudad del Este aparecia com a data do DIA SEGUINTE para quem está
+ * em Ciudad del Este — e "Hoje" virava "ontem" perto da virada.
+ *
+ * ★ Continua CHUMBADO (e não o fuso de quem renderiza) pelo motivo original:
+ * o servidor roda em UTC e o navegador no fuso local, e textos diferentes dos
+ * dois lados quebram a hidratação do React. Só mudou QUAL fuso.
+ */
+const FUSO_HORARIO = "America/Asuncion";
 
-export function formatarDataCaptura(dataIso: string): string {
+/**
+ * ⚠️ O rótulo de hoje entra por PARÂMETRO em vez de sair de uma constante:
+ * "Hoje" em português, "Hoy" em espanhol. Quem chama (o card) já sabe o idioma
+ * pelo caminho da página; este módulo não tem como saber.
+ */
+export function formatarDataCaptura(dataIso: string, rotuloHoje = "Hoje"): string {
   const data = new Date(dataIso);
   const horario = data.toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: FUSO_HORARIO });
   const hoje = new Date();
@@ -22,7 +36,7 @@ export function formatarDataCaptura(dataIso: string): string {
     data.toLocaleDateString("pt-BR", { timeZone: FUSO_HORARIO }) ===
     hoje.toLocaleDateString("pt-BR", { timeZone: FUSO_HORARIO });
 
-  if (ehHoje) return `Hoje, ${horario}`;
+  if (ehHoje) return `${rotuloHoje}, ${horario}`;
   return `${data.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: FUSO_HORARIO })}, ${horario}`;
 }
 

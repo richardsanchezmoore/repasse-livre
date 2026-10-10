@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import { salvarEstadoPreferido } from "@/lib/estadoPreferido";
 import type { Aba } from "./DiscoveriesBoard";
-import { NOME_DO_PAIS } from "@/lib/site";
+import { useTextos } from "@/lib/useIdioma";
 
 /**
  * Versão "imediata" do filtro de estado, no próprio cabeçalho da lista —
@@ -24,6 +24,7 @@ export function SeletorEstadoBreadcrumb({
   estadoAtivo?: string;
   estadosDisponiveis: string[];
 }) {
+  const tx = useTextos();
   const { navegar } = useNavegacao();
   const searchParams = useSearchParams();
   const [aberto, setAberto] = useState(false);
@@ -70,7 +71,7 @@ export function SeletorEstadoBreadcrumb({
         aria-expanded={aberto}
         aria-label="Filtrar por estado"
       >
-        {titulo} no <strong>{estadoAtivo || NOME_DO_PAIS}</strong>
+        {titulo} {tx("emPais")} <strong>{estadoAtivo || tx("nomePais")}</strong>
         <ChevronDown size={15} strokeWidth={2.5} className={aberto ? "seletor-estado-seta-aberta" : ""} />
       </button>
 
@@ -81,7 +82,7 @@ export function SeletorEstadoBreadcrumb({
             onClick={() => selecionarEstado(undefined)}
             className={`seletor-estado-opcao ${!estadoAtivo ? "seletor-estado-opcao-ativa" : ""}`}
           >
-            {NOME_DO_PAIS}
+            {tx("nomePais")}
           </button>
           {estadosDisponiveis.map((uf) => (
             <button

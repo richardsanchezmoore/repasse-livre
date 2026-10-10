@@ -14,6 +14,7 @@ import { useNavegacao } from "./NavegacaoProvider";
 import { useSelecaoMultipla } from "./SelecaoMultiplaProvider";
 import type { Aba } from "./DiscoveriesBoard";
 import type { Usuario } from "@/lib/supabase-server";
+import { useTextos } from "@/lib/useIdioma";
 
 export function TopBar({
   aba,
@@ -28,6 +29,7 @@ export function TopBar({
   estadosDisponiveis: string[];
   usuario: Usuario | null;
 }) {
+  const tx = useTextos();
   const { navegar } = useNavegacao();
   const { modoSelecao, alternarModoSelecao, limparSelecao } = useSelecaoMultipla();
   const searchParams = useSearchParams();
@@ -107,7 +109,7 @@ export function TopBar({
   return (
     <div className="top-bar">
       <div className="top-bar-linha-principal">
-        <Link href="/" className="logo-link" aria-label="Ir para a página inicial">
+        <Link href="/" className="logo-link" aria-label={tx("paginaInicial")}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Repasse Livre" className="logo-img" />
         </Link>
@@ -123,7 +125,7 @@ export function TopBar({
                 if (evento.key === "Enter") aoClicarBuscar();
                 if (evento.key === "Escape") setBuscaAberta(false);
               }}
-              placeholder="Buscar veículo..."
+              placeholder={tx("buscarVeiculo")}
               className="busca-slim-input"
               autoFocus={buscaAberta}
             />
@@ -131,9 +133,9 @@ export function TopBar({
               value={estado ?? ""}
               onChange={(evento) => selecionarEstado(evento.target.value)}
               className="busca-slim-uf"
-              aria-label="Filtrar por estado"
+              aria-label={tx("filtrarPorEstado")}
             >
-              <option value="">{rotuloEstadoCompacto ? "UF" : "Todos os estados"}</option>
+              <option value="">{rotuloEstadoCompacto ? tx("estadoCurto") : tx("todosEstados")}</option>
               {estadosDisponiveis.map((uf) => (
                 <option key={uf} value={uf}>
                   {uf}
@@ -144,8 +146,8 @@ export function TopBar({
               type="button"
               onClick={aoClicarBuscar}
               className="busca-slim-botao"
-              aria-label="Buscar"
-              title="Buscar"
+              aria-label={tx("buscar")}
+              title={tx("buscar")}
             >
               <Search size={18} strokeWidth={2.25} />
             </button>
@@ -153,8 +155,8 @@ export function TopBar({
               type="button"
               onClick={() => setBuscaAberta(false)}
               className="busca-slim-fechar"
-              aria-label="Fechar busca"
-              title="Fechar busca"
+              aria-label={tx("fecharBusca")}
+              title={tx("fecharBusca")}
             >
               <X size={18} strokeWidth={2.25} />
             </button>
@@ -162,7 +164,7 @@ export function TopBar({
         )}
         <Link href={hrefAnunciar} className="botao-anunciar">
           <Plus size={16} strokeWidth={2.25} />
-          Anunciar
+          {tx("anunciar")}
         </Link>
       </div>
 
@@ -184,13 +186,13 @@ export function TopBar({
             type="button"
             className="busca-icone-botao"
             onClick={() => setBuscaAberta(true)}
-            aria-label="Buscar"
-            title="Buscar"
+            aria-label={tx("buscar")}
+            title={tx("buscar")}
           >
             <Search size={18} strokeWidth={2.25} />
           </button>
         )}
-        <Link href={hrefAnunciar} className="botao-anunciar-compacto" aria-label="Anunciar" title="Anunciar">
+        <Link href={hrefAnunciar} className="botao-anunciar-compacto" aria-label={tx("anunciar")} title={tx("anunciar")}>
           <Plus size={18} strokeWidth={2.25} />
         </Link>
         {/* ★ Idioma e moeda ficam FIXOS aqui, fora do modo de seleção: são
