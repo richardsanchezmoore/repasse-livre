@@ -35,6 +35,7 @@ import {
   lerProcedencia,
   ehAnuncioDeCompra,
   ehAnuncioDeDesmanche,
+  ehImovel,
   mencionaTroca,
   precoEhEntrega,
   precoDeclarado,
@@ -546,7 +547,7 @@ async function main() {
     const novos = ids.filter((id) => !jaVistos.has(id)).slice(0, maxItens);
     log(`  ${ids.length} na página · ${novos.length} novos`);
 
-    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0, naoVeiculo: 0, desmanche: 0 };
+    const conta = { salvos: 0, ambiguos: 0, iscas: 0, compra: 0, semPreco: 0, erro: 0, semFoto: 0, entregas: 0, resgatados: 0, naoVeiculo: 0, desmanche: 0, imoveis: 0 };
 
     for (const id of novos) {
       try {
@@ -598,6 +599,15 @@ async function main() {
         if (ehAnuncioDeDesmanche(a.titulo ?? "")) {
           conta.desmanche++;
           await registrarVistoFacebook(id, "desmanche");
+          await dormir(pacing);
+          continue;
+        }
+
+        // ★ IMÓVEL não é carro. Os dois primeiros cards da vitrine eram
+        // prédios de apartamento em 10/10/2026 — ver `ehImovel`.
+        if (ehImovel(a.titulo ?? "", a.descricao ?? "")) {
+          conta.imoveis++;
+          await registrarVistoFacebook(id, "imovel");
           await dormir(pacing);
           continue;
         }
@@ -905,7 +915,7 @@ async function main() {
       }
     }
 
-    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.desmanche} desmanche · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto · ${conta.naoVeiculo} sem ano (modo termo)`);
+    log(`  = ${regiao.nome}: ${conta.salvos} salvos · ${conta.resgatados} resgatados da descrição · ${conta.entregas} era entrega · ${conta.ambiguos} escala ambígua · ${conta.iscas} isca · ${conta.compra} procura · ${conta.desmanche} desmanche · ${conta.imoveis} imóvel · ${conta.semPreco} sem preço · ${conta.erro} erro · ${conta.semFoto} sem foto · ${conta.naoVeiculo} sem ano (modo termo)`);
   };
 
   for (const regiao of regioes) await varrerRegiao(regiao);

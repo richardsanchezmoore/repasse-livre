@@ -633,6 +633,40 @@ export function mencionaTroca(titulo: string, descricao = ""): boolean {
 }
 
 /**
+ * ★ ISTO É IMÓVEL, NÃO CARRO — achado na vitrine em 10/10/2026.
+ *
+ * ⚠️ Os DOIS primeiros cards da home eram prédios de apartamento: *"Vendo
+ * Loft 2027 En Encarnación"* a USD 35.000 e um anúncio de monoambientes.
+ * Primeira dobra de um site de carro, com foto de fachada.
+ *
+ * Eles passaram porque as guardas existentes olham PREÇO (o raio) e ANO, e
+ * um loft tem os dois plausíveis — inclusive o ano, que o vendedor usa para
+ * o lançamento do prédio.
+ *
+ * ★ A guarda que faltava é a mais óbvia: nenhum carro se chama "loft" nem
+ * "monoambiente". Aqui a lista de palavras É confiável, ao contrário do que
+ * eu disse sobre filtros por palavra — porque o vocabulário imobiliário não
+ * colide com nome de modelo em lugar nenhum.
+ *
+ * ⚠️ `cochera` e `garage` ficam de FORA: aparecem em anúncio de carro
+ * legítimo ("siempre en cochera") e barrariam o que queremos.
+ */
+// ⚠️⚠️ SEM `\b` NO FIM — e esta é a QUARTA vez que o tropeço aparece neste
+// arquivo. O comentário do RX_FINANCIAMENTO já avisava: prefixo de raiz nunca
+// leva `\b` no fim, porque entre a última letra e o plural não existe limite de
+// palavra. Com o `\b`, "MonoambienteS" passava liso — e passou, no teste.
+const RX_IMOVEL =
+  /\b(loft|monoambiente|departamento|apartamento|d[úu]plex|triplex|inmueble|terreno|lote baldio|local comercial|oficina|galp[óo]n|dormitorio|m2 de terreno|en construcci[óo]n)/i;
+
+export function ehImovel(titulo: string, descricao = ""): boolean {
+  // ⚠️ Título PESA mais: "departamento" no meio de uma descrição pode ser o
+  // departamento de vendas da loja. No título, é o que está à venda.
+  if (RX_IMOVEL.test(titulo ?? "")) return true;
+  // Na descrição, exige DOIS sinais — um sozinho é coincidência.
+  const achados = [...String(descricao ?? "").matchAll(new RegExp(RX_IMOVEL.source, "gi"))];
+  return new Set(achados.map((m) => m[0].toLowerCase())).size >= 2;
+}
+/**
  * ★ CARRO PARA DESMANCHE — achado na base em 08/10/2026.
  *
  *   "Chevrolet Luv 1997 Desarme 2.3"   "Toyota Tercel 1997 Desarme"
