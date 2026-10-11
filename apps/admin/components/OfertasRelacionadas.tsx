@@ -10,6 +10,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import type { Usuario } from "@/lib/supabase-server";
 import type { Oportunidade } from "@/lib/types";
 import { PAIS_DO_SITE } from "@/lib/site";
+import { MONETIZACAO_ATIVA } from "@/lib/site";
+import { Texto } from "@/components/Texto";
 
 const LIMITE_RELACIONADAS = 6;
 
@@ -90,8 +92,10 @@ export async function OfertasRelacionadas({
 
   return (
     <section className="ofertas-relacionadas">
-      <h2 className="ofertas-relacionadas-titulo">Ofertas relacionadas</h2>
-      {podeBloquear && (
+      <h2 className="ofertas-relacionadas-titulo"><Texto chave="anunciosRelacionados" /></h2>
+      {/* ⚠️ A isca dizia “Mais oportunidades abaixo da FIPE” — referência que
+          não existe no Paraguai, vendendo um plano que não está à venda. */}
+      {MONETIZACAO_ATIVA && podeBloquear && (
         <Link
           href="/planos-slim"
           style={{

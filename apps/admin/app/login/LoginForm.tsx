@@ -7,8 +7,10 @@ import { caminhoRedirectSeguro } from "@/lib/redirectSeguro";
 import { IconeGoogle } from "@/components/IconeGoogle";
 import { IconeFacebook } from "@/components/IconeFacebook";
 import { FACEBOOK_LOGIN_ATIVO } from "@/lib/flags";
+import { useTextos } from "@/lib/useIdioma";
 
 export function LoginForm({ redirect }: { redirect?: string }) {
+  const tx = useTextos();
   const destino = caminhoRedirectSeguro(redirect);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const [modo, setModo] = useState<"login" | "recuperar">("login");
@@ -29,7 +31,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
     const { error } = await supabase.auth.signInWithPassword({ email: emailAtual, password: senha });
     setEntrando(false);
     if (error) {
-      setFeedback({ tipo: "erro", texto: "E-mail ou senha incorretos." });
+      setFeedback({ tipo: "erro", texto: tx("erroCredenciais") });
       return;
     }
     window.location.href = destino;
@@ -96,7 +98,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         disabled={enviandoGoogle}
       >
         <IconeGoogle size={18} />
-        Continuar com Google
+        {tx("continuarGoogle")}
       </button>
 
       {/* Login com Facebook pronto, mas escondido até o CNPJ liberar a Business
@@ -109,12 +111,12 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           disabled={enviandoFacebook}
         >
           <IconeFacebook size={18} />
-          Continuar com Facebook
+          {tx("continuarGoogle").replace("Google", "Facebook")}
         </button>
       )}
 
       <div className="login-divisor">
-        <span>ou</span>
+        <span>{tx("ou")}</span>
       </div>
 
       <form onSubmit={modo === "login" ? aoEntrar : aoRedefinirSenha} className="login-form-email">
@@ -125,8 +127,8 @@ export function LoginForm({ redirect }: { redirect?: string }) {
             id="email"
             type="email"
             required
-            aria-label="Seu e-mail"
-            placeholder="seuemail@exemplo.com"
+            aria-label={tx("email")}
+            placeholder={tx("seuEmail")}
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
           />
@@ -140,8 +142,8 @@ export function LoginForm({ redirect }: { redirect?: string }) {
                 id="senha"
                 type="password"
                 required
-                aria-label="Senha"
-                placeholder="Sua senha"
+                aria-label={tx("senha")}
+                placeholder={tx("suaSenha")}
                 value={senha}
                 onChange={(evento) => setSenha(evento.target.value)}
               />
@@ -151,22 +153,22 @@ export function LoginForm({ redirect }: { redirect?: string }) {
 
         {modo === "login" ? (
           <button type="submit" className="login-botao-email" disabled={entrando}>
-            {entrando ? "Entrando…" : "Entrar"}
+            {entrando ? tx("entrando") : tx("entrarTitulo")}
           </button>
         ) : (
           <button type="submit" className="login-botao-email" disabled={enviandoRecuperacao}>
-            {enviandoRecuperacao ? "Enviando…" : "Redefinir Senha"}
+            {enviandoRecuperacao ? tx("enviando") : tx("redefinirSenha")}
           </button>
         )}
       </form>
 
       {modo === "login" ? (
         <button type="button" className="login-link-secundario" onClick={alternarParaRecuperar}>
-          Esqueci minha senha
+          {tx("esqueciSenha")}
         </button>
       ) : (
         <button type="button" className="login-link-secundario" onClick={alternarParaLogin}>
-          Voltar para login
+          {tx("voltarLogin")}
         </button>
       )}
 

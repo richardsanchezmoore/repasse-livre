@@ -38,6 +38,7 @@ import { TextoSeo } from "@/components/TextoSeo";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
 import { extrairIdDaSlug } from "@/lib/slug";
 import type { Oportunidade } from "@/lib/types";
+import { Texto } from "@/components/Texto";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -434,7 +435,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
           <main className="conteudo pagina-oportunidade-conteudo">
             <div className="pagina-oportunidade-topo">
               <Link href="/" className="pagina-oportunidade-voltar">
-                <ArrowLeft size={16} strokeWidth={2} /> Voltar
+                <ArrowLeft size={16} strokeWidth={2} /> <Texto chave="voltar" />
               </Link>
               <BreadcrumbOportunidade oportunidade={oportunidade} titulo={titulo} />
             </div>
@@ -456,9 +457,17 @@ export default async function PaginaOportunidadeOuMarcaRoute({
               ehPremium={ehPremiumEfetivo}
               ehAssinante={ehAssinante}
             />
-            {!ehAdminPagina && !usuario?.premium && <PonteAssinatura />}
+            {/* ★★ AS CHAMADAS DE PLANO PAGO SOMEM COM A MONETIZAÇÃO DESLIGADA.
+                Pedido do Gustavo (11/10/2026): *"tem na página do anúncio os
+                direcionamentos para plano pago, isso tem que ser removido por ora"*.
+
+                ⚠️ Não é só que não há o que vender: esses blocos ainda diziam
+                "REPASSE LIVRE PRO" e "oportunidades abaixo da FIPE" — nome velho
+                e referência que não existe no Paraguai, na página mais vista do
+                site. Ver MONETIZACAO_ATIVA em lib/site.ts. */}
+            {MONETIZACAO_ATIVA && !ehAdminPagina && !usuario?.premium && <PonteAssinatura />}
             <OfertasRelacionadas oportunidade={oportunidade} usuario={usuario} />
-            {!ehAdminPagina && !usuario?.premium && <BarraPonteScroll />}
+            {MONETIZACAO_ATIVA && !ehAdminPagina && !usuario?.premium && <BarraPonteScroll />}
           </main>
         </div>
       </SelecaoMultiplaProvider>

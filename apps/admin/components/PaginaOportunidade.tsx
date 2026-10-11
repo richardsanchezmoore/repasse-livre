@@ -22,6 +22,8 @@ import { buscarReferenciaPreco } from "@/lib/referenciaPreco";
 import { buscarPisoMargem } from "@/lib/configWorker";
 import type { FactSheet } from "@/lib/bia/tipos";
 import type { Oportunidade } from "@/lib/types";
+import { Texto } from "@/components/Texto";
+import { DataPublicacao } from "@/components/DataPublicacao";
 
 const MESES_FIPE_SELO = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
@@ -241,33 +243,33 @@ export async function PaginaOportunidade({
         <dl className="pagina-oportunidade-ficha">
           <div className="pagina-oportunidade-ficha-item pagina-oportunidade-ficha-item-linha">
             <dt>
-              <MapPin size={13} strokeWidth={1.75} className="icone-inline" /> Cidade
+              <MapPin size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="cidadeRotulo" />
             </dt>
             <dd>
               {oportunidade.cidade ?? "—"} · {oportunidade.estado ?? "—"}
               {(oportunidade.data_publicacao_origem ?? oportunidade.data_captura) && (
                 <span className="pagina-oportunidade-publicado">
-                  {formatarPublicacaoRelativa(oportunidade.data_publicacao_origem ?? oportunidade.data_captura)}
+                  <DataPublicacao iso={oportunidade.data_publicacao_origem ?? oportunidade.data_captura} />
                 </span>
               )}
             </dd>
           </div>
           <div className="pagina-oportunidade-ficha-item">
             <dt>
-              <Calendar size={13} strokeWidth={1.75} className="icone-inline" /> Ano
+              <Calendar size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="anoRotulo" />
             </dt>
             <dd>{oportunidade.ano ?? "—"}</dd>
           </div>
           <div className="pagina-oportunidade-ficha-item">
             <dt>
-              <Gauge size={13} strokeWidth={1.75} className="icone-inline" /> KM
+              <Gauge size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="kmRotulo" />
             </dt>
             <dd>{formatarKm(oportunidade.km)}</dd>
           </div>
           {oportunidade.cambio && (
             <div className="pagina-oportunidade-ficha-item">
               <dt>
-                <Settings2 size={13} strokeWidth={1.75} className="icone-inline" /> Câmbio
+                <Settings2 size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="cambioRotulo" />
               </dt>
               <dd>{oportunidade.cambio}</dd>
             </div>
@@ -325,7 +327,7 @@ export async function PaginaOportunidade({
 
         {oportunidade.descricao && (
           <div className="pagina-oportunidade-secao">
-            <h2>Descrição</h2>
+            <h2><Texto chave="descricaoRotulo" /></h2>
             <p className="pagina-oportunidade-descricao">
               {ehInsercaoDireta
                 ? oportunidade.descricao
@@ -384,8 +386,7 @@ export async function PaginaOportunidade({
                   className="link-origem link-origem-pro"
                 >
                   <span className="link-origem-texto">
-                    <ExternalLink size={16} strokeWidth={1.75} className="icone-inline" /> Abrir anúncio
-                    original
+                    <ExternalLink size={16} strokeWidth={1.75} className="icone-inline" /> <Texto chave="abrirAnuncio" />
                   </span>
                   <span aria-hidden="true">›</span>
                 </a>

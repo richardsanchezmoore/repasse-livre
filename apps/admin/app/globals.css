@@ -9156,3 +9156,12 @@ button.bemvindo-secundario {
   .tabela-resultado { padding: 18px; }
   .tabela-chips-anos { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
 }
+
+/* O seletor de idioma nas telas de conta (entrar, criar conta, nova senha).
+   ⚠️ Elas não têm TopBar — sem isto, quem cai direto no login de um link
+   externo não tem como trocar de idioma. */
+.login-topo-idioma {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}

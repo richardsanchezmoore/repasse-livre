@@ -5,15 +5,24 @@ import { RodapeGlobal } from "@/components/RodapeGlobal";
 import { buscarConfigRastreio } from "@/lib/rastreio";
 import { URL_BASE_SITE } from "@/lib/site";
 
-const TITULO_PADRAO = "Repasse Livre — Carros abaixo da tabela FIPE";
+/**
+ * ⚠⚠ O TÍTULO PADRÃO É A REDE DE SEGURANÇA, e ele estava em PORTUGUÊS falando
+ * de FIPE num site paraguaio. A home tem título próprio (vem de `seo_paginas`,
+ * mig 0095), mas toda página SEM metadata cai aqui — login, cadastro, conta —
+ * e era isso que o Gustavo via na aba do navegador.
+ *
+ * ★ Espanhol, porque a raiz do site é espanhol. A versão `/pt` de cada página
+ * define o próprio título; o que não define, cai no idioma da praça.
+ */
+const TITULO_PADRAO = "AutoRadarPy — Precios reales de autos usados en Paraguay";
 const DESCRICAO_PADRAO =
-  "Oportunidades reais de carros à venda abaixo do valor da tabela FIPE, coletadas e atualizadas todos os dias.";
+  "La tabla de precios de referencia del mercado paraguayo, por marca, modelo y año, sobre los anuncios reales publicados en Paraguay.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(URL_BASE_SITE),
   title: {
     default: TITULO_PADRAO,
-    template: "%s — Repasse Livre",
+    template: "%s — AutoRadarPy",
   },
   description: DESCRICAO_PADRAO,
   // Verificação de domínio da Meta (Business → Domains): renderiza
@@ -37,8 +46,12 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const rastreio = await buscarConfigRastreio();
 
+  // ⚠️ `es` porque a raiz do site é espanhol. Só o root layout pode definir
+  // <html>, então /pt herda este valor — incorreto, mas de baixo impacto: o
+  // Google usa hreflang e o CONTEÚDO para decidir idioma, não este atributo.
+  // Corrigir exigiria mover tudo para app/[idioma]/ (ver lib/idioma.ts).
   return (
-    <html lang="pt-BR">
+    <html lang="es">
       <body>
         {/* dangerouslySetInnerHTML aqui (em vez de filhos React normais)
             evita erro de hidratação #418/#423/#425: com JS habilitado o

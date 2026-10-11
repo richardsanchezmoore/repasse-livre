@@ -1,9 +1,24 @@
+"use client";
+
+/**
+ * ⚠⚠ CLIENTE, e por um motivo específico: o rótulo da migalha também entra no
+ * JSON-LD de BreadcrumbList, que exige STRING — não dá para usar <Texto />, que
+ * devolve um nó React. Então o componente inteiro precisa do idioma como valor,
+ * e idioma vem do caminho, que só o cliente lê.
+ *
+ * ★ Continua saindo no HTML do servidor: o Next renderiza componente de
+ * cliente no SSR, então o rastreador vê a migalha e o JSON-LD normalmente.
+ *
+ * ⚠️ Todas as libs que ele importa são puras (estados, marca, site, slug) —
+ * nenhuma toca `lib/supabase.ts`, que vazaria a service key no bundle.
+ */
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { NOME_POR_UF } from "@/lib/estados";
 import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
 import { caminhoCidade, caminhoEstado, caminhoMarca, caminhoModelo, URL_BASE_SITE } from "@/lib/site";
 import type { Oportunidade } from "@/lib/types";
+import { useTextos } from "@/lib/useIdioma";
 
 export function BreadcrumbOportunidade({
   oportunidade,
@@ -20,12 +35,13 @@ export function BreadcrumbOportunidade({
   /** Caminho da página atual — o item do breadcrumb que aponta pra ela mesma fica sem link. */
   caminhoAtual?: string;
 }) {
+  const tx = useTextos();
   const marca = marcaForcada ?? (titulo ? extrairMarca(titulo) : null);
   // Modelo sai da heurística sobre o título (não é campo do banco). Marca composta
   // (Land Rover) → null, então o nível Modelo só entra pra marca de 1 palavra.
   const modelo = titulo ? extrairModeloSeo(titulo) : null;
 
-  const itens: Array<{ rotulo: string; href?: string }> = [{ rotulo: "Carros", href: "/" }];
+  const itens: Array<{ rotulo: string; href?: string }> = [{ rotulo: tx("migalhaCarros"), href: "/" }];
 
   if (oportunidade.estado) {
     itens.push({

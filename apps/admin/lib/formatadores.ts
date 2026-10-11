@@ -51,13 +51,20 @@ export function formatarDataCaptura(dataIso: string, rotuloHoje = "Hoje"): strin
  * create_date). Onde ela é null, o fallback é a data de CAPTURA e o texto vira, na
  * prática, "capturado há X" — impreciso quando o radar chega atrasado.
  */
-export function formatarPublicacaoRelativa(dataIso: string): string {
+/**
+ * ⚠️ Os rótulos entram por PARÂMETRO, como em `formatarDataCaptura`: este
+ * módulo não sabe o idioma da página, e quem chama sabe (lê do caminho).
+ */
+export function formatarPublicacaoRelativa(
+  dataIso: string,
+  rotulos: { anunciadoEm?: string; hojeAs?: string; hoje?: string } = {},
+): string {
   const data = new Date(dataIso);
   const agora = new Date();
   const ehHoje =
     data.toLocaleDateString("pt-BR", { timeZone: FUSO_HORARIO }) ===
     agora.toLocaleDateString("pt-BR", { timeZone: FUSO_HORARIO });
-  if (!ehHoje) return `Anunciado em ${formatarDataCaptura(dataIso)}`;
+  if (!ehHoje) return `${rotulos.anunciadoEm ?? "Anunciado em"} ${formatarDataCaptura(dataIso, rotulos.hoje)}`;
 
   const minutos = (agora.getTime() - data.getTime()) / 60_000;
   const horas = minutos / 60;
@@ -74,5 +81,5 @@ export function formatarPublicacaoRelativa(dataIso: string): string {
     return `Anunciado há ${h} ${h === 1 ? "hora" : "horas"}`;
   }
   const horario = data.toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: FUSO_HORARIO });
-  return `Hoje às ${horario}`;
+  return `${rotulos.hojeAs ?? "Hoje às"} ${horario}`;
 }

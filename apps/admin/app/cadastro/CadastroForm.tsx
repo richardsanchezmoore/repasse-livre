@@ -7,8 +7,10 @@ import { caminhoRedirectSeguro } from "@/lib/redirectSeguro";
 import { IconeGoogle } from "@/components/IconeGoogle";
 import { IconeFacebook } from "@/components/IconeFacebook";
 import { FACEBOOK_LOGIN_ATIVO } from "@/lib/flags";
+import { useTextos } from "@/lib/useIdioma";
 
 export function CadastroForm({ redirect }: { redirect?: string }) {
+  const tx = useTextos();
   const destino = caminhoRedirectSeguro(redirect);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -21,11 +23,11 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
   async function aoCriarConta(evento: React.FormEvent) {
     evento.preventDefault();
     if (senha !== confirmarSenha) {
-      setFeedback({ tipo: "erro", texto: "As senhas não coincidem." });
+      setFeedback({ tipo: "erro", texto: tx("erroSenhasDiferentes") });
       return;
     }
     if (senha.length < 6) {
-      setFeedback({ tipo: "erro", texto: "A senha precisa ter pelo menos 6 caracteres." });
+      setFeedback({ tipo: "erro", texto: tx("erroSenhaCurta") });
       return;
     }
     setCriando(true);
@@ -42,10 +44,10 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
         ? {
             tipo: "erro",
             texto: error.message.includes("already registered")
-              ? "Esse e-mail já tem conta. Faça login."
-              : "Falha ao criar conta. Tente novamente.",
+              ? tx("erroEmailExiste")
+              : tx("erroCriarConta"),
           }
-        : { tipo: "sucesso", texto: "Conta criada! Confira seu e-mail para confirmar antes de entrar." }
+        : { tipo: "sucesso", texto: tx("contaCriada") }
     );
   }
 
@@ -76,7 +78,7 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
         disabled={enviandoGoogle}
       >
         <IconeGoogle size={18} />
-        Continuar com Google
+        {tx("continuarGoogle")}
       </button>
 
       {/* Login com Facebook pronto, mas escondido até o CNPJ liberar a Business
@@ -94,7 +96,7 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
       )}
 
       <div className="login-divisor">
-        <span>ou</span>
+        <span>{tx("ou")}</span>
       </div>
 
       <form onSubmit={aoCriarConta} className="login-form-email">
@@ -104,8 +106,8 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
             id="email"
             type="email"
             required
-            aria-label="Seu e-mail"
-            placeholder="seuemail@exemplo.com"
+            aria-label={tx("email")}
+            placeholder={tx("seuEmail")}
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
           />
@@ -117,8 +119,8 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
             id="senha"
             type="password"
             required
-            aria-label="Senha"
-            placeholder="Mínimo 6 caracteres"
+            aria-label={tx("senha")}
+            placeholder={tx("minimo6")}
             value={senha}
             onChange={(evento) => setSenha(evento.target.value)}
           />
@@ -130,15 +132,15 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
             id="confirmar-senha"
             type="password"
             required
-            aria-label="Confirmar senha"
-            placeholder="Repita a senha"
+            aria-label={tx("confirmarSenha")}
+            placeholder={tx("repitaSenha")}
             value={confirmarSenha}
             onChange={(evento) => setConfirmarSenha(evento.target.value)}
           />
         </div>
 
         <button type="submit" className="login-botao-email" disabled={criando}>
-          {criando ? "Criando…" : "Criar conta"}
+          {criando ? tx("criando") : tx("criarContaTitulo")}
         </button>
       </form>
 
