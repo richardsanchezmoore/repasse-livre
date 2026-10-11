@@ -201,6 +201,16 @@ const PT = {
   anunciosRelacionados: "Anúncios relacionados",
   migalhaCarros: "Carros",
 
+
+  // ─── a faixa de valor do topo ───
+  kpiNovosRotulo: "anúncios novos em 72h",
+  kpiNovosFrase: "O mercado se move todo dia. A gente acompanha.",
+  kpiMonitorRotulo: "preços monitorados",
+  kpiMonitorFrase: "Varredura contínua nas praças do Paraguai.",
+  kpiTabelaRotulo: "modelos com preço de referência",
+  kpiTabelaFrase: "Mediana dos anúncios reais, não palpite.",
+  chamadaPrincipal: "Não compre sem consultar o AutoRadar.",
+
   // ─── página da tabela ───
   tabelaMenu: "Tabela de Preços",
   tabelaTitulo: "Tabela de Preços AutoRadarPy",
@@ -342,6 +352,16 @@ const ES: { [K in keyof typeof PT]: string } = {
   abrirAnuncio: "Abrir aviso original",
   anunciosRelacionados: "Avisos relacionados",
   migalhaCarros: "Autos",
+
+  // ★ A chamada e as frases em VOSEO, como se fala no Paraguai — espanhol
+  // neutro soa a tradução, e o site inteiro perde quando isso aparece.
+  kpiNovosRotulo: "avisos nuevos en 72h",
+  kpiNovosFrase: "El mercado se mueve todos los días. Nosotros lo seguimos.",
+  kpiMonitorRotulo: "precios monitoreados",
+  kpiMonitorFrase: "Barrido continuo en las plazas del Paraguay.",
+  kpiTabelaRotulo: "modelos con precio de referencia",
+  kpiTabelaFrase: "Mediana de avisos reales, no una estimación.",
+  chamadaPrincipal: "No compres sin consultar AutoRadar.",
 
   tabelaMenu: "Tabla de Precios",
   tabelaTitulo: "Tabla de Precios AutoRadarPy",

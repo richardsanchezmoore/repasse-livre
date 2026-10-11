@@ -9165,3 +9165,112 @@ button.bemvindo-secundario {
   justify-content: flex-end;
   margin-bottom: 4px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ★★ IDENTIDADE AUTORADARPY — topbar azul, ação verde   (Gustavo, 11/10/2026)
+
+   ⚠️ TUDO POR VARIÁVEL, num lugar só. A cor da marca vai mudar mais de uma vez
+   antes de assentar, e caçá-la espalhada em vinte regras é como se perde uma
+   tarde. Trocar aqui troca o site inteiro.
+
+   ★ A DÚVIDA DELE, deixada resolvível numa linha: #003B9F é mais sóbrio mas
+   "fica mais cara de Facebook"; #004AC5 é "mais vivo e com mais cara de
+   Paraguay" — e de fato encosta no azul da bandeira (#0038A8). Para trocar,
+   basta mover o comentário de uma linha para a outra.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --marca-azul: #003B9F;        /* sóbrio */
+  /* --marca-azul: #004AC5; */  /* vivo — o que ele achou mais paraguaio */
+  --marca-azul-escuro: #002E7A;
+  --marca-verde: #07C254;
+  --marca-verde-escuro: #05A646;
+
+  /* ⚠️ O azul dos KPIs não é a cor da marca: num fundo claro ela fica pesada.
+     Estes são o mesmo matiz, abertos até virarem pastel — o ícone precisa
+     conversar com o topbar sem competir com o NÚMERO, que é o que importa. */
+  --kpi-azul-fundo: #E8EFFC;
+  --kpi-azul-icone: #1B4FC4;
+}
+
+.top-bar {
+  background: var(--marca-azul);
+  border-bottom: 1px solid var(--marca-azul-escuro);
+}
+
+/* ⚠️ O logo já vem com o texto em BRANCO — foi desenhado para fundo escuro.
+   Por isso o topbar claro não pode voltar sem trocar o arquivo junto. */
+.logo-img {
+  height: 38px;
+}
+
+/* No azul, o ícone e o texto do topbar viram brancos. */
+.top-bar .busca-icone-botao,
+.top-bar .botao-selecionar-varios {
+  color: #ffffff;
+}
+.top-bar .botao-selecionar-varios {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+}
+.top-bar .botao-selecionar-varios:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ★ O verde fica SÓ na ação. Num topbar azul ele vira o único ponto quente da
+   tela — é exatamente isso que se quer de um botão de publicar. */
+.botao-anunciar,
+.botao-anunciar-compacto {
+  background: var(--marca-verde);
+}
+.botao-anunciar:hover,
+.botao-anunciar-compacto:hover {
+  background: var(--marca-verde-escuro);
+}
+
+.kpi-card-icone {
+  background: var(--kpi-azul-fundo);
+  color: var(--kpi-azul-icone);
+}
+
+/* ★★ A faixa do topo virou BANNER DE VALOR: número grande (a prova), rótulo
+   (o que é) e frase (a promessa). Antes era só número e rótulo — e número sem
+   promessa não conta a quem chega pela primeira vez o que o site faz. */
+.kpi-card-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.kpi-card-valor {
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-card-rotulo {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5b6577;
+  line-height: 1.25;
+}
+
+/* ⚠️ A frase é a parte mais fraca da hierarquia DE PROPÓSITO: ela explica, não
+   anuncia. Se competir com o número, os dois perdem. */
+.kpi-card-frase {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #8a94a6;
+}
+
+@media (max-width: 900px) {
+  /* Em duas colunas a frase aperta demais e vira ruído — fica só o essencial. */
+  .kpi-card-frase { display: none; }
+}

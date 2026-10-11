@@ -111,7 +111,7 @@ export function TopBar({
       <div className="top-bar-linha-principal">
         <Link href="/" className="logo-link" aria-label={tx("paginaInicial")}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Repasse Livre" className="logo-img" />
+          <img src="/logo-autoradar.png" alt="AutoRadarPy" className="logo-img" />
         </Link>
         {modoSelecao ? (
           <BarraSelecaoMultipla aba={aba} />
