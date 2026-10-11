@@ -107,6 +107,20 @@ export async function hashDaImagem(bytes: Buffer): Promise<HashFoto | null> {
  * card repetido; falso positivo esconde um carro real.
  */
 export const BITS = LADO * LADO;
+
+/**
+ * ⚠⚠ O SENTINELA DE “NÃO SEI”, e ele NÃO significa “muito diferente”.
+ *
+ * `distancia` devolve o máximo quando falta hash de um dos lados. Para o
+ * casamento isso é o certo (falha para “diferente”, que é o lado seguro), mas
+ * para DIAGNÓSTICO engana — eu mesmo li “256 de 256” como “carros diferentes” e
+ * quase dei um veredito sobre dois anúncios que simplesmente não tinham foto.
+ *
+ * Duas imagens REAIS sem relação ficam perto de 128 (metade dos bits), medido:
+ * 117–131 num grupo de Ractis distintos. Chegar a 256 é inverter TODOS os bits,
+ * o que não acontece com foto de verdade.
+ */
+export const DISTANCIA_DESCONHECIDA = BITS;
 export const HEX = BITS / 4;
 
 export function distancia(a: HashFoto | null | undefined, b: HashFoto | null | undefined): number {
