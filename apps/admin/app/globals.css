@@ -9192,15 +9192,38 @@ button.bemvindo-secundario {
   --kpi-azul-icone: #1B4FC4;
 }
 
+/* ═══ TOPBAR E LOGO — bloco único ═════════════════════════════════════════
+   ⚠️ Eu havia empilhado QUATRO regras `.logo-img` e três `.top-bar` ao longo
+   do ajuste. A última vencia e as outras viraram ruído: eu mesmo editei uma
+   que não tinha efeito e concluí que a mudança não tinha pegado. Fica um só.
+
+   ⚠️⚠️ O PNG VINHA COM 55% DE MARGEM TRANSPARENTE — era isso que fazia o logo
+   parecer miúdo mesmo depois de eu aumentar a altura duas vezes: a `height`
+   media a MOLDURA, não o desenho. Os arquivos agora são aparados (sharp
+   `trim`, ANTES de redimensionar), então a altura declarada é a do desenho.
+
+   ⚠️ E por isso 80px não serve mais: o Gustavo pediu 80 olhando o DevTools,
+   mas ali o arquivo ainda tinha a margem — ele via ~36px de desenho numa caixa
+   de 80. Aparado, 80px viram 494px de LARGURA, a barra quebra em duas linhas e
+   vai a 145px. 52px é ~45% maior que o desenho que ele aprovou, cabe numa
+   linha e deixa a barra em ~69px. */
 .top-bar {
   background: var(--marca-azul);
   border-bottom: 1px solid var(--marca-azul-escuro);
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
-/* ⚠️ O logo já vem com o texto em BRANCO — foi desenhado para fundo escuro.
-   Por isso o topbar claro não pode voltar sem trocar o arquivo junto. */
 .logo-img {
-  height: 38px;
+  height: 52px;
+}
+@media (max-width: 640px) {
+  .logo-img { height: 40px; }
+}
+
+.rodape-global-logo {
+  height: 48px;
+  width: auto;
 }
 
 /* No azul, o ícone e o texto do topbar viram brancos. */
@@ -9232,9 +9255,10 @@ button.bemvindo-secundario {
   color: var(--kpi-azul-icone);
 }
 
-/* ★★ A faixa do topo virou BANNER DE VALOR: número grande (a prova), rótulo
-   (o que é) e frase (a promessa). Antes era só número e rótulo — e número sem
-   promessa não conta a quem chega pela primeira vez o que o site faz. */
+/* ═══ A FAIXA DE VALOR DO TOPO ════════════════════════════════════════════
+   Virou banner: número grande (a prova), rótulo (o que é) e frase (a
+   promessa). Antes era só número e rótulo — e número sem promessa não conta a
+   quem chega pela primeira vez o que o site faz. */
 .kpi-card-texto {
   display: flex;
   flex-direction: column;
@@ -9270,45 +9294,7 @@ button.bemvindo-secundario {
   color: #8a94a6;
 }
 
-@media (max-width: 900px) {
-  /* Em duas colunas a frase aperta demais e vira ruído — fica só o essencial. */
-  .kpi-card-frase { display: none; }
-}
-
-/* ═══ O VERDE DE SELEÇÃO SAI — ele era da marca antiga ════════════════════════
-   ⚠️ O verde #d9fdd3 marcava "selecionado" na barra lateral e nas listas de
-   filtro. Com a marca azul ele vira o único resto da identidade anterior, e
-   justamente no estado mais visível da interface.
-
-   ★ O verde agora é SÓ da ação (o botão de publicar). Seleção passa ao azul da
-   marca: quem está selecionado pertence ao site, não a uma cor solta. */
-.sidebar-item-ativo,
-.seletor-estado-opcao-ativa,
-.seletor-local-opcao-ativa {
-  background: var(--kpi-azul-fundo);
-  color: var(--kpi-azul-icone);
-  font-weight: 700;
-}
-.sidebar-item-ativo .sidebar-contador {
-  color: var(--kpi-azul-icone);
-}
-/* O ícone ativo da barra lateral acompanha. */
-.sidebar-item-ativo .sidebar-icone {
-  color: var(--kpi-azul-icone);
-}
-
-/* O seletor de praça abaixo dos KPIs: era cinza-sobre-branco e sumia. Agora
-   tem a cor da marca, que é o que diz "isto é clicável e é um filtro". */
-.seletor-estado-gatilho {
-  color: var(--marca-azul);
-  font-weight: 700;
-}
-.seletor-estado-gatilho strong {
-  color: var(--marca-azul);
-}
-
-/* ★★ O cartão da TABELA é o único clicável — e tem que parecer. Fundo da cor
-   da marca, bem suave, e uma ação explícita embaixo. */
+/* ★★ O cartão da TABELA é o único clicável — e tem que parecer. */
 .kpi-card-cta {
   text-decoration: none;
   border-color: #cfdcf7;
@@ -9330,57 +9316,51 @@ button.bemvindo-secundario {
   color: var(--marca-azul);
 }
 
-/* ═══ NO CELULAR OS KPIs VIRAM CARROSSEL ══════════════════════════════════════
-   ⚠️ Antes eles viravam grade de 2 colunas e empurravam os anúncios para baixo
-   da dobra — num site de busca, o pior lugar para gastar tela é acima do
-   primeiro resultado.
-
-   ★ Em carrossel eles ocupam UMA faixa, o primeiro cartão (a tabela) aparece
-   inteiro e os outros aparecem pela metade — o que é o próprio convite a
-   arrastar, sem precisar de seta nem de ponto. */
+/* ═══ NO CELULAR OS KPIs VIRAM CARROSSEL ══════════════════════════════════
+   ⚠️ Antes viravam grade de 2 colunas e empurravam os anúncios para baixo da
+   dobra — num site de busca, o pior lugar para gastar tela é acima do primeiro
+   resultado. Em carrossel ocupam uma faixa, o primeiro cartão (a tabela)
+   aparece inteiro e o seguinte pela metade, que é o convite a arrastar. */
 @media (max-width: 760px) {
   .kpis-topo {
     display: flex;
     grid-template-columns: none;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    /* ⚠️ Sangra até a borda da tela: cartão cortado no meio do padding parece
-       corte acidental; cortado na borda parece lista que continua. */
+    /* Sangra até a borda: cartão cortado no padding parece corte acidental;
+       cortado na borda parece lista que continua. */
     margin-inline: -16px;
     padding-inline: 16px;
     scrollbar-width: none;
   }
   .kpis-topo::-webkit-scrollbar { display: none; }
-
   .kpis-topo > * {
     flex: 0 0 76%;
     scroll-snap-align: start;
   }
-
-  /* ⚠️ A frase volta a aparecer aqui: no carrossel há largura para ela, e era
-     por falta de espaço que a grade de 2 colunas a escondia. */
+  /* A frase volta aqui: no carrossel há largura para ela. */
   .kpi-card-frase { display: block; }
 }
 
-/* ★ O LOGO CRESCE. A 38px ele ficava miúdo dentro da barra azul — sobrava
-   fundo em volta e a marca não firmava. O desenho do Gustavo mostra o logo
-   ocupando boa parte da altura da barra, que é o que dá presença.
+/* ═══ O VERDE DE SELEÇÃO SAI — era da marca antiga ════════════════════════
+   ⚠️ #d9fdd3 marcava "selecionado" na barra lateral e nas listas de filtro.
+   Com a marca azul ele virava o único resto da identidade anterior, e no
+   estado mais visível da interface. Verde agora é SÓ da ação. */
+.sidebar-item-ativo,
+.seletor-estado-opcao-ativa,
+.seletor-local-opcao-ativa {
+  background: var(--kpi-azul-fundo);
+  color: var(--kpi-azul-icone);
+  font-weight: 700;
+}
+.sidebar-item-ativo .sidebar-contador,
+.sidebar-item-ativo .sidebar-icone {
+  color: var(--kpi-azul-icone);
+}
 
-   ⚠️ O ativo é 120px de altura (2,5x), então sobe sem borrar. */
-.logo-img {
-  height: 48px;
-}
-/* A barra acompanha, senão o logo encosta nas bordas. */
-.top-bar {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-@media (max-width: 640px) {
-  .logo-img { height: 38px; }
-}
-
-/* No rodapé o logo também sobe — lá ele é a assinatura da página. */
-.rodape-global-logo {
-  height: 42px;
-  width: auto;
+/* O seletor de praça abaixo dos KPIs: era cinza-sobre-branco e sumia. */
+.seletor-estado-gatilho,
+.seletor-estado-gatilho strong {
+  color: var(--marca-azul);
+  font-weight: 700;
 }

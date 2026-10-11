@@ -394,8 +394,34 @@ async function main() {
   } catch { /* config inválida */ }
 
   // Só praças paraguaias. O prefixo "PY-" na UF é o que separa os dois países.
-  const regioes = todas.filter((r) => (r.uf ?? "").startsWith("PY-"))
+  const paraguaias = todas.filter((r) => (r.uf ?? "").startsWith("PY-"))
     .filter((r) => !alvo || slugRegiao(r) === alvo);
+
+  /**
+   * ★★ METADE DAS PRAÇAS POR VOLTA (PY_METADE=1) — Gustavo, 11/10/2026.
+   *
+   * ⚠️ O PROBLEMA MEDIDO: 11 praças × 25 termos = 275 buscas, e a volta levava
+   * ~2h só no catálogo. Com isso as FAIXAS — que é o modo ordenado por data de
+   * criação, o único que pesca anúncio recém-publicado — quase nunca rodavam.
+   * Daí a listagem ter acervo de sobra e quase nada publicado hoje.
+   *
+   * ★ Alternar por PARIDADE DO DIA DO ANO, e não sortear: sorteio pode repetir
+   * a mesma metade várias voltas seguidas e deixar a outra sem varredura por
+   * um dia inteiro. Com paridade, toda praça é visitada em no máximo duas
+   * voltas, sempre.
+   *
+   * ⚠️ NÃO reduz cobertura ao longo do dia — reduz por VOLTA. E como a volta
+   * passa a ser o dobro mais curta, cada praça continua sendo vista na mesma
+   * frequência de antes.
+   *
+   * ⚠⚠ Nunca se aplica quando há praça-alvo (PY_REGIAO): pedir uma praça
+   * específica e receber nada por causa da paridade seria um bug silêncioso.
+   */
+  const METADE = process.env.PY_METADE === "1" && !alvo;
+  const diaDoAno = Math.floor((Date.now() - Date.UTC(new Date().getUTCFullYear(), 0, 0)) / 86_400_000);
+  const regioes = METADE
+    ? paraguaias.filter((_, i) => i % 2 === diaDoAno % 2)
+    : paraguaias;
 
   if (!regioes.length) {
     log("nenhuma praça paraguaia" + (alvo ? ` com slug "${alvo}"` : "") + " no painel.");
@@ -437,7 +463,7 @@ async function main() {
     Number(filtros.maxPreco || 2_000_000_000),
   );
 
-  log(`${AUTOLOAD ? `★ MUTIRÃO (autoload, ${ROLAGENS} rolagens) · ` : ""}praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
+  log(`${AUTOLOAD ? `★ MUTIRÃO (autoload, ${ROLAGENS} rolagens) · ` : ""}${METADE ? `[METADE ${diaDoAno % 2 === 0 ? "par" : "ímpar"}: ${regioes.length} de ${paraguaias.length}] ` : ""}praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
   // ★★ REPESCAGEM DE PRAÇA ZERADA — 03/10/2026.
   //

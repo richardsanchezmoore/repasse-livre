@@ -84,7 +84,10 @@ while [ ! -f "$PARAR" ]; do
 
   marca "VOLTA $volta · 1/3 CATÁLOGO (busca por termo)"
   esperarTrava
-  PY_MODO=termo PY_TERMOS_POR_RODADA=25 PY_SEM_FOTO=1 PY_MAX_ITENS=250 \
+  # ★ PY_METADE=1: metade das praças por volta, alternando pela paridade do
+  # dia. Corta o catálogo pela metade e devolve o ciclo às FAIXAS, que é de
+  # onde vem o anúncio recém-publicado. Ver capturarParaguai.ts.
+  PY_METADE=1 PY_MODO=termo PY_TERMOS_POR_RODADA=25 PY_SEM_FOTO=1 PY_MAX_ITENS=250 \
     PY_ESPERA_ITEM=1500 PY_PACING=1200 \
     comRede npx tsx src/capturarParaguai.ts
 
@@ -106,17 +109,12 @@ while [ ! -f "$PARAR" ]; do
   FOTOS_LIMITE=400 FOTOS_PAUSA_MS=1500 \
     comRede npx tsx src/backfillFotosPY.ts
 
-  # ★★ HASH DA FOTO antes de procurar reanúncio: a foto é o critério mais forte
-  # e precisa estar calculada para valer. Lê do NOSSO bucket — zero raspagem,
-  # então não disputa a trava do Playwright nem arrisca a conta.
-  marca "VOLTA $volta · hash das fotos novas"
-  comRede npx tsx src/backfillHashPY.ts
-
-  # ★ Reanúncio: o vendedor republica e o Facebook dá id novo. Varre a cada
-  # volta porque anúncio novo pode ser republicação de um que já está lá.
-  # ⚠️ Não usa a sessão do Playwright — não precisa da trava.
-  marca "VOLTA $volta · reanúncios"
-  comRede npx tsx src/marcarDuplicatasPY.ts --aplicar
+  # ⚠⚠ HASH, REANÚNCIO E TABELA SAÍRAM DAQUI (11/10/2026).
+  #
+  # Eles ficavam no fim da volta, e a volta leva ~2h por causa do catálogo:
+  # anúncio novo passava horas sem hash e o duplicado aparecia na vitrine até
+  # a volta fechar. Como nenhum dos três usa a sessão do Playwright, eles
+  # podem rodar em PARALELO — ver limpeza20min.sh, que roda de 20 em 20 min.
 
   marca "VOLTA $volta encerrada — pausa de 5 min"
   sleep 300
