@@ -202,7 +202,11 @@ export const CATALOGO_JDM: ModeloJdm[] = [
   { nomes: ["corolla runx", "runx", "allex"], segmento: "hatch", motores: ["1.5", "1.8"], nota: "Hatchback do Corolla japonês dos anos 2000. Allex é o gêmeo." },
 
   // ────────────────────────── SUVs e jipes ─────────────────────────────────
-  { nomes: ["land cruiser prado", "cruiser prado", "land cruiser cygnus", "land cruiser"], segmento: "suv", motores: ["3.0 Diesel", "4.0 V6", "3.3 Diesel"], nota: "Cygnus é a versão japonesa do Lexus LX." },
+  // ⚠⚠⚠ "land cruiser" SAIU daqui — era a causa raiz. Com ele nesta ficha,
+  // todo anúncio que dissesse só "Land Cruiser" virava PRADO, inclusive os
+  // LC300. A família tem ficha própria agora. ★ E "prado" sozinho ENTROU:
+  // não era reconhecido, e é como boa parte do Paraguai anuncia.
+  { nomes: ["land cruiser prado", "cruiser prado", "prado", "land cruiser cygnus"], segmento: "suv", motores: ["3.0 Diesel", "4.0 V6", "3.3 Diesel"], nota: "Cygnus é a versão japonesa do Lexus LX." },
   { nomes: ["hilux surf"], segmento: "suv", motores: ["3.0 Diesel", "V6 nafta"], nota: "SUV de chassi da Hilux, versão japonesa. Diesel muito durável." },
   { nomes: ["vanguard"], segmento: "suv", motores: ["2.4", "3.5 V6"], nota: "RAV4 japonês alongado, opção de 7 lugares." },
   { nomes: ["rush"], segmento: "suv", motores: ["1.5"], nota: "Mini-SUV compacto com tração integral." },
@@ -295,7 +299,43 @@ export const CATALOGO_JDM: ModeloJdm[] = [
  */
 CATALOGO_JDM.push(
   { nomes: ["grand carnival", "carnival"], marca: "kia", segmento: "minivan", origem: "coreia", motores: ["2.2 CRDi", "3.3 V6"], nota: "A família Carnival. A versão Hi-Limousine (teto elevado, poltronas de massagem) tem ficha própria." },
-  { nomes: ["land cruiser"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.2 TD", "4.5 V8"], nota: "A família Land Cruiser (70/80/100/200). O Prado é outro veículo e tem ficha própria." },
+  // ═══ ★★★ A FAMÍLIA LAND CRUISER, por LINHAGEM (correção do Gustavo, 11/10) ═══
+  //
+  // ⚠⚠ Eu tinha criado UMA entrada genérica “land cruiser” e dado o caso por
+  // resolvido. Não estava: ela botava um LC300 2026 topo de linha na MESMA
+  // linha de tabela que um LC80 dos anos 90. Troquei um erro por outro.
+  //
+  // ★ “Land Cruiser” é o SOBRENOME. Dentro dele a Toyota tem três linhagens, e
+  // elas não se misturam em preço:
+  //   • Station Wagon (topo): LC80 → LC100 → LC200 → LC300
+  //   • Light-duty: Prado (mais leve, mais barato, criado nos anos 90)
+  //   • Heavy-duty: Série 70, trabalho pesado, vendida até hoje
+  //
+  // ⚠️ As da linha principal são GERAÇÕES, mas entram como modelos próprios de
+  // propósito: é assim que o mercado paraguaio anuncia (“LC200”, “LC300”), e o
+  // nosso dicionário de gerações não cobre Land Cruiser. Sem isso elas caem
+  // todas num balde só e a mediana não significa nada.
+  //
+  // ⚠️ “land cruiser” genérico FICA, por último: anúncio que não diz a linhagem
+  // existe, e é melhor cair na família do que em null. Maior casamento primeiro
+  // garante que só sobra para ele o que ninguém mais reivindicou.
+  // ★ O PRIMEIRO nome é o CANÔNICO (vira o rótulo na tabela), os demais só
+  // servem à busca — que ordena por tamanho, independente desta ordem. Por isso
+  // “land cruiser 300” vem primeiro (sai “Land Cruiser 300” na tela) e o
+  // composto fica atrás, só trabalhando.
+  //
+  // ⚠⚠ OS ALIASES COMPOSTOS (“land cruiser lc300”) NÃO SÃO REDUNDÂNCIA.
+  // A busca é por MAIOR CASAMENTO, e “land cruiser” (12) vencia “lc300” (5):
+  // o token MAIS específico perdia por ser mais curto. Medido — “Land Cruiser
+  // LC300 GR-Sport 2026” caiu na família. Em vez de mexer na regra do maior
+  // casamento, que sustenta o dicionário inteiro, a linhagem ganha uma forma
+  // longa o bastante para vencer sozinha.
+  { nomes: ["land cruiser 300", "land cruiser lc300", "landcruiser lc300", "landcruiser 300", "lc300", "lc 300"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["3.3 V6 biturbo diesel", "3.5 V6"], nota: "Topo da linha principal, a partir de 2021." },
+  { nomes: ["land cruiser 200", "land cruiser lc200", "landcruiser lc200", "lc200", "lc 200"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.5 V8 TD", "4.6 V8"], nota: "Linha principal 2007–2021. Antecessor do LC300." },
+  { nomes: ["land cruiser 100", "land cruiser lc100", "landcruiser lc100", "lc100", "lc 100"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.2 TD", "4.7 V8"], nota: "Linha principal 1998–2007." },
+  { nomes: ["land cruiser 80", "land cruiser lc80", "landcruiser lc80", "lc80", "lc 80"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.2 TD", "4.5"], nota: "Linha principal 1990–1997. Culto no Paraguai." },
+  { nomes: ["land cruiser 70", "land cruiser serie 70", "land cruiser série 70", "lc70", "serie 70", "série 70"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.2 TD", "4.5 V8 TD"], nota: "Heavy-duty: trabalho pesado, visual retrô, vendida até hoje." },
+  { nomes: ["land cruiser", "landcruiser"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.2 TD", "4.5 V8"], nota: "⚠️ Família, não linhagem. Só recebe o anúncio que NÃO disse qual é — as linhagens têm ficha própria." },
 );
 
 export const NOMES_JDM: string[] = CATALOGO_JDM

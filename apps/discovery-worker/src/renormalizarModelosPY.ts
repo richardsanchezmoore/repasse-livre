@@ -69,14 +69,64 @@ async function main() {
   for (const o of linhas) {
     const atual = o.modelo ? String(o.modelo) : null;
 
-    // passe 1: o título (pega o que não tinha modelo nenhum)
+    // ═══ ⚠⚠ A DESCRIÇÃO MANDA; O TÍTULO SÓ PREENCHE O VAZIO ═══
+    //
+    // A primeira versão tentava o título primeiro e criou um LAÇO: `veiculo`
+    // guarda o título JÁ NORMALIZADO (“Toyota Land Cruiser Prado 2026”), então
+    // depois de corrigir o modelo pela descrição, a passada seguinte lia o
+    // título velho e DESFAZIA a correção. Seis anúncios iam e voltavam.
+    //
+    // ★ `descricao` é evidência (o texto que o vendedor escreveu); `veiculo` é
+    // DERIVADO do nosso próprio normalizador e por isso já carrega o erro que
+    // estamos consertando. Evidência ganha de derivado, sempre.
+
+    // passe 1: a descrição, só entre irmãos da mesma família
+    if (atual && o.descricao) {
+      // ⚠️⚠️ `/\s+/` — a barra invertida já sumiu TRÊS vezes neste arquivo, e o
+      // sintoma nunca é um erro: `/s+/` apaga a LETRA "s", então "Cross" vira
+      // "Cro " e "Surf" vira "Surf" intacto mas "MITSUBISHI" vira "MIT UBI HI".
+      // A trava de evidência passou a deixar tudo passar e eu quase conclui que
+      // Corolla Cross estava mesmo mal classificado.
+      const textoDesc = String(o.descricao).replace(/\s+/g, " ");
+      const d = normalizarVeiculoPY(textoDesc.slice(0, 90), o.marca);
+      // ⚠⚠ SEGUNDA TRAVA: não troca se a descrição AINDA CONTÉM o que distingue
+      // o modelo atual. Sem isto a correção andava para trás: um Corolla Cross
+      // cuja descrição começa com “Toyota Corolla...” virava “Corolla”, e um
+      // Hilux Surf virava “Hilux” — cinco e um casos medidos. O genérico aparece
+      // antes no texto e ganhava o primeiro casamento.
+      //
+      // ★ A pergunta certa não é “qual é mais específico”, é “o texto ainda
+      // sustenta o rótulo atual?”. Se “cross” ou “surf” estão lá, sustenta e
+      // não se mexe. Só troca quando a evidência do rótulo atual SUMIU.
+      //
+      // ⚠️ MAS A TRAVA SÓ VALE QUANDO SE PERDE ESPECIFICIDADE. Aplicá-la em
+      // tudo bloqueava o acerto: a descrição de um LC300 SEMPRE contém “land”
+      // e “cruiser”, então um anúncio marcado como “Land Cruiser” nunca
+      // conseguiria virar “Land Cruiser 300”. Ganhar detalhe é sempre seguro —
+      // é perder que precisa de prova.
+      // ⚠️ Prefixo e não conjunto de palavras: `palavras()` descarta termos de
+      // menos de 4 letras, e "300" é justamente o que distingue "Land Cruiser"
+      // de "Land Cruiser 300". O filtro existe para o casamento de família, não
+      // serve para medir detalhe.
+      const ganhaDetalhe =
+        !!d.modelo &&
+        d.modelo.toLowerCase().startsWith(atual.toLowerCase()) &&
+        d.modelo.length > atual.length;
+      const semEvidencia = [...palavras(atual)].some((p) => !textoDesc.toLowerCase().includes(p));
+      if (d.modelo && d.modelo !== atual && mesmaFamilia(d.modelo, atual) && (ganhaDetalhe || semEvidencia)) {
+        mudancas.push({ id: o.id, de: atual, para: d.modelo, veiculo: String(o.veiculo), via: "descrição" });
+        continue;
+      }
+    }
+
+    // passe 2: o título, SÓ para quem não tem modelo nenhum
+    if (atual) continue;
     const r = normalizarVeiculoPY(String(o.veiculo), o.marca);
-    if (r.modelo && r.modelo !== atual) {
+    if (r.modelo) {
       mudancas.push({ id: o.id, de: String(atual), para: r.modelo, veiculo: String(o.veiculo), via: "título" });
       continue;
     }
 
-    // passe 2: a descrição, só entre irmãos
     if (!atual || !o.descricao) continue;
     const d = normalizarVeiculoPY(String(o.descricao).replace(/\s+/g, " ").slice(0, 90), o.marca);
     if (d.modelo && d.modelo !== atual && mesmaFamilia(d.modelo, atual)) {
