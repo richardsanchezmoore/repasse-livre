@@ -95,10 +95,32 @@ export async function baixarLogado(url: string, esperaMs = 2500): Promise<string
   const ctx = await abrirContexto(true);
   const page: Page = await ctx.newPage();
   try {
+    const t0 = Date.now();
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
+    const tGoto = Date.now() - t0;
+
+    // ⚠⚠⚠ AQUI MORAVA O CICLO INTEIRO. Antes isto era
+    // `waitForLoadState("networkidle", 20s)`, e o Facebook NÃO FICA com a rede
+    // ociosa nunca — mantém websocket e polling abertos. Então a espera
+    // estourava os 20 segundos em TODO anúncio e caia no catch, em silêncio.
+    //
+    // Medido em 11/10/2026: 49s por anúncio, 336 anúncios = 4,6h de uma volta
+    // de 5,8h. As buscas, que eu suspeitava, levavam 25s cada e somavam 1,0h.
+    //
+    // ★ A regra certa é esperar O QUE SE PRECISA, não a rede ficar quieta: o
+    // conteúdo do anúncio chega no corpo e dá para testá-lo. Chegou, segue na
+    // hora; não chegou em 8s, segue mesmo assim e o parser decide.
+    const t1 = Date.now();
+    await page
+      .waitForFunction(() => document.body && document.body.innerText.length > 400, { timeout: 8_000 })
+      .catch(() => {});
+    const tConteudo = Date.now() - t1;
+
     await page.waitForTimeout(esperaMs);
     const html = await page.content();
+    if (process.env.PY_CRONOMETRO === "1") {
+      console.log(`      [tempo] goto=${tGoto}ms conteudo=${tConteudo}ms espera=${esperaMs}ms total=${Date.now() - t0}ms`);
+    }
     if (RX_MURO_LOGIN.test(html) || /\/login\//.test(page.url())) throw new SessaoExpirada();
     return html;
   } finally {
