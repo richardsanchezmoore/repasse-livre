@@ -105,6 +105,13 @@ while [ ! -f "$PARAR" ]; do
   # ★ 400 por volta: sobraram 335 sem foto e o ciclo ja roda poucas voltas/dia.
   FOTOS_LIMITE=400 FOTOS_PAUSA_MS=1500 \
     comRede npx tsx src/backfillFotosPY.ts
+
+  # ★★ HASH DA FOTO antes de procurar reanúncio: a foto é o critério mais forte
+  # e precisa estar calculada para valer. Lê do NOSSO bucket — zero raspagem,
+  # então não disputa a trava do Playwright nem arrisca a conta.
+  marca "VOLTA $volta · hash das fotos novas"
+  comRede npx tsx src/backfillHashPY.ts
+
   # ★ Reanúncio: o vendedor republica e o Facebook dá id novo. Varre a cada
   # volta porque anúncio novo pode ser republicação de um que já está lá.
   # ⚠️ Não usa a sessão do Playwright — não precisa da trava.
