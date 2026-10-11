@@ -112,7 +112,7 @@ export function PainelAnunciosAds({ configs }: { configs: Record<string, string>
         <input
           style={inputEstilo}
           value={ancora}
-          placeholder="https://repasselivre.com/carros/sao-paulo-sp/… (ou o ID)"
+          placeholder="https://repasselivre.com/autos/sao-paulo-sp/… (ou o ID)"
           onChange={(e) => {
             setAncora(e.target.value);
             marcarSujo();

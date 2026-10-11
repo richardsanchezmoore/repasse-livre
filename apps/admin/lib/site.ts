@@ -63,7 +63,7 @@ type DadosUrlOportunidade = Pick<
 >;
 
 export function caminhoOportunidade(oportunidade: DadosUrlOportunidade): string {
-  return `/carros/${gerarSlugCidade(oportunidade)}/${gerarSlugOportunidade(oportunidade)}`;
+  return `/autos/${gerarSlugCidade(oportunidade)}/${gerarSlugOportunidade(oportunidade)}`;
 }
 
 export function urlOportunidade(oportunidade: DadosUrlOportunidade): string {
@@ -71,7 +71,7 @@ export function urlOportunidade(oportunidade: DadosUrlOportunidade): string {
 }
 
 export function caminhoCidade(oportunidade: Pick<Oportunidade, "cidade" | "estado">): string {
-  return `/carros/${gerarSlugCidade(oportunidade)}`;
+  return `/autos/${gerarSlugCidade(oportunidade)}`;
 }
 
 export function urlCidade(oportunidade: Pick<Oportunidade, "cidade" | "estado">): string {
@@ -79,7 +79,7 @@ export function urlCidade(oportunidade: Pick<Oportunidade, "cidade" | "estado">)
 }
 
 export function caminhoEstado(estado: string): string {
-  return `/carros/${gerarSlugEstado(estado)}`;
+  return `/autos/${gerarSlugEstado(estado)}`;
 }
 
 export function urlEstado(estado: string): string {
@@ -87,7 +87,7 @@ export function urlEstado(estado: string): string {
 }
 
 // Marca dentro do recorte de cidade, só estado, ou nacional (nenhum dos
-// dois — /carros/{marca} de nível Brasil) — mesma lógica de localidade, só
+// dois — /autos/{marca} de nível Brasil) — mesma lógica de localidade, só
 // acrescentando um segmento final /{marca}.
 export function caminhoMarca(localidade: { cidade?: string | null; estado?: string | null }, marca: string): string {
   if (localidade.cidade && localidade.estado) {
@@ -96,15 +96,15 @@ export function caminhoMarca(localidade: { cidade?: string | null; estado?: stri
   if (localidade.estado) {
     return `${caminhoEstado(localidade.estado)}/${slugify(marca)}`;
   }
-  return `/carros/${slugify(marca)}`;
+  return `/autos/${slugify(marca)}`;
 }
 
 export function urlMarca(localidade: { cidade?: string | null; estado?: string | null }, marca: string): string {
   return `${URL_BASE_SITE}${caminhoMarca(localidade, marca)}`;
 }
 
-// Modelo = 1 nível abaixo da marca (/carros/{cidadeUf}/{marca}/{modelo}). Só
-// cidade/estado no v1 (nacional /carros/{marca}/{modelo} conflitaria com a rota
+// Modelo = 1 nível abaixo da marca (/autos/{cidadeUf}/{marca}/{modelo}). Só
+// cidade/estado no v1 (nacional /autos/{marca}/{modelo} conflitaria com a rota
 // carro/marca). Ver project_repasse_livre_seo_pagina_modelo.
 export function caminhoModelo(
   localidade: { cidade?: string | null; estado?: string | null },

@@ -18,7 +18,7 @@ export function NavegacaoProvider({ children }: { children: ReactNode }) {
 
   /**
    * ★★ A NAVEGAÇÃO CARREGA O IDIOMA JUNTO. Quase todo destino do site é montado
-   * como caminho absoluto (`/carros/...`, `/?marca=toyota`) — sem isto, quem
+   * como caminho absoluto (`/autos/...`, `/?marca=toyota`) — sem isto, quem
    * estivesse em `/pt` seria jogado de volta para o espanhol no primeiro filtro
    * que clicasse, e culparia o site, não a tradução.
    *

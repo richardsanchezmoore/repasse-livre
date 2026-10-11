@@ -9,24 +9,24 @@ const PAGINAS: Array<{ chave: string; rotulo: string; ajudaExtra: string }> = [
   {
     chave: "cidade",
     rotulo: "Página de cidade",
-    ajudaExtra: 'Variáveis disponíveis: $cidade (ex.: "Recife Pernambuco") e $tags. URL: /carros/recife-pe/.',
+    ajudaExtra: 'Variáveis disponíveis: $cidade (ex.: "Recife Pernambuco") e $tags. URL: /autos/recife-pe/.',
   },
   {
     chave: "estado",
     rotulo: "Página de estado",
-    ajudaExtra: 'Variáveis disponíveis: $estado (ex.: "Pernambuco") e $tags. URL: /carros/pernambuco/.',
+    ajudaExtra: 'Variáveis disponíveis: $estado (ex.: "Pernambuco") e $tags. URL: /autos/pernambuco/.',
   },
   {
     chave: "marca",
     rotulo: "Página de marca",
     ajudaExtra:
-      'Variáveis disponíveis: $tag (ex.: "Volkswagen"), $cidade ou $estado (conforme o nível da página). URL: /carros/volkswagen, /carros/pernambuco/volkswagen ou /carros/recife-pe/volkswagen.',
+      'Variáveis disponíveis: $tag (ex.: "Volkswagen"), $cidade ou $estado (conforme o nível da página). URL: /autos/volkswagen, /autos/pernambuco/volkswagen ou /autos/recife-pe/volkswagen.',
   },
   {
     chave: "modelo",
     rotulo: "Página de modelo",
     ajudaExtra:
-      'Variáveis disponíveis: $tag (marca, ex.: "Chevrolet"), $modelo (ex.: "Onix"), $cidade ou $estado (conforme o nível). URL: /carros/recife-pe/chevrolet/onix.',
+      'Variáveis disponíveis: $tag (marca, ex.: "Chevrolet"), $modelo (ex.: "Onix"), $cidade ou $estado (conforme o nível). URL: /autos/recife-pe/chevrolet/onix.',
   },
   {
     chave: "produto",

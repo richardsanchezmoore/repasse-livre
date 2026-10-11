@@ -9,7 +9,7 @@ export const fetchCache = "force-no-store";
 
 // Rota legada: links de /oportunidade/{slug} (e o uuid puro de antes disso)
 // continuam funcionando, só redirecionando pra estrutura atual
-// /carros/{cidadeUf}/{slug}.
+// /autos/{cidadeUf}/{slug}.
 export default async function RotaOportunidadeLegada({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const id = extrairIdDaSlug(slug);

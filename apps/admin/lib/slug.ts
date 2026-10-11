@@ -27,7 +27,7 @@ export function slugify(texto: string): string {
 
 const SEM_LOCALIZACAO = "sem-localizacao";
 
-// Segmento de path /carros/{cidadeUf}/ — cidade vai num path próprio
+// Segmento de path /autos/{cidadeUf}/ — cidade vai num path próprio
 // (não mais embutida no slug do produto) pra virar categoria indexável,
 // com SEO/h1 dedicados por cidade.
 export function gerarSlugCidade(oportunidade: DadosSlugCidade): string {
@@ -35,7 +35,7 @@ export function gerarSlugCidade(oportunidade: DadosSlugCidade): string {
   return `${slugify(oportunidade.cidade)}-${oportunidade.estado.toLowerCase()}`;
 }
 
-// Segmento de path /carros/{estadoSlug}/ — página de estado (sem cidade),
+// Segmento de path /autos/{estadoSlug}/ — página de estado (sem cidade),
 // usa o nome completo (ex.: "pernambuco") em vez da sigla, palavra-chave
 // mais forte pra SEO do que duas letras.
 export function gerarSlugEstado(estado: string): string {
@@ -44,7 +44,7 @@ export function gerarSlugEstado(estado: string): string {
 
 const REGEX_UF_NO_FIM = /-([a-z]{2})$/i;
 
-// Reverte um slug "/carros/{cidadeUf}" pro par (cidadeSlug, estado) —
+// Reverte um slug "/autos/{cidadeUf}" pro par (cidadeSlug, estado) —
 // a UF (2 letras) sempre vem no final, então só falta casar o restante
 // contra o `cidade` real de algum registro (ver buscarCidadePorSlug).
 export function dividirSlugCidade(cidadeUf: string): { cidadeSlug: string; estado: string } | null {
@@ -57,7 +57,7 @@ export function dividirSlugCidade(cidadeUf: string): { cidadeSlug: string; estad
 // ver exemplos de link_origem captados, slug descritivo + id numérico no
 // fim). Garante unicidade total sem precisar de coluna/índice extra, e
 // permite extrair o id de volta só com regex. Cidade/estado não entram mais
-// aqui — já viram o segmento de path anterior (/carros/{cidadeUf}/).
+// aqui — já viram o segmento de path anterior (/autos/{cidadeUf}/).
 export function gerarSlugOportunidade(oportunidade: DadosSlug): string {
   const titulo =
     oportunidade.origem_tipo === "insercao_direta" && oportunidade.versao

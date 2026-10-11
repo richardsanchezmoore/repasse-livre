@@ -15,7 +15,7 @@ export interface LocalidadeResolvida {
 }
 
 /**
- * Resolve o primeiro segmento de /carros/{cidadeUf}/... pra cidade ou
+ * Resolve o primeiro segmento de /autos/{cidadeUf}/... pra cidade ou
  * estado real — cidade exige sufixo "-uf" no slug (ver dividirSlugCidade),
  * então um slug de estado por extenso (sem esse sufixo) nunca colide.
  */

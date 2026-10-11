@@ -28,7 +28,7 @@ import type { Oportunidade } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-// Terceiro segmento /carros/{cidadeUf}/{marca}/{modelo} = página SEO de MODELO
+// Terceiro segmento /autos/{cidadeUf}/{marca}/{modelo} = página SEO de MODELO
 // (nível abaixo da marca). O modelo NÃO é campo do banco: sai da heurística
 // extrairModeloSeo + é resolvido pra grafia canônica em buscarModeloPorSlug, que
 // também aplica o GATE de volume (>= MIN_ANUNCIOS_MODELO). Modelo fino/inexistente
@@ -94,7 +94,7 @@ export default async function PaginaModeloRoute({
 
   const localidade = await resolverLocalidade(cidadeUf);
   if (!localidade) {
-    redirect(`/carros/${cidadeUf}/${slug}`);
+    redirect(`/autos/${cidadeUf}/${slug}`);
   }
 
   const resolvido = await buscarModeloPorSlug(
@@ -104,7 +104,7 @@ export default async function PaginaModeloRoute({
   );
   if (!resolvido) {
     // Modelo fino (< gate) ou inexistente — cai pra página da marca em vez de 404.
-    redirect(`/carros/${cidadeUf}/${slug}`);
+    redirect(`/autos/${cidadeUf}/${slug}`);
   }
 
   const usuario = await obterUsuarioAtual();

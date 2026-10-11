@@ -58,8 +58,8 @@ async function resolverContexto(cidadeUf: string): Promise<ContextoPagina | null
     };
   }
 
-  // Sem cidade nem estado: marca de nível Brasil (/carros/{marca}), ex.:
-  // /carros/volkswagen — pesquisa nacional, sem filtro geográfico.
+  // Sem cidade nem estado: marca de nível Brasil (/autos/{marca}), ex.:
+  // /autos/volkswagen — pesquisa nacional, sem filtro geográfico.
   const marcaResolvida = await buscarMarcaPorSlug({}, cidadeUf);
   if (marcaResolvida) {
     return {
@@ -138,7 +138,7 @@ export default async function PaginaLocalidade({
 
   const contexto = await resolverContexto(cidadeUf);
   if (!contexto) {
-    await redirecionarOuNotFound(`/carros/${cidadeUf}`, { usarPadrao: true });
+    await redirecionarOuNotFound(`/autos/${cidadeUf}`, { usarPadrao: true });
     return null;
   }
 

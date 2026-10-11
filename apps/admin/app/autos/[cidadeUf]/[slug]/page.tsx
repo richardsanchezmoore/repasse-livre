@@ -43,9 +43,9 @@ import { Texto } from "@/components/Texto";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-// Segundo segmento de /carros/{cidadeUf}/{slug} é o produto (slug termina
+// Segundo segmento de /autos/{cidadeUf}/{slug} é o produto (slug termina
 // em uuid) ou, se não terminar em uuid, a marca dentro daquela localidade
-// (ex.: /carros/sao-paulo-sp/volkswagen). Mesmo arquivo de rota cobre os
+// (ex.: /autos/sao-paulo-sp/volkswagen). Mesmo arquivo de rota cobre os
 // dois casos pra evitar conflito de rota dinâmica no Next.js.
 
 async function gerarMetadataMarca(cidadeUf: string, marcaSlug: string): Promise<Metadata> {
@@ -156,7 +156,7 @@ async function PaginaMarca({
     // Localidade inválida — sem filtro de marca pra cair, sobe pro nível
     // mais alto possível (a própria página da localidade decide a partir
     // daí, inclusive usando o catch-all se nem ela existir mais).
-    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`, { fallback: `/carros/${cidadeUf}` });
+    await redirecionarOuNotFound(`/autos/${cidadeUf}/${marcaSlug}`, { fallback: `/autos/${cidadeUf}` });
     return null;
   }
 
@@ -167,7 +167,7 @@ async function PaginaMarca({
   if (!marcaResolvida) {
     // Marca não existe (mais) nessa localidade — cai pra ela sem o filtro,
     // em vez de mostrar 404 pra uma marca que pode ter saído de cena.
-    await redirecionarOuNotFound(`/carros/${cidadeUf}/${marcaSlug}`, { fallback: `/carros/${cidadeUf}` });
+    await redirecionarOuNotFound(`/autos/${cidadeUf}/${marcaSlug}`, { fallback: `/autos/${cidadeUf}` });
     return null;
   }
 
@@ -302,7 +302,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
     // Anúncio apagado/rejeitado (um a um ou em massa) — cai pra página da
     // cidade em vez de 404, sem precisar cadastrar um redirecionamento pra
     // cada anúncio removido.
-    await redirecionarOuNotFound(`/carros/${cidadeUf}/${slug}`, { fallback: `/carros/${cidadeUf}` });
+    await redirecionarOuNotFound(`/autos/${cidadeUf}/${slug}`, { fallback: `/autos/${cidadeUf}` });
     return null;
   }
 
@@ -310,7 +310,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   // — redireciona pra forma canônica em vez de servir conteúdo duplicado em
   // duas URLs.
   const caminhoCanonico = caminhoOportunidade(oportunidade);
-  if (`/carros/${cidadeUf}/${slug}` !== caminhoCanonico) {
+  if (`/autos/${cidadeUf}/${slug}` !== caminhoCanonico) {
     permanentRedirect(caminhoCanonico);
   }
 

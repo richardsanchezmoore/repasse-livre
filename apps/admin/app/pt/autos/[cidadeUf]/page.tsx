@@ -10,6 +10,6 @@
  * Next le `dynamic`/`revalidate` por analise estatica, e re-export encadeado
  * e exatamente o caso que ele pode nao enxergar.
  */
-export { default, generateMetadata } from "../../../carros/[cidadeUf]/page";
+export { default, generateMetadata } from "../../../autos/[cidadeUf]/page";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";

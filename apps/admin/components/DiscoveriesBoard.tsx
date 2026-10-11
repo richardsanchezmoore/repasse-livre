@@ -254,6 +254,17 @@ const COLUNAS_LISTAGEM =
     // ⚠️ Não é rejeição: o registro fica, e a observação de preço dele segue
     // valendo no livro. Quem decide a mediana conta ofertas DISTINTAS.
     consulta = consulta.is("duplicata_de", null);
+
+    // ★ SEM CIDADE TAMBÉM SAI DA VITRINE. Medido: 35 de 1.409 (2%), e ZERO
+    // nas últimas 6 horas — a captura atual sempre preenche, são legado do
+    // dia 09. Dois motivos para esconder:
+    //   • anúncio sem lugar não serve a quem procura carro perto de casa;
+    //   • o slug vira `/autos/sem-localizacao/...`, que entra no sitemap e
+    //     é exatamente o tipo de URL que não se quer indexada.
+    //
+    // ⚠️ Filtro, não exclusão: o preço segue no livro, e se a cidade for
+    // preenchida um dia o anúncio reaparece sozinho.
+    consulta = consulta.not("cidade", "is", null);
   }
   if (filtro.origem_tipo) {
     consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
@@ -382,7 +393,7 @@ export interface CidadeResolvida {
 }
 
 /**
- * Resolve o segmento de path /carros/{cidadeUf}/ pro par
+ * Resolve o segmento de path /autos/{cidadeUf}/ pro par
  * (cidade, estado) reais — a UF (2 letras) já vem certa no slug, mas o
  * nome da cidade precisa casar contra a grafia exata salva no banco
  * (acentos, maiúsculas). Escopado por estado pra não varrer a tabela toda.
@@ -423,9 +434,9 @@ export interface EstadoResolvido {
 }
 
 /**
- * Resolve o segmento de path /carros/{estadoSlug}/ (ex.: "pernambuco") pra
+ * Resolve o segmento de path /autos/{estadoSlug}/ (ex.: "pernambuco") pra
  * UF real — só tentada quando o slug não casa o padrão de cidade (que
- * sempre termina em "-xx"), ver app/carros/[cidadeUf]/page.tsx.
+ * sempre termina em "-xx"), ver app/autos/[cidadeUf]/page.tsx.
  */
 export async function buscarEstadoPorSlug(estadoSlug: string): Promise<EstadoResolvido | null> {
   const estadosDisponiveis = await buscarEstadosDisponiveis();
@@ -455,7 +466,7 @@ const LIMITE_AMOSTRA_MARCA_NACIONAL = 5000;
 /**
  * Resolve o segmento {marcaSlug} (ex.: "volkswagen") pra a grafia real da
  * marca — escopado por cidade+estado, só estado, ou nacional (nenhum dos
- * dois, ver /carros/{marcaSlug} de nível Brasil). Mesmo princípio de
+ * dois, ver /autos/{marcaSlug} de nível Brasil). Mesmo princípio de
  * buscarCidadePorSlug: casa por slug numa amostra, escolhe a grafia mais
  * frequente, conta o total exato depois com ilike.
  */

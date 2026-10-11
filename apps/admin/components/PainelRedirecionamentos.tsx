@@ -89,7 +89,7 @@ export function PainelRedirecionamentos({
       <p className="worker-config-ajuda">
         Quando uma URL antiga de carro/cidade/estado/marca daria página não encontrada, cadastre aqui pra
         redirecionar (301) pra URL nova em vez de perder o link já indexado pelo Google. Use caminhos
-        relativos (ex.: <code>/carros/recife-pe/civic-2015-abc123</code>).
+        relativos (ex.: <code>/autos/recife-pe/civic-2015-abc123</code>).
       </p>
 
       {erro && <p className="campo-erro">{erro}</p>}
@@ -128,7 +128,7 @@ export function PainelRedirecionamentos({
             id="redirect-origem"
             type="text"
             className="worker-config-input"
-            placeholder="/carros/recife-pe/civic-2015-abc123"
+            placeholder="/autos/recife-pe/civic-2015-abc123"
             value={origem}
             onChange={(evento) => setOrigem(evento.target.value)}
           />
@@ -142,7 +142,7 @@ export function PainelRedirecionamentos({
               id="redirect-destino"
               type="text"
               className="worker-config-input"
-              placeholder="/carros/recife-pe/honda-civic-2015-abc123"
+              placeholder="/autos/recife-pe/honda-civic-2015-abc123"
               value={destino}
               onChange={(evento) => setDestino(evento.target.value)}
             />
