@@ -87,6 +87,41 @@ async function todas(): Promise<Linha[]> {
  * distintos. Na dúvida não colapsa: esconder carro real é pior que mostrar
  * repetido, porque o repetido o usuário percebe e o escondido não.
  */
+
+/**
+ * ⚠⚠⚠ LÁPIDE: SEMELHANÇA DE TEXTO FOI TENTADA E REJEITADA (11/10/2026).
+ *
+ * Dois “Toyota Grand Hiace 2000” idênticos sobrevivem aos dois critérios acima
+ * porque a LINHA DE CONTATO muda no MEIO do texto (“tratar al [hidden
+ * information]” vs “consultas al wa me”) — prefixo comum: zero caracteres.
+ * Dice sobre conjunto de palavras resolveria: dá 0,90 nesse par.
+ *
+ * ⚠⚠ MAS A MEDIÇÃO REPROVOU. Com limiar 0,82 e balde modelo+ano+cidade, as
+ * marcações saltaram de 29 para 59, e a amostra mostrou o que entrou a mais:
+ *
+ *     Toyota Corolla Runx 2005 — sim 0,82
+ *       ₲39.800.000  “TOYOTA RUNX NEGRO  AÑO 2005 -CAJA AUT. -4X2...”
+ *       ₲39.800.000  “TOYOTA RUNX ROJO   AÑO 2005 REAL -CAJA AUT...”
+ *
+ * PRETO e VERMELHO: dois carros DIFERENTES da mesma loja, mesmo preço, mesmo
+ * template de texto. E um Toyota Ist 2006 agrupou TRÊS anúncios com TRÊS
+ * preços distintos.
+ *
+ * ★ O veneno é o TEMPLATE DA LOJA — o mesmo que já tinha fundido quatro motos
+ * distintas pelo texto de financiamento. Lojas descrevem carros diferentes com
+ * as mesmas palavras, e nenhum limiar separa isso: subir o limiar perde o Grand
+ * Hiace, baixar esconde o Runx.
+ *
+ * ⚠️ O custo de cada erro NÃO É SIMÉTRICO. Falso negativo = um card repetido,
+ * que o usuário vê e entende. Falso positivo = um carro real sumido, que
+ * ninguém percebe. Por isso fica só exato + contínencia, que na amostra deram
+ * ZERO falso positivo.
+ *
+ * ★ O que destravaria isto de verdade não é um limiar melhor: é a FOTO. Mesma
+ * imagem = mesmo carro, sem ambiguidade. Hoje cada captura re-hospeda a foto
+ * num arquivo novo (0 grupos por foto idêntica), então exigiria hash perceptual
+ * da imagem.
+ */
 const MINIMO_DESCRICAO = 40;
 
 function identidadeDoTexto(descricao: string | null): string | null {
@@ -154,13 +189,48 @@ async function main() {
     // ★ Com modelo+ano na chave, o caso legítimo continua passando (Mercedes
     // C200 1994 que caiu de ₲30M para ₲26M é o mesmo carro) e o boilerplate
     // de loja para de fundir carros distintos.
-    if (!t || !o.cidade || !o.modelo) continue;
-    const k = `${o.modelo}|${o.ano ?? ""}|${t}|${o.cidade}`;
+    // ⚠️ AQUI a cidade pode faltar, diferente do passo 1. A regra herdada da
+    // era Brasil diz "sem cidade no anúncio, a chave NÃO aplica — não funde às
+    // cegas", e ela vale para a chave de lá (modelo+ano+preço), que é frouxa
+    // sem a cidade. Esta chave tem DESCRIÇÃO INTEIRA, que já identifica sozinha.
+    //
+    // ★ O caso que isto pega: dois "Toyota Grand Hiace 2000" a ₲74.000.000,
+    // publicados com 1h de diferença, ambos SEM cidade — o passo 1 os pulava
+    // justamente por isso, e eles apareciam lado a lado na home.
+    if (!t || !o.modelo) continue;
+    const k = `${o.modelo}|${o.ano ?? ""}|${o.cidade ?? ""}`;
+    (o as Linha & { _txt?: string })._txt = t;
     porTexto.set(k, [...(porTexto.get(k) ?? []), o]);
   }
 
+  // ⚠⚠ IGUALDADE EXATA DO TEXTO ERRAVA um caso real: dois "Toyota Grand Hiace
+  // 2000" a ₲74.000.000, mesmo corpo de descrição palavra por palavra, mas um
+  // deles com o prefixo de ficha da loja (".Ref. 3703 ☮️"). 406 contra 346
+  // caracteres, hash diferente, e os dois apareciam lado a lado na home.
+  //
+  // ★ Então o balde é modelo+ano+cidade e, DENTRO dele, dois anúncios são o
+  // mesmo quando um texto CONTÉM o outro. Continência tolera prefixo e sufixo
+  // (número de referência, selo de loja, linha de contato acrescentada depois)
+  // sem afrouxar o miolo, que é o que descreve o carro.
+  //
+  // ⚠️ O(n²) dentro do balde, e tudo bem: balde é modelo+ano+cidade, que na
+  // prática tem poucas unidades.
   let precoMudou = 0;
-  for (const g of porTexto.values()) {
+  const clusterizar = (balde: Linha[]): Linha[][] => {
+    const grupos: Linha[][] = [];
+    for (const o of balde) {
+      const t = (o as Linha & { _txt?: string })._txt ?? "";
+      const achado = grupos.find((g) => {
+        const u = (g[0] as Linha & { _txt?: string })._txt ?? "";
+        return t === u || t.includes(u) || u.includes(t);
+      });
+      if (achado) achado.push(o); else grupos.push([o]);
+    }
+    return grupos;
+  };
+
+  for (const balde of porTexto.values())
+  for (const g of clusterizar(balde)) {
     if (g.length < 2) continue;
     const ordenado = [...g].sort((a, b) => quando(b).localeCompare(quando(a)));
     const mantido = ordenado[0];
@@ -175,7 +245,9 @@ async function main() {
       jaMarcado.add(o.id);
     }
   }
-  const gruposTexto = [...porTexto.values()].filter((g) => g.length > 1).length;
+  // ⚠️ Conta CLUSTERS e não BALDES: balde é modelo+ano+cidade e quase sempre
+  // tem mais de um anúncio, então contar balde dava 214 e não significava nada.
+  const gruposTexto = [...porTexto.values()].flatMap(clusterizar).filter((g) => g.length > 1).length;
   console.log(`passo 2 (mesma descrição, preço livre): ${gruposTexto} grupo(s), ${precoMudou} com PREÇO DIFERENTE`);
 
   const comRepeticao = [...grupos.values()].filter((g) => g.length > 1);

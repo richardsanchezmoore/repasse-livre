@@ -105,6 +105,12 @@ while [ ! -f "$PARAR" ]; do
   # ★ 400 por volta: sobraram 335 sem foto e o ciclo ja roda poucas voltas/dia.
   FOTOS_LIMITE=400 FOTOS_PAUSA_MS=1500 \
     comRede npx tsx src/backfillFotosPY.ts
+  # ★ Reanúncio: o vendedor republica e o Facebook dá id novo. Varre a cada
+  # volta porque anúncio novo pode ser republicação de um que já está lá.
+  # ⚠️ Não usa a sessão do Playwright — não precisa da trava.
+  marca "VOLTA $volta · reanúncios"
+  comRede npx tsx src/marcarDuplicatasPY.ts --aplicar
+
   marca "VOLTA $volta encerrada — pausa de 5 min"
   sleep 300
 done
