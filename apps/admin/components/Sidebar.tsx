@@ -26,6 +26,7 @@ import {
   X,
   XCircle,
   type LucideIcon,
+  Table2,
 } from "lucide-react";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba } from "./DiscoveriesBoard";
@@ -284,6 +285,21 @@ export function Sidebar({
                 <Home size={18} strokeWidth={1.75} />
               </span>
               <span className="sidebar-rotulo">{tx("inicio")}</span>
+            </button>
+          </li>
+          {/* ★★ A TABELA é o produto, não um anexo da listagem — fica logo
+              abaixo de Início. ⚠️ `navegarEFechar` carrega o prefixo de idioma
+              sozinho (ver NavegacaoProvider): quem está em /pt vai para /pt/tabla. */}
+          <li>
+            <button
+              type="button"
+              onClick={() => navegarEFechar("/tabla")}
+              className={`sidebar-item ${pathname?.endsWith("/tabla") ? "sidebar-item-ativo" : ""}`}
+            >
+              <span className="sidebar-icone" aria-hidden="true">
+                <Table2 size={18} strokeWidth={1.75} />
+              </span>
+              <span className="sidebar-rotulo">{tx("tabelaMenu")}</span>
             </button>
           </li>
           {itensVisiveis.map((item) => (

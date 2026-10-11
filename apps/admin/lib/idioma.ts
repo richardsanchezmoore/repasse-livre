@@ -155,6 +155,23 @@ const PT = {
   hojeAs: "Hoje às",
   anunciadoEm: "Anunciado em",
 
+
+  // ─── página da tabela ───
+  tabelaMenu: "Tabela de Preços",
+  tabelaTitulo: "Tabela de Preços AutoRadarPy",
+  tabelaSub: "O preço de referência do mercado paraguaio, por modelo e ano.",
+  escolhaMarca: "Escolha a marca",
+  escolhaModelo: "Escolha o modelo",
+  escolhaAno: "Escolha o ano",
+  precoReferencia: "Preço de referência",
+  faixaMercado: "Faixa do mercado",
+  referenciaMes: "Referência de",
+  tabelaVazia: "A tabela ainda não foi publicada.",
+  tabelaComoFunciona: "Como calculamos",
+  tabelaExplicacao: "A referência é a mediana dos anúncios semelhantes que encontramos no Paraguai neste mês — não uma avaliação do seu carro. Um anúncio isolado, sem outros parecidos, não entra na conta.",
+  dadoFraco: "Dado ainda fraco",
+  voltar: "Voltar",
+
   // ─── rodapé ───
   rodapeTagline: "Carros à venda no Paraguai, com preço de referência por modelo e ano.",
   navegar: "Navegar",
@@ -238,6 +255,21 @@ const ES: { [K in keyof typeof PT]: string } = {
   hoje: "Hoy",
   hojeAs: "Hoy a las",
   anunciadoEm: "Publicado el",
+
+  tabelaMenu: "Tabla de Precios",
+  tabelaTitulo: "Tabla de Precios AutoRadarPy",
+  tabelaSub: "El precio de referencia del mercado paraguayo, por modelo y año.",
+  escolhaMarca: "Elegí la marca",
+  escolhaModelo: "Elegí el modelo",
+  escolhaAno: "Elegí el año",
+  precoReferencia: "Precio de referencia",
+  faixaMercado: "Rango del mercado",
+  referenciaMes: "Referencia de",
+  tabelaVazia: "La tabla todavía no fue publicada.",
+  tabelaComoFunciona: "Cómo lo calculamos",
+  tabelaExplicacao: "La referencia es la mediana de los anuncios similares que encontramos en Paraguay este mes — no es una tasación de tu auto. Un anuncio aislado, sin otros parecidos, no entra en la cuenta.",
+  dadoFraco: "Dato aún débil",
+  voltar: "Volver",
 
   rodapeTagline: "Autos a la venta en Paraguay, con precio de referencia por modelo y año.",
   navegar: "Navegar",

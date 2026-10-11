@@ -39,17 +39,28 @@ function mesCorrente(): string {
  * pode rebatizar o modelo inteiro.
  */
 async function mapaDeMarcas(): Promise<Map<string, string>> {
-  const { data, error } = await supabase
-    .from("opportunities")
-    .select("marca, modelo")
-    .eq("pais", "PY")
-    .not("modelo", "is", null)
-    .not("marca", "is", null)
-    .limit(5000);
-  if (error) throw new Error(`marcas: ${error.message}`);
+  // ⚠⚠ PAGINA. `.limit(5000)` NÃO vence o teto de 1.000 linhas do PostgREST —
+  // ele devolve 1.000 em silêncio, sem erro. Com 1.683 anúncios, vitz (90
+  // linhas), gol, premio e ractis ficaram fora da primeira página e sairam da
+  // tabela SEM MARCA. E a página da tabela é Marca → Modelo → Ano, então os
+  // quatro modelos mais fortes ficariam inalcançáveis.
+  const linhas: { marca: string; modelo: string }[] = [];
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("marca, modelo")
+      .eq("pais", "PY")
+      .not("modelo", "is", null)
+      .not("marca", "is", null)
+      .range(de, de + 999);
+    if (error) throw new Error(`marcas: ${error.message}`);
+    const lote = (data ?? []) as { marca: string; modelo: string }[];
+    linhas.push(...lote);
+    if (lote.length < 1000) break;
+  }
 
   const contagem = new Map<string, Map<string, number>>();
-  for (const l of (data ?? []) as { marca: string; modelo: string }[]) {
+  for (const l of linhas) {
     const k = String(l.modelo).toLowerCase().trim();
     const m = contagem.get(k) ?? new Map<string, number>();
     m.set(l.marca, (m.get(l.marca) ?? 0) + 1);
