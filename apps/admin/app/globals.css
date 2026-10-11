@@ -9274,3 +9274,90 @@ button.bemvindo-secundario {
   /* Em duas colunas a frase aperta demais e vira ruído — fica só o essencial. */
   .kpi-card-frase { display: none; }
 }
+
+/* ═══ O VERDE DE SELEÇÃO SAI — ele era da marca antiga ════════════════════════
+   ⚠️ O verde #d9fdd3 marcava "selecionado" na barra lateral e nas listas de
+   filtro. Com a marca azul ele vira o único resto da identidade anterior, e
+   justamente no estado mais visível da interface.
+
+   ★ O verde agora é SÓ da ação (o botão de publicar). Seleção passa ao azul da
+   marca: quem está selecionado pertence ao site, não a uma cor solta. */
+.sidebar-item-ativo,
+.seletor-estado-opcao-ativa,
+.seletor-local-opcao-ativa {
+  background: var(--kpi-azul-fundo);
+  color: var(--kpi-azul-icone);
+  font-weight: 700;
+}
+.sidebar-item-ativo .sidebar-contador {
+  color: var(--kpi-azul-icone);
+}
+/* O ícone ativo da barra lateral acompanha. */
+.sidebar-item-ativo .sidebar-icone {
+  color: var(--kpi-azul-icone);
+}
+
+/* O seletor de praça abaixo dos KPIs: era cinza-sobre-branco e sumia. Agora
+   tem a cor da marca, que é o que diz "isto é clicável e é um filtro". */
+.seletor-estado-gatilho {
+  color: var(--marca-azul);
+  font-weight: 700;
+}
+.seletor-estado-gatilho strong {
+  color: var(--marca-azul);
+}
+
+/* ★★ O cartão da TABELA é o único clicável — e tem que parecer. Fundo da cor
+   da marca, bem suave, e uma ação explícita embaixo. */
+.kpi-card-cta {
+  text-decoration: none;
+  border-color: #cfdcf7;
+  background: linear-gradient(180deg, #f6f9ff, #ffffff);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.kpi-card-cta:hover {
+  border-color: var(--marca-azul);
+  box-shadow: 0 10px 26px -14px rgba(0, 59, 159, 0.45);
+  transform: translateY(-1px);
+}
+.kpi-card-acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--marca-azul);
+}
+
+/* ═══ NO CELULAR OS KPIs VIRAM CARROSSEL ══════════════════════════════════════
+   ⚠️ Antes eles viravam grade de 2 colunas e empurravam os anúncios para baixo
+   da dobra — num site de busca, o pior lugar para gastar tela é acima do
+   primeiro resultado.
+
+   ★ Em carrossel eles ocupam UMA faixa, o primeiro cartão (a tabela) aparece
+   inteiro e os outros aparecem pela metade — o que é o próprio convite a
+   arrastar, sem precisar de seta nem de ponto. */
+@media (max-width: 760px) {
+  .kpis-topo {
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* ⚠️ Sangra até a borda da tela: cartão cortado no meio do padding parece
+       corte acidental; cortado na borda parece lista que continua. */
+    margin-inline: -16px;
+    padding-inline: 16px;
+    scrollbar-width: none;
+  }
+  .kpis-topo::-webkit-scrollbar { display: none; }
+
+  .kpis-topo > * {
+    flex: 0 0 76%;
+    scroll-snap-align: start;
+  }
+
+  /* ⚠️ A frase volta a aparecer aqui: no carrossel há largura para ela, e era
+     por falta de espaço que a grade de 2 colunas a escondia. */
+  .kpi-card-frase { display: block; }
+}

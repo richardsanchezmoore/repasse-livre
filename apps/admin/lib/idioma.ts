@@ -210,6 +210,9 @@ const PT = {
   kpiTabelaRotulo: "modelos com preço de referência",
   kpiTabelaFrase: "Mediana dos anúncios reais, não palpite.",
   chamadaPrincipal: "Não compre sem consultar o AutoRadar.",
+  kpiTabelaCta: "Consultar a tabela",
+  kpiTabelaCtaRotulo: "Tabela de preços",
+  kpiTabelaCtaFrase: "Viva, atualizada todo mês, sobre anúncios reais.",
 
   // ─── página da tabela ───
   tabelaMenu: "Tabela de Preços",
@@ -362,6 +365,9 @@ const ES: { [K in keyof typeof PT]: string } = {
   kpiTabelaRotulo: "modelos con precio de referencia",
   kpiTabelaFrase: "Mediana de avisos reales, no una estimación.",
   chamadaPrincipal: "No compres sin consultar AutoRadar.",
+  kpiTabelaCta: "Consultar la tabla",
+  kpiTabelaCtaRotulo: "Tabla de precios",
+  kpiTabelaCtaFrase: "Viva, actualizada cada mes, sobre avisos reales.",
 
   tabelaMenu: "Tabla de Precios",
   tabelaTitulo: "Tabla de Precios AutoRadarPy",

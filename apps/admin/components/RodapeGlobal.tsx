@@ -37,7 +37,7 @@ export function RodapeGlobal() {
       <div className="rodape-global-conteudo">
         <div className="rodape-global-marca">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Repasse Livre" className="rodape-global-logo" />
+          <img src="/logo-autoradar-escuro.png" alt="AutoRadarPy" className="rodape-global-logo" />
           <p className="rodape-global-tagline">
             {/* ⚠️ A tagline do rodapé aparece em TODA página — era a menção
                 de FIPE mais visível que sobrava no site. */}

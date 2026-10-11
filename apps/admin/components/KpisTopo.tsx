@@ -1,4 +1,5 @@
-import { Radar, Table2, Clock } from "lucide-react";
+import Link from "next/link";
+import { Radar, Table2, Clock, ArrowRight } from "lucide-react";
 import { buscarKpisTopo } from "@/lib/kpisTopo";
 import { buscarTabelaReferencia } from "@/lib/tabelaReferencia";
 import { t, IDIOMA_PADRAO, type Idioma } from "@/lib/idioma";
@@ -8,39 +9,21 @@ function milhar(n: number): string {
 }
 
 /**
- * A FAIXA DO TOPO — deixou de ser painel de números e virou a PROMESSA do site.
+ * A FAIXA DO TOPO — banner de valor, não painel de números.
  *
- * ★★ Ideia do Gustavo (11/10/2026): *"estava a pensar no que destacar nos KPI e
- * acho que devemos usar eles como banner de promoção do nosso portal"*. Está
- * certo: quem chega pela primeira vez não sabe o que é este site, e três
- * números sem contexto não contam.
+ * ★★ Ideia do Gustavo: *"devemos usar eles como banner de promoção do nosso
+ * portal"*. Mas cada cartão mantém um NÚMERO REAL: promessa sem número é
+ * propaganda, número sem promessa não conta a quem chega o que o site faz.
  *
- * ★ MAS CADA CARTÃO MANTÉM UM NÚMERO REAL. Promessa sem número é propaganda;
- * número sem promessa não diz o que o site faz. Os dois juntos é que
- * convencem — e o número é o que nos separa do Carden, que publica "média" sem
- * dizer de quantos anúncios.
+ * ⚠️⚠️ DUAS FRASES SUGERIDAS FORAM DERRUBADAS PELO DADO (11/10/2026), porque
+ * promessa que o primeiro visitante desmente custa mais do que rende:
+ *   ✗ "anúncios de particulares" — 0% da base marcada como profissional, 60%
+ *     NULO, e sabemos que há lojas (a varredura achou lojista republicando o
+ *     mesmo carro dez vezes com template próprio);
+ *   ✗ "em todo o Paraguai" — são 12 cidades, as praças que varremos.
  *
- * ═══ ⚠️⚠️ O QUE EU TIVE QUE DERRUBAR DAS SUGESTÕES, E POR QUÊ ═══
- *
- * Ele sugeriu quatro frases. Duas não se sustentam no dado de hoje — medido em
- * 11/10/2026 — e publicar promessa que não se cumpre custa mais do que a
- * promessa rende:
- *
- *   ✗ "anúncios de particulares": 0% da base está marcada como profissional,
- *     40% como particular e 60% é NULO. O campo não está detectando loja — e
- *     nós SABEMOS que há lojas, porque a varredura de reanúncio achou lojistas
- *     republicando o mesmo carro dez vezes com template próprio. O primeiro
- *     lojista a se ver listado desmente a frase.
- *
- *   ✗ "em todo o Paraguai": são 12 cidades, as praças que varremos. "Todo o
- *     país" é verificável em dois cliques.
- *
- *   ✗ "a PRIMEIRA tabela com base real": não dá para provar primazia, e o
- *     Carden existe. O diferencial verdadeiro é COMO a nossa é feita (mediana
- *     sobre anúncios reais, com faixa visível) — isso a página /tabla explica.
- *
- * ★ O que sobrou é tudo verificável: quantos entraram, que o monitoramento não
- * para, e quantos modelos já têm preço de referência publicado.
+ * ★ "Tabela viva, atualizada todo mês" FICA, e é dele: é verdade literal — a
+ * tabela é datada por mês como a FIPE e republica de hora em hora.
  */
 export async function KpisTopo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } = {}) {
   const tx = t(idioma);
@@ -50,41 +33,48 @@ export async function KpisTopo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } =
   // então contar linhas inflaria o número sem significar mais cobertura.
   const modelos = new Set(tabela.map((l) => `${l.marca ?? ""}|${l.modelo}`)).size;
 
-  const cards = [
-    {
-      Icone: Clock,
-      valor: milhar(k.novos),
-      rotulo: tx("kpiNovosRotulo"),
-      frase: tx("kpiNovosFrase"),
-    },
-    {
-      Icone: Radar,
-      valor: "24/7",
-      rotulo: tx("kpiMonitorRotulo"),
-      frase: tx("kpiMonitorFrase"),
-    },
-    {
-      Icone: Table2,
-      valor: milhar(modelos),
-      rotulo: tx("kpiTabelaRotulo"),
-      frase: tx("kpiTabelaFrase"),
-    },
-  ];
-
   return (
     <div className="kpis-topo">
-      {cards.map(({ rotulo, valor, frase, Icone }) => (
-        <div key={rotulo} className="kpi-card">
-          <div className="kpi-card-texto">
-            <span className="kpi-card-valor">{valor}</span>
-            <span className="kpi-card-rotulo">{rotulo}</span>
-            <span className="kpi-card-frase">{frase}</span>
-          </div>
-          <span className="kpi-card-icone" aria-hidden>
-            <Icone size={22} strokeWidth={2} />
+      {/* ★★★ O CARTÃO DA TABELA VEM PRIMEIRO, e é o único clicável.
+          Pedido dele: *"podemos publicar um banner para um KPI que leve a
+          tabela de consulta... na versão do celular deve ser o primeiro"*.
+          Está em primeiro no DESKTOP também — a tabela é o produto, e os
+          outros dois cartões existem para dar credibilidade a ela. */}
+      <Link href="/tabla" className="kpi-card kpi-card-cta">
+        <div className="kpi-card-texto">
+          <span className="kpi-card-valor">{milhar(modelos)}</span>
+          <span className="kpi-card-rotulo">{tx("kpiTabelaCtaRotulo")}</span>
+          <span className="kpi-card-frase">{tx("kpiTabelaCtaFrase")}</span>
+          <span className="kpi-card-acao">
+            {tx("kpiTabelaCta")} <ArrowRight size={13} strokeWidth={2.6} />
           </span>
         </div>
-      ))}
+        <span className="kpi-card-icone" aria-hidden>
+          <Table2 size={22} strokeWidth={2} />
+        </span>
+      </Link>
+
+      <div className="kpi-card">
+        <div className="kpi-card-texto">
+          <span className="kpi-card-valor">{milhar(k.novos)}</span>
+          <span className="kpi-card-rotulo">{tx("kpiNovosRotulo")}</span>
+          <span className="kpi-card-frase">{tx("kpiNovosFrase")}</span>
+        </div>
+        <span className="kpi-card-icone" aria-hidden>
+          <Clock size={22} strokeWidth={2} />
+        </span>
+      </div>
+
+      <div className="kpi-card">
+        <div className="kpi-card-texto">
+          <span className="kpi-card-valor">24/7</span>
+          <span className="kpi-card-rotulo">{tx("kpiMonitorRotulo")}</span>
+          <span className="kpi-card-frase">{tx("kpiMonitorFrase")}</span>
+        </div>
+        <span className="kpi-card-icone" aria-hidden>
+          <Radar size={22} strokeWidth={2} />
+        </span>
+      </div>
     </div>
   );
 }
