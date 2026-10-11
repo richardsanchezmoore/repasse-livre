@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { IDIOMAS, caminhoNoIdioma, idiomaDoCaminho, t } from "@/lib/idioma";
 import { BandeiraDoIdioma } from "./Bandeira";
@@ -26,7 +27,7 @@ import { BandeiraDoIdioma } from "./Bandeira";
  * e cair na home sem filtro é perder o lugar — e a pessoa culparia o site, não a
  * tradução.
  */
-export function SeletorIdioma() {
+function Bandeiras() {
   const caminho = usePathname();
   const params = useSearchParams();
   const atual = idiomaDoCaminho(caminho);
@@ -56,5 +57,35 @@ export function SeletorIdioma() {
         );
       })}
     </div>
+  );
+}
+
+/**
+ * ⚠⚠⚠ O SUSPENSE NÃO É ENFEITE — SEM ELE O BUILD QUEBRA.
+ *
+ * `useSearchParams()` força a página a sair da renderização estática. Numa
+ * rota com `revalidate` (a /tabla é assim), o Next exige que o trecho esteja
+ * dentro de <Suspense> e, sem isso, o EXPORT FALHA:
+ *
+ *     useSearchParams() should be wrapped in a suspense boundary at "/tabla"
+ *     Export encountered errors on: /pt/tabla, /tabla
+ *
+ * ⚠⚠ E o custo disso foi alto: a Vercel mantém o ÚLTIMO DEPLOY BOM quando o
+ * build falha, então o site ficou horas servindo código velho enquanto eu
+ * seguia commitando. O Gustavo viu `/carros/` e o logo antigo em produção.
+ *
+ * ★★ E A LIÇÃO: `tsc --noEmit` e o servidor de desenvolvimento NÃO PROVAM que
+ * o build passa. O dev não faz prerender estático, e foi exatamente aí que o
+ * erro morava. Rodar `next build` antes de empurrar mudança de rota ou de
+ * componente de cliente.
+ *
+ * ★ O Suspense fica AQUI DENTRO, e não em cada lugar que usa o seletor: assim
+ * nenhuma página futura precisa lembrar disso.
+ */
+export function SeletorIdioma() {
+  return (
+    <Suspense fallback={<div className="seletor-idioma" aria-hidden />}>
+      <Bandeiras />
+    </Suspense>
   );
 }
