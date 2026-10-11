@@ -142,7 +142,7 @@ async function main() {
           console.log(`  ✗ ${String(i + 1).padStart(3)} ${String(o.veiculo).slice(0, 34).padEnd(34)} re-hospedagem falhou`);
         } else {
           await supabase.from("opportunities")
-            .update({ foto_principal: reh.foto_principal, fotos_secundarias: reh.fotos_secundarias })
+            .update({ foto_principal: reh.foto_principal, fotos_secundarias: reh.fotos_secundarias, foto_hash: reh.foto_hash })
             .eq("id", o.id);
           ok++;
           console.log(`  ✓ ${String(i + 1).padStart(3)} ${String(o.veiculo).slice(0, 34).padEnd(34)} ${reh.fotos_secundarias.length + 1} foto(s)`);

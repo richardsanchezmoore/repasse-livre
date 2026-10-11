@@ -856,6 +856,9 @@ async function main() {
             // faz enxergar links crus como "precisa de foto".
             foto_principal: reh?.foto_principal ?? fotos[0] ?? null,
             fotos_secundarias: reh?.fotos_secundarias ?? fotos.slice(1, 10),
+            // ★ O hash perceptual da principal — critério de duplicata que vem
+            // ANTES do texto. Só existe quando re-hospedamos (PY_SEM_FOTO=0).
+            foto_hash: reh?.foto_hash ?? null,
             descricao: a.descricao,
             origem_tipo: "descoberta",
             status: "descoberta",

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { supabase } from "./supabaseClient.js";
+import { mesmaFoto } from "./hashPerceptual.js";
 
 /**
  * MARCA OS REANÚNCIOS — o mesmo carro publicado várias vezes.
@@ -36,6 +37,7 @@ interface Linha {
   cidade: string | null;
   data_publicacao_origem: string | null;
   data_captura: string | null;
+  foto_hash: string | null;
   duplicata_de: string | null;
 }
 
@@ -44,7 +46,7 @@ async function todas(): Promise<Linha[]> {
   for (let de = 0; ; de += 1000) {
     const { data, error } = await supabase
       .from("opportunities")
-      .select("id, veiculo, descricao, modelo, ano, preco, moeda, cidade, data_publicacao_origem, data_captura, duplicata_de")
+      .select("id, veiculo, descricao, modelo, ano, preco, moeda, cidade, foto_hash, data_publicacao_origem, data_captura, duplicata_de")
       .eq("pais", "PY")
       .neq("status", "rejeitada")
       .range(de, de + 999);
@@ -140,19 +142,66 @@ async function main() {
   const linhas = await todas();
   console.log(`${linhas.length} anúncios ativos`);
 
+  // ═══ ★★★ PASSO 0: A MESMA FOTO ═══
+  //
+  // Vem ANTES de tudo porque foto é EVIDÊNCIA e texto é indício. Os critérios
+  // de texto erraram três vezes hoje — e o pior erro, fundir um Corolla Runx
+  // preto com um vermelho, aconteceu justamente porque a loja descreve carros
+  // diferentes com as mesmas palavras. Não existe template de foto.
+  //
+  // ⚠️ O limiar (40 de 256 bits) foi MEDIDO, não escolhido: ver o cabeçalho de
+  // hashPerceptual.ts. Reprocessamento da mesma foto fica até 34; o piso entre
+  // carros diferentes é 64.
+  //
+  // ⚠️ Sem BALDE de modelo aqui, de propósito: a foto já identifica sozinha, e
+  // exigir modelo igual perderia justamente o caso em que o normalizador errou
+  // o modelo em um dos dois anúncios.
+  //
+  // ⚠️ O(n²) sobre os que TÊM hash. Com ~1.400 fotos são ~1 milhão de
+  // comparações de 64 chars — menos de um segundo. Quando passar de 10 mil,
+  // trocar por bandas (LSH); hoje seria otimizar o que não dói.
+  const comHash = linhas.filter((o) => o.foto_hash);
+  const porFoto: Linha[][] = [];
+  for (const o of comHash) {
+    const achado = porFoto.find((g) => mesmaFoto(g[0].foto_hash, o.foto_hash));
+    if (achado) achado.push(o);
+    else porFoto.push([o]);
+  }
+  const gruposFoto = porFoto.filter((g) => g.length > 1);
+  console.log(
+    `passo 0 (mesma foto): ${comHash.length} com hash · ${gruposFoto.length} grupo(s), ` +
+      `${gruposFoto.reduce((a, g) => a + g.length - 1, 0)} excedente(s)`,
+  );
+
+
+  const marcar: { id: string; duplicata_de: string }[] = [];
+  const desmarcar: string[] = [];
+  let maiorGrupo = 0;
+
+  // ★ A foto decide primeiro: o que ela agrupou não é reexaminado pelo texto.
+  for (const g of gruposFoto) {
+    maiorGrupo = Math.max(maiorGrupo, g.length);
+    const ordenado = [...g].sort((a, b) => quando(b).localeCompare(quando(a)));
+    const mantido = ordenado[0];
+    if (mantido.duplicata_de) desmarcar.push(mantido.id);
+    for (const o of ordenado.slice(1)) {
+      if (o.duplicata_de !== mantido.id) marcar.push({ id: o.id, duplicata_de: mantido.id });
+    }
+  }
+  const decididoPelaFoto = new Set([...marcar.map((m) => m.id), ...gruposFoto.map((g) => g[0].id)]);
+
+  // ═══ PASSO 1: mesmo modelo+ano+preço+cidade ═══
   const grupos = new Map<string, Linha[]>();
   for (const o of linhas) {
     // ⚠️ Sem modelo ou sem preço não dá para afirmar que é o mesmo carro.
     // Na dúvida, NÃO colapsa: esconder anúncio distinto é pior que mostrar
     // repetido, porque o repetido o usuário percebe e o escondido não.
+    if (decididoPelaFoto.has(o.id)) continue; // ★ a foto já decidiu
     if (!o.modelo || o.preco == null || !o.cidade) continue;
     const k = `${o.modelo}|${o.ano ?? ""}|${o.preco}|${o.moeda}|${o.cidade}`;
     grupos.set(k, [...(grupos.get(k) ?? []), o]);
   }
 
-  const marcar: { id: string; duplicata_de: string }[] = [];
-  const desmarcar: string[] = [];
-  let maiorGrupo = 0;
 
   for (const g of grupos.values()) {
     if (g.length < 2) {

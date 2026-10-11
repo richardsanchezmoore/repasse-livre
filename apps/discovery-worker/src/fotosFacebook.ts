@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fetch as undiciFetch } from "undici";
 import sharp from "sharp";
+import { hashDaImagem, type HashFoto } from "./hashPerceptual.js";
 import { supabase } from "./supabaseClient.js";
 
 /**
@@ -98,20 +99,30 @@ async function subirFoto(itemId: string, indice: number, bytes: Buffer): Promise
 export async function rehospedarFotosFacebook(
   itemId: string,
   fotos: string[],
-): Promise<{ foto_principal: string; fotos_secundarias: string[] } | null> {
+): Promise<{ foto_principal: string; fotos_secundarias: string[]; foto_hash: HashFoto | null } | null> {
   const alvo = fotos.filter(Boolean).slice(0, MAX_REHOSPEDAR);
   const extrasCruas = fotos.filter(Boolean).slice(MAX_REHOSPEDAR, 10);
 
   const permanentes: string[] = [];
+  // ★★ O hash sai dos bytes ORIGINAIS, antes do nosso próprio resize. É de
+  // graça: a imagem já está na memória porque vamos re-hospedar de qualquer
+  // jeito. O caro é a rede, e a rede já foi paga.
+  //
+  // ⚠️ SÓ DA PRINCIPAL (i === 0): é a foto que o vendedor escolheu para
+  // representar o carro, e é a que ele repete ao reanunciar. Hashear as três
+  // seria mais forte, mas exigiria coluna de array e comparação cruzada —
+  // fica para quando a principal provar que não basta.
+  let hashPrincipal: HashFoto | null = null;
   for (let i = 0; i < alvo.length; i++) {
     const bytes = await baixarBytes(alvo[i]);
+    if (i === 0 && bytes) hashPrincipal = await hashDaImagem(bytes);
     const url = bytes ? await subirFoto(itemId, i, bytes) : null;
     if (url) permanentes.push(url);
     else if (i === 0) return null; // sem principal → aborta (não dá pra confiar no resto)
   }
   if (permanentes.length === 0) return null;
 
-  return { foto_principal: permanentes[0], fotos_secundarias: [...permanentes.slice(1), ...extrasCruas] };
+  return { foto_principal: permanentes[0], fotos_secundarias: [...permanentes.slice(1), ...extrasCruas], foto_hash: hashPrincipal };
 }
 
 /** Extrai o item-id do FB da link_origem (`.../marketplace/item/1733...`). */
