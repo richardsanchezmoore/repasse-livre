@@ -241,7 +241,11 @@ export const CATALOGO_JDM: ModeloJdm[] = [
   // ★ Vantagem estrutural da Coreia: volante à ESQUERDA DE FÁBRICA, sem
   // conversão de caixa de direção. Pesa no preço e na confiança do comprador.
   {
-    nomes: ["grand carnival hi-limousine", "hi-limousine", "grand carnival", "carnival"],
+    // ⚠⚠ SÓ os nomes que dizem HI-LIMOUSINE. "carnival" e "grand carnival"
+    // saíram daqui: eles nomeiam a FAMÍLIA, e deixando-os aqui todo Carnival
+    // do Paraguai virava a versão coreana topo de linha — medido em 11/10/2026.
+    // A família tem entrada própria logo abaixo.
+    nomes: ["grand carnival hi-limousine", "hi-limousine"],
     marca: "kia", segmento: "van_luxo", origem: "coreia", destaques: ["diesel"],
     motores: ["2.2 CRDi Turbo Diesel"],
     nota: "★ As versões coreanas topo de linha (Hi-Limousine) têm teto elevado, telas grandes e poltronas de massagem — diferente da Carnival que o Brasil conhece.",
@@ -267,6 +271,33 @@ export const CATALOGO_JDM: ModeloJdm[] = [
  * ⚠️ A ordenação por comprimento é o que impede "Crown Majesta" de casar como
  * "Crown" e "Grand Hiace" como "Hiace". Não trocar por ordem alfabética.
  */
+/**
+ * ★★ ENTRADAS DE FAMÍLIA — o nome genérico do carro, separado da versão.
+ *
+ * ⚠⚠ A ARMADILHA, medida em 11/10/2026: quando o nome comum do carro é ALIAS
+ * de uma versão específica, TODO carro daquela família vira aquela versão. Foi
+ * o que aconteceu com "pajero" → Pajero Full (Junior, Mini e io iam junto) e
+ * com "carnival" → Grand Carnival Hi-Limousine.
+ *
+ * ★ A regra que separa um caso do outro: o alias é APELIDO do mesmo carro
+ * ("axio", "runx", "regius", "fielder" — esses podem ficar) ou é o nome de uma
+ * FAMÍLIA que tem várias versões distintas? Só o segundo caso precisa de entrada
+ * própria.
+ *
+ * ⚠️ Vir “depois” no arquivo não importa: a busca é por MAIOR CASAMENTO, e
+ * “land cruiser prado” (18) sempre ganha de “land cruiser” (12). A ordem do
+ * array é irrelevante; o tamanho do nome é que manda.
+ *
+ * ⚠️ PENDENTE, porque é pergunta de mercado e não de código: “crown” cai em
+ * Crown Athlete e “delica” em Delica Space Gear. Se no Paraguai quase todo
+ * Crown importado FOR Athlete, deixar como está é melhor que partir a amostra.
+ * Decisão do Gustavo.
+ */
+CATALOGO_JDM.push(
+  { nomes: ["grand carnival", "carnival"], marca: "kia", segmento: "minivan", origem: "coreia", motores: ["2.2 CRDi", "3.3 V6"], nota: "A família Carnival. A versão Hi-Limousine (teto elevado, poltronas de massagem) tem ficha própria." },
+  { nomes: ["land cruiser"], marca: "toyota", segmento: "suv", origem: "japao", destaques: ["diesel", "4x4"], motores: ["4.2 TD", "4.5 V8"], nota: "A família Land Cruiser (70/80/100/200). O Prado é outro veículo e tem ficha própria." },
+);
+
 export const NOMES_JDM: string[] = CATALOGO_JDM
   .flatMap((m) => m.nomes)
   .sort((a, b) => b.length - a.length);
@@ -312,3 +343,37 @@ export function marcaJdm(nome: string | null | undefined): string | null {
   const ficha = fichaJdm(nome);
   return ficha ? (ficha.marca ?? "toyota") : null;
 }
+
+/**
+ * Os nomes do catálogo AGRUPADOS POR MARCA.
+ *
+ * ⚠️⚠️ O BUG QUE ISTO CONSERTA, medido em 11/10/2026: `NOMES_JDM` entrega os 94
+ * nomes numa lista só, e `modeloParaguai.ts` despejava todos dentro de
+ * `MODELOS.toyota`. Resultado: as 10 entradas Mitsubishi do catálogo nunca eram
+ * consultadas para um anúncio Mitsubishi — quem respondia era a lista escrita à
+ * mão, que tem "pajero" e não tem "pajero junior"/"mini"/"io".
+ *
+ * ★ Com o alias genérico "pajero" casando e o canônico sendo "Pajero Full",
+ * TRÊS modelos distintos viravam o mesmo:
+ *
+ *     "MITSUBISHI PAJERO JUNIOR 1999 motor 1.100"  →  Pajero Full
+ *     "Mitsubishi Pajero Mini 2010"                →  Pajero Full
+ *     "Mitsubishi Pajero io 2003"                  →  Pajero Full
+ *
+ * Um kei-car 660cc, um 1.1 e um SUV 3.2 diesel na mesma linha da tabela. Isso
+ * não erra só o rótulo: contamina a MEDIANA, que é o produto.
+ *
+ * ⚠️ `marca` ausente na ficha = Toyota, que é o default histórico do catálogo
+ * (40 das 94 entradas vêm sem marca justamente por isso).
+ */
+export const NOMES_JDM_POR_MARCA: Record<string, string[]> = (() => {
+  const por: Record<string, string[]> = {};
+  for (const m of CATALOGO_JDM) {
+    const marca = (m.marca ?? "toyota").toLowerCase();
+    (por[marca] ??= []).push(...m.nomes);
+  }
+  // ⚠️ MAIOR PRIMEIRO, sempre: é o que faz "pajero junior" ganhar de "pajero".
+  // A ordem aqui não é cosmética — é a regra inteira.
+  for (const k of Object.keys(por)) por[k].sort((a, b) => b.length - a.length);
+  return por;
+})();

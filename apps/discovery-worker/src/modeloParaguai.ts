@@ -32,7 +32,7 @@
  */
 
 /** Tira acento e baixa a caixa, para comparar sem susto. */
-import { NOMES_JDM, canonicoJdm, segmentoJdm, marcaJdm, type SegmentoPY } from "./catalogoJdmParaguai.js";
+import { NOMES_JDM, NOMES_JDM_POR_MARCA, canonicoJdm, segmentoJdm, marcaJdm, type SegmentoPY } from "./catalogoJdmParaguai.js";
 
 const chave = (s: string): string =>
   String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -76,7 +76,7 @@ const MODELOS: Record<string, string[]> = {
   // fonte única, com segmento, motores e as notas de mercado do Gustavo.
   // Duplicar a lista era garantir que uma das duas ficaria desatualizada.
   toyota: [
-    ...NOMES_JDM,
+    ...(NOMES_JDM_POR_MARCA.toyota ?? NOMES_JDM),
     // ⚠️ "cruiser prado"/"cruiser" sem o "land": o ano partia "Land Cruiser" ao
     // meio e o "Land" se perdia antes mesmo da limpeza ("Toyota Cruiser 2025
     // Prado Ob"). Os aliases pegam o estrago que já está gravado na base.
@@ -131,6 +131,30 @@ const MODELOS: Record<string, string[]> = {
   // antes de gravar isso em 183 registros.
   honda_moto: ["crf", "cg", "xr", "titan", "bros", "pop", "biz"],
 };
+
+/**
+ * ★★ O CATÁLOGO ENTRA EM TODAS AS MARCAS, não só na Toyota.
+ *
+ * ⚠⚠ O que estava quebrado: `MODELOS.toyota` recebia os 94 nomes do catálogo
+ * inteiro, e as outras marcas ficavam só com a lista escrita à mão. As 10
+ * entradas Mitsubishi do catálogo — pajero io, mini, junior, sport, full —
+ * NUNCA eram consultadas para um anúncio Mitsubishi. Quem respondia era
+ * `["pajero sport", "pajero", ...]`, e o alias genérico "pajero" canonizava
+ * para "Pajero Full".
+ *
+ * Medido: Junior (1.1), Mini (kei 660cc) e io, TODOS viravam Pajero Full —
+ * que é um SUV 3.2 diesel. Três carros distintos numa linha só da tabela.
+ *
+ * ⚠️ A ordenação por TAMANHO no fim não é arrumação: a busca é por maior
+ * casamento, e é ela que faz "pajero junior" ganhar de "pajero". Sem isso o
+ * conserto não conserta nada — a própria ficha do Pajero Full avisa no
+ * catálogo: “deixar DEPOIS de pajero io/mini/junior/sport na busca”.
+ */
+for (const [marca, nomes] of Object.entries(NOMES_JDM_POR_MARCA)) {
+  if (marca === "toyota") continue; // já entrou na definição acima
+  const atual = MODELOS[marca] ?? [];
+  MODELOS[marca] = [...new Set([...nomes, ...atual])].sort((a, b) => b.length - a.length);
+}
 
 /**
  * ⚠️ "NEW" É PREFIXO DE GERAÇÃO, NÃO MODELO. No Paraguai o importador escreve
