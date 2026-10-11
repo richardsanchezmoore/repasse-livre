@@ -34,6 +34,37 @@ PARAR=/c/claude/ciclo24h.parar
 : > "$LOG"
 rm -f "$PARAR"
 
+# ★★ A QUEDA DE REDE DAS 03:21 MATOU O CICLO. Duas etapas sairam com
+# "TypeError: fetch failed" (nao alcancavam o Supabase) e o laco nao sobreviveu.
+# Internet domestica no Paraguai cai; o ciclo tem que tratar isso como normal.
+#
+# ⚠️ Espera a rede VOLTAR antes de tentar de novo, em vez de repetir no vazio:
+# repetir sem rede so queima tentativa e, no Facebook, pareceria robo insistindo.
+esperarRede() {
+  local n=0
+  while ! node -e "fetch('https://www.google.com/generate_204',{signal:AbortSignal.timeout(8000)}).then(()=>process.exit(0)).catch(()=>process.exit(1))" 2>/dev/null; do
+    n=$((n + 1))
+    echo "  sem rede (tentativa $n) - esperando 60s" >> "$LOG"
+    [ "$n" -gt 120 ] && { echo "  2h sem rede - seguindo mesmo assim" >> "$LOG"; return; }
+    sleep 60
+  done
+}
+
+# Roda um passo; se cair, espera a rede e tenta UMA vez mais.
+comRede() {
+  esperarRede
+  "$@" >> "$LOG" 2>&1
+  local c=$?
+  if [ $c -ne 0 ]; then
+    echo "  saiu com $c - esperando a rede e repetindo uma vez" >> "$LOG"
+    sleep 60
+    esperarRede
+    "$@" >> "$LOG" 2>&1
+    c=$?
+  fi
+  echo "  passo encerrado com $c" >> "$LOG"
+}
+
 marca() { echo "" >> "$LOG"; echo "═══ $(date '+%d/%m %H:%M:%S') · $* ═══" >> "$LOG"; }
 
 # ⚠️ Espera a trava LIBERAR em vez de só sair: sem isto, um passo que pegasse a
@@ -55,8 +86,7 @@ while [ ! -f "$PARAR" ]; do
   esperarTrava
   PY_MODO=termo PY_TERMOS_POR_RODADA=25 PY_SEM_FOTO=1 PY_MAX_ITENS=250 \
     PY_ESPERA_ITEM=1500 PY_PACING=1200 \
-    npx tsx src/capturarParaguai.ts >> "$LOG" 2>&1
-  echo "  catálogo saiu com $?" >> "$LOG"
+    comRede npx tsx src/capturarParaguai.ts
 
   [ -f "$PARAR" ] && break
   sleep 120
@@ -65,27 +95,16 @@ while [ ! -f "$PARAR" ]; do
   esperarTrava
   PY_AUTOLOAD=1 PY_FAIXAS=12 PY_SEM_FOTO=1 \
     PY_ROLAGENS=25 PY_PAUSA_ROLAGEM=2200 PY_PACING=1200 \
-    npx tsx src/capturarParaguai.ts >> "$LOG" 2>&1
-  echo "  faixas saiu com $?" >> "$LOG"
+    comRede npx tsx src/capturarParaguai.ts
 
   [ -f "$PARAR" ] && break
   sleep 120
 
   marca "VOLTA $volta · 3/3 FOTOS"
   esperarTrava
-  FOTOS_LIMITE=200 FOTOS_PAUSA_MS=1500 \
-    npx tsx src/backfillFotosPY.ts >> "$LOG" 2>&1
-  echo "  fotos saiu com $?" >> "$LOG"
-
-  # ★★ Republica a TABELA a cada volta: anúncio novo que entrou já entra na
-  # mediana do mês. Não usa a sessão do Facebook, então não precisa da trava.
-  #
-  # ⚠️ Enquanto a migração 0093 não rodar, isto falha e segue — de propósito.
-  # Melhor logar o erro do que travar a captação por causa da tabela.
-  marca "VOLTA $volta · tabela de referência"
-  npx tsx src/publicarTabelaPY.ts --gravar >> "$LOG" 2>&1
-  echo "  tabela saiu com $?" >> "$LOG"
-
+  # ★ 400 por volta: sobraram 335 sem foto e o ciclo ja roda poucas voltas/dia.
+  FOTOS_LIMITE=400 FOTOS_PAUSA_MS=1500 \
+    comRede npx tsx src/backfillFotosPY.ts
   marca "VOLTA $volta encerrada — pausa de 5 min"
   sleep 300
 done
