@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Calendar, Check, Gauge, MapPin, ExternalLink, Tag, ShieldAlert, Settings2, Lock } from "lucide-react";
 import { ROTULO_CLASSIFICACAO, CLASSE_CLASSIFICACAO, type Classificacao } from "@/lib/classificacao";
-import { temReferenciaFipe } from "@/lib/site";
+import { temReferenciaFipe, MONETIZACAO_ATIVA } from "@/lib/site";
 import { infoFonte } from "@/lib/fonte";
 import { ROTULO_MOTIVO_VENDA } from "@/lib/motivoVenda";
 import { ROTULO_PERFIL_REMETENTE, type PerfilRemetente } from "@/lib/perfilRemetente";
@@ -227,16 +227,16 @@ export async function PaginaOportunidade({
             ⚠️⚠️ Mas o COPILOTO mora dentro dele: esconder o painel inteiro
             sumiria com um recurso PAGO sem avisar ninguém. Por isso, sem FIPE,
             o parecer continua na página — só o gráfico sai. */}
-        {comFipe ? (
+        {comFipe && MONETIZACAO_ATIVA ? (
           <PainelComparativo
             historico={historicoFipe}
             referencia={referenciaPreco}
             precoAnuncio={oportunidade.preco}
             copiloto={copilotoNode}
           />
-        ) : (
+        ) : MONETIZACAO_ATIVA ? (
           copilotoNode
-        )}
+        ) : null}
 
         <dl className="pagina-oportunidade-ficha">
           <div className="pagina-oportunidade-ficha-item pagina-oportunidade-ficha-item-linha">
@@ -373,7 +373,10 @@ export async function PaginaOportunidade({
             )}
 
             {!oportunidade.link_origem.startsWith("insercao-direta:") &&
-              (ehAssinante && !ocultarAcessoExterno ? (
+              // ★★★ A AÇÃO PRINCIPAL DA PÁGINA. Com a monetização off, o link
+              // abre para todo mundo — travar o anúncio original enquanto não há
+              // plano para vender é fechar a porta sem ter o que cobrar na entrada.
+              ((!MONETIZACAO_ATIVA || ehAssinante) && !ocultarAcessoExterno ? (
                 <a
                   href={oportunidade.link_origem}
                   target="_blank"

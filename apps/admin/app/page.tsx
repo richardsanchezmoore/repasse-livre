@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [config, foto] = await Promise.all([buscarConfigSeo("home"), buscarFotoDestaque({})]);
+  const [config, foto] = await Promise.all([buscarConfigSeo("home", "es"), buscarFotoDestaque({})]);
   if (!config) return {};
 
   return {

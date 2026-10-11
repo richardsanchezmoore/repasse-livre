@@ -24,6 +24,7 @@ import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { buscarMargemPremium, buscarIdsLiberados } from "@/lib/configWorker";
+import { MONETIZACAO_ATIVA } from "@/lib/site";
 import { resumirParecer, semParecer } from "@/lib/copilotoResumo";
 import { resolverLocalidade } from "@/lib/localidade";
 import { extrairMarca } from "@/lib/marca";
@@ -202,7 +203,8 @@ async function PaginaMarca({
   // Gate premium (mesmo critério do DiscoveriesBoard) — trava as ofertas gordas
   // também nesta página SEO pública, senão o funil vaza por aqui.
   const ehAdmin = usuario?.role === "admin";
-  const margemPremium = !ehAdmin && !usuario?.premium ? await buscarMargemPremium() : Infinity;
+  // ⚠️ Infinity = nada trava. Ver MONETIZACAO_ATIVA em lib/site.ts.
+  const margemPremium = MONETIZACAO_ATIVA && !ehAdmin && !usuario?.premium ? await buscarMargemPremium() : Infinity;
   const total = count ?? 0;
   const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
   const caminhoAtual = caminhoMarca(
@@ -353,7 +355,9 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   const ehDemo = liberados.has(oportunidade.id);
 
   const ehAdminPagina = usuario?.role === "admin";
-  const podeVerCopiloto = ehAdminPagina || Boolean(usuario?.premium) || ehDemo;
+  // ⚠️ Com a monetização off o painel inteiro some (ver PaginaOportunidade):
+  // `podeVerCopiloto` fica true para ninguém ver o TEASER travado.
+  const podeVerCopiloto = !MONETIZACAO_ATIVA || ehAdminPagina || Boolean(usuario?.premium) || ehDemo;
 
   // Copiloto de Compra (BIA Engine) — item do PLANO PAGO. Só computa o fact-sheet
   // (query pesada de coorte) p/ quem PODE ver (admin/premium); o não-pago recebe
@@ -372,7 +376,7 @@ export default async function PaginaOportunidadeOuMarcaRoute({
   // esse acesso é travado (galeria/ganho/ficha ficam abertos p/ Ads e SEO); vale
   // só nas ofertas acima do limite. Ver project_repasse_livre_premium_monetizacao.
   const margemPremiumPagina =
-    ehAdminPagina || usuario?.premium || ehDemo ? Infinity : await buscarMargemPremium();
+    !MONETIZACAO_ATIVA || ehAdminPagina || usuario?.premium || ehDemo ? Infinity : await buscarMargemPremium();
   const bloqueado = (oportunidade.margem_percentual ?? 0) > margemPremiumPagina;
   const ehPremiumEfetivo = ehAdminPagina || Boolean(usuario?.premium) || ehDemo;
   // Assinante REAL — sem ehDemo de propósito: o visitante de Ads (destino liberado)

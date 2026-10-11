@@ -149,3 +149,32 @@ export const temReferenciaFipe = (o: { fipe_valor?: number | null }): boolean =>
 
 /** O site inteiro trabalha contra uma tabela de referência? (Brasil sim, Paraguai ainda não.) */
 export const PRACA_TEM_TABELA_PRONTA = PAIS_DO_SITE === "BR";
+
+/**
+ * ═══ A CAMADA PREMIUM, DESLIGADA ENQUANTO NÃO HÁ O QUE COBRAR ═══
+ *
+ * ★★ DECISÃO DO GUSTAVO (11/10/2026), olhando o site no ar: *"temos que tirar
+ * a guarda do usuário premium que vinculava com a margem FIPE que hoje não tem...
+ * deixa off mas com ressalva que depois podemos aplicar novamente"*.
+ *
+ * ⚠️ O QUE ESTAVA ACONTECENDO: três paredes de pagamento continuavam de pé
+ * depois que a FIPE saiu, e todas as três cobravam por algo que não existe mais:
+ *
+ *   1. o OVERLAY do card, que travava oferta acima de `MARGEM_PREMIUM_PERCENTUAL`
+ *      — margem sobre a FIPE, hoje nula em 100% dos registros paraguaios;
+ *   2. o painel COPILOTO / FIPE / MÉDIA, que é análise contra tabela brasileira;
+ *   3. o LINK DO ANÚNCIO original, travado em "Acesse o anúncio · Repasse Livre
+ *      PRO" — este é o pior dos três, porque é a ação principal da página.
+ *
+ * ★ Ele mesmo diz quando volta: *"só daqui a 3 meses podemos usar essa área
+ * para aplicar o movimento médio como fazíamos na FIPE"*. E sobre o Copiloto:
+ * *"poucos colocam KM e demais detalhes, então não conseguimos nesse momento
+ * trazer relevância"* — o parecer não tem matéria-prima no Paraguai ainda.
+ *
+ * ⚠️⚠️ FLAG, NÃO REMOÇÃO — mesma regra de Webmotors e OLX: *"desligar por flag,
+ * não apagar"*. Nada foi deletado; a camada inteira volta com uma env, sem
+ * deploy de código.
+ *
+ * Para religar: NEXT_PUBLIC_MONETIZACAO=1.
+ */
+export const MONETIZACAO_ATIVA = process.env.NEXT_PUBLIC_MONETIZACAO === "1";

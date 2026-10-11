@@ -5,9 +5,26 @@ import { PAIS_DO_SITE } from "@/lib/site";
 export type { ChaveSeoPagina, ConfigSeoPagina } from "./seoVariaveis";
 export { CHAVES_SEO_PAGINAS, VARIAVEIS_SEO, substituirVariaveisSeo } from "./seoVariaveis";
 
-export async function buscarConfigSeo(chave: ChaveSeoPagina): Promise<ConfigSeoPagina | null> {
-  const { data } = await supabaseAdmin.from("seo_paginas").select("*").eq("chave", chave).maybeSingle();
-  return data ?? null;
+/**
+ * ★★ TÍTULO E DESCRIÇÃO POR IDIOMA (mig 0095). A aba do navegador dizia
+ * "Carros abaixo da tabela FIPE", em português, num site paraguaio — e não era
+ * código: vem desta tabela, que não conhecia idioma.
+ *
+ * ⚠️ CAI PARA es SE NÃO ACHAR a linha do idioma pedido. Metadado faltando
+ * em português é melhor servido pelo espanhol (a praça) do que por nada —
+ * página sem título o Google inventa um, e normalmente escolhe mal.
+ */
+export async function buscarConfigSeo(
+  chave: ChaveSeoPagina,
+  idioma: "es" | "pt" = "es",
+): Promise<ConfigSeoPagina | null> {
+  const { data } = await supabaseAdmin
+    .from("seo_paginas").select("*").eq("chave", chave).eq("idioma", idioma).maybeSingle();
+  if (data) return data;
+  if (idioma === "es") return null;
+  const { data: fallback } = await supabaseAdmin
+    .from("seo_paginas").select("*").eq("chave", chave).eq("idioma", "es").maybeSingle();
+  return fallback ?? null;
 }
 
 export async function buscarTodasConfigsSeo(): Promise<ConfigSeoPagina[]> {

@@ -4,6 +4,7 @@ import type { Classificacao } from "@/lib/classificacao";
 import { UFS } from "@/lib/mascaras";
 import { MARGEM_MINIMA_PADRAO } from "@/lib/margin";
 import { buscarMargemPremium } from "@/lib/configWorker";
+import { MONETIZACAO_ATIVA } from "@/lib/site";
 import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
@@ -244,6 +245,15 @@ const COLUNAS_LISTAGEM =
   // sem foto, senão o problema fica invisível justamente para quem o conserta.
   if (aba === "aprovadas") {
     consulta = consulta.not("foto_principal", "is", null);
+
+    // ★★ REANÚNCIO FORA DA VITRINE. O mesmo carro aparecia até 10 vezes — o
+    // vendedor republica e o Facebook dá id novo a cada vez. Marcado no dado
+    // (`duplicata_de`, mig 0094) e não filtrado aqui na mão, para a paginação
+    // e a contagem do topo continuarem somando certo.
+    //
+    // ⚠️ Não é rejeição: o registro fica, e a observação de preço dele segue
+    // valendo no livro. Quem decide a mediana conta ofertas DISTINTAS.
+    consulta = consulta.is("duplicata_de", null);
   }
   if (filtro.origem_tipo) {
     consulta = consulta.eq("origem_tipo", filtro.origem_tipo);
@@ -653,7 +663,9 @@ export async function Board({
   // Gate premium: admin e assinante veem tudo; o resto encara o overlay nas ofertas
   // acima do limite (config). Só lê o limite quando o gate pode valer (economiza query).
   const ehAdmin = usuario?.role === "admin";
-  const podeBloquear = !ehAdmin && !usuario?.premium;
+  // ⚠️ O overlay travava oferta acima da margem sobre a FIPE — coluna nula em
+  // 100% dos registros paraguaios. Ver MONETIZACAO_ATIVA em lib/site.ts.
+  const podeBloquear = MONETIZACAO_ATIVA && !ehAdmin && !usuario?.premium;
   const margemPremium = podeBloquear ? await buscarMargemPremium() : Infinity;
   const idsFavoritados = aba === "favoritos"
     ? new Set(oportunidades.map((o) => o.id))
