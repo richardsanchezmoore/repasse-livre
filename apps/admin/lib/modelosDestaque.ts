@@ -28,10 +28,19 @@ import { buscarTabelaReferencia, type LinhaReferencia } from "@/lib/tabelaRefere
  */
 
 export interface ModeloDestaque {
-  /** Como está no banco (minúsculo, normalizado) — é o valor do filtro. */
+  /**
+   * Minúsculo — é o que vai na URL (`?modelo=vitz`).
+   *
+   * ⚠️⚠️ O BANCO GRAVA COM INICIAL MAIÚSCULA ("Vitz", "Land Cruiser"), e eu
+   * assumi minúsculo porque o meu próprio diagnóstico imprimia minúsculo — era
+   * o SCRIPT que baixava a caixa, não a coluna. Resultado: `eq("modelo","vitz")`
+   * devolvia ZERO, as fotos sumiram e o clique levava a vitrine vazia. Por isso
+   * toda consulta por modelo usa `ilike` SEM curinga (igualdade insensível à
+   * caixa), nunca `eq`.
+   */
   modelo: string;
   marca: string | null;
-  /** "Toyota Vitz" para a tela. */
+  /** "Toyota Vitz" para a tela — a grafia do banco, não um title-case meu. */
   rotulo: string;
   /** Anúncios vivos (não reanúncio) deste modelo. */
   n: number;
@@ -44,8 +53,13 @@ const QUANTOS = 14;
 /** ⚠️ Abaixo disso o clique leva a uma vitrine de três carros — parece site vazio. */
 const MINIMO_ANUNCIOS = 12;
 
-function titulo(texto: string): string {
-  return texto.replace(/(^|[\s-])([a-zà-ú])/g, (_, antes, letra) => antes + letra.toUpperCase());
+/**
+ * ⚠️ `%` e `_` são curingas no `ilike`. Nome de modelo não costuma ter nenhum
+ * dos dois, mas um dia terá, e aí o filtro casaria com meio catálogo em
+ * silêncio.
+ */
+function escaparIlike(valor: string): string {
+  return valor.replace(/[%_\\]/g, (c) => "\\" + c);
 }
 
 /** Anos citados numa linha da tabela ("2011", "2011+2012", "2006–2012"). */
@@ -84,8 +98,9 @@ function referenciaDoModelo(linhas: LinhaReferencia[]): ModeloDestaque["referenc
   };
 }
 
-async function contarModelos(): Promise<Array<{ modelo: string; marca: string | null; n: number }>> {
-  const contagem = new Map<string, { marca: string | null; n: number }>();
+async function contarModelos(): Promise<Array<{ modelo: string; grafia: string; marca: string | null; n: number }>> {
+  // chave minúscula → grafia do banco + marca + contagem
+  const contagem = new Map<string, { grafia: string; marca: string | null; n: number }>();
   let de = 0;
   for (;;) {
     // ⚠️⚠️ PAGINA DE 1.000 EM 1.000. `.limit(5000)` NÃO vence o teto do
@@ -97,23 +112,31 @@ async function contarModelos(): Promise<Array<{ modelo: string; marca: string | 
       .eq("pais", PAIS_DO_SITE)
       .eq("status", "aprovada")
       .is("duplicata_de", null)
+      // ⚠️⚠️ AS MESMAS TRÊS CONDIÇÕES DA VITRINE (ver DiscoveriesBoard): sem
+      // reanúncio, com foto e com cidade. A primeira versão contava só os
+      // vivos e o cartão prometia "82 avisos" enquanto a listagem entregava
+      // 62 — número do cartão tem de ser o número da página de destino, senão
+      // o próprio recurso desmente o site.
+      .not("foto_principal", "is", null)
+      .not("cidade", "is", null)
       .not("modelo", "is", null)
       .order("id", { ascending: true })
       .range(de, de + 999);
     if (error) return [];
     for (const linha of data ?? []) {
-      const modelo = String(linha.modelo ?? "").trim().toLowerCase();
-      if (!modelo) continue;
-      const atual = contagem.get(modelo) ?? { marca: (linha.marca as string | null) ?? null, n: 0 };
+      const grafia = String(linha.modelo ?? "").trim();
+      const chave = grafia.toLowerCase();
+      if (!chave) continue;
+      const atual = contagem.get(chave) ?? { grafia, marca: (linha.marca as string | null) ?? null, n: 0 };
       atual.n += 1;
       if (!atual.marca && linha.marca) atual.marca = linha.marca as string;
-      contagem.set(modelo, atual);
+      contagem.set(chave, atual);
     }
     if (!data || data.length < 1000) break;
     de += 1000;
   }
   return [...contagem.entries()]
-    .map(([modelo, v]) => ({ modelo, marca: v.marca, n: v.n }))
+    .map(([modelo, v]) => ({ modelo, grafia: v.grafia, marca: v.marca, n: v.n }))
     .sort((a, b) => b.n - a.n);
 }
 
@@ -130,28 +153,47 @@ async function computar(): Promise<ModeloDestaque[]> {
     porModelo.set(k, arr);
   }
 
-  // Uma foto por modelo: a do anúncio mais recente que tem foto. Consulta
-  // minúscula (uma coluna, uma linha) e são no máximo 14 delas por meia hora.
+  /**
+   * Uma foto por modelo: a do anúncio mais recente que tem foto. Consulta
+   * minúscula (uma coluna, uma linha) e são no máximo 14 delas por meia hora.
+   *
+   * ⚠️⚠️ PREFERE A FOTO RE-HOSPEDADA NO NOSSO BUCKET. A URL do fbcdn traz um
+   * `oe=` que CADUCA e vira 403 em poucos dias — e aqui o estrago seria pior
+   * que num card: a fileira fica no alto da home, e cartão com buraco no lugar
+   * da foto é a primeira coisa que o visitante vê. Hoje 78% das fotos recentes
+   * ainda são fbcdn (o re-hospedador não alcançou), então a volta por cima
+   * existe: sem nenhuma re-hospedada, aceita a do Facebook em vez de deixar o
+   * cartão cego.
+   */
+  const buscarFoto = async (modelo: string, soNosso: boolean) => {
+    // ⚠️ A cadeia sai inteira dos dois lados do ternário em vez de reatribuir
+    // `q`: reatribuir um builder do supabase-js estoura o TS2589 ("type
+    // instantiation is excessively deep") — o tipo cresce a cada filtro.
+    const base = supabaseAdmin
+      .from("opportunities")
+      .select("foto_principal")
+      .eq("pais", PAIS_DO_SITE)
+      .eq("status", "aprovada")
+      .is("duplicata_de", null)
+      .ilike("modelo", escaparIlike(modelo))
+      .not("foto_principal", "is", null)
+      .not("cidade", "is", null);
+    const { data } = soNosso
+      ? await base.not("foto_principal", "ilike", "%fbcdn%").order("data_captura", { ascending: false }).limit(1)
+      : await base.order("data_captura", { ascending: false }).limit(1);
+    return (data?.[0]?.foto_principal as string | undefined) ?? null;
+  };
+
   const fotos = await Promise.all(
     escolhidos.map(async (c) => {
-      const { data } = await supabaseAdmin
-        .from("opportunities")
-        .select("foto_principal")
-        .eq("pais", PAIS_DO_SITE)
-        .eq("status", "aprovada")
-        .is("duplicata_de", null)
-        .eq("modelo", c.modelo)
-        .not("foto_principal", "is", null)
-        .order("data_captura", { ascending: false })
-        .limit(1);
-      return (data?.[0]?.foto_principal as string | undefined) ?? null;
+      return (await buscarFoto(c.modelo, true)) ?? (await buscarFoto(c.modelo, false));
     })
   );
 
   return escolhidos.map((c, i) => ({
     modelo: c.modelo,
     marca: c.marca,
-    rotulo: `${c.marca ? `${c.marca} ` : ""}${titulo(c.modelo)}`.trim(),
+    rotulo: `${c.marca ? `${c.marca} ` : ""}${c.grafia}`.trim(),
     n: c.n,
     foto: fotos[i],
     referencia: referenciaDoModelo(porModelo.get(c.modelo) ?? []),

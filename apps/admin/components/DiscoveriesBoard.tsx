@@ -319,7 +319,10 @@ const COLUNAS_LISTAGEM =
     consulta = consulta.ilike("veiculo", `${filtros.marca}%`);
   }
   if (filtros.modelo) {
-    consulta = consulta.eq("modelo", filtros.modelo);
+    // ⚠️⚠️ `ilike` SEM CURINGA, não `eq`: a coluna grava "Vitz" e a URL traz
+    // "vitz". Com `eq` o clique na fileira de modelos abria vitrine VAZIA —
+    // foi assim na primeira versão. Curingas chegam escapados do chamador.
+    consulta = consulta.ilike("modelo", filtros.modelo);
   }
   if (filtros.anunciante) {
     consulta = consulta.eq("anunciante_profissional", filtros.anunciante === "profissional");

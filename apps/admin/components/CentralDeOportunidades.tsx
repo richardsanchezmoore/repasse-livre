@@ -101,9 +101,10 @@ export async function CentralDeOportunidades({
   const FONTES_VALIDAS = ["OLX", "WEBMOTORS", "MERCADO_LIVRE"];
   const fonteAtiva = FONTES_VALIDAS.includes(fonte ?? "") ? fonte : undefined;
   const marcaAtiva = marca?.trim() || undefined;
-  // ⚠️ Minúscula porque a coluna `modelo` é normalizada assim — um link com
-  // "Vitz" na URL não pode devolver vitrine vazia.
-  const modeloAtivo = modelo?.trim().toLowerCase() || undefined;
+  // ⚠️ O filtro é `ilike` sem curinga (ver DiscoveriesBoard): a coluna grava
+  // "Vitz" e a URL traz "vitz". Escapa `%` e `_` para que um nome de modelo não
+  // vire curinga e case com meio catálogo.
+  const modeloAtivo = modelo?.trim().replace(/[%_\\]/g, (c) => "\\" + c) || undefined;
   const anoMinAtivo = /^\d{4}$/.test(anoMin ?? "") ? anoMin : undefined;
   const anoMaxAtivo = /^\d{4}$/.test(anoMax ?? "") ? anoMax : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
