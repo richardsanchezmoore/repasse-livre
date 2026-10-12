@@ -9364,3 +9364,158 @@ button.bemvindo-secundario {
   color: var(--marca-azul);
   font-weight: 700;
 }
+
+/* ═══ "EXPLORÁ POR MODELO" — a fileira entre os KPI e a listagem ═══════════
+   ★★ Ideia do Gustavo (12/10/2026): entrar direto no carro em vez de começar
+   preenchendo filtro. Ver components/ExploraPorModelo.tsx.
+
+   ⚠️ ROLAGEM HORIZONTAL EM TODAS AS LARGURAS, não só no celular. A fileira
+   tem 14 modelos: no desktop, "quebrar em grade" empurraria a listagem —
+   que é o que o visitante veio ver — para baixo da dobra. */
+.explora-modelos {
+  margin: 4px 0 18px;
+}
+.explora-modelos-cabecalho {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.explora-modelos-titulo {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--marca-azul);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.explora-modelos-sub {
+  font-size: 12.5px;
+  color: #6b7280;
+}
+.explora-modelos-fila {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  /* A fileira sangra até a borda: cartão cortado é o que avisa que há mais. */
+  margin-inline: -16px;
+  padding: 2px 16px 6px;
+  scrollbar-width: thin;
+}
+.explora-modelos-fila::-webkit-scrollbar { height: 6px; }
+.explora-modelos-fila::-webkit-scrollbar-thumb {
+  background: #d7dce5;
+  border-radius: 999px;
+}
+
+.modelo-card {
+  flex: 0 0 148px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 10px;
+  border: 1px solid #e6e9ef;
+  border-radius: 12px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.modelo-card:hover {
+  border-color: var(--marca-azul);
+  box-shadow: 0 4px 14px rgba(0, 59, 159, 0.12);
+  transform: translateY(-1px);
+}
+.modelo-card-foto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--kpi-azul-fundo);
+  margin-bottom: 6px;
+}
+.modelo-card-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.modelo-card-nome {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  /* ⚠️ Duas linhas no máximo: "Toyota Land Cruiser" não cabe numa, e deixar
+     estourar desalinharia a altura de toda a fileira. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5em;
+}
+.modelo-card-n {
+  font-size: 11.5px;
+  color: #6b7280;
+}
+.modelo-card-ref {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--kpi-azul-icone);
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.modelo-card-anos {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #9aa3b2;
+}
+.modelo-card-ref-vazia {
+  color: #9aa3b2;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .modelo-card { flex-basis: 132px; }
+  .explora-modelos-sub { display: none; }
+}
+
+/* ═══ O SELO DO MODELO FILTRADO ═══════════════════════════════════════════
+   ⚠️ Sem ele a fileira vira armadilha: a vitrine encolhe e nada diz por quê.
+   Ver components/ChipModelo.tsx. */
+.chip-modelo-barra {
+  padding: 0 0 10px;
+}
+.chip-modelo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px 5px 11px;
+  border-radius: 999px;
+  background: var(--kpi-azul-fundo);
+  color: var(--kpi-azul-icone);
+  font-size: 13px;
+  font-weight: 700;
+}
+.chip-modelo-rotulo {
+  font-weight: 600;
+  opacity: 0.75;
+}
+.chip-modelo-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(27, 79, 196, 0.14);
+  color: inherit;
+}
+.chip-modelo-x:hover {
+  background: var(--marca-azul);
+  color: #fff;
+}

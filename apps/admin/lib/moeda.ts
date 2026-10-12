@@ -108,7 +108,8 @@ export function normalizarMoeda(bruto?: string | null): CodigoMoeda {
   return MOEDA_PADRAO;
 }
 
-const SIMBOLO: Record<CodigoMoeda, string> = { PYG: "₲", USD: "US$", BRL: "R$", ARS: "AR$" };
+export const SIMBOLO_MOEDA: Record<CodigoMoeda, string> = { PYG: "₲", USD: "US$", BRL: "R$", ARS: "AR$" };
+const SIMBOLO = SIMBOLO_MOEDA;
 
 /**
  * Preço na própria moeda do anúncio.

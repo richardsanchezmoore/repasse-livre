@@ -214,6 +214,16 @@ const PT = {
   kpiTabelaCtaRotulo: "Tabela de preços",
   kpiTabelaCtaFrase: "Viva, atualizada todo mês, sobre anúncios reais.",
 
+  // ─── fileira "Explorá por modelo" ───
+  exploraPorModelo: "Explore por modelo",
+  exploraPorModeloSub: "Os modelos com mais anúncios vivos no Paraguai agora.",
+  anunciosCurto: "anúncios",
+  semReferenciaAinda: "Sem referência ainda",
+  unidadeMilhoes: "mi",
+  unidadeMilhares: "mil",
+  filtrandoModelo: "Modelo",
+  limparFiltro: "Limpar filtro",
+
   // ─── página da tabela ───
   tabelaMenu: "Tabela de Preços",
   tabelaTitulo: "Tabela de Preços AutoRadarPy",
@@ -368,6 +378,17 @@ const ES: { [K in keyof typeof PT]: string } = {
   kpiTabelaCta: "Consultar la tabla",
   kpiTabelaCtaRotulo: "Tabla de precios",
   kpiTabelaCtaFrase: "Viva, actualizada cada mes, sobre avisos reales.",
+
+  // ★ "Explorá" em voseo — é como se fala em Asunción, e "Explora" soa a
+  // tradução feita de fora.
+  exploraPorModelo: "Explorá por modelo",
+  exploraPorModeloSub: "Los modelos con más avisos vivos en Paraguay ahora.",
+  anunciosCurto: "avisos",
+  semReferenciaAinda: "Sin referencia todavía",
+  unidadeMilhoes: "mill.",
+  unidadeMilhares: "mil",
+  filtrandoModelo: "Modelo",
+  limparFiltro: "Quitar filtro",
 
   tabelaMenu: "Tabla de Precios",
   tabelaTitulo: "Tabla de Precios AutoRadarPy",

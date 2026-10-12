@@ -13,6 +13,7 @@ import { buscarMarcasComContagem } from "@/lib/marcas";
 import { buscarPisoMargem } from "@/lib/configWorker";
 import { BoardArea } from "@/components/BoardArea";
 import { KpisTopo } from "@/components/KpisTopo";
+import { ExploraPorModelo } from "@/components/ExploraPorModelo";
 import { DetectorLocalizacao } from "@/components/DetectorLocalizacao";
 import { NavegacaoProvider } from "@/components/NavegacaoProvider";
 import { SelecaoMultiplaProvider } from "@/components/SelecaoMultiplaProvider";
@@ -65,12 +66,13 @@ export async function CentralDeOportunidades({
     anunciante?: string;
     fonte?: string;
     marca?: string;
+    modelo?: string;
     regiao?: string;
     cidade?: string;
     pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, marca, regiao, cidade, pagina } =
+  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, marca, modelo, regiao, cidade, pagina } =
     await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
@@ -99,6 +101,9 @@ export async function CentralDeOportunidades({
   const FONTES_VALIDAS = ["OLX", "WEBMOTORS", "MERCADO_LIVRE"];
   const fonteAtiva = FONTES_VALIDAS.includes(fonte ?? "") ? fonte : undefined;
   const marcaAtiva = marca?.trim() || undefined;
+  // ⚠️ Minúscula porque a coluna `modelo` é normalizada assim — um link com
+  // "Vitz" na URL não pode devolver vitrine vazia.
+  const modeloAtivo = modelo?.trim().toLowerCase() || undefined;
   const anoMinAtivo = /^\d{4}$/.test(anoMin ?? "") ? anoMin : undefined;
   const anoMaxAtivo = /^\d{4}$/.test(anoMax ?? "") ? anoMax : undefined;
   const paginaAtiva = Math.max(1, paraNumero(pagina) ?? 1);
@@ -124,6 +129,7 @@ export async function CentralDeOportunidades({
     anunciante: anuncianteAtivo,
     fonte: fonteAtiva,
     marca: marcaAtiva,
+    modelo: modeloAtivo,
     // Região/cidade só valem dentro de um estado (o SeletorLocal só aparece com estado ativo).
     // Cidade tem precedência (mais específica); ambas via ilike no board (case-insensitive).
     regiao: estadoAtivo ? regiao?.trim() || undefined : undefined,
@@ -161,6 +167,10 @@ export async function CentralDeOportunidades({
           />
           <main className="conteudo">
             <KpisTopo idioma={idioma} />
+            {/* ★ Entre os KPI e a listagem: o KPI diz QUANTOS modelos têm
+                referência, a fileira deixa entrar em cada um. Só aparece na
+                vitrine pública — nas abas de gestão ela seria ruído. */}
+            {abaAtiva === "aprovadas" && <ExploraPorModelo idioma={idioma} />}
             <BoardArea>
               <Board
                 aba={abaAtiva}

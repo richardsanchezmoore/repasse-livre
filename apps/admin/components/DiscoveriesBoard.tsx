@@ -15,6 +15,7 @@ import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
 import { OpportunityCard } from "./OpportunityCard";
 import { buscarTabelaReferencia, indexarTabela, linhaParaAnuncio, posicaoNaTabela } from "@/lib/tabelaReferencia";
 import { BotaoApagarTudo } from "./BotaoApagarTudo";
+import { ChipModelo } from "@/components/ChipModelo";
 import { FiltroClassificacao } from "./FiltroClassificacao";
 import { Paginacao } from "./Paginacao";
 import { RegistradorIdsVisiveis } from "./RegistradorIdsVisiveis";
@@ -62,6 +63,16 @@ export interface FiltrosBoard {
   fonte?: string;
   /** Marca (1ª palavra do veiculo) — filtra por prefixo. undefined = todas. */
   marca?: string;
+  /**
+   * Modelo NORMALIZADO (coluna `modelo`, minúscula) — igualdade exata.
+   *
+   * ★ É o alvo da fileira "Explorá por modelo". Igualdade e não `ilike` de
+   * propósito: a coluna já passou pelo normalizador, e um prefixo faria
+   * "corolla" arrastar "corolla axio", "corolla fielder" e "corolla runx" —
+   * que, como o Gustavo levantou na taxonomia, são MODELOS diferentes e não
+   * versões do mesmo.
+   */
+  modelo?: string;
   /** Cidade exata (case-insensitive via ilike). Tem precedência sobre `regiao`. */
   cidade?: string;
   /** Região/metrópole (ver lib/regioes.ts) — resolve p/ o conjunto de cidades. Precisa de `estado`. */
@@ -306,6 +317,9 @@ const COLUNAS_LISTAGEM =
     // Marca = 1ª palavra do veiculo → filtra por prefixo (mesmo critério das
     // páginas SEO de marca, buscarMarcaPorSlug).
     consulta = consulta.ilike("veiculo", `${filtros.marca}%`);
+  }
+  if (filtros.modelo) {
+    consulta = consulta.eq("modelo", filtros.modelo);
   }
   if (filtros.anunciante) {
     consulta = consulta.eq("anunciante_profissional", filtros.anunciante === "profissional");
@@ -734,6 +748,7 @@ export async function Board({
         piso={pisoMargem}
         proximidadeDisponivel={proximidadeDisponivel}
       />
+      {filtros.modelo && <ChipModelo modelo={filtros.modelo} />}
       <RegistradorIdsVisiveis ids={oportunidades.map((o) => o.id)} />
       <div className="board-lista">
         {oportunidades.length === 0 && <p className="vazio">Nenhuma oportunidade aqui.</p>}
