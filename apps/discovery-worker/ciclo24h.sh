@@ -84,10 +84,13 @@ while [ ! -f "$PARAR" ]; do
 
   marca "VOLTA $volta · 1/3 CATÁLOGO (busca por termo)"
   esperarTrava
-  # ★ PY_METADE=1: metade das praças por volta, alternando pela paridade do
-  # dia. Corta o catálogo pela metade e devolve o ciclo às FAIXAS, que é de
-  # onde vem o anúncio recém-publicado. Ver capturarParaguai.ts.
-  PY_METADE=1 PY_MODO=termo PY_TERMOS_POR_RODADA=25 PY_SEM_FOTO=1 PY_MAX_ITENS=250 \
+  # ★ PY_METADE=1: metade das praças por volta. Corta o catálogo pela metade e
+  # devolve o ciclo às FAIXAS, que é de onde vem o anúncio recém-publicado.
+  #
+  # ⚠️ A FASE VEM DAQUI, do contador de voltas. Antes era a paridade do dia e
+  # isso dava errado: todas as voltas do mesmo dia pegavam a MESMA metade, e a
+  # outra ficava até 24h sem varredura (o log mostrou voltas 2 e 3 iguais).
+  PY_METADE=1 PY_METADE_FASE=$((volta % 2)) PY_MODO=termo PY_TERMOS_POR_RODADA=25 PY_SEM_FOTO=1 PY_MAX_ITENS=250 \
     PY_ESPERA_ITEM=1500 PY_PACING=1200 \
     comRede npx tsx src/capturarParaguai.ts
 

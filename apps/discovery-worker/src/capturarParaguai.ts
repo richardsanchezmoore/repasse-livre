@@ -405,10 +405,17 @@ async function main() {
    * criação, o único que pesca anúncio recém-publicado — quase nunca rodavam.
    * Daí a listagem ter acervo de sobra e quase nada publicado hoje.
    *
-   * ★ Alternar por PARIDADE DO DIA DO ANO, e não sortear: sorteio pode repetir
-   * a mesma metade várias voltas seguidas e deixar a outra sem varredura por
-   * um dia inteiro. Com paridade, toda praça é visitada em no máximo duas
-   * voltas, sempre.
+   * ★ Alterna por VOLTA (PY_METADE_FASE=0|1, que o ciclo24h.sh incrementa), e
+   * nunca por sorteio: sorteio pode repetir a mesma metade várias voltas
+   * seguidas. Com a fase vinda do ciclo, toda praça é vista a cada DUAS voltas
+   * — hoje ~7h.
+   *
+   * ⚠️⚠️ ERRO MEDIDO E CORRIGIDO (12/10/2026): a primeira versão alternava pela
+   * PARIDADE DO DIA DO ANO, e aí TODAS as voltas do mesmo dia caíam na mesma
+   * metade — a outra metade esperava até 24h, não "duas voltas". O log acusou:
+   * as voltas 2 e 3 do dia 12 saíram as duas "[METADE ímpar]". E pior, o dia
+   * virava em UTC (21h local), então o corte não batia nem com o dia dele.
+   * A paridade do dia ficou só como reserva para execução manual.
    *
    * ⚠️ NÃO reduz cobertura ao longo do dia — reduz por VOLTA. E como a volta
    * passa a ser o dobro mais curta, cada praça continua sendo vista na mesma
@@ -419,8 +426,12 @@ async function main() {
    */
   const METADE = process.env.PY_METADE === "1" && !alvo;
   const diaDoAno = Math.floor((Date.now() - Date.UTC(new Date().getUTCFullYear(), 0, 0)) / 86_400_000);
+  // ⚠️ A fase vem do ciclo (uma por volta). Sem ela, cai na paridade do dia —
+  // que serve para rodar na mão, não para o laço contínuo (ver acima).
+  const faseRaw = process.env.PY_METADE_FASE;
+  const fase = faseRaw !== undefined && faseRaw !== "" ? Math.abs(Number(faseRaw)) % 2 : diaDoAno % 2;
   const regioes = METADE
-    ? paraguaias.filter((_, i) => i % 2 === diaDoAno % 2)
+    ? paraguaias.filter((_, i) => i % 2 === fase)
     : paraguaias;
 
   if (!regioes.length) {
@@ -463,7 +474,7 @@ async function main() {
     Number(filtros.maxPreco || 2_000_000_000),
   );
 
-  log(`${AUTOLOAD ? `★ MUTIRÃO (autoload, ${ROLAGENS} rolagens) · ` : ""}${METADE ? `[METADE ${diaDoAno % 2 === 0 ? "par" : "ímpar"}: ${regioes.length} de ${paraguaias.length}] ` : ""}praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
+  log(`${AUTOLOAD ? `★ MUTIRÃO (autoload, ${ROLAGENS} rolagens) · ` : ""}${METADE ? `[METADE fase ${fase}${faseRaw ? " (volta)" : " (dia)"}: ${regioes.length} de ${paraguaias.length}] ` : ""}praças: ${regioes.map((r) => r.nome).join(", ")} | minPrice=${filtros.minPreco || "(sem)"} | ano>=${filtros.minAno || "(sem)"} | teto ${maxItens}/praça`);
 
   // ★★ REPESCAGEM DE PRAÇA ZERADA — 03/10/2026.
   //
