@@ -104,7 +104,7 @@ async function main() {
 
   console.log(`${alvos.length} anúncio(s) sem cidade utilizável${CONFERIR ? "  (ENSAIO — nada gravado)" : ""}\n`);
 
-  let recuperados = 0, semLocalizacao = 0, foraDoAr = 0, erros = 0;
+  let recuperados = 0, semLocalizacao = 0, foraDoAr = 0, recusados = 0, erros = 0;
   const achadas = new Map<string, number>();
 
   for (let i = 0; i < alvos.length; i++) {
@@ -112,11 +112,29 @@ async function main() {
     const rotulo = `${String(i + 1).padStart(3)}/${alvos.length} ${String(o.veiculo ?? "").slice(0, 34).padEnd(36)}`;
     try {
       const html = await baixarLogado(o.link_origem, ESPERA_MS);
-      // ⚠️ O parser devolve { anuncio, descartar }: anúncio descartado (não é
-      // veículo, sem título) vem com `anuncio: null`, que aqui significa
-      // "página não deu nada", não "mudou de ideia sobre o anúncio".
-      const a = extrairAnuncioFacebook(html, o.link_origem).anuncio;
-      if (!a || !a.titulo) { foraDoAr++; console.log(`  ○ ${rotulo} página vazia (vendido/removido?)`); await dormir(PAUSA_MS); continue; }
+      /**
+       * ⚠️⚠️ `exigirMotor: false` — e isto NÃO é detalhe. O padrão do parser é
+       * EXIGIR motor e devolver `anuncio: null` sem ele; a captura paraguaia
+       * sempre chamou com false. Na primeira rodada deste script eu usei o
+       * padrão e contei 60 anúncios como "fora do ar" quando boa parte estava
+       * viva e só não declarava cilindrada. Número errado sobre dado vivo.
+       *
+       * ⚠️ E `motivoDescarte` separa as duas coisas que `anuncio: null`
+       * confunde: página que não existe mais × página que existe e o parser
+       * recusou. Só a primeira é "fora do ar".
+       */
+      const r = extrairAnuncioFacebook(html, o.link_origem, { exigirMotor: false });
+      const a = r.anuncio;
+      if (!a || !a.titulo) {
+        if (r.motivoDescarte && r.motivoDescarte !== "sem_titulo") {
+          recusados++;
+          console.log(`  ▲ ${rotulo} página viva, parser recusou (${r.motivoDescarte})`);
+        } else {
+          foraDoAr++;
+          console.log(`  ○ ${rotulo} página vazia (vendido/removido?)`);
+        }
+        await dormir(PAUSA_MS); continue;
+      }
       if (!a.cidade) { semLocalizacao++; console.log(`  – ${rotulo} a janela do anúncio não traz localização`); await dormir(PAUSA_MS); continue; }
 
       achadas.set(a.cidade, (achadas.get(a.cidade) ?? 0) + 1);
@@ -140,6 +158,7 @@ async function main() {
   console.log(`\n✓ ${recuperados} com cidade recuperada`);
   console.log(`  ${semLocalizacao} sem localização na própria página — seguem fora da vitrine, de propósito`);
   console.log(`  ${foraDoAr} fora do ar`);
+  console.log(`  ${recusados} vivos mas recusados pelo parser`);
   console.log(`  ${erros} erro(s)`);
   if (achadas.size) {
     console.log("\ncidades encontradas:");
