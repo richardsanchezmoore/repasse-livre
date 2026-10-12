@@ -311,6 +311,48 @@ const MARCA_CORRIGIDA: Record<string, string> = {
   pajerito: "Mitsubishi",
 };
 
+/**
+ * ★★ COMO O NOME DO MODELO VAI PARA A TELA.
+ *
+ * ⚠️ O dicionário é todo em minúscula (é chave de busca), e o title-case
+ * genérico que servia para marca e versão escreve "Hb20", "Hr-V", "Cs35" e
+ * "Gla-Class" — nenhum fabricante escreve assim, e no card isso passa a
+ * impressão de dado raspado sem cuidado. São 85 das 296 grafias da base.
+ *
+ * ⚠️ REGRA, NÃO LISTA: um mapa de exceções envelheceria a cada marca nova (a
+ * frota chinesa trouxe CS35, H6, S2 de uma vez). O que estes nomes têm em
+ * comum é a FORMA — sigla colada a número, sigla com hífen, "-class".
+ *
+ * ⚠️ A letra final minúscula em "C220d" é de propósito: é assim que a Mercedes
+ * escreve o diesel, e é como aparece no anúncio paraguaio.
+ */
+const SIGLAS_SOLTAS = new Set(["gt", "gl", "gls", "glx", "gti", "gtr", "rs", "amg", "dmi", "phev", "hev", "cdi", "crdi", "tdi", "4x4"]);
+
+export function exibirModelo(nome: string): string {
+  return nome
+    .split(" ")
+    .map((tok) => {
+      if (SIGLAS_SOLTAS.has(tok)) return tok.toUpperCase();
+      if (/^[a-z]{1,3}-class$/.test(tok)) return tok.slice(0, tok.indexOf("-")).toUpperCase() + "-Class";
+      if (/^[a-z]{1,3}-[a-z]$/.test(tok)) return tok.toUpperCase();         // hr-v, cr-v, wr-v
+      if (/^[a-z]{1,3}-\d+$/.test(tok)) return tok.toUpperCase();           // f-150, h-1, vr-4
+      const siglaNumero = tok.match(/^([a-z]{1,3})(\d+)([a-z]{0,3})$/);
+      if (siglaNumero) {
+        const [, sigla, numero, sufixo] = siglaNumero;
+        // ⚠️ O "d" solto fica minúsculo porque é o diesel da nomenclatura alemã
+        // ("C220d", "GLA220d") — é assim que a Mercedes escreve e é assim que o
+        // anúncio paraguaio copia. Qualquer outro sufixo é sigla: HB20X, HB20S.
+        return sigla.toUpperCase() + numero + (sufixo === "d" ? "d" : sufixo.toUpperCase());
+      }
+      if (/^\d+[a-z]{2,4}$/.test(tok)) return tok.replace(/[a-z]+$/, (x) => x.toUpperCase()); // 180cdi
+      // ⚠️ Exige DUAS letras depois do número: "4runner" vira 4Runner, mas o
+      // "i" solto do BMW 316i fica minúsculo — é injeção, não inicial de nome.
+      if (/^\d/.test(tok)) return tok.replace(/^(\d+)([a-z])(?=[a-z])/, (_, d, c) => d + c.toUpperCase());
+      return tok.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+    })
+    .join(" ");
+}
+
 export interface VeiculoPY {
   marca: string | null;
   modelo: string | null;
@@ -459,7 +501,7 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null):
 
   return {
     marca: marcaExibida ? titlecase(marcaExibida) : null,
-    modelo: canonico ? titlecase(canonico) : null,
+    modelo: canonico ? exibirModelo(canonico) : null,
     segmento: segmentoJdm(modelo),
     versao: versao ? titlecase(versao).slice(0, 40) : null,
     ano,
