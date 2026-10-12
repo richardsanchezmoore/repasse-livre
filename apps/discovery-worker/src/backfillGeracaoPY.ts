@@ -25,13 +25,25 @@ async function main() {
   const cob = coberturaGeracoes();
   console.log(`dicionário: ${cob.modelos} modelo(s), ${cob.geracoes} geração(ões), ${cob.firmes} firme(s)\n`);
 
-  const { data, error } = await supabase
-    .from("opportunities")
-    .select("id, modelo, ano, geracao, ano_suspeito")
-    .eq("pais", "PY")
-    .not("modelo", "is", null);
-  if (error) throw new Error(error.message);
-  const linhas = data ?? [];
+  /**
+   * ⚠️⚠️ PAGINA DE 1.000 EM 1.000. Sem `range` o PostgREST devolve 1.000 linhas
+   * em silêncio, sem erro — e este script foi escrito quando a base tinha
+   * poucas centenas, então ninguém notou. Com 4 mil anúncios ele passava a
+   * cobrir um quarto da base e reportava sucesso.
+   */
+  const linhas: Array<{ id: string; modelo: string | null; ano: number | null; geracao: string | null; ano_suspeito: boolean | null }> = [];
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("id, modelo, ano, geracao, ano_suspeito")
+      .eq("pais", "PY")
+      .not("modelo", "is", null)
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) throw new Error(error.message);
+    linhas.push(...((data ?? []) as typeof linhas));
+    if (!data || data.length < 1000) break;
+  }
 
   const mudancas: { id: string; geracao: string | null; ano_suspeito: boolean }[] = [];
   let comGeracao = 0, suspeitos = 0;

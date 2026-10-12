@@ -48,6 +48,11 @@ const RUIDO_PY: RegExp[] = [
   /\b0\d{8,10}\b/g,                                   // celular paraguaio no título
   /\(\s*0?\d{7,11}\s*\)/g,                            // idem, entre parênteses
   /\b\d{1,3}\s*mill?[oó]n(?:es)?\b/gi,                // "20 Millones", "15 Millon"
+  // ⚠️ VERBO DE VENDA NA FRENTE DO TÍTULO atrapalha mais do que parece: a
+  // dedução de marca olha a PRIMEIRA palavra, e "Vendo Jetour 2025 Dashing"
+  // começava com "vendo" — marca nenhuma, busca solta em todas as listas, e o
+  // "Gls" do fim do título casou como Mercedes. Era um Jetour Dashing.
+  /\b(vendo|venta|en\s+venta|oferta|ofertas|remato|remate)\b/gi,
   /\brecien\s+importad[oa]\b/gi,
   /\bimportad[oa]\b/gi,
   /\bsin\s+requisitos?\b/gi,
@@ -88,22 +93,47 @@ const MODELOS: Record<string, string[]> = {
     "cami", "rush", "raize", "frontlander", "corolla", "camry", "hilux", "fortuner",
     "rav4", "yaris", "etios", "prius", "avanza", "innova", "4runner", "tacoma", "tundra",
   ],
-  honda: ["hr-v", "cr-v", "civic", "fit", "accord", "city", "jazz", "vezel", "s2000", "crx"],
-  nissan: ["x-trail", "qashqai", "navara", "frontier", "sunny", "march", "note", "tiida", "sentra", "kicks", "juke"],
-  mitsubishi: ["pajero sport", "pajero", "pajerito", "l200", "outlander", "lancer", "asx", "montero"],
-  suzuki: ["grand vitara", "swift", "vitara", "jimny", "baleno", "alto"],
-  subaru: ["forester", "impreza", "outback", "legacy", "justy", "xv"],
-  hyundai: ["santa fe", "grand santa fe", "tucson", "accent", "elantra", "creta", "venue", "veloster", "i10", "i30", "hb20"],
-  kia: ["grand carnival", "sportage", "sorento", "picanto", "cerato", "carnival", "rio", "seltos", "soul", "stonic"],
-  chevrolet: ["grand blazer", "silverado", "captiva", "camaro", "spark", "onix", "cruze", "tracker", "s10", "blazer", "corsa", "celta", "prisma", "equinox"],
-  ford: ["grand c-max", "explorer", "mustang", "ranger", "escape", "edge", "fusion", "focus", "fiesta", "f-150", "ecosport", "territory", "bronco"],
-  volkswagen: ["golf gti", "amarok", "saveiro", "voyage", "parati", "tiguan", "touareg", "jetta", "passat", "polo", "virtus", "nivus", "t-cross", "golf", "gol", "fox", "up"],
+  // ⚠️ Variante SEM hífen entra como alias própria: a chave preserva o hífen,
+  // então "Honda Hrv 2026" NÃO casa com "hr-v". Medido: 37% dos Honda da base
+  // estavam sem modelo, e hrv/crv respondiam por boa parte.
+  honda: ["hr-v", "hrv", "cr-v", "crv", "wr-v", "wrv", "br-v", "brv", "civic", "fit", "accord", "city", "jazz",
+    "vezel", "odyssey", "pilot", "passport", "ridgeline", "insight", "stepwgn", "freed", "shuttle", "elysion",
+    "s2000", "crx"],
+  // ★ "versa" sozinho respondia por 41 anúncios sem modelo — o maior buraco
+  // de uma marca só na base.
+  nissan: ["x-trail", "xtrail", "x trail", "qashqai", "navara", "frontier", "sunny", "march", "note", "tiida",
+    "sentra", "kicks", "juke", "versa", "murano", "pathfinder", "patrol", "atlas", "serena", "elgrand",
+    "wingroad", "cube", "leaf"],
+  mitsubishi: ["pajero sport", "pajero", "pajerito", "l200", "outlander", "lancer", "asx", "montero",
+    "montero sport", "eclipse cross", "space wagon", "triton", "canter", "mirage", "l300", "fuso"],
+  suzuki: ["grand vitara", "swift", "vitara", "jimny", "baleno", "alto", "s-cross", "ertiga", "celerio",
+    "fronx", "ciaz", "wagon r", "every", "carry"],
+  subaru: ["forester", "impreza", "outback", "legacy", "justy", "xv", "wrx", "brz", "levorg", "exiga", "sambar"],
+  // ⚠️ A ordem aqui é indiferente (a busca ordena por tamanho), mas "hb20x" e
+  // "hb20s" PRECISAM existir: sem elas o "hb20" casava e o X virava o hatch
+  // comum — dois carros e dois preços na mesma linha da tabela.
+  hyundai: ["grand santa fe", "santa fe", "grand starex", "starex", "tucson", "accent", "elantra", "creta",
+    "venue", "veloster", "palisade", "kona", "ioniq", "i10", "i30", "hb20x", "hb20s", "hb20", "porter",
+    "h100", "h-1", "h1", "galloper", "terracan", "sonata", "azera", "getz"],
+  kia: ["grand carnival", "sportage", "sorento", "picanto", "cerato", "carnival", "rio", "seltos", "soul",
+    "stonic", "niro", "k5", "k3", "k7", "sedona", "carens", "telluride", "ev6", "pride"],
+  chevrolet: ["grand blazer", "trailblazer", "silverado", "captiva", "camaro", "spark", "onix", "cruze",
+    "tracker", "s10", "blazer", "corsa", "celta", "prisma", "equinox", "aveo", "luv", "colorado", "sail",
+    "optra", "orlando", "tahoe", "suburban", "montana"],
+  ford: ["grand c-max", "explorer", "mustang", "ranger", "escape", "edge", "fusion", "focus", "fiesta",
+    "f-150", "f150", "f 150", "f-250", "ecosport", "territory", "bronco", "maverick", "expedition", "transit",
+    "everest", "courier"],
+  volkswagen: ["golf gti", "amarok", "saveiro", "voyage", "parati", "tiguan allspace", "tiguan", "touareg",
+    "jetta", "passat", "polo", "virtus", "nivus", "t-cross", "tcross", "t cross", "taos", "crossfox",
+    "spacefox", "caddy", "transporter", "golf", "gol", "fox", "up"],
   jeep: ["grand cherokee", "wrangler unlimited", "wrangler", "cherokee", "compass", "renegade", "rubicon", "commander", "gladiator"],
   "mercedes-benz": [
     "c-class", "e-class", "s-class", "a-class", "glc", "gle", "gla", "glb", "gls", "gl",
-    "sprinter", "vito", "viano", "clk", "cla", "slk", "amg gt",
+    "gla-class", "glb-class", "glc-class", "gle-class", "gls-class", "b-class", "v-class", "gl-class",
+    "sprinter", "vito", "viano", "clk", "cla", "slk", "amg gt", "ml",
   ],
-  bmw: ["serie 1", "serie 3", "serie 5", "x1", "x3", "x4", "x5", "x6", "x7", "z4", "i3", "i8", "m3", "m4"],
+  bmw: ["serie 1", "serie 2", "serie 3", "serie 4", "serie 5", "serie 6", "serie 7", "x1", "x2", "x3", "x4",
+    "x5", "x6", "x7", "z4", "i3", "i4", "i8", "ix", "m3", "m4"],
   audi: ["q2", "q3", "q5", "q7", "q8", "a1", "a3", "a4", "a5", "a6", "a7", "a8", "tt", "rs3", "rs6"],
   "land rover": ["range rover sport", "range rover evoque", "range rover velar", "range rover", "discovery", "defender", "freelander"],
   porsche: ["cayenne", "macan", "panamera", "boxster", "cayman", "911"],
@@ -111,12 +141,37 @@ const MODELOS: Record<string, string[]> = {
   mini: ["cooper s", "cooper", "countryman", "clubman"],
   fiat: ["strada", "toro", "cronos", "argo", "mobi", "uno", "palio", "siena", "doblo", "ducato"],
   renault: ["kangoo", "duster", "sandero", "logan", "captur", "master", "oroch"],
-  peugeot: ["partner", "208", "2008", "3008", "308", "205", "206", "207"],
+  // ⚠️⚠️ Os números da Peugeot são tratados à parte (MODELOS_NUMERICOS, logo
+  // abaixo) porque o normalizador apaga os anos ANTES de procurar o modelo —
+  // e "2008" é modelo E ano. Ficam aqui também para o caso de a marca não vir.
+  peugeot: ["partner", "5008", "3008", "2008", "508", "408", "308", "301", "208", "207", "206", "205",
+    "expert", "boxer", "rifter", "landtrek"],
   dodge: ["challenger", "charger", "durango", "journey", "ram"],
-  byd: ["song plus", "yuan plus", "dolphin", "seal", "song", "yuan", "han", "tang"],
-  jetour: ["dashing", "x70", "x90", "t2"],
+  byd: ["song plus", "song pro", "yuan plus", "yuan up", "dolphin mini", "dolphin", "sealion 6", "sealion 7",
+    "sealion", "seagull", "seal", "shark", "atto 3", "song", "yuan", "han", "tang", "qin", "e2"],
+  jetour: ["dashing", "x70", "x90", "t1", "t2", "x1"],
   chery: ["tiggo 7", "tiggo 8", "tiggo 2", "tiggo", "arrizo"],
   scania: ["g480", "r450", "p310"],
+
+  /**
+   * ★★ A FROTA CHINESA — 333 dos 338 anúncios SEM MARCA na base não tinham
+   * modelo (12/10/2026), e era quase toda ela. Nenhuma destas marcas existia
+   * aqui, então nem o nome da marca o normalizador reconhecia: o anúncio
+   * entrava mudo e nunca chegava à tabela de preço.
+   *
+   * ⚠️ Entram como marca própria (e não como "chinesas"), porque a dedução de
+   * marca usa a PRIMEIRA PALAVRA do título — e no Paraguai o anúncio escreve
+   * "Geely Coolray", "Haval H6", "Changan Cs35".
+   */
+  geely: ["coolray", "emgrand", "geome", "okavango", "azkarra", "tugella", "starray", "cityray"],
+  // ⚠️ GWM é o grupo; Haval é a marca que aparece no anúncio. Ver MARCA_CORRIGIDA.
+  haval: ["h6 gt", "h6", "jolion", "h2", "h9", "dargo", "big dog"],
+  "great wall": ["wingle 7", "wingle 5", "wingle", "poer", "steed"],
+  changan: ["cs35 plus", "cs35", "cs55", "cs75", "alsvin", "eado", "hunter", "uni-t"],
+  jac: ["s2", "s3", "s4", "t6", "t8", "e10x", "j3"],
+  foton: ["tunland", "aumark", "gratour", "view"],
+  // Daihatsu tinha 10 anúncios na base e 10 sem modelo — 100%.
+  daihatsu: ["move", "terios", "mira", "hijet", "cuore", "rocky", "sirion", "copen", "tanto", "bego"],
   // ⚠️ MOTOS: entram na captacao (o Marketplace mistura) e precisam de marca
   // para nao caírem como "nao reconhecido". A tabela de preco vai separá-las
   // por aqui — moto e carro nao dividem curva.
@@ -174,6 +229,25 @@ const PREFIXOS_GERACAO = /^(new|nueva|nuevo|all\s*new|the\s*new)\s+/i;
  * ⚠️ Só vale para as marcas que REALMENTE nomeiam assim. Soltar este padrão em
  * qualquer marca transformaria "1.5" e "150 Cc" em nome de modelo.
  */
+/**
+ * ★★ MODELO QUE É UM ANO — o caso Peugeot.
+ *
+ * ⚠️⚠️ O normalizador APAGA todos os números de 1990–2027 antes de procurar o
+ * modelo, para que "Toyota New 2011 Ractis" não vire modelo "2011". Só que a
+ * Peugeot batizou três carros de 208, 2008, 3008 e 5008 — e o apagador come o
+ * nome do carro junto com o ano. Medido: 22 dos 39 Peugeot da base estavam sem
+ * modelo, a maior taxa de qualquer marca.
+ *
+ * ★ A regra que desempata: o modelo é o número da lista que NÃO é o ano
+ * detectado. "Peugeot 2008 2019" → ano 2019, modelo 2008. Quando só existe um
+ * número e ele é o ano, fica ambíguo de verdade ("Peugeot 2008" pode ser o
+ * carro ou o ano) e aí não se chuta — o anúncio segue sem modelo, que é a
+ * política desta função.
+ */
+const MODELOS_NUMERICOS: Record<string, string[]> = {
+  peugeot: ["5008", "3008", "2008", "508", "408", "308", "301", "208", "207", "206", "205"],
+};
+
 const MARCAS_ALFANUMERICAS = new Set(["mercedes-benz", "bmw", "audi", "volvo", "lexus", "infiniti"]);
 const RX_MODELO_ALFANUMERICO = /^(?:[a-z]{1,3}\s?\d{2,3}[a-z]{0,3}|\d{3}[a-z]{1,3})$/i;
 
@@ -187,11 +261,48 @@ const RX_MODELO_ALFANUMERICO = /^(?:[a-z]{1,3}\s?\d{2,3}[a-z]{0,3}|\d{3}[a-z]{1,
  * como nome de marca. Peguei medindo o backfill, antes de gravar em 183
  * registros.
  */
+/**
+ * ★★ GRAFIAS DO MESMO CARRO — o que o anunciante escreve de três jeitos.
+ *
+ * ⚠️⚠️ ACEITAR A VARIANTE SEM CANONIZAR É PIOR DO QUE NÃO ACEITAR. Ao admitir
+ * "Xtrail" eu passaria a reconhecer 12 anúncios — e a criar uma SEGUNDA linha
+ * na tabela, separada do "X-Trail" que já existia. Duas medianas com metade do
+ * n cada é exatamente o defeito que o dicionário existe para evitar.
+ *
+ * ⚠️ Isto NÃO é tradução de nome (regra do Gustavo: Vitz não vira Yaris). É a
+ * mesma palavra escrita com e sem hífen pelo mesmo mercado.
+ *
+ * ⚠️ "l200"/"triton": o anúncio paraguaio escreve os dois, às vezes no mesmo
+ * título ("Mitsubishi L200 2015 Triton 2.5"). L200 é o nome da praça, então é
+ * ele o canônico — senão o grupo racha em dois.
+ */
+const ALIAS_CANONICO: Record<string, string> = {
+  xtrail: "x-trail", "x trail": "x-trail",
+  hrv: "hr-v", crv: "cr-v", wrv: "wr-v", brv: "br-v",
+  tcross: "t-cross", "t cross": "t-cross",
+  f150: "f-150", "f 150": "f-150",
+  h1: "h-1",
+  triton: "l200",
+  // Mercedes: a lista já usa "c-class"/"e-class"; as SUV ficam no mesmo padrão.
+  gla: "gla-class", glb: "glb-class", glc: "glc-class", gle: "gle-class", gls: "gls-class",
+};
+
 const APELIDO_MARCA: Record<string, string> = {
   honda_moto: "Honda",
 };
 
 const MARCA_CORRIGIDA: Record<string, string> = {
+  // ⚠️⚠️ "LAND CRUISER" VIRAVA LAND ROVER. Quando o título omite a marca
+  // ("Land Cruiser 2025 Prado"), a dedução olha a primeira palavra e procura
+  // uma marca que comece com ela — "land rover" começa com "land". Resultado
+  // medido: 14 dos 20 anúncios marcados Land Rover na base eram Toyota, e
+  // nenhum deles tinha modelo (a lista da Land Rover não tem Cruiser nenhum).
+  "land cruiser": "Toyota", landcruiser: "Toyota",
+  // "Mercedes Benz 2013 C180": sem isto a marca saía vazia, e sem marca o
+  // padrão alfanumérico das alemãs (que é quem lê "C180") nem era consultado.
+  "mercedes benz": "Mercedes-Benz",
+  // GWM é o grupo; o anúncio escreve "Gwm Haval ... H6 Gt".
+  gwm: "Haval", "great wall motors": "Great Wall",
   camaro: "Chevrolet", silverado: "Chevrolet",
   "range rover": "Land Rover", "range": "Land Rover",
   mustang: "Ford", challenger: "Dodge",
@@ -241,6 +352,9 @@ export function extrairAno(texto: string): number | null {
 export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null): VeiculoPY {
   const ano = extrairAno(titulo);
   let limpo = limparRuidoPY(titulo);
+  // ⚠️ Guarda o texto COM os números antes de apagá-los: é nele que o modelo
+  // numérico da Peugeot ainda existe (ver MODELOS_NUMERICOS).
+  const comNumeros = chave(limpo);
   limpo = limpo.replace(/\b(19[89]\d|20[0-2]\d)\b/g, " ").replace(/\s+/g, " ").trim();
   limpo = limpo.replace(PREFIXOS_GERACAO, "");
 
@@ -271,10 +385,42 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null):
     ? [[marcaK, MODELOS[marcaK]]]
     : Object.entries(MODELOS);
   let modelo: string | null = null;
-  for (const [nomeMarca, lista] of candidatas) {
-    const ordenada = [...lista].sort((a, b) => b.length - a.length); // maior primeiro
-    const achado = ordenada.find((m) => new RegExp(`(^|\\s)${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s|$)`, "i").test(k));
-    if (achado) { modelo = achado; if (!marca) marca = nomeMarca; break; }
+  const procurar = (pares: [string, string[]][]): readonly [string, string] | null => {
+    for (const [nomeMarca, lista] of pares) {
+      const ordenada = [...lista].sort((a, b) => b.length - a.length); // maior primeiro
+      const achado = ordenada.find((m) => new RegExp(`(^|\\s)${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s|$)`, "i").test(k));
+      if (achado) return [achado, nomeMarca] as const;
+    }
+    return null;
+  };
+  const naMarca = procurar(candidatas);
+  if (naMarca) { modelo = naMarca[0]; if (!marca) marca = naMarca[1]; }
+
+  /**
+   * ⚠️⚠️ SEGUNDA PASSADA EM TODAS AS MARCAS quando a marca DEDUZIDA não
+   * explicou o modelo. A dedução olha só a primeira palavra do título e erra
+   * com facilidade — foi assim que "Land Cruiser" caiu na lista da Land Rover,
+   * não achou modelo nenhum e o anúncio ficou mudo (14 dos 20 "Land Rover" da
+   * base eram Toyota). Buscar em todas já se fazia quando NÃO havia marca;
+   * faltava fazer quando a marca era um palpite nosso e não bateu.
+   *
+   * ⚠️ Só vale para marca DEDUZIDA. Marca declarada pelo anunciante manda: se
+   * ele disse Kia e o modelo não está na lista da Kia, o certo é ficar sem
+   * modelo e aparecer no relatório — não sair procurando nome em outra marca.
+   */
+  if (!modelo && !marcaBruta && marca) {
+    const emTodas = procurar(Object.entries(MODELOS).filter(([m]) => m !== marcaK));
+    if (emTodas) { modelo = emTodas[0]; marca = emTodas[1]; }
+  }
+
+  // Modelo numérico (Peugeot): procura no texto que ainda tem os números e só
+  // aceita o que NÃO é o ano detectado. Ver MODELOS_NUMERICOS.
+  if (!modelo) {
+    const numericos = MODELOS_NUMERICOS[chave(marca)] ?? [];
+    const achadoNum = numericos.find(
+      (n) => Number(n) !== ano && new RegExp(`(^|\\s)${n}(\\s|$)`).test(comNumeros)
+    );
+    if (achadoNum) modelo = achadoNum;
   }
 
   // alfanumérico das alemãs, quando a lista não cobriu
@@ -297,7 +443,10 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null):
 
   // ★ Nome CANÔNICO: "axio" e "corolla axio" são o mesmo carro e têm que cair
   // no mesmo grupo, senão a mediana se divide em dois n pequenos.
-  const canonico = canonicoJdm(modelo) ?? modelo;
+  // ⚠️ ALIAS_CANONICO vem DEPOIS do catálogo e trata a grafia fora do JDM —
+  // sem ele, as variantes que acabei de aceitar criariam o problema que o
+  // dicionário existe para resolver (Xtrail separado de X-Trail).
+  const canonico = ALIAS_CANONICO[chave(modelo ?? "")] ?? canonicoJdm(modelo) ?? modelo;
 
   // ⚠️ A marca VEM DA FICHA quando o modelo é do catálogo. O normalizador
   // injeta a lista inteira do catálogo dentro da lista da Toyota, então sem

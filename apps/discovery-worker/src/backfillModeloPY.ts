@@ -26,15 +26,30 @@ import { conferirAnoModelo } from "./anoModeloPY.js";
 const CONFERIR = process.argv.includes("--conferir");
 
 async function main() {
-  const { data, error } = await supabase
-    .from("opportunities")
-    .select("id, veiculo, veiculo_bruto, ano")
-    .eq("pais", "PY")
-    .limit(2000);
-  if (error) throw new Error(error.message);
-  const linhas = data ?? [];
+  /**
+   * ⚠️⚠️ PAGINA DE 1.000 EM 1.000. Aqui estava `.limit(2000)`, e isso NÃO vence
+   * o teto do PostgREST: ele devolve 1.000 em silêncio, sem erro. Quando a base
+   * tinha 225 anúncios ninguém via; com 3,9 mil, o backfill passava a ignorar
+   * dois terços dela e o relatório final dizia "2.000 anúncios PY" como se
+   * tivesse olhado tudo. Mesma armadilha de sempre neste projeto.
+   */
+  const linhas: Array<{
+    id: string; veiculo: string | null; veiculo_bruto: string | null; ano: number | null;
+    marca: string | null; modelo: string | null; segmento: string | null;
+  }> = [];
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("id, veiculo, veiculo_bruto, ano, marca, modelo, segmento")
+      .eq("pais", "PY")
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) throw new Error(error.message);
+    linhas.push(...((data ?? []) as typeof linhas));
+    if (!data || data.length < 1000) break;
+  }
 
-  let atualizados = 0, semModelo = 0, avisosAno = 0;
+  let atualizados = 0, semModelo = 0, avisosAno = 0, inalterados = 0;
   const avisos: string[] = [];
 
   for (const o of linhas) {
@@ -62,6 +77,18 @@ async function main() {
     // só na primeira vez
     if (!o.veiculo_bruto) patch.veiculo_bruto = o.veiculo;
 
+    /**
+     * ⚠️ NÃO REESCREVE O QUE JÁ ESTÁ CERTO. Sem isto o backfill mandava um
+     * UPDATE por anúncio — 3.736 escritas para mudar ~400. Além do tempo, é
+     * egress à toa no Supabase, e foi egress que derrubou este projeto em
+     * 02/10. Só grava quem de fato mudou.
+     */
+    const igual =
+      o.marca === v.marca && o.modelo === v.modelo &&
+      (o.segmento ?? null) === (v.segmento ?? null) &&
+      o.veiculo === veiculoLimpo && patch.veiculo_bruto === undefined;
+    if (igual) { inalterados++; continue; }
+
     if (!CONFERIR) {
       const { error: e2 } = await supabase.from("opportunities").update(patch).eq("id", o.id);
       if (e2) { console.log(`  ✗ ${o.id}: ${e2.message.slice(0, 60)}`); continue; }
@@ -71,6 +98,7 @@ async function main() {
 
   console.log(`${linhas.length} anúncios PY`);
   console.log(`  ${atualizados} normalizados${CONFERIR ? " (ENSAIO — nada gravado)" : ""}`);
+  console.log(`  ${inalterados} já estavam corretos — nenhuma escrita`);
   console.log(`  ${semModelo} sem modelo reconhecido — ficam INTACTOS e fora da tabela`);
   console.log(`  ${avisosAno} com aviso de ano`);
   avisos.forEach((a) => console.log(`     ⚠️ ${a}`));
