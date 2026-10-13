@@ -201,6 +201,93 @@ export const GERACOES: Record<string, Geracao[]> = {
     { codigo: "S200", de: 2008, ate: 2012, confianca: "firme", nota: "entra o híbrido 3.5 (2GR-FSE) e o V8 4.6" },
     { codigo: "S210", de: 2012, ate: 2018, confianca: "firme", nota: "mesmo chassi do S200, mais refresco que geração nova" },
   ],
+
+  // ══════════════════════════════════════════════════════════════════════
+  // LOTE 2 — PICAPE, SUV E VAN QUE PASSARAM A DOMINAR A BASE (12/10/2026)
+  //
+  // ★★ POR QUE AGORA: a base quadruplicou desde que este arquivo nasceu, e a
+  // medição mudou de figura. Hoje há 2.235 anúncios presos num ano com menos
+  // de 5 ofertas — ou seja, SEM mediana publicável — dentro de modelos que
+  // este dicionário não cobre. O topo da lista não é mais JDM: é Prado,
+  // Amarok, Grand Carnival, Navara, Captiva, Swift.
+  //
+  // ⚠️ Mesma regra de procedência de sempre: `firme` só onde a fonte fecha,
+  // `estimado` onde as fontes divergiram, e a divergência fica escrita. Isto
+  // aqui decide em que grupo um carro entra para formar mediana — precisão
+  // fingida sai mais cara que dúvida declarada.
+  //
+  // Fontes deste lote: en.wikipedia.org (Toyota_Land_Cruiser_Prado,
+  // Volkswagen_Amarok, Kia_Carnival, Nissan_Navara, Chevrolet_Captiva) ·
+  // jdmbuysell.com/learn/toyota/land-cruiser-prado/ · autocade.net
+  // (Suzuki_Swift_(ZC1)) · cars-data.com/en/suzuki/swift
+  // ══════════════════════════════════════════════════════════════════════
+
+  // ⚠️⚠️ PRADO É LINHAGEM, NÃO A FAMÍLIA — ver catalogoJdmParaguai. As cinco
+  // gerações abaixo são do Prado; a família "land cruiser" tem lista própria,
+  // logo abaixo, e só recebe o anúncio que NÃO disse qual é.
+  "land cruiser prado": [
+    { codigo: "J70", de: 1990, ate: 1996, confianca: "estimado", nota: "⚠️ a origem do modelo é de 1984; o emblema Prado só aparece em 1990, e há fonte que nem conta esta como geração do Prado" },
+    { codigo: "J90", de: 1996, ate: 2002, confianca: "firme", nota: "1ª sobre plataforma própria do Prado, molas helicoidais nos dois eixos" },
+    { codigo: "J120", de: 2002, ate: 2009, confianca: "firme", nota: "é o Lexus GX470 na América do Norte" },
+    { codigo: "J150", de: 2009, ate: 2023, confianca: "firme", nota: "geração longa — 14 anos; guias antigos ainda dizem '2009–presente'" },
+    { codigo: "J250", de: 2023, ate: null, confianca: "firme" },
+  ],
+
+  // ★ A FAMÍLIA, pelas linhagens da linha principal. As fichas de LC100/200/300
+  // e série 70 já existem no catálogo; aqui a faixa de ano serve ao anúncio que
+  // escreveu só "Land Cruiser".
+  "land cruiser": [
+    { codigo: "J80", de: 1990, ate: 1997, confianca: "firme", nota: "linha principal 1990–1997, culto no Paraguai" },
+    { codigo: "J100", de: 1998, ate: 2007, confianca: "firme" },
+    { codigo: "J200", de: 2007, ate: 2021, confianca: "firme" },
+    { codigo: "J300", de: 2021, ate: null, confianca: "firme" },
+  ],
+
+  // ⚠️ A ficha da Wikipédia lista a 2ª geração como "2010–presente", o que
+  // contradiz todo o resto e é erro dela: 2010 é a PRIMEIRA. A 1ª seguiu sendo
+  // produzida na América do Sul depois de sair da Europa em 2019 — e é
+  // justamente essa que circula no Paraguai.
+  amarok: [
+    { codigo: "2H", de: 2010, ate: 2022, confianca: "firme", nota: "produção sul-americana seguiu após a saída da Europa em 2019; facelift grande em 2024" },
+    { codigo: "NF", de: 2022, ate: null, confianca: "firme", nota: "irmã da Ford Ranger, montada pela Ford na África do Sul" },
+  ],
+
+  // ⚠️ Grand Carnival: as fontes divergem nas duas bordas — a Wikipédia dá
+  // 2006–2014 para a VQ e um guia japonês dá 2005–2013. Fico com a Wikipédia e
+  // marco estimado onde ela não fecha com as outras.
+  "grand carnival": [
+    { codigo: "KV-II", de: 1998, ate: 2005, confianca: "estimado", nota: "1ª geração, só entre-eixos curto" },
+    { codigo: "VQ", de: 2006, ate: 2014, confianca: "estimado", nota: "⚠️ guia japonês diz 2005–2013; a diferença de um ano cai bem na borda" },
+    { codigo: "YP", de: 2014, ate: 2020, confianca: "estimado", nota: "só entre-eixos longo" },
+    { codigo: "KA4", de: 2020, ate: null, confianca: "firme", nota: "quando a Kia unifica o nome Carnival no mundo todo" },
+  ],
+
+  // ⚠️ NP300 é NOME DE MERCADO da D23, não geração separada — somar as duas
+  // como coisas diferentes rachava o grupo no meio.
+  navara: [
+    { codigo: "D22", de: 1997, ate: 2005, confianca: "estimado", nota: "⚠️ fontes divergem entre 1997 e 1998; seguiu em produção na África do Sul depois da sucessora" },
+    { codigo: "D40", de: 2005, ate: 2014, confianca: "estimado", nota: "⚠️ 2005–2014 ou 2005–2015 conforme a fonte; anúncio de 2004 é lançamento, não venda" },
+    { codigo: "D23", de: 2014, ate: null, confianca: "firme", nota: "é a NP300 — mesmo carro, nome de mercado" },
+  ],
+
+  // ⚠️⚠️ SÃO DOIS CARROS COM O MESMO NOME, e isso é preço, não trivialidade: a
+  // primeira é SUV coreana sobre plataforma GM Theta; a "segunda" é um Baojun
+  // 530 chinês rebatizado. Agrupar as duas numa mediana seria o erro clássico
+  // que este dicionário existe para impedir.
+  captiva: [
+    { codigo: "C100/C140", de: 2006, ate: 2018, confianca: "firme", nota: "irmã do Opel Antara; produção coreana encerrada em fev/2018" },
+    { codigo: "CN202S", de: 2018, ate: null, confianca: "estimado", nota: "⚠️ Baojun 530 rebatizado, OUTRO carro — Colômbia nov/2018, Tailândia mar/2019; fontes divergem no ano de estreia por mercado" },
+  ],
+
+  // ⚠️ O Swift é o caso mais confuso do lote: uma fonte conta a geração de
+  // 2004 até 2021, outra fecha em 2010, e as de 2017/2023 não têm código ZC
+  // confirmado em nenhuma delas. Tudo estimado, de propósito.
+  swift: [
+    { codigo: "ZC11", de: 2004, ate: 2010, confianca: "estimado", nota: "⚠️ autocade estende o código ZC1 até 2021; carspiritpk fecha em 2010" },
+    { codigo: "ZC72/FZ", de: 2010, ate: 2017, confianca: "estimado", nota: "⚠️ cars-data separa 2010–2014 e 2014–2017 como gerações distintas" },
+    { codigo: "A2L", de: 2017, ate: 2023, confianca: "estimado", nota: "⚠️ sem código ZC confirmado em fonte" },
+    { codigo: "A3L", de: 2023, ate: null, confianca: "estimado" },
+  ],
 };
 
 /** Em qual geração este ano cai. null = modelo sem dicionário, ou ano fora de tudo. */
