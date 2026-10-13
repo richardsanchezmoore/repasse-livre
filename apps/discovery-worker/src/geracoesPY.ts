@@ -524,6 +524,164 @@ export const GERACOES: Record<string, Geracao[]> = {
     { codigo: "SX11", de: 2018, ate: null, confianca: "firme", nota: "no Brasil/Paraguai o nome é Coolray; na China, Binyue. Plataforma BMA" },
   ],
 
+
+  // ══════════════════════════════════════════════════════════════════════
+  // LOTE 5 — a medição refeita depois do lote 4 ainda apontava 1.738 órfãos.
+  //
+  // Fontes: en.wikipedia.org (Ford_Ranger, Jeep_Wrangler, BMW_X1, BMW_F48) ·
+  // topgear.nl (Santa Fe, CR-V) · autohled.cz (Santa Fe) · jeepspecs.com ·
+  // jdmbuysell.com/learn/suzuki/jimny/jb64 · carexpert.com.au (Jimny) ·
+  // motor1.com (Elantra) · mercadolivre.com.br/blog (Saveiro) ·
+  // autoblog.com.uy (Ranger regional, Saveiro/Gol)
+  // ══════════════════════════════════════════════════════════════════════
+
+  /**
+   * ⚠️⚠️ A RANGER DA FRONTEIRA NÃO É A AMERICANA. Antes de 2011 a América do
+   * Sul tinha uma linhagem PRÓPRIA, produzida na Argentina desde 1998, com
+   * cabine dupla que a América do Norte nunca teve. Só a partir da T6 (2011) o
+   * mundo todo passou a ter a mesma picape.
+   *
+   * ⚠️ A T6.2 (P703) é de 2021/2022 no mundo, mas só chegou ao Mercosul em
+   * 2023 — produzida em General Pacheco. Para o anúncio paraguaio, o corte que
+   * vale é o do Mercosul, não o global.
+   */
+  ranger: [
+    { codigo: "AR", de: 1998, ate: 2011, confianca: "estimado", nota: "linhagem sul-americana produzida na Argentina; última atualização de carroceria em 2010" },
+    { codigo: "T6", de: 2011, ate: 2022, confianca: "firme", nota: "primeira Ranger global; facelift em 2015. Base da Mazda BT-50 de 2ª geração" },
+    { codigo: "T6.2", de: 2023, ate: null, confianca: "estimado", nota: "⚠️ P703: 2021/2022 no mundo, mas Mercosul só em 2023. Plataforma dividida com a Amarok nova" },
+  ],
+
+  "santa fe": [
+    { codigo: "SM", de: 2000, ate: 2006, confianca: "firme" },
+    { codigo: "CM", de: 2006, ate: 2012, confianca: "firme", nota: "1ª Santa Fe produzida nos EUA" },
+    { codigo: "DM", de: 2012, ate: 2018, confianca: "firme", nota: "entra a opção de 7 lugares" },
+    { codigo: "TM", de: 2018, ate: 2023, confianca: "firme", nota: "entram híbrido e híbrido plug-in" },
+    { codigo: "MX5", de: 2023, ate: null, confianca: "estimado", nota: "⚠️ fonte sueca diz 2024" },
+  ],
+
+  wrangler: [
+    { codigo: "YJ", de: 1986, ate: 1995, confianca: "firme", nota: "faróis retangulares — o único Wrangler assim" },
+    { codigo: "TJ", de: 1996, ate: 2006, confianca: "estimado", nota: "⚠️ 1996 ou 1997 conforme a fonte; volta o farol redondo e entra a suspensão helicoidal" },
+    { codigo: "JK", de: 2006, ate: 2018, confianca: "estimado", nota: "⚠️ 2006 ou 2007; primeiro Wrangler de 4 portas (Unlimited)" },
+    { codigo: "JL", de: 2018, ate: null, confianca: "firme" },
+  ],
+
+  "cr-v": [
+    { codigo: "RD1-3", de: 1995, ate: 2001, confianca: "estimado" },
+    { codigo: "RD4-9", de: 2001, ate: 2006, confianca: "estimado" },
+    { codigo: "RE", de: 2006, ate: 2011, confianca: "estimado" },
+    { codigo: "RM", de: 2011, ate: 2016, confianca: "estimado", nota: "⚠️ fontes dão 2012–2016 também" },
+    { codigo: "RW/RT", de: 2016, ate: 2022, confianca: "estimado", nota: "híbrido entra em 2018" },
+    { codigo: "RS", de: 2022, ate: null, confianca: "estimado", nota: "⚠️ a lista inteira vem do Top Gear NL; outras bases contam facelift como geração e chegam a 11" },
+  ],
+
+  /**
+   * ⚠️ O Jimny tem DUAS linhagens convivendo: o kei JB64 (660cc, só Japão) e o
+   * JB74 Sierra, mais largo e 1.5. No Paraguai aparecem os dois, e eles NÃO
+   * valem o mesmo — mas o anúncio raramente distingue, então ficam na mesma
+   * geração por ano. Fica a ressalva para quem for olhar a mediana de perto.
+   */
+  jimny: [
+    { codigo: "SJ", de: 1981, ate: 1998, confianca: "estimado" },
+    { codigo: "JA", de: 1990, ate: 1998, confianca: "estimado", nota: "⚠️ conviveu com o fim do SJ — faixa de ano se sobrepõe de verdade, não é erro" },
+    { codigo: "JB23", de: 1998, ate: 2018, confianca: "estimado", nota: "⚠️ fontes fecham em 2017 ou 2018. Geração de 20 anos" },
+    { codigo: "JB64", de: 2018, ate: null, confianca: "firme", nota: "jul/2018; o JB74 Sierra é a versão larga 1.5 de exportação" },
+  ],
+
+  elantra: [
+    { codigo: "J2", de: 1995, ate: 2000, confianca: "estimado" },
+    { codigo: "XD", de: 2000, ate: 2006, confianca: "firme", nota: "1º Elantra montado em várias fábricas da Hyundai pelo mundo" },
+    { codigo: "HD", de: 2006, ate: 2010, confianca: "estimado", nota: "⚠️ alguns catálogos estendem até 2012" },
+    { codigo: "MD", de: 2010, ate: 2015, confianca: "estimado", nota: "UD nos EUA" },
+    { codigo: "AD", de: 2015, ate: 2020, confianca: "estimado" },
+    { codigo: "CN7", de: 2020, ate: null, confianca: "firme", nota: "revelado em 17/03/2020" },
+  ],
+
+  /**
+   * ⚠️⚠️ ACCENT É O MAIS FRACO DESTE LOTE e está marcado todo como estimado:
+   * as datas vieram de CATÁLOGO DE PEÇAS (7zap), não de fonte de produção. Uma
+   * das entradas do próprio catálogo lista a geração MC indo até 2024, o que é
+   * claramente erro de dado. Uso as faixas que não se contradizem e deixo o
+   * aviso — é o tipo de linha que, se a mediana sair estranha, deve ser a
+   * primeira suspeita.
+   */
+  accent: [
+    { codigo: "X3", de: 1994, ate: 1999, confianca: "estimado", nota: "⚠️ fonte é catálogo de peças" },
+    { codigo: "LC", de: 1999, ate: 2006, confianca: "estimado", nota: "⚠️ catálogo global estende a 2007" },
+    { codigo: "MC", de: 2006, ate: 2011, confianca: "estimado", nota: "⚠️ um catálogo diz até 2024 — erro evidente de dado" },
+    { codigo: "RB", de: 2011, ate: 2017, confianca: "estimado", nota: "facelift RB/RC a partir de 2014" },
+    { codigo: "HC", de: 2017, ate: null, confianca: "estimado", nota: "⚠️ fim varia por região; há um BN7 novo em catálogo global" },
+  ],
+
+  // ⚠️ A Saveiro acompanha a família Gol, e o que a VW chamou de "G4" era, nas
+  // palavras da própria imprensa da época, só um facelift da 3ª geração de
+  // 2000. Mantenho o nome comercial porque é como o anúncio escreve.
+  saveiro: [
+    { codigo: "G4", de: 2005, ate: 2009, confianca: "estimado", nota: "⚠️ 'quarta geração' era facelift da de 2000, segundo a imprensa da época" },
+    { codigo: "G5", de: 2009, ate: 2013, confianca: "estimado", nota: "⚠️ há fonte que começa em 2008; entra a cabine estendida" },
+    { codigo: "G6", de: 2013, ate: 2017, confianca: "estimado", nota: "⚠️ linha do Gol fecha o G6 em 2016" },
+    { codigo: "G7", de: 2017, ate: null, confianca: "estimado", nota: "⚠️ anúncios de usado começam em 2018" },
+  ],
+
+  x1: [
+    { codigo: "E84", de: 2009, ate: 2015, confianca: "estimado", nota: "⚠️ base do Série 3 E90, tração traseira — diferente de tudo que veio depois" },
+    { codigo: "F48", de: 2015, ate: 2022, confianca: "firme", nota: "produção jun/2015 – jun/2022; passa à plataforma dianteira UKL2" },
+    { codigo: "U11", de: 2022, ate: null, confianca: "estimado", nota: "⚠️ 2022 ou 2023 conforme a fonte" },
+  ],
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // LOTE 6 — Mustang, Tucson, Sorento, Renegade.
+  //
+  // Fontes: en.wikipedia.org (Ford_Mustang_(sixth_generation), Hyundai_Tucson,
+  // Kia_Sorento) · motor1.com · cjponyparts.com · topgear.nl (Tucson) ·
+  // cars-data.com/en/jeep/renegade · carscoops.com (Renegade 2ª reestilização)
+  // ══════════════════════════════════════════════════════════════════════
+
+  mustang: [
+    { codigo: "S197", de: 2005, ate: 2014, confianca: "firme", nota: "o retrô volta; facelift em 2010" },
+    { codigo: "S550", de: 2015, ate: 2023, confianca: "firme", nota: "produção ago/2014 – abr/2023. 1º Mustang global e com suspensão traseira independente de série; o V6 3.7 sai depois de 2017" },
+    { codigo: "S650", de: 2024, ate: null, confianca: "estimado", nota: "⚠️ revelado em set/2022, chega ao mercado em 2024" },
+  ],
+
+  // ⚠️ A 2ª geração se chamou ix35 em muitos mercados — e o nome Tucson só
+  // voltou na 3ª. Anúncio paraguaio de "Tucson 2012" pode ser um ix35; são o
+  // mesmo carro, então a faixa LM os cobre.
+  tucson: [
+    { codigo: "JM", de: 2004, ate: 2009, confianca: "estimado", nota: "sobre a plataforma do Elantra" },
+    { codigo: "LM", de: 2009, ate: 2015, confianca: "estimado", nota: "⚠️ vendido como ix35 em boa parte do mundo" },
+    { codigo: "TL", de: 2015, ate: 2020, confianca: "estimado", nota: "⚠️ há fonte com 2016–2021; facelift em 2018" },
+    { codigo: "NX4", de: 2020, ate: null, confianca: "estimado", nota: "facelift em 2024" },
+  ],
+
+  // ⚠️ O Sorento muda de natureza entre a 1ª e a 2ª: BL é chassi sobre
+  // longarinas (SUV de verdade), XM em diante é monobloco de crossover. Não é
+  // detalhe de ficha — é outro carro, e a nota do catálogo sobre importada x
+  // oficial continua valendo por cima disso.
+  sorento: [
+    { codigo: "BL", de: 2002, ate: 2010, confianca: "estimado", nota: "⚠️ 2002–2009 ou 2003–2010 conforme a fonte. Chassi sobre longarinas" },
+    { codigo: "XM", de: 2009, ate: 2015, confianca: "estimado", nota: "⚠️ a faixa mais divergente do lote: 2006–2015, 2009–2014 ou 2011–2014 conforme a fonte. Passa a monobloco, plataforma do Santa Fe; facelift em 2012" },
+    { codigo: "UM", de: 2015, ate: 2020, confianca: "estimado", nota: "facelift em 2017" },
+    { codigo: "MQ4", de: 2020, ate: null, confianca: "estimado", nota: "⚠️ 2020 ou 2021 conforme a fonte" },
+  ],
+
+  /**
+   * ⚠️⚠️ O RENEGADE TEM UMA GERAÇÃO SÓ (BU) e DUAS reestilizações — e a
+   * segunda é EXCLUSIVA DA AMÉRICA DO SUL, a partir de 2022. Isso importa aqui
+   * mais do que importaria em outro lugar: é justamente a versão que roda na
+   * fronteira.
+   *
+   * ⚠️ Registro as reestilizações como "gerações" porque é o que separa preço
+   * no pátio, e porque as bases de dados que o mercado consulta fazem o mesmo.
+   * Mas são facelifts — está escrito aqui para ninguém confundir com mudança
+   * de plataforma.
+   */
+  renegade: [
+    { codigo: "BU", de: 2014, ate: 2018, confianca: "estimado" },
+    { codigo: "BU-FL1", de: 2018, ate: 2022, confianca: "estimado", nota: "1ª reestilização — facelift, não geração nova" },
+    { codigo: "BU-FL2", de: 2022, ate: null, confianca: "estimado", nota: "★ 2ª reestilização, exclusiva da América do Sul; nos EUA o Renegade saiu de linha em 2023" },
+  ],
+
 };
 
 /** Em qual geração este ano cai. null = modelo sem dicionário, ou ano fora de tudo. */
