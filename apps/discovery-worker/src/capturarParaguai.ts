@@ -55,6 +55,7 @@ import { CATALOGO_MERCADO } from "./catalogoMercadoPY.js";
 import { conferirAnoModelo } from "./anoModeloPY.js";
 import { geracaoDoAno } from "./geracoesPY.js";
 import { precoImplausivel } from "./limitePrecoPY.js";
+import { conferirNaoEhVeiculo } from "./naoEhVeiculoPY.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -617,6 +618,21 @@ async function main() {
         if (MODO === "termo" && !a.ano) {
           conta.naoVeiculo++;
           await registrarVistoFacebook(id, "sem_ano_modo_termo");
+          await dormir(pacing);
+          continue;
+        }
+
+        // ★★ NÃO É CARRO: pneu, bateria, centro de roda, motor avulso, vitrine
+        // de açougue, lancha. Achado na vitrine em 13/10/2026 — e o estrago
+        // não é só feio, porque o preço de um jogo de pneus entrava na mediana
+        // do modelo que o título citava. Ver naoEhVeiculoPY.ts.
+        //
+        // ⚠️ Vale nos DOIS modos, diferente do portão do ano: a categoria do
+        // Facebook não impede que um anúncio de pneu seja postado em carros.
+        const veredito = conferirNaoEhVeiculo(a.titulo);
+        if (veredito.ehNaoVeiculo) {
+          conta.naoVeiculo++;
+          await registrarVistoFacebook(id, `nao_eh_veiculo:${veredito.motivo}`);
           await dormir(pacing);
           continue;
         }

@@ -394,6 +394,136 @@ export const GERACOES: Record<string, Geracao[]> = {
     { codigo: "BD", de: 2018, ate: null, confianca: "estimado", nota: "⚠️ fontes dão 2018 ou 2019 conforme o mercado; facelift em 2022" },
   ],
 
+
+  // ══════════════════════════════════════════════════════════════════════
+  // LOTE 4 — fecha a lista do que a medição de 12/10 apontou.
+  //
+  // ★ Vale notar um caso que parece inútil e não é: COOLRAY tem UMA geração
+  // só. Não há o que separar — e é exatamente por isso que a ficha ganha. Sem
+  // ela, os 21 anúncios viram seis linhas de ano com 2 a 4 ofertas cada,
+  // nenhuma publicável; com ela, viram UMA linha com n=21.
+  //
+  // Fontes deste lote: en.wikipedia.org (Dodge_Durango, Mercedes-Benz_GLA,
+  // Suzuki_Vitara, Fiat_Strada, Geely_Binyue) · jeepspecs.com · carwiki.de ·
+  // topgear.nl (Mercedes Sprinter, Audi Q3, Mercedes GLA) ·
+  // autocade.net (Audi_Q3_(8U)) · bumper.com (F-Series) · vrum.com.br e
+  // gmauthority.com (S10 Brasil) · dimaggio/autofiles (Corolla)
+  // ══════════════════════════════════════════════════════════════════════
+
+  durango: [
+    { codigo: "DN", de: 1998, ate: 2003, confianca: "estimado" },
+    { codigo: "HB", de: 2004, ate: 2009, confianca: "estimado", nota: "⚠️ a Wikipédia dá o intervalo 1998–2009 sem separar as duas primeiras" },
+    { codigo: "WD", de: 2011, ate: null, confianca: "firme", nota: "★ geração longuíssima — produção desde dez/2010 e segue; atualizações grandes em 2017 e 2021 são FACELIFT, não geração nova. Mesma plataforma do Grand Cherokee" },
+  ],
+
+  // ⚠️ A numeração da F-150 é uma bagunça entre publicações — a mesma safra
+  // 2009–2014 aparece como 12ª numa fonte e 13ª em outra. Os ANOS DE CORTE,
+  // que é o que importa aqui, são consistentes; os nomes das gerações, não.
+  // Por isso o código usa o ano, não o ordinal.
+  "f-150": [
+    { codigo: "P221", de: 2004, ate: 2008, confianca: "estimado", nota: "⚠️ safra com fama ruim de motor e qualidade — vale lembrar quando a mediana desta faixa parecer baixa demais" },
+    { codigo: "P415", de: 2009, ate: 2014, confianca: "estimado", nota: "entra o EcoBoost 3.5 V6 biturbo" },
+    { codigo: "P552", de: 2015, ate: 2020, confianca: "estimado", nota: "carroceria de alumínio" },
+    { codigo: "P702", de: 2021, ate: null, confianca: "estimado", nota: "⚠️ nenhuma das fontes desta rodada confirmou o corte de 2021; é a numeração corrente do mercado" },
+  ],
+
+  sprinter: [
+    { codigo: "T1N", de: 1995, ate: 2006, confianca: "firme", nota: "W901–W905 conforme o peso bruto; nos EUA chegou em 2001 com emblema Freightliner" },
+    { codigo: "NCV3", de: 2006, ate: 2018, confianca: "firme", nota: "W906" },
+    { codigo: "VS30", de: 2018, ate: null, confianca: "estimado", nota: "⚠️ W907/W910; uma fonte diz lançamento mundial só em 2019. Primeira Sprinter com tração dianteira" },
+  ],
+
+  q3: [
+    { codigo: "8U", de: 2011, ate: 2018, confianca: "firme", nota: "sobre a base do Tiguan 5N; facelift em 2015" },
+    { codigo: "F3", de: 2018, ate: 2025, confianca: "firme" },
+    { codigo: "FJ", de: 2025, ate: null, confianca: "estimado", nota: "⚠️ fonte única (Top Gear NL)" },
+  ],
+
+  // ⚠️ O Grand Cherokee é o modelo em que as fontes MAIS se contradizem neste
+  // lote: WK aparece como 2005–2010 numa e como 2010–2013 em outra, e há quem
+  // chame a safra de 2005 de WH. Fico com o corte que os guias de entusiasta
+  // sustentam e marco quase tudo estimado.
+  "grand cherokee": [
+    { codigo: "ZJ", de: 1993, ate: 1998, confianca: "estimado", nota: "só com o 4.0 seis-em-linha da AMC" },
+    { codigo: "WJ", de: 1999, ate: 2004, confianca: "estimado", nota: "⚠️ há fonte que estende até 2005" },
+    { codigo: "WK", de: 2005, ate: 2010, confianca: "estimado", nota: "⚠️ aparece como WH em fonte alemã" },
+    { codigo: "WK2", de: 2011, ate: 2021, confianca: "estimado", nota: "⚠️ fontes dão 2010–2013 para o mesmo código; é a safra que os entusiastas chamam de WK2" },
+    { codigo: "WL", de: 2021, ate: null, confianca: "estimado", nota: "⚠️ produção no fim de 2021, ano-modelo 2022" },
+  ],
+
+  "gla-class": [
+    { codigo: "X156", de: 2013, ate: 2020, confianca: "firme", nota: "revelado em ago/2013, antes do Salão de Frankfurt" },
+    { codigo: "H247", de: 2020, ate: null, confianca: "firme", nota: "⚠️ revelado online em 11/12/2019; há fonte que já aponta um H244 elétrico a partir de 2026" },
+  ],
+
+  // ⚠️ A S10 brasileira é OUTRA LINHAGEM da norte-americana, e a contagem muda
+  // conforme de onde se conta. Aqui vale a brasileira, que é a que roda na
+  // fronteira.
+  //
+  // ⚠️⚠️ A 3ª geração EXISTE — há fonte chamando o ano-modelo 2026 de
+  // "terceira geração" — mas NENHUMA fonte desta rodada deu o ano de corte.
+  // Deixo a 2ª aberta de propósito: um corte inventado jogaria picape de 2013
+  // e de 2025 em grupos errados, e aberto o erro é no máximo de agrupar demais.
+  s10: [
+    { codigo: "BR-1", de: 1995, ate: 2011, confianca: "estimado", nota: "lançamento no Brasil em jul/1995; cabine dupla em 1997, reestilizações em 2000 ('Pitbull') e 2005, flex 2.4 em 2007" },
+    { codigo: "BR-2", de: 2012, ate: null, confianca: "estimado", nota: "⚠️ irmã da Colorado. Existe 3ª geração em fonte recente, mas nenhuma deu o ano — não invento o corte" },
+  ],
+
+  strada: [
+    { codigo: "178E", de: 1998, ate: 2020, confianca: "estimado", nota: "⚠️ venda no Brasil desde out/1998 (não 1996, que é só legenda de foto); facelift de Giugiaro em 2001. Geração de 22 anos" },
+    { codigo: "281", de: 2020, ate: null, confianca: "firme", nota: "apresentada em 26/06/2020; plataforma MC-P do Argo, cabine em parte do Mobi" },
+  ],
+
+  /**
+   * ⚠️⚠️ VITARA E GRAND VITARA SÃO A MESMA LINHAGEM com o nome mudando: a 2ª e
+   * a 3ª gerações se chamaram GRAND Vitara, e a 4ª voltou a ser só Vitara.
+   * Por isso esta lista cobre as quatro — um anúncio escrito "Vitara 2008" é
+   * quase certamente um Grand Vitara JT, e mandá-lo para um grupo vazio seria
+   * pior do que agrupá-lo pela linhagem certa.
+   *
+   * ⚠️ `grand vitara` tem entrada própria no catálogo e NÃO recebe esta lista:
+   * quem escreveu "Grand" está sendo específico, e respeitar isso é a mesma
+   * regra do Pajero Junior × Pajero Full.
+   */
+  vitara: [
+    { codigo: "ET/TA", de: 1988, ate: 1998, confianca: "estimado" },
+    { codigo: "FT/GT", de: 1998, ate: 2005, confianca: "estimado", nota: "é o 1º Grand Vitara" },
+    { codigo: "JT", de: 2005, ate: 2015, confianca: "estimado", nota: "⚠️ uma fonte fecha em 2017, outra em 2008 (essa última é de variante, não da geração)" },
+    { codigo: "LY", de: 2015, ate: null, confianca: "firme", nota: "volta a se chamar só Vitara; conviveu alguns anos com a JT" },
+  ],
+
+  /**
+   * ⚠️⚠️ "COROLLA" AQUI É O SEDÃ, e só ele. Axio, Fielder, Runx e Cross têm
+   * ficha PRÓPRIA no catálogo porque no Paraguai são carros distintos — foi o
+   * próprio Gustavo quem corrigiu isso ("tenho que separar como modelos, não
+   * como versões"). Esta lista não pode ser usada para eles.
+   *
+   * ⚠️ O E120 seguiu em produção na China até 2017, muito depois de sair de
+   * linha no Japão. Anúncio paraguaio de "Corolla 2012" pode ser um chinês
+   * E120 e não um E140 — mais um motivo para o corte de borda cair no carro
+   * mais velho, como a função geracaoDoAno já faz de propósito.
+   */
+  corolla: [
+    { codigo: "E100", de: 1991, ate: 1995, confianca: "estimado" },
+    { codigo: "E110", de: 1995, ate: 2000, confianca: "firme", nota: "lançada em mai/1995; dividiu plataforma com a anterior para cortar custo" },
+    { codigo: "E120", de: 2000, ate: 2006, confianca: "firme", nota: "sedã e perua em ago/2000, hatch em jan/2001. ⚠️ seguiu na China até 2017" },
+    { codigo: "E140/E150", de: 2006, ate: 2013, confianca: "estimado", nota: "E140 é a japonesa; E150 a de carroceria larga, China e Europa a partir de 2007" },
+    { codigo: "E170", de: 2013, ate: 2018, confianca: "estimado", nota: "⚠️ há fonte que estende E170/E180 até 2024; no Japão/Hong Kong a equivalente é a E160, menor" },
+    { codigo: "E210", de: 2018, ate: null, confianca: "firme" },
+  ],
+
+  // ★ UMA geração só desde 2018 — e é justamente isso que faz a ficha valer:
+  // sem ela os 21 anúncios viram seis linhas de ano com 2 a 4 ofertas e nenhuma
+  // mediana publicável.
+  //
+  // ⚠️ As mudanças de 2021, 2022 e 2023 são FACELIFT, não geração nova. Uma
+  // base de dados conta a safra 2018–2021 como "descontinuada" e as seguintes
+  // como modelos à parte — é artefato de catálogo de peças, não história do
+  // carro.
+  coolray: [
+    { codigo: "SX11", de: 2018, ate: null, confianca: "firme", nota: "no Brasil/Paraguai o nome é Coolray; na China, Binyue. Plataforma BMA" },
+  ],
+
 };
 
 /** Em qual geração este ano cai. null = modelo sem dicionário, ou ano fora de tudo. */
