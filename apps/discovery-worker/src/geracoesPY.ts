@@ -288,6 +288,112 @@ export const GERACOES: Record<string, Geracao[]> = {
     { codigo: "A2L", de: 2017, ate: 2023, confianca: "estimado", nota: "⚠️ sem código ZC confirmado em fonte" },
     { codigo: "A3L", de: 2023, ate: null, confianca: "estimado" },
   ],
+
+  // ══════════════════════════════════════════════════════════════════════
+  // LOTE 3 — o resto do topo da medição de 12/10/2026.
+  //
+  // ⚠️ PORTER FICOU DE FORA DE PROPÓSITO. São 27 anúncios e 25 órfãos, mas as
+  // fontes não fecham: uma diz que a 3ª geração (1996) "ainda está em
+  // produção", outra fala em quatro gerações com a 4ª atual, e nenhuma data o
+  // corte. Inventar a borda aqui mandaria carro de 2004 e de 2021 para a mesma
+  // mediana. Fica sem geração até alguém conferir em fonte coreana.
+  //
+  // Fontes deste lote: en.wikipedia.org (Chevrolet_Tracker, Chevrolet_Onix,
+  // Toyota_Noah, Toyota_Sienta, Honda_HR-V, Kia_Cerato) · nissaninsider.co.uk ·
+  // dic.pixiv.net (X-TRAIL) · motorpoint.co.uk (Tiguan) · evoindia.com (Hilux)
+  // ══════════════════════════════════════════════════════════════════════
+
+  // ⚠️⚠️ TRACKER SÃO TRÊS CARROS DIFERENTES com o mesmo nome. Na nossa base,
+  // porém, TODOS os 68 anúncios são de 2014 para cá — ou seja, só os dois
+  // últimos importam. Deixo o Vitara-based registrado mesmo assim, para que
+  // um anúncio de 2002 que apareça amanhã não caia na geração errada.
+  tracker: [
+    { codigo: "Sidekick", de: 1989, ate: 1997, confianca: "estimado", nota: "irmão do Suzuki Sidekick, vendido como Geo até 1997" },
+    { codigo: "Vitara", de: 1998, ate: 2004, confianca: "firme", nota: "irmão do Suzuki Vitara; fim da produção em Ingersoll em jan/2004" },
+    { codigo: "Trax", de: 2013, ate: 2019, confianca: "estimado", nota: "⚠️ é o Trax rebatizado — a GM trocou o nome na América do Sul e na Rússia porque 'Trax' soa mal em português e em russo" },
+    { codigo: "GEM", de: 2019, ate: null, confianca: "firme", nota: "1ª vez que o nome Tracker é de um carro próprio; plataforma GEM, estreia na China em 2019" },
+  ],
+
+  "x-trail": [
+    { codigo: "T30", de: 2000, ate: 2007, confianca: "firme" },
+    { codigo: "T31", de: 2007, ate: 2014, confianca: "estimado", nota: "⚠️ fontes divergem entre 2013 e 2014; há facelift em 2010" },
+    { codigo: "T32", de: 2014, ate: 2022, confianca: "estimado", nota: "⚠️ uma fonte começa em 2013; facelift em 2017" },
+    { codigo: "T33", de: 2022, ate: null, confianca: "firme" },
+  ],
+
+  /**
+   * ⚠️⚠️ FRONTIER E NAVARA SÃO A MESMA PICAPE com dois nomes de mercado — as
+   * mesmas gerações D22/D40/D23. Na nossa base são 43 e 41 anúncios, em
+   * entradas SEPARADAS, e eu as mantive separadas DE PROPÓSITO.
+   *
+   * ★ O motivo não é teimosia com a regra de não traduzir nome: é que a
+   * Frontier que circula no Paraguai costuma vir do Brasil/Argentina e a
+   * Navara, do Japão — e o próprio catálogo já trata origem como fator de
+   * preço (volante convertido × volante à esquerda de fábrica). Fundir as duas
+   * numa mediana só é certo se o mercado paraguaio pagar igual pelas duas, e
+   * isso é pergunta de praça, não de engenharia.
+   *
+   * ⚠️ Se a resposta for "é o mesmo carro e o mesmo preço", fundir é UMA LINHA
+   * em ALIAS_CANONICO (modeloParaguai.ts) — fica anotado para a decisão do
+   * Gustavo, não para eu decidir sozinho.
+   */
+  frontier: [
+    { codigo: "D22", de: 1997, ate: 2005, confianca: "estimado", nota: "⚠️ fontes divergem entre 1997 e 1998" },
+    { codigo: "D40", de: 2005, ate: 2014, confianca: "estimado", nota: "⚠️ 2005–2014 ou 2005–2015 conforme a fonte" },
+    { codigo: "D23", de: 2014, ate: null, confianca: "firme", nota: "mesma geração da Navara NP300 — ver a nota acima sobre manter as duas separadas" },
+  ],
+
+  tiguan: [
+    { codigo: "5N", de: 2007, ate: 2016, confianca: "firme" },
+    { codigo: "AD", de: 2016, ate: 2024, confianca: "firme", nota: "o Allspace é BW, mesma geração; não existe Allspace na 3ª" },
+    { codigo: "CT1", de: 2024, ate: null, confianca: "estimado", nota: "⚠️ uma fonte data 2023, outra 2024, e a América do Norte só recebe em meados de 2025" },
+  ],
+
+  onix: [
+    { codigo: "Gamma II", de: 2013, ate: 2019, confianca: "firme", nota: "estreia no Salão de SP em out/2012, produção a partir de 2013; projetado só para a América do Sul. O sedã é o Prisma" },
+    { codigo: "GEM", de: 2019, ate: null, confianca: "firme", nota: "mesma plataforma GEM do Tracker novo; aqui o sedã passa a se chamar Onix Plus" },
+  ],
+
+  hilux: [
+    { codigo: "AN10/AN20/AN30", de: 2004, ate: 2015, confianca: "firme", nota: "primeira Hilux não produzida no Japão — desenvolvida na Tailândia" },
+    { codigo: "AN120/AN130", de: 2015, ate: 2025, confianca: "firme" },
+    { codigo: "AN220/AN230", de: 2025, ate: null, confianca: "estimado", nota: "⚠️ 9ª geração, fonte única (Top Gear NL)" },
+  ],
+
+  // ★ Voxy é a gêmea da Noah e divide os MESMOS códigos R — as entradas têm de
+  // ser idênticas, senão o mesmo carro cai em grupos diferentes conforme o nome
+  // que o anunciante escolheu escrever.
+  voxy: [
+    { codigo: "R60", de: 2001, ate: 2007, confianca: "firme", nota: "produção nov/2001 – jun/2007, plataforma da Ipsum" },
+    { codigo: "R70", de: 2007, ate: 2014, confianca: "firme" },
+    { codigo: "R80", de: 2014, ate: 2021, confianca: "estimado", nota: "⚠️ fonte de revendedor; facelift por volta de 2017" },
+    { codigo: "R90", de: 2022, ate: null, confianca: "estimado", nota: "⚠️ fonte única; plataforma TNGA GA-C" },
+  ],
+
+  sienta: [
+    { codigo: "XP80", de: 2003, ate: 2015, confianca: "estimado", nota: "⚠️ saiu de linha em 2010 e VOLTOU sem mudanças em mai/2011 — por isso há fonte que fecha em 2010" },
+    { codigo: "XP170", de: 2015, ate: 2022, confianca: "firme", nota: "estreia em 09/07/2015" },
+    { codigo: "XP210", de: 2022, ate: null, confianca: "estimado" },
+  ],
+
+  note: [
+    { codigo: "E11", de: 2004, ate: 2013, confianca: "estimado", nota: "⚠️ fontes divergem: 2004–2013 ou 2005–2012; venda no Japão começa em 2005" },
+    { codigo: "E12", de: 2013, ate: 2020, confianca: "estimado", nota: "⚠️ 2012 ou 2013 conforme a fonte; o e-Power entra no facelift de fim de 2016" },
+    { codigo: "E13", de: 2020, ate: null, confianca: "firme", nota: "produção a partir de dez/2020 — a data mais consistente entre as fontes" },
+  ],
+
+  "hr-v": [
+    { codigo: "GH", de: 1999, ate: 2006, confianca: "firme", nota: "sobre o Honda Logo; 3 e 5 portas (GH2/GH4)" },
+    { codigo: "RU", de: 2013, ate: 2021, confianca: "estimado", nota: "⚠️ produção começa no fim de 2013 no Japão (lá é Vezel) e só chega a muitos mercados em 2014/2015 — o 'ano' do anúncio paraguaio costuma ser o de exportação" },
+    { codigo: "RV", de: 2021, ate: null, confianca: "firme", nota: "⚠️ a versão norte-americana é OUTRO carro, maior (código RZ)" },
+  ],
+
+  cerato: [
+    { codigo: "TD", de: 2008, ate: 2013, confianca: "estimado", nota: "⚠️ lançada na Coreia no fim de 2008 como Forte; a linha norte-americana começa em 2010" },
+    { codigo: "YD", de: 2013, ate: 2018, confianca: "estimado", nota: "⚠️ 2013 na Ásia, 2014 na América do Norte; refresco em 2017" },
+    { codigo: "BD", de: 2018, ate: null, confianca: "estimado", nota: "⚠️ fontes dão 2018 ou 2019 conforme o mercado; facelift em 2022" },
+  ],
+
 };
 
 /** Em qual geração este ano cai. null = modelo sem dicionário, ou ano fora de tudo. */
