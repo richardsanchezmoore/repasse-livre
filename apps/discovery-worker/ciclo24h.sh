@@ -29,6 +29,25 @@ export PATH="/c/Program Files/nodejs:$PATH"
 export PLAYWRIGHT_BROWSERS_PATH=C:/claude/pw-browsers   # ⚠️ chromium mora aqui desde 03/07
 cd "$(dirname "$0")" || exit 1
 
+# ═══ GUARDA DE INSTÂNCIA ÚNICA ═════════════════════════════════════════════
+#
+# ★ Entrou em 13/10/2026, quando o ciclo passou a subir sozinho no logon
+# (tarefa agendada) ALÉM de eu poder subir na mão. Sem isto, dois laços
+# disputariam a mesma sessão do Playwright a cada volta.
+#
+# ⚠️⚠️ E vem ANTES de `: > "$LOG"` de propósito: a segunda instância ZERAVA O
+# LOG DA PRIMEIRA antes de qualquer verificação. O ciclo seguia rodando e o
+# histórico sumia — defeito pior que o conflito, porque é silencioso.
+#
+# ⚠️ `kill -0` só pergunta se o processo existe; não envia sinal nenhum.
+TRAVA_LACO=/c/claude/ciclo24h.pid
+if [ -f "$TRAVA_LACO" ] && kill -0 "$(cat "$TRAVA_LACO" 2>/dev/null)" 2>/dev/null; then
+  echo "⛔ já existe um ciclo rodando (pid $(cat "$TRAVA_LACO")). Saindo sem tocar no log."
+  exit 0
+fi
+echo $$ > "$TRAVA_LACO"
+trap 'rm -f "$TRAVA_LACO"' EXIT
+
 LOG=/c/claude/ciclo24h.log
 PARAR=/c/claude/ciclo24h.parar
 : > "$LOG"

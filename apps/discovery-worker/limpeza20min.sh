@@ -24,6 +24,16 @@
 export PATH="/c/Program Files/nodejs:$PATH"
 cd "$(dirname "$0")" || exit 1
 
+# ★ Mesma guarda do ciclo24h.sh, e pelo mesmo motivo: a tarefa agendada do
+# logon e o start manual podem coincidir. Vem antes de zerar o log.
+TRAVA_LACO=/c/claude/limpeza.pid
+if [ -f "$TRAVA_LACO" ] && kill -0 "$(cat "$TRAVA_LACO" 2>/dev/null)" 2>/dev/null; then
+  echo "⛔ já existe uma limpeza rodando (pid $(cat "$TRAVA_LACO")). Saindo sem tocar no log."
+  exit 0
+fi
+echo $$ > "$TRAVA_LACO"
+trap 'rm -f "$TRAVA_LACO"' EXIT
+
 LOG=/c/claude/limpeza.log
 PARAR=/c/claude/ciclo24h.parar
 : > "$LOG"
