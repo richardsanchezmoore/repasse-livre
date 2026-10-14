@@ -127,6 +127,7 @@ const PT = {
 
   // ─── listagem ───
   oportunidadesEm: "Oportunidades no",
+  ultimosAnuncios: "Últimos anúncios",
   emPais: "no",
   nomePais: "Paraguai",
   resultados: "resultados",
@@ -207,6 +208,8 @@ const PT = {
   kpiNovosFrase: "O mercado se move todo dia. A gente acompanha.",
   kpiMonitorRotulo: "preços monitorados",
   kpiMonitorFrase: "Varredura contínua nas praças do Paraguai.",
+  kpiCidadesRotulo: "cidades monitoradas",
+  kpiCidadesFrase: "Das praças do leste à fronteira seca.",
   kpiTabelaRotulo: "modelos com preço de referência",
   kpiTabelaFrase: "Mediana dos anúncios reais, não palpite.",
   chamadaPrincipal: "Não compre sem consultar o AutoRadar.",
@@ -295,6 +298,7 @@ const ES: { [K in keyof typeof PT]: string } = {
   kpiNovosAjuda: "anuncios nuevos",
 
   oportunidadesEm: "Oportunidades en",
+  ultimosAnuncios: "Últimos anuncios",
   emPais: "en",
   nomePais: "Paraguay",
   resultados: "resultados",
@@ -325,7 +329,7 @@ const ES: { [K in keyof typeof PT]: string } = {
   anunciadoEm: "Publicado el",
 
   entrarTitulo: "Ingresar",
-  entrarSub: "Ingresá para guardar avisos y seguirlos desde donde estés.",
+  entrarSub: "Ingresá para guardar anuncios y seguirlos desde donde estés.",
   continuarGoogle: "Continuar con Google",
   esqueciSenha: "Olvidé mi contraseña",
   naoTemConta: "¿No tenés cuenta?",
@@ -333,7 +337,7 @@ const ES: { [K in keyof typeof PT]: string } = {
   email: "Correo",
   senha: "Contraseña",
   criarContaTitulo: "Crear cuenta",
-  criarContaSub: "Creá tu cuenta para guardar avisos y recibir avisos nuevos.",
+  criarContaSub: "Creá tu cuenta para guardar anuncios y recibir alertas.",
   novaSenha: "Nueva contraseña",
   novaSenhaSub: "Definí una nueva contraseña para tu cuenta.",
   ou: "o",
@@ -362,28 +366,30 @@ const ES: { [K in keyof typeof PT]: string } = {
   cambioRotulo: "Caja",
   descricaoRotulo: "Descripción",
   anunciadoEmRotulo: "Publicado el",
-  abrirAnuncio: "Abrir aviso original",
+  abrirAnuncio: "Abrir anuncio original",
   anunciosRelacionados: "Avisos relacionados",
   migalhaCarros: "Autos",
 
   // ★ A chamada e as frases em VOSEO, como se fala no Paraguai — espanhol
   // neutro soa a tradução, e o site inteiro perde quando isso aparece.
-  kpiNovosRotulo: "avisos nuevos en 72h",
+  kpiNovosRotulo: "anuncios nuevos en 72h",
   kpiNovosFrase: "El mercado se mueve todos los días. Nosotros lo seguimos.",
   kpiMonitorRotulo: "precios monitoreados",
   kpiMonitorFrase: "Barrido continuo en las plazas del Paraguay.",
+  kpiCidadesRotulo: "ciudades monitoreadas",
+  kpiCidadesFrase: "Del este del país a la frontera seca.",
   kpiTabelaRotulo: "modelos con precio de referencia",
-  kpiTabelaFrase: "Mediana de avisos reales, no una estimación.",
+  kpiTabelaFrase: "Mediana de anuncios reales, no una estimación.",
   chamadaPrincipal: "No compres sin consultar AutoRadar.",
   kpiTabelaCta: "Consultar la tabla",
   kpiTabelaCtaRotulo: "Tabla de precios",
-  kpiTabelaCtaFrase: "Viva, actualizada cada mes, sobre avisos reales.",
+  kpiTabelaCtaFrase: "Viva, actualizada cada mes, sobre anuncios reales.",
 
   // ★ "Explorá" em voseo — é como se fala em Asunción, e "Explora" soa a
   // tradução feita de fora.
   exploraPorModelo: "Explorá por modelo",
-  exploraPorModeloSub: "Los modelos con más avisos vivos en Paraguay ahora.",
-  anunciosCurto: "avisos",
+  exploraPorModeloSub: "Los modelos con más anuncios vivos en Paraguay ahora.",
+  anunciosCurto: "anuncios",
   semReferenciaAinda: "Sin referencia todavía",
   unidadeMilhoes: "mill.",
   unidadeMilhares: "mil",

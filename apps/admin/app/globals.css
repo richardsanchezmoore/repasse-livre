@@ -9372,8 +9372,16 @@ button.bemvindo-secundario {
    ⚠️ ROLAGEM HORIZONTAL EM TODAS AS LARGURAS, não só no celular. A fileira
    tem 14 modelos: no desktop, "quebrar em grade" empurraria a listagem —
    que é o que o visitante veio ver — para baixo da dobra. */
+/* ★★ A SEÇÃO TEM FUNDO PRÓPRIO — pedido do Gustavo (14/10/2026): *"fica com
+   cara de anúncios e na verdade é um link de modelo"*. E ele está certo: card
+   branco sobre fundo cinza é exatamente o que a listagem de anúncios usa logo
+   abaixo, então o olho lia a fileira como "mais carros à venda" em vez de
+   navegação. A faixa azul-clara separa as duas coisas sem precisar de rótulo. */
 .explora-modelos {
-  margin: 4px 0 18px;
+  margin: 4px 0 20px;
+  background: var(--kpi-azul-fundo);
+  border-radius: 14px;
+  padding: 14px 16px 10px;
 }
 .explora-modelos-cabecalho {
   display: flex;
@@ -9398,9 +9406,11 @@ button.bemvindo-secundario {
   gap: 10px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
-  /* A fileira sangra até a borda: cartão cortado é o que avisa que há mais. */
-  margin-inline: -16px;
-  padding: 2px 16px 6px;
+  /* ⚠️ A sangria para fora foi removida junto com a faixa de fundo: sangrar
+     agora cortaria o cartão NO MEIO do painel azul, que parece defeito. O
+     aviso de "há mais" passa a ser o próprio cartão parcialmente visível na
+     borda interna. */
+  padding: 2px 2px 8px;
   scrollbar-width: thin;
 }
 .explora-modelos-fila::-webkit-scrollbar { height: 6px; }
@@ -9409,14 +9419,16 @@ button.bemvindo-secundario {
   border-radius: 999px;
 }
 
+/* ⚠️ 206px e não 148: no print do Gustavo as fotos ficavam pequenas demais
+   para reconhecer o carro, que é a única razão de a foto estar ali. */
 .modelo-card {
-  flex: 0 0 148px;
+  flex: 0 0 206px;
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 8px 10px;
-  border: 1px solid #e6e9ef;
+  padding: 10px 10px 12px;
+  border: 1px solid #fff;
   border-radius: 12px;
   background: #fff;
   text-decoration: none;
@@ -9444,7 +9456,7 @@ button.bemvindo-secundario {
   display: block;
 }
 .modelo-card-nome {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
   /* ⚠️ Duas linhas no máximo: "Toyota Land Cruiser" não cabe numa, e deixar
@@ -9456,11 +9468,11 @@ button.bemvindo-secundario {
   min-height: 2.5em;
 }
 .modelo-card-n {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #6b7280;
 }
 .modelo-card-ref {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--kpi-azul-icone);
   display: flex;
@@ -9480,8 +9492,9 @@ button.bemvindo-secundario {
 }
 
 @media (max-width: 640px) {
-  .modelo-card { flex-basis: 132px; }
+  .modelo-card { flex-basis: 158px; }
   .explora-modelos-sub { display: none; }
+  .explora-modelos { padding: 12px 12px 8px; }
 }
 
 /* ═══ O SELO DO MODELO FILTRADO ═══════════════════════════════════════════
@@ -9518,4 +9531,86 @@ button.bemvindo-secundario {
 .chip-modelo-x:hover {
   background: var(--marca-azul);
   color: #fff;
+}
+
+/* ═══ FILEIRA DE MODELOS NO MODO COMPACTO ═════════════════════════════════
+   ⚠️ Quando já há um modelo escolhido, a fileira vira chip. Pedido do Gustavo
+   (14/10/2026): *"ao entrar na categoria/modelo o slider segue dominando o
+   topo"*. Quem já escolheu o Sportage não precisa de nove fotos grandes de
+   outros carros antes de ver os Sportage. Ver ExploraPorModelo.tsx. */
+.explora-modelos-compacto {
+  padding: 10px 14px;
+}
+.explora-modelos-titulo-compacto {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--marca-azul);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+.explora-modelos-chips {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.explora-modelos-chips::-webkit-scrollbar { height: 5px; }
+.explora-modelos-chips::-webkit-scrollbar-thumb { background: #c3cfe4; border-radius: 999px; }
+
+.chip-modelo-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #d7e0f1;
+  color: #27364d;
+  font-size: 12.5px;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chip-modelo-link:hover {
+  border-color: var(--marca-azul);
+  background: #f5f8ff;
+}
+.chip-modelo-link-ativo {
+  background: var(--marca-azul);
+  border-color: var(--marca-azul);
+  color: #fff;
+}
+.chip-modelo-link-n {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+.chip-modelo-link-ativo .chip-modelo-link-n { opacity: 0.85; }
+
+/* ═══ A CIDADE NÃO PODE SER CORTADA NO CARD ═══════════════════════════════
+   ⚠️ Print do Gustavo (14/10/2026): "Ciudad del Este · PY-APA" saía truncado.
+   A linha era `space-between` com os dois itens em `nowrap` + `overflow:
+   hidden`: quando a soma não cabia, quem perdia era sempre o segundo — a
+   cidade, que num site de carro usado é metade da decisão de compra.
+
+   ★ Agora a linha QUEBRA em vez de cortar. Cabendo, segue em uma linha só; não
+   cabendo, a cidade desce inteira. Data e cidade são curtas, então a quebra é
+   rara — mas quando acontece, informa em vez de esconder. */
+.data-local {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.data-local-item:first-child {
+  flex: 0 0 auto;
+}
+.data-local-item:last-child {
+  /* `min-width: 0` é o que permite o item encolher dentro do flex antes de
+     quebrar — sem ele o `overflow: hidden` do item nunca é alcançado. */
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
 }

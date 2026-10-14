@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Radar, Table2, Clock, ArrowRight } from "lucide-react";
-import { buscarKpisTopo } from "@/lib/kpisTopo";
+import { Radar, Table2, Clock, MapPin, ArrowRight } from "lucide-react";
+import { buscarKpisTopo, buscarCidadesCobertas } from "@/lib/kpisTopo";
 import { buscarTabelaReferencia } from "@/lib/tabelaReferencia";
 import { t, IDIOMA_PADRAO, type Idioma } from "@/lib/idioma";
 
@@ -27,7 +27,7 @@ function milhar(n: number): string {
  */
 export async function KpisTopo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } = {}) {
   const tx = t(idioma);
-  const [k, tabela] = await Promise.all([buscarKpisTopo(), buscarTabelaReferencia()]);
+  const [k, tabela, cidades] = await Promise.all([buscarKpisTopo(), buscarTabelaReferencia(), buscarCidadesCobertas()]);
 
   // ⚠️ Modelos DISTINTOS, não linhas: a tabela tem linha por ano e por geração,
   // então contar linhas inflaria o número sem significar mais cobertura.
@@ -73,6 +73,20 @@ export async function KpisTopo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } =
         </div>
         <span className="kpi-card-icone" aria-hidden>
           <Radar size={22} strokeWidth={2} />
+        </span>
+      </div>
+
+      {/* ★ O quarto cartao emparelha a grade (ela ja era repeat(4,1fr) com tres
+          cartoes esticados) e diz o numero que substitui a frase reprovada
+          "em todo o Paraguai" — ver lib/kpisTopo. */}
+      <div className="kpi-card">
+        <div className="kpi-card-texto">
+          <span className="kpi-card-valor">{milhar(cidades)}</span>
+          <span className="kpi-card-rotulo">{tx("kpiCidadesRotulo")}</span>
+          <span className="kpi-card-frase">{tx("kpiCidadesFrase")}</span>
+        </div>
+        <span className="kpi-card-icone" aria-hidden>
+          <MapPin size={22} strokeWidth={2} />
         </span>
       </div>
     </div>

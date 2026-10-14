@@ -35,12 +35,12 @@ async function main() {
    */
   const linhas: Array<{
     id: string; veiculo: string | null; veiculo_bruto: string | null; ano: number | null;
-    marca: string | null; modelo: string | null; segmento: string | null;
+    marca: string | null; modelo: string | null; segmento: string | null; descricao: string | null;
   }> = [];
   for (let de = 0; ; de += 1000) {
     const { data, error } = await supabase
       .from("opportunities")
-      .select("id, veiculo, veiculo_bruto, ano, marca, modelo, segmento")
+      .select("id, veiculo, veiculo_bruto, ano, marca, modelo, segmento, descricao")
       .eq("pais", "PY")
       .order("id", { ascending: true })
       .range(de, de + 999);
@@ -56,7 +56,7 @@ async function main() {
     // ★ Reprocessa sempre a partir do BRUTO quando ele existe: rodar de novo
     // sobre o texto já limpo perderia pistas que o normalizador novo usaria.
     const origem = (o.veiculo_bruto as string | null) ?? (o.veiculo as string | null) ?? "";
-    const v = normalizarVeiculoPY(origem);
+    const v = normalizarVeiculoPY(origem, null, o.descricao);
 
     if (!v.marca || !v.modelo) { semModelo++; continue; }
 

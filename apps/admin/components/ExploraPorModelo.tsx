@@ -46,7 +46,10 @@ function faixaCompacta(ref: NonNullable<ModeloDestaque["referencia"]>, unidadeMi
   return `${simbolo} ${valores} ${unidade}`;
 }
 
-export async function ExploraPorModelo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } = {}) {
+export async function ExploraPorModelo({
+  idioma = IDIOMA_PADRAO,
+  modeloAtivo,
+}: { idioma?: Idioma; modeloAtivo?: string } = {}) {
   const tx = t(idioma);
   const modelos = await buscarModelosDestaque();
   // ⚠️ Sem dado, não renderiza nada. Uma seção vazia com título é pior do que
@@ -54,6 +57,42 @@ export async function ExploraPorModelo({ idioma = IDIOMA_PADRAO }: { idioma?: Id
   if (modelos.length < 4) return null;
 
   const base = caminhoNoIdioma("/", idioma);
+  const href = (m: string) => `${base}${base.endsWith("/") ? "" : "/"}?modelo=${encodeURIComponent(m)}`;
+
+  /**
+   * ★★ DENTRO DE UM MODELO, A FILEIRA ENCOLHE PARA CHIPS.
+   *
+   * ⚠️ Pedido do Gustavo (14/10/2026), olhando a própria tela: *"ao entrar na
+   * categoria/modelo o slider segue dominando o topo"*. E é um defeito de
+   * verdade — quem já escolheu o Sportage não precisa de nove fotos grandes
+   * de outros carros antes de ver os Sportage. A descoberta já cumpriu o
+   * papel dela; o que resta é a porta para trocar de modelo.
+   *
+   * ⚠️ Encolher e não SUMIR: sumir deixaria o visitante preso no modelo, com
+   * o botão de voltar do navegador como única saída.
+   */
+  if (modeloAtivo) {
+    const atual = modeloAtivo.toLowerCase();
+    return (
+      <section className="explora-modelos explora-modelos-compacto" aria-labelledby="explora-modelos-titulo">
+        <h2 id="explora-modelos-titulo" className="explora-modelos-titulo-compacto">
+          {tx("exploraPorModelo")}
+        </h2>
+        <div className="explora-modelos-chips">
+          {modelos.map((m) => (
+            <Link
+              key={m.modelo}
+              href={href(m.modelo)}
+              className={`chip-modelo-link ${m.modelo === atual ? "chip-modelo-link-ativo" : ""}`}
+            >
+              {m.rotulo}
+              <span className="chip-modelo-link-n">{m.n}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="explora-modelos" aria-labelledby="explora-modelos-titulo">
@@ -68,7 +107,7 @@ export async function ExploraPorModelo({ idioma = IDIOMA_PADRAO }: { idioma?: Id
         {modelos.map((m) => (
           <Link
             key={m.modelo}
-            href={`${base}${base.endsWith("/") ? "" : "/"}?modelo=${encodeURIComponent(m.modelo)}`}
+            href={href(m.modelo)}
             className="modelo-card"
             title={m.rotulo}
           >

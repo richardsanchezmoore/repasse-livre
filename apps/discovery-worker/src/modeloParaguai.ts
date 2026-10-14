@@ -391,7 +391,7 @@ export function extrairAno(texto: string): number | null {
  * da tabela e aparece no relatório para a lista crescer com dado, não com
  * suposição.
  */
-export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null): VeiculoPY {
+export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, descricao?: string | null): VeiculoPY {
   const ano = extrairAno(titulo);
   let limpo = limparRuidoPY(titulo);
   // ⚠️ Guarda o texto COM os números antes de apagá-los: é nele que o modelo
@@ -470,6 +470,43 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null):
     const tok = k.replace(chave(marca), " ").split(/\s+/).filter(Boolean)
       .find((w) => RX_MODELO_ALFANUMERICO.test(w));
     if (tok) modelo = tok;
+  }
+
+  /**
+   * ★★★ ÚLTIMO RECURSO: O CARRO ESTÁ NA DESCRIÇÃO, NÃO NO TÍTULO.
+   *
+   * ⚠️ O caso que o Gustavo viu na própria tela (14/10/2026): um card com o
+   * título "2012" e mais nada. O anunciante escreveu só o ano no título e
+   * "BMW X5 | DEL REPRESENTANTE" no corpo do anúncio. O carro estava lá o
+   * tempo todo, num campo que o normalizador nunca abria.
+   *
+   * ⚠️⚠️ A REGRA QUE TORNA ISTO SEGURO: só aceita quando a descrição inteira
+   * aponta para UM ÚNICO modelo. Medido nos 461 sem modelo da vitrine — 164
+   * têm exatamente um, e 18 têm vários. Esses 18 são o veneno: texto de loja
+   * com "también tenemos Corolla, Vitz, Ractis" transformaria o anúncio num
+   * carro sorteado. Um deles citava "Chevrolet S10" e "Kenton Dakar" — carro e
+   * moto no mesmo parágrafo.
+   *
+   * ⚠️ Varre FRASE A FRASE e não o texto inteiro de uma vez: o casamento por
+   * maior palavra atravessaria a pontuação e colaria "Corolla" de uma frase
+   * com "Cross" da seguinte.
+   *
+   * ⚠️ A chamada interna NÃO passa descrição — recursão de profundidade 1,
+   * que termina sempre.
+   */
+  if (!modelo && descricao) {
+    const achados = new Map<string, string>();
+    for (const frase of String(descricao).split(/[.!?\n·|•]+/)) {
+      if (frase.trim().length < 3) continue;
+      const v = normalizarVeiculoPY(frase);
+      if (v.modelo) achados.set(`${v.marca ?? ""}|${v.modelo}`, v.modelo);
+    }
+    if (achados.size === 1) {
+      const [[chaveAchada, modeloAchado]] = [...achados.entries()];
+      modelo = chave(modeloAchado);
+      // A marca vem junto: foi ela que identificou o modelo lá na descrição.
+      if (!marcaBruta) marca = chaveAchada.split("|")[0] || marca;
+    }
   }
 
   // versão: o que sobra depois de tirar marca e modelo

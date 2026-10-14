@@ -171,7 +171,7 @@ export async function CentralDeOportunidades({
             {/* ★ Entre os KPI e a listagem: o KPI diz QUANTOS modelos têm
                 referência, a fileira deixa entrar em cada um. Só aparece na
                 vitrine pública — nas abas de gestão ela seria ruído. */}
-            {abaAtiva === "aprovadas" && <ExploraPorModelo idioma={idioma} />}
+            {abaAtiva === "aprovadas" && <ExploraPorModelo idioma={idioma} modeloAtivo={modeloAtivo} />}
             <BoardArea>
               <Board
                 aba={abaAtiva}

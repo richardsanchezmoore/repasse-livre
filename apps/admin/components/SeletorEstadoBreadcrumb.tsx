@@ -71,7 +71,14 @@ export function SeletorEstadoBreadcrumb({
         aria-expanded={aberto}
         aria-label="Filtrar por estado"
       >
-        {titulo} {tx("emPais")} <strong>{estadoAtivo || tx("nomePais")}</strong>
+        {/* ★ Na VITRINE o título vem do dicionário ("Últimos anuncios"), não da
+            constante em português do board. Pedido do Gustavo (14/10/2026):
+            "Oportunidades" descreve o que o site faz para ELE, não o que o
+            visitante está vendo — que é a lista do que chegou por último.
+            ⚠️ As abas de gestão seguem com o rótulo cru: o painel não é
+            traduzido, e ali "Descobertas"/"Rejeitadas" é o nome certo. */}
+        {aba === "aprovadas" ? tx("ultimosAnuncios") : titulo} {tx("emPais")}{" "}
+        <strong>{estadoAtivo || tx("nomePais")}</strong>
         <ChevronDown size={15} strokeWidth={2.5} className={aberto ? "seletor-estado-seta-aberta" : ""} />
       </button>
 

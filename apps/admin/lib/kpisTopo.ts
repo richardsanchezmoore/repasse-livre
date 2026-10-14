@@ -55,3 +55,43 @@ export async function buscarKpisTopo(): Promise<KpisTopo> {
   const k = await computarCache(dias, horas);
   return { ...k, mapeadasDias: dias, novosHoras: horas };
 }
+
+/**
+ * ★ QUANTAS CIDADES A VARREDURA COBRE — o quarto KPI (14/10/2026).
+ *
+ * ⚠️ Pedido do Gustavo: *"falta um KPI para emparelhar no site"* — a grade já
+ * era `repeat(4, 1fr)` e os três cartões existentes se esticavam.
+ *
+ * ★★ E a escolha do número não é arbitrária: "em todo o Paraguai" foi uma
+ * frase REPROVADA antes justamente porque são as praças que varremos, não o
+ * país inteiro. Dizer o número exato é a versão honesta da mesma promessa — e
+ * mais forte, porque é verificável na própria listagem.
+ *
+ * ⚠️ Conta cidade da VITRINE, não praça cadastrada no painel: praça que não
+ * rendeu anúncio nenhum não é cobertura, é intenção.
+ */
+async function contarCidades(): Promise<number> {
+  const cidades = new Set<string>();
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabaseAdmin
+      .from("opportunities")
+      .select("cidade")
+      .eq("pais", PAIS_DO_SITE)
+      .eq("status", "aprovada")
+      .is("duplicata_de", null)
+      .not("cidade", "is", null)
+      .not("foto_principal", "is", null)
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) return cidades.size;
+    for (const r of data ?? []) if (r.cidade) cidades.add(String(r.cidade));
+    if (!data || data.length < 1000) break;
+  }
+  return cidades.size;
+}
+
+const contarCidadesCache = unstable_cache(contarCidades, ["py-cidades-cobertas"], { revalidate: 1800 });
+
+export async function buscarCidadesCobertas(): Promise<number> {
+  return contarCidadesCache();
+}

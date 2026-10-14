@@ -799,7 +799,9 @@ async function main() {
         // ⚠️ Guarda o título cru em `veiculo_bruto` ANTES de gravar o limpo: o
         // dicionário vai melhorar, e sem o original não há como reprocessar.
         const tituloCru = montarVeiculoPadrao(a) || a.titulo || "";
-        const norm = normalizarVeiculoPY(tituloCru);
+        // ★ A descrição entra como ÚLTIMO recurso: anunciante que põe só o ano
+        // no título costuma escrever o carro no corpo. Ver modeloParaguai.
+        const norm = normalizarVeiculoPY(tituloCru, null, a.descricao);
 
         // ★★ O DICIONÁRIO ENCOSTA NO DADO AQUI — ligado em 08/10/2026.
         //
