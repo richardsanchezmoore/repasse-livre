@@ -48,6 +48,19 @@ async function buscarTodasOportunidadesAprovadas(): Promise<LinhaSitemap[]> {
       .select("id, veiculo, versao, ano, cidade, estado, origem_tipo, data_captura")
       .eq("status", "aprovada")
       .eq("pais", PAIS_DO_SITE)
+      // ⚠️⚠️ AS MESMAS TRÊS CONDIÇÕES DA VITRINE — e faltavam aqui (13/10/2026).
+      //
+      // O sitemap anunciava ao Google tudo que estava "aprovada", enquanto a
+      // listagem esconde reanúncio, anúncio sem foto e anúncio sem cidade. Com
+      // 865 reanúncios marcados na base, o convite ao robô incluía centenas de
+      // páginas do MESMO carro — exatamente o que o motor de duplicata existe
+      // para evitar — mais as que o site nem mostra.
+      //
+      // ⚠️ E o custo não é só de SEO: rastreador é quem estourou o egress do
+      // Supabase em 02/10, e o sitemap é o convite.
+      .is("duplicata_de", null)
+      .not("foto_principal", "is", null)
+      .not("cidade", "is", null)
       .order("data_captura", { ascending: false })
       .range(inicio, inicio + TAMANHO_PAGINA - 1);
 
@@ -186,12 +199,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ];
 
+  /**
+   * ★★ HREFLANG NO SITEMAP — entrou em 13/10/2026, junto com a /tabla.
+   *
+   * O site tem duas versões server-rendered (espanhol na raiz, português em
+   * /pt) e o sitemap anunciava só a primeira. Sem `alternates`, o Google trata
+   * as duas como páginas concorrentes pelo mesmo assunto em vez de traduções
+   * uma da outra — que é precisamente o problema de indexação que a estrutura
+   * por CAMINHO foi desenhada para evitar. Anunciar só o espanhol jogava fora
+   * metade do trabalho.
+   *
+   * ⚠️ `x-default` aponta para a RAIZ: é a versão da praça.
+   */
+  const comIdiomas = (url: string) => ({
+    languages: { es: url, pt: `${URL_BASE_SITE}/pt${url.slice(URL_BASE_SITE.length)}`, "x-default": url },
+  });
+
   return [
     {
       url: URL_BASE_SITE,
       lastModified: new Date(),
       changeFrequency: "hourly",
       priority: 1,
+      alternates: comIdiomas(URL_BASE_SITE),
+    },
+    /**
+     * ★★★ A TABELA É O PRODUTO e não estava no sitemap.
+     *
+     * É a página que a tese inteira sustenta — "no Paraguai não existe FIPE,
+     * então nós criamos a referência" — e o buscador não sabia que ela existe.
+     * Prioridade logo abaixo da home, e `weekly` porque a tabela é datada por
+     * mês: dizer "hourly" seria pedir rastreio que não muda nada.
+     */
+    {
+      url: `${URL_BASE_SITE}/tabla`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+      alternates: comIdiomas(`${URL_BASE_SITE}/tabla`),
     },
     ...blog,
     ...estados,
