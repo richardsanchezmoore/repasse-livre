@@ -5,6 +5,7 @@ import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
 import { MIN_ANUNCIOS_MODELO } from "@/components/DiscoveriesBoard";
 import { gerarSlugCidade, slugify } from "@/lib/slug";
 import { listarPostsPublicados } from "@/lib/cms";
+import { buscarModelosDestaque, slugDoModelo } from "@/lib/modelosDestaque";
 import type { Oportunidade } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -190,6 +191,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Blog: a listagem + cada post publicado.
   const posts = await listarPostsPublicados();
+  const modelosDestaque = await buscarModelosDestaque();
   const blog: MetadataRoute.Sitemap = [
     { url: `${URL_BASE_SITE}/blog`, changeFrequency: "weekly" },
     ...posts.map((p) => ({
@@ -238,6 +240,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
       alternates: comIdiomas(`${URL_BASE_SITE}/tabla`),
     },
+    /**
+     * ★★ UMA PÁGINA POR MODELO (14/10/2026). Era conteúdo pronto sem endereço:
+     * a fileira da home já calculava foto, número de anúncios, faixa de preço e
+     * intervalo de anos de cada modelo — e nada disso tinha URL para o
+     * buscador. `?modelo=` não serve: o Google trata parâmetro de busca como
+     * variação da home.
+     *
+     * ⚠️ Só os modelos da fileira, que já passam por um piso de 12 anúncios —
+     * página de modelo com três carros é página fina, e página fina em volume
+     * derruba a reputação do domínio inteiro.
+     */
+    ...modelosDestaque.map((m) => ({
+      url: `${URL_BASE_SITE}/modelos/${slugDoModelo(m.modelo)}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+      alternates: comIdiomas(`${URL_BASE_SITE}/modelos/${slugDoModelo(m.modelo)}`),
+    })),
     ...blog,
     ...estados,
     ...cidades,

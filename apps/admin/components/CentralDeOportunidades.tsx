@@ -12,6 +12,7 @@ import {
 import { buscarMarcasComContagem } from "@/lib/marcas";
 import { buscarPisoMargem } from "@/lib/configWorker";
 import { BoardArea } from "@/components/BoardArea";
+import { buscarCidadesDisponiveis } from "@/components/DiscoveriesBoard";
 import { KpisTopo } from "@/components/KpisTopo";
 import { ExploraPorModelo } from "@/components/ExploraPorModelo";
 import { DetectorLocalizacao } from "@/components/DetectorLocalizacao";
@@ -131,22 +132,32 @@ export async function CentralDeOportunidades({
     fonte: fonteAtiva,
     marca: marcaAtiva,
     modelo: modeloAtivo,
-    // Região/cidade só valem dentro de um estado (o SeletorLocal só aparece com estado ativo).
-    // Cidade tem precedência (mais específica); ambas via ilike no board (case-insensitive).
+    // Região só vale dentro de um estado (o SeletorLocal só aparece com estado ativo).
     regiao: estadoAtivo ? regiao?.trim() || undefined : undefined,
-    cidade: estadoAtivo ? cidade?.trim() || undefined : undefined,
+    /**
+     * ⚠️⚠️ CIDADE NÃO DEPENDE MAIS DE ESTADO — mudou em 14/10/2026.
+     *
+     * A amarra era da era Brasil, onde "cidade dentro do estado" é como o
+     * usuário pensa e há cidades homônimas em UFs diferentes. No Paraguai o
+     * seletor do topbar passou a oferecer a CIDADE direto, e manter a amarra
+     * fazia o filtro ser aceito na URL e ignorado em silêncio — o pior tipo de
+     * defeito, porque a tela responde como se nada tivesse sido pedido.
+     */
+    cidade: cidade?.trim() || undefined,
     ordem: ordemAtiva,
     lat: ordemAtiva === "proximidade" ? coordsUsuario?.lat : undefined,
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,
   };
 
-  const [contagens, estadosDisponiveis, marcasDisponiveis, pisoMargem, cidadesDoEstado] = await Promise.all([
-    contarOportunidades(usuario),
-    buscarEstadosDisponiveis(abaAtiva, usuario),
-    buscarMarcasComContagem(),
-    buscarPisoMargem(),
-    estadoAtivo ? buscarCidadesDoEstado(estadoAtivo) : Promise.resolve([] as string[]),
-  ]);
+  const [contagens, estadosDisponiveis, marcasDisponiveis, pisoMargem, cidadesDoEstado, cidadesDisponiveis] =
+    await Promise.all([
+      contarOportunidades(usuario),
+      buscarEstadosDisponiveis(abaAtiva, usuario),
+      buscarMarcasComContagem(),
+      buscarPisoMargem(),
+      estadoAtivo ? buscarCidadesDoEstado(estadoAtivo) : Promise.resolve([] as string[]),
+      buscarCidadesDisponiveis(),
+    ]);
 
   return (
     <NavegacaoProvider>
@@ -156,7 +167,9 @@ export async function CentralDeOportunidades({
           aba={abaAtiva}
           busca={filtros.busca}
           estado={filtros.estado}
+          cidade={filtros.cidade}
           estadosDisponiveis={estadosDisponiveis}
+          cidadesDisponiveis={cidadesDisponiveis}
           usuario={usuario}
         />
         <div className="layout">

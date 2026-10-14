@@ -28,6 +28,16 @@ function Selo({ modelo }: { modelo: string }) {
   limpo.delete("pagina"); // a paginação do filtro antigo não vale mais
   const query = limpo.toString();
 
+  /**
+   * ⚠️⚠️ EM /modelos/<slug> O MODELO NÃO ESTÁ NA QUERY, está no CAMINHO —
+   * tirar o parâmetro deixaria o X sem efeito nenhum, e um botão que não faz
+   * nada é pior que botão nenhum. Ali a saída é voltar para a listagem.
+   */
+  const dentroDaRota = caminho.includes("/modelos/");
+  const destino = dentroDaRota
+    ? (caminho.startsWith("/pt/") ? "/pt" : "/") + (query ? `?${query}` : "")
+    : `${caminho}${query ? `?${query}` : ""}`;
+
   const rotulo = modelo.replace(/(^|[\s-])([a-zà-ú])/g, (_, antes, letra) => antes + letra.toUpperCase());
 
   return (
@@ -35,7 +45,7 @@ function Selo({ modelo }: { modelo: string }) {
       <span className="chip-modelo">
         <span className="chip-modelo-rotulo">{tx("filtrandoModelo")}:</span>
         <strong>{rotulo}</strong>
-        <Link href={`${caminho}${query ? `?${query}` : ""}`} className="chip-modelo-x" aria-label={tx("limparFiltro")}>
+        <Link href={destino} className="chip-modelo-x" aria-label={tx("limparFiltro")}>
           <X size={14} strokeWidth={2.6} />
         </Link>
       </span>

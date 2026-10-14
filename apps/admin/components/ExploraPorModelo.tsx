@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { buscarModelosDestaque, type ModeloDestaque } from "@/lib/modelosDestaque";
+import { buscarModelosDestaque, slugDoModelo, type ModeloDestaque } from "@/lib/modelosDestaque";
 import { caminhoNoIdioma, t, IDIOMA_PADRAO, type Idioma } from "@/lib/idioma";
 import { SIMBOLO_MOEDA } from "@/lib/moeda";
 
@@ -57,7 +57,9 @@ export async function ExploraPorModelo({
   if (modelos.length < 4) return null;
 
   const base = caminhoNoIdioma("/", idioma);
-  const href = (m: string) => `${base}${base.endsWith("/") ? "" : "/"}?modelo=${encodeURIComponent(m)}`;
+  // ★ Caminho de verdade, não parâmetro de busca: o Google trata `?modelo=`
+  // como variação da home e não indexa como página própria. Ver app/modelos.
+  const href = (m: string) => `${base}${base.endsWith("/") ? "" : "/"}modelos/${slugDoModelo(m)}`;
 
   /**
    * ★★ DENTRO DE UM MODELO, A FILEIRA ENCOLHE PARA CHIPS.

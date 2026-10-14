@@ -20,13 +20,17 @@ export function TopBar({
   aba,
   busca,
   estado,
+  cidade,
   estadosDisponiveis,
+  cidadesDisponiveis = [],
   usuario,
 }: {
   aba: Aba;
   busca?: string;
   estado?: string;
+  cidade?: string;
   estadosDisponiveis: string[];
+  cidadesDisponiveis?: string[];
   usuario: Usuario | null;
 }) {
   const tx = useTextos();
@@ -88,6 +92,22 @@ export function TopBar({
     atualizarParams({ busca: termoBusca || undefined });
   }
 
+  /**
+   * ★★ O SELETOR DO TOPBAR FILTRA POR CIDADE, não por departamento.
+   *
+   * ⚠️ Antes ele listava `estadosDisponiveis`, que no Paraguai são os códigos
+   * "PY-ASU", "PY-APA", "PY-CAN". Ninguém procura carro por sigla de
+   * departamento — era um filtro de região que não filtrava região nenhuma na
+   * cabeça de quem usa. No Paraguai a praça É a cidade.
+   *
+   * ⚠️ Não mexe em `estado`: o breadcrumb abaixo dos KPI segue sendo o
+   * seletor de departamento, para quem quiser o recorte maior.
+   */
+  function selecionarCidade(novaCidade: string) {
+    atualizarParams({ cidade: novaCidade || undefined });
+    registrarEvento("busca", { termo: termoBusca || undefined, cidade: novaCidade || undefined, aba });
+  }
+
   function selecionarEstado(novoEstado: string) {
     // "BR" explícito (não ausência do param) quando o usuário limpa de
     // propósito — sem isso, a página detecta o estado por geolocalização
@@ -130,15 +150,15 @@ export function TopBar({
               autoFocus={buscaAberta}
             />
             <select
-              value={estado ?? ""}
-              onChange={(evento) => selecionarEstado(evento.target.value)}
+              value={cidade ?? ""}
+              onChange={(evento) => selecionarCidade(evento.target.value)}
               className="busca-slim-uf"
-              aria-label={tx("filtrarPorEstado")}
+              aria-label={tx("filtrarPorCidade")}
             >
-              <option value="">{rotuloEstadoCompacto ? tx("estadoCurto") : tx("todosEstados")}</option>
-              {estadosDisponiveis.map((uf) => (
-                <option key={uf} value={uf}>
-                  {uf}
+              <option value="">{rotuloEstadoCompacto ? tx("cidadeCurto") : tx("todasCidades")}</option>
+              {cidadesDisponiveis.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>

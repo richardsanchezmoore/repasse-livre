@@ -127,6 +127,9 @@ const PT = {
 
   // ─── listagem ───
   oportunidadesEm: "Oportunidades no",
+  filtrarPorCidade: "Filtrar por cidade",
+  todasCidades: "Todas as cidades",
+  cidadeCurto: "Cidade",
   ultimosAnuncios: "Últimos anúncios",
   emPais: "no",
   nomePais: "Paraguai",
@@ -298,6 +301,9 @@ const ES: { [K in keyof typeof PT]: string } = {
   kpiNovosAjuda: "anuncios nuevos",
 
   oportunidadesEm: "Oportunidades en",
+  filtrarPorCidade: "Filtrar por ciudad",
+  todasCidades: "Todas las ciudades",
+  cidadeCurto: "Ciudad",
   ultimosAnuncios: "Últimos anuncios",
   emPais: "en",
   nomePais: "Paraguay",

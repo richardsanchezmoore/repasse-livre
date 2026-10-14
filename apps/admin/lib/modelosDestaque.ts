@@ -205,3 +205,34 @@ const computarCache = unstable_cache(computar, ["modelos-destaque"], { revalidat
 export async function buscarModelosDestaque(): Promise<ModeloDestaque[]> {
   return computarCache();
 }
+
+/**
+ * ★★ O MODELO COMO CAMINHO, não como parâmetro de busca.
+ *
+ * ⚠️ Pedido do Gustavo (14/10/2026): *"devemos corrigir o slug da página
+ * modelo, pois está `?modelo=sportage`"*. E ele tem razão por um motivo que vai
+ * além da estética: `?modelo=` é um FILTRO — o Google trata como variação da
+ * home e não indexa como página própria. Uma página por modelo é exatamente o
+ * tipo de conteúdo que o produto tem de sobra (foto, n, faixa de preço, anos) e
+ * que hoje não existe para o buscador.
+ *
+ * ⚠️ O slug não pode ser reversível por `replace("-", " ")`: "corolla-runx"
+ * voltaria como "corolla runx" (certo), mas "hr-v" voltaria como "hr v"
+ * (errado). Por isso a volta é por BUSCA na lista, não por transformação.
+ */
+export function slugDoModelo(modelo: string): string {
+  return modelo
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Devolve o modelo canônico de um slug, ou null quando não existe. */
+export async function modeloPorSlug(slug: string): Promise<ModeloDestaque | null> {
+  const alvo = slugDoModelo(String(slug ?? ""));
+  if (!alvo) return null;
+  const modelos = await buscarModelosDestaque();
+  return modelos.find((m) => slugDoModelo(m.modelo) === alvo) ?? null;
+}

@@ -776,3 +776,52 @@ export async function Board({
     </section>
   );
 }
+
+/**
+ * ★★ AS CIDADES DA VITRINE INTEIRA — para o filtro do topbar (14/10/2026).
+ *
+ * ⚠️ POR QUE NÃO SERVIA O QUE JÁ EXISTIA: o seletor do topbar listava
+ * `estadosDisponiveis`, que no Paraguai são os CÓDIGOS DE DEPARTAMENTO —
+ * "PY-ASU", "PY-APA", "PY-CAN". Ninguém procura carro por sigla de
+ * departamento; procura por cidade. Era um filtro de região que não filtrava
+ * região nenhuma na cabeça de quem usa.
+ *
+ * ★ E no Paraguai a cidade É o mercado: as 11 praças que varremos são onde o
+ * carro está. Departamento é divisão administrativa, não praça de comércio.
+ *
+ * ⚠️ Mantém a mesma canonicalização de `buscarCidadesDoEstado`: a grafia mais
+ * frequente vence, para "Encarnación" e "Encarnacion" não virarem duas opções.
+ */
+export async function buscarCidadesDisponiveis(): Promise<string[]> {
+  const formas = new Map<string, Map<string, number>>();
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabaseAdmin
+      .from("opportunities")
+      .select("cidade")
+      .eq("status", "aprovada")
+      .eq("pais", PAIS_DO_SITE)
+      .is("duplicata_de", null)
+      .not("foto_principal", "is", null)
+      .not("cidade", "is", null)
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) break;
+    for (const linha of data ?? []) {
+      const c = ((linha.cidade as string) ?? "").trim();
+      if (!c) continue;
+      const chave = c.toLowerCase();
+      if (!formas.has(chave)) formas.set(chave, new Map());
+      const m = formas.get(chave)!;
+      m.set(c, (m.get(c) ?? 0) + 1);
+    }
+    if (!data || data.length < 1000) break;
+  }
+  return [...formas.values()]
+    .map((m) => {
+      const total = [...m.values()].reduce((a, b) => a + b, 0);
+      const forma = [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      return { forma, total };
+    })
+    .sort((a, b) => b.total - a.total)
+    .map((x) => x.forma);
+}
