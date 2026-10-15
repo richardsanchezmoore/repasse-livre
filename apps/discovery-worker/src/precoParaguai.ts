@@ -44,6 +44,20 @@ const FAIXA = {
 } as const;
 
 /**
+ * ★★ A FAIXA QUE A GRANDEZA PODE USAR — muito mais estreita que a do simbolo.
+ *
+ * ⚠️ `FAIXA.USD` existe para quando o anuncio ESCREVEU "US$": ali 500 e um
+ * preco de sucata plausivel e 500.000 cobre qualquer exagero. Sem simbolo
+ * nenhum, essa largura transformava guarani em dolar — ver o comentario na
+ * decisao por grandeza, no fim deste arquivo.
+ *
+ * ★ Medido na base em 15/10/2026: o anuncio em dolar mais caro e real e um
+ * Land Cruiser 300 a US$ 165.000. Abaixo de US$ 1.500 nao ha carro de rua no
+ * Paraguai — ha peca, entrada de financiamento e isca.
+ */
+const GRANDEZA_USD = { min: 1_500, max: 250_000 } as const;
+
+/**
  * ★★ CELULAR PARAGUAIO LIDO COMO PREÇO — achado em 05/10/2026.
  *
  * Um anúncio "Cars sur automores" entrou com ₲992.363.005. O Gustavo reconheceu
@@ -266,8 +280,36 @@ export function lerPreco(bruto: string): LeituraPreco {
   // Sem símbolo nenhum: a grandeza decide. Sete dígitos ou mais só faz sentido
   // em guarani; abaixo disso, só em dólar.
   if (valor >= FAIXA.PYG.min) return { ok: true, valor, moeda: "PYG" };
-  if (valor >= FAIXA.USD.min && valor <= FAIXA.USD.max) return { ok: true, valor, moeda: "USD" };
-  return { ok: false, motivo: "fora_de_faixa", valorBruto: valor };
+
+  /**
+   * ⚠️⚠️⚠️ A FAIXA DA GRANDEZA É MAIS APERTADA QUE A DO SÍMBOLO — e isto é
+   * conserto de defeito relatado pelo Gustavo em 15/10/2026: *"tenho umas
+   * quanto a preços que estão pra mim em guarani e interpretamos como dólar"*.
+   *
+   * ★★ A CAUSA: `FAIXA.USD` vai de 500 a 500.000 e serve bem quando o anúncio
+   * ESCREVEU "US$". Só que ela era usada também aqui, onde não há símbolo
+   * nenhum — e aí todo número entre 500 e 5 milhões virava dólar. Medido na
+   * base: um Ford Ecosport 2017 a "USD 500", um Mitsubishi Galant 1998 a
+   * "USD 100.000", um Hyundai Elantra 1995 a "USD 94.683". Nenhum deles é
+   * preço em dólar; são guaranis, entradas de financiamento e peças.
+   *
+   * ⚠️ E a escala do problema: **67% dos preços da base são decididos SÓ pela
+   * grandeza**. É o sinal mais fraco fazendo a maior parte do trabalho.
+   *
+   * ★ Os limites saem da medição, não de palpite: o anúncio em dólar mais caro
+   * que a base tem e que é real é um Land Cruiser 300 a US$ 165.000; abaixo de
+   * US$ 1.500 não há carro de rua no Paraguai — há peça, entrada e isca.
+   *
+   * ⚠️ Fora da faixa devolve `escala_ambigua`, NÃO `fora_de_faixa`: o motivo
+   * importa. "Fora de faixa" diz que o número não serve; "escala ambígua" diz
+   * que o número pode servir e falta saber em qual moeda — e é a proporção
+   * desses que vai dizer quando a nossa tabela tem massa para arbitrar a
+   * escala sozinha, como o comentário do capturarParaguai já previa.
+   */
+  if (valor >= GRANDEZA_USD.min && valor <= GRANDEZA_USD.max) {
+    return { ok: true, valor, moeda: "USD" };
+  }
+  return { ok: false, motivo: "escala_ambigua", valorBruto: valor };
 }
 
 /**
