@@ -29,6 +29,9 @@ cd "$(dirname "$0")" || exit 1
 TRAVA_LACO=/c/claude/limpeza.pid
 if [ -f "$TRAVA_LACO" ] && kill -0 "$(cat "$TRAVA_LACO" 2>/dev/null)" 2>/dev/null; then
   echo "⛔ já existe uma limpeza rodando (pid $(cat "$TRAVA_LACO")). Saindo sem tocar no log."
+  # ⚠️ Mesmo motivo do ciclo24h.sh: chamada pela tarefa agendada, a saída
+  # padrão se perde no `start /B`. O log do lançador é o que fica legível.
+  echo "[$(date '+%d/%m %H:%M:%S')] limpeza ja viva (pid $(cat "$TRAVA_LACO")) - nada a fazer" >> /c/claude/varredura-guarda.log
   exit 0
 fi
 echo $$ > "$TRAVA_LACO"

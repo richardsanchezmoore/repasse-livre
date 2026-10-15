@@ -43,6 +43,14 @@ cd "$(dirname "$0")" || exit 1
 TRAVA_LACO=/c/claude/ciclo24h.pid
 if [ -f "$TRAVA_LACO" ] && kill -0 "$(cat "$TRAVA_LACO" 2>/dev/null)" 2>/dev/null; then
   echo "⛔ já existe um ciclo rodando (pid $(cat "$TRAVA_LACO")). Saindo sem tocar no log."
+  # ⚠️ REGISTRA TAMBÉM NO LOG DO LANÇADOR, e não só na saída padrão.
+  #
+  # Quando quem chama é a TAREFA AGENDADA, o `start /B` do .cmd desanexa o
+  # processo e a saída dele não chega mais ao arquivo — conferido em
+  # 15/10/2026: a tarefa rodou às 12:13 e o `run-ciclo-py-ciclo.log` continuou
+  # com linhas de dois dias antes. A guarda FUNCIONOU (não subiu segundo
+  # ciclo), mas quem fosse diagnosticar veria log parado e concluiria errado.
+  echo "[$(date '+%d/%m %H:%M:%S')] ciclo ja vivo (pid $(cat "$TRAVA_LACO")) - nada a fazer" >> /c/claude/varredura-guarda.log
   exit 0
 fi
 echo $$ > "$TRAVA_LACO"
