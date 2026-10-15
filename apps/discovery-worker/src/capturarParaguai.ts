@@ -56,6 +56,7 @@ import { conferirAnoModelo } from "./anoModeloPY.js";
 import { geracaoDoAno } from "./geracoesPY.js";
 import { precoImplausivel } from "./limitePrecoPY.js";
 import { conferirNaoEhVeiculo } from "./naoEhVeiculoPY.js";
+import { lerKm } from "./kmParaguai.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -638,6 +639,7 @@ async function main() {
         }
 
         const contexto = `${a.titulo ?? ""} ${a.descricao ?? ""}`;
+        const leituraKm = lerKm(a.km, contexto);
         if (ehAnuncioDeCompra(a.titulo ?? "", a.descricao ?? "")) {
           conta.compra++;
           await registrarVistoFacebook(id, "anuncio_de_compra");
@@ -882,7 +884,23 @@ async function main() {
             versao: a.versaoTexto ?? a.motor,
             ano: a.ano,
             cambio: a.cambio,
-            km: a.km,
+            /**
+             * ★★ O KM VEM DO CAMPO **E** DO TEXTO — ligado em 15/10/2026.
+             *
+             * ⚠️⚠️ `lerKm` existia desde 07/10, com a medição inteira no
+             * cabeçalho do kmParaguai, e NUNCA FOI CHAMADA. Gravava-se `a.km`
+             * cru. É a quarta vez neste projeto que um mecanismo pronto não é
+             * chamado — e a quarta vez que só se descobre olhando a tela.
+             *
+             * ★ O caso do Gustavo: "Kia Sportage 2018 ... 98mil km" na
+             * descrição e o campo KM vazio no site. O texto tinha o número.
+             *
+             * ⚠️ Não é só preencher o vazio: quando o campo traz um redondo
+             * suspeito (10.000 km em 53% da base, que é o vendedor passando da
+             * validação) e o texto traz outro número, o TEXTO VENCE — ninguém
+             * detalha km na descrição depois de inventar no formulário.
+             */
+            km: leituraKm.km,
             cidade: a.cidade ?? regiao.nome,
             estado: regiao.uf ?? null,
             preco: valorFinal,
@@ -923,6 +941,10 @@ async function main() {
                 ? { aceita_troca: { label: "Aceita troca", value: "Sim" } }
                 : {}),
               confianca_moeda: { label: "Confiança da moeda", value: confiancaFinal ?? "simbolo" },
+              // ⚠️ A confiança do km fica gravada junto: "duvidoso" é o redondo
+              // que o vendedor digitou para passar da validação, e quem for
+              // filtrar por km um dia precisa saber a diferença.
+              confianca_km: { label: "Confiança do km", value: leituraKm.confianca },
             },
             anunciante_profissional: a.sellerType === "DEALER" ? true : a.sellerType === "PRIVATE_SELLER" ? false : null,
             ultimo_visto: new Date().toISOString(),

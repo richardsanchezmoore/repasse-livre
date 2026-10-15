@@ -84,7 +84,18 @@ export function linhaParaAnuncio(
   // ⚠️ `ano` chega como TEXTO do banco e nem sempre limpo ("2012", "2012/2013").
   // A chave da tabela é o ano de 4 dígitos, então extrai em vez de confiar no
   // formato — um casamento que falha em silêncio custaria o selo e ninguém veria.
-  const ano = String(anuncio.ano ?? "").match(/(19|20)d{2}/)?.[0];
+  // ⚠️⚠️ AQUI FALTAVAM TRÊS BARRAS INVERTIDAS e o defeito era INVISÍVEL.
+  //
+  // O padrão gravado era `/\x08(19|20)d{2}\x08/` — os dois `\b` tinham virado
+  // o caractere BACKSPACE (0x08) e o `\d` tinha virado a letra "d". Procurava
+  // o texto literal "19dd" entre dois backspaces. NUNCA casava.
+  //
+  // ★ Consequência medida (Gustavo, 15/10/2026): a busca pela linha de ANO
+  // nunca acontecia e TODO selo caía na linha de GERAÇÃO — que pode cobrir dez
+  // anos. Era a causa do "Toyota Vitz 2011 · 64,8% por debajo de la tabla ·
+  // REFERENCIA 2010–2019": um Vitz 2011 comparado com a mediana de uma faixa
+  // que inclui os 2019.
+  const ano = String(anuncio.ano ?? "").match(/\b(19|20)\d{2}\b/)?.[0];
   if (ano) {
     const porAno = indice.get(`ano|${modelo}|${ano}|${moeda}`);
     if (porAno) return porAno;
@@ -94,6 +105,37 @@ export function linhaParaAnuncio(
     if (porGeracao) return porGeracao;
   }
   return null;
+}
+
+/**
+ * ★★★ QUÃO LARGA PODE SER A REFERÊNCIA DE UM SELO.
+ *
+ * Regra do Gustavo (15/10/2026), olhando a própria tela: *"se tivermos menos
+ * de 3 acho que não é prudente (3 dentro de uma faixa de 2 anos pra menos e
+ * pra mais), pois geração vai variar muito e isso só serviria para mediana e
+ * não para colocarmos um selo de X abaixo ou acima da tabela"*.
+ *
+ * ★★ A DISTINÇÃO QUE ELE FEZ É A CERTA, e vale escrever: **mediana publicável
+ * não é referência de selo**. Agrupar por geração é o que faz a tabela existir
+ * no Paraguai, onde quase todo ano tem amostra pequena — mas a mesma geração
+ * que salva a mediana destrói a comparação individual. A XP130 do Vitz cobre
+ * 2010 a 2019: um 2011 contra a mediana dessa faixa aparece como "64,8%
+ * abaixo", e isso não é uma oportunidade, é um erro de leitura nosso estampado
+ * como selo verde.
+ *
+ * ⚠️ 5 anos = o ano do carro ±2, que é a janela que ele pediu. Acima disso a
+ * tabela segue publicada (a mediana continua valendo), mas o CARD não recebe
+ * selo — a linha ainda aparece em /tabla, onde o intervalo está escrito e o
+ * leitor julga sozinho.
+ */
+const MAX_ANOS_PARA_SELO = 5;
+
+/** Quantos anos a linha de referência cobre. 1 quando é de um ano só. */
+function larguraEmAnos(linha: LinhaReferencia): number {
+  const texto = `${linha.chave ?? ""} ${linha.anos_agrupados ?? ""} ${linha.intervalo_anos ?? ""}`;
+  const anos = [...texto.matchAll(/\b(19|20)\d{2}\b/g)].map((m) => Number(m[0]));
+  if (!anos.length) return 1;
+  return Math.max(...anos) - Math.min(...anos) + 1;
 }
 
 export interface PosicaoNaTabela {
@@ -123,6 +165,8 @@ export function posicaoNaTabela(
 ): PosicaoNaTabela | null {
   if (!linha || preco == null || !Number.isFinite(preco) || !linha.mediana) return null;
   if (linha.confianca !== "boa") return null;
+  // ⚠️ Referência larga demais não vira selo — ver MAX_ANOS_PARA_SELO.
+  if (larguraEmAnos(linha) > MAX_ANOS_PARA_SELO) return null;
   const percentual = ((preco - linha.mediana) / linha.mediana) * 100;
   const faixa =
     linha.q1 != null && preco < linha.q1 ? "abaixo" : linha.q3 != null && preco > linha.q3 ? "acima" : "no_miolo";
