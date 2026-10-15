@@ -140,7 +140,7 @@ const MODELOS: Record<string, string[]> = {
   volvo: ["xc90", "xc60", "xc40", "s60", "v40"],
   mini: ["cooper s", "cooper", "countryman", "clubman"],
   fiat: ["strada", "toro", "cronos", "argo", "mobi", "uno", "palio", "siena", "doblo", "ducato"],
-  renault: ["kangoo", "duster", "sandero", "logan", "captur", "master", "oroch"],
+  renault: ["kangoo", "duster", "sandero", "logan", "captur", "master", "oroch", "express", "stepway", "alaskan"],
   // ⚠️⚠️ Os números da Peugeot são tratados à parte (MODELOS_NUMERICOS, logo
   // abaixo) porque o normalizador apaga os anos ANTES de procurar o modelo —
   // e "2008" é modelo E ano. Ficam aqui também para o caso de a marca não vir.
@@ -493,12 +493,26 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, 
    *
    * ⚠️ A chamada interna NÃO passa descrição — recursão de profundidade 1,
    * que termina sempre.
+   *
+   * ⚠️⚠️⚠️ MODELO PURAMENTE NUMÉRICO NÃO VALE AQUI — e isto não é precaução,
+   * é conserto de um estrago que eu mesmo causei em 14/10/2026.
+   *
+   * Um "Renault Express 2023" e dois "Peugeot 2008" foram publicados no site
+   * como **KTM 890**. A causa: a descrição dizia "Precio: $5.890.000", o
+   * separador de milhar virou espaço na limpeza, e o token "890" casou com o
+   * modelo 890 da KTM. Preço, quilometragem e telefone viram números soltos
+   * em qualquer descrição paraguaia — num título o número tem contexto, numa
+   * descrição de loja ele é ruído garantido.
+   *
+   * ★ O título SEGUE aceitando numérico (Peugeot 2008, KTM 890, BMW 320):
+   * lá o número É o nome do carro. A regra vale só para esta passada.
    */
   if (!modelo && descricao) {
     const achados = new Map<string, string>();
     for (const frase of String(descricao).split(/[.!?\n·|•]+/)) {
       if (frase.trim().length < 3) continue;
       const v = normalizarVeiculoPY(frase);
+      if (v.modelo && /^\d+$/.test(chave(v.modelo))) continue;
       if (v.modelo) achados.set(`${v.marca ?? ""}|${v.modelo}`, v.modelo);
     }
     if (achados.size === 1) {

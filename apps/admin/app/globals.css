@@ -9377,11 +9377,13 @@ button.bemvindo-secundario {
    branco sobre fundo cinza é exatamente o que a listagem de anúncios usa logo
    abaixo, então o olho lia a fileira como "mais carros à venda" em vez de
    navegação. A faixa azul-clara separa as duas coisas sem precisar de rótulo. */
+/* ⚠️⚠️ O FUNDO AZUL SAIU (Gustavo, 14/10/2026): *"a cor de fundo no slider
+   não ficou muito legal, deixe fora que vou pensar em algo"*. A faixa resolvia
+   o problema que ele mesmo tinha apontado — a fileira parecer listagem de
+   anúncio — mas resolvia feio. O que separa as duas coisas agora é o TAMANHO
+   do cartão e o formato do bloco, não a cor. Fica em aberto para ele decidir. */
 .explora-modelos {
   margin: 4px 0 20px;
-  background: var(--kpi-azul-fundo);
-  border-radius: 14px;
-  padding: 14px 16px 10px;
 }
 .explora-modelos-cabecalho {
   display: flex;
@@ -9411,13 +9413,47 @@ button.bemvindo-secundario {
      aviso de "há mais" passa a ser o próprio cartão parcialmente visível na
      borda interna. */
   padding: 2px 2px 8px;
-  scrollbar-width: thin;
+  /* ⚠️ A barra fica INVISÍVEL, não desligada: tirar o `overflow` quebraria o
+     arrastar no celular e a rolagem por trackpad, que é como a maioria navega
+     uma fileira dessas. O que sai é o desenho, não a capacidade de rolar. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.explora-modelos-fila::-webkit-scrollbar { height: 6px; }
-.explora-modelos-fila::-webkit-scrollbar-thumb {
-  background: #d7dce5;
+.explora-modelos-fila::-webkit-scrollbar { display: none; }
+
+/* ═══ AS SETAS ════════════════════════════════════════════════════════════
+   ⚠️ "Perceptíveis mas discretas" (Gustavo): ficam FORA do fluxo, sobre a
+   borda da fileira, em branco com sombra — leem como controle sem competir
+   com a foto do carro. E só aparecem quando há para onde ir: o componente as
+   desmonta nas pontas (ver FilaModelos.tsx). */
+.fila-modelos-caixa {
+  position: relative;
+}
+.fila-modelos-seta {
+  position: absolute;
+  top: 38%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   border-radius: 999px;
+  border: 1px solid #e3e8f0;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--marca-azul);
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.14);
+  cursor: pointer;
+  /* ⚠️ Sem transição de opacidade na entrada: a seta é montada e desmontada
+     pelo React, e animar isso faria ela "piscar" a cada rolagem. */
+  transition: background 0.15s, box-shadow 0.15s;
 }
+.fila-modelos-seta:hover {
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.2);
+}
+.fila-modelos-seta-esq { left: -6px; }
+.fila-modelos-seta-dir { right: -6px; }
 
 /* ⚠️ 206px e não 148: no print do Gustavo as fotos ficavam pequenas demais
    para reconhecer o carro, que é a única razão de a foto estar ali. */
@@ -9428,7 +9464,7 @@ button.bemvindo-secundario {
   flex-direction: column;
   gap: 2px;
   padding: 10px 10px 12px;
-  border: 1px solid #fff;
+  border: 1px solid #e6e9ef;
   border-radius: 12px;
   background: #fff;
   text-decoration: none;
@@ -9494,7 +9530,9 @@ button.bemvindo-secundario {
 @media (max-width: 640px) {
   .modelo-card { flex-basis: 158px; }
   .explora-modelos-sub { display: none; }
-  .explora-modelos { padding: 12px 12px 8px; }
+  /* ⚠️ No celular NÃO há setas: lá o gesto é arrastar, e um botão flutuando
+     sobre o cartão só rouba área de toque. */
+  .fila-modelos-seta { display: none; }
 }
 
 /* ═══ O SELO DO MODELO FILTRADO ═══════════════════════════════════════════

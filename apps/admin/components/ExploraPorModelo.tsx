@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FilaModelos } from "@/components/FilaModelos";
 import { buscarModelosDestaque, slugDoModelo, type ModeloDestaque } from "@/lib/modelosDestaque";
 import { caminhoNoIdioma, t, IDIOMA_PADRAO, type Idioma } from "@/lib/idioma";
 import { SIMBOLO_MOEDA } from "@/lib/moeda";
@@ -105,7 +106,7 @@ export async function ExploraPorModelo({
         <span className="explora-modelos-sub">{tx("exploraPorModeloSub")}</span>
       </div>
 
-      <div className="explora-modelos-fila">
+      <FilaModelos>
         {modelos.map((m) => (
           <Link
             key={m.modelo}
@@ -141,7 +142,7 @@ export async function ExploraPorModelo({
             )}
           </Link>
         ))}
-      </div>
+      </FilaModelos>
     </section>
   );
 }

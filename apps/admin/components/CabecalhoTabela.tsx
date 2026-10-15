@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useTextos } from "@/lib/useIdioma";
-import { SeletorIdioma } from "@/components/SeletorIdioma";
 
 /**
  * O topo da página da tabela — título, o mês de referência e a explicação.
@@ -26,9 +25,12 @@ export function CabecalhoTabela({ mes, vazia }: { mes: string; vazia: boolean })
 
   return (
     <header className="tabela-topo">
+      {/* ⚠️ O seletor de idioma saiu daqui: com o topbar montado, apareciam
+          DUAS bandeiras na mesma tela, a um palmo uma da outra. O "← Volver"
+          fica — o logo do topbar também volta para a home, mas um link
+          explícito de voltar ajuda quem chegou pela busca do Google. */}
       <div className="tabela-topo-barra">
         <Link href="/" className="tabela-topo-voltar">← {tx("voltar")}</Link>
-        <SeletorIdioma />
       </div>
 
       <h1 className="tabela-topo-titulo">{tx("tabelaTitulo")}</h1>
