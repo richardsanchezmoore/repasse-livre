@@ -262,7 +262,7 @@ export function Sidebar({
       <nav className={`sidebar-overlay-painel ${aberto ? "sidebar-overlay-aberto" : ""}`}>
         <div className="sidebar-overlay-topo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Repasse Livre" className="logo-img" />
+          <img src="/logo-autoradar-escuro.png" alt="AutoRadarPy" className="logo-img" />
           <button
             type="button"
             onClick={() => setAberto(false)}

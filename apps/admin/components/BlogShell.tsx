@@ -12,7 +12,7 @@ export function BlogShell({ children }: { children: React.ReactNode }) {
       <header className="blog-topo">
         <Link href="/" className="blog-logo-link" aria-label="Ir para a página inicial">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Repasse Livre" className="blog-logo" />
+          <img src="/logo-autoradar-escuro.png" alt="AutoRadarPy" className="blog-logo" />
         </Link>
         <nav className="blog-topo-nav">
           <Link href="/blog" className="blog-topo-link">Blog</Link>

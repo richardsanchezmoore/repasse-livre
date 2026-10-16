@@ -5968,7 +5968,7 @@ button.bemvindo-secundario {
 
 .login-logo {
   display: block;
-  height: 36px;
+  height: 42px;
   width: auto;
   margin: 0 auto 16px;
 }
@@ -9922,4 +9922,15 @@ button.bemvindo-secundario {
 }
 .top-bar .busca-icone-botao:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* ⚠️ O LOGO DA GAVETA LATERAL usa a MESMA classe `.logo-img` do topbar, e o
+   topbar a define com 52px de altura. Com o wordmark do AutoRadarPy (6,7:1,
+   contra 3,5:1 do logo antigo do Repasse Livre) isso daria ~348px de largura
+   dentro de uma gaveta estreita. Aqui ele é limitado pela LARGURA, que é a
+   dimensão que a gaveta tem de sobra para dar. */
+.sidebar-overlay-topo .logo-img {
+  height: auto;
+  width: 100%;
+  max-width: 170px;
 }

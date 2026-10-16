@@ -39,7 +39,12 @@ export function CascaAuth({
           <SeletorIdioma />
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.svg" alt="AutoRadarPy" className="login-logo" />
+        {/* ⚠️ `/logo.svg` era o REPASSE LIVRE — a tela de login ficou para trás
+            na troca de marca e mostrava "RL Repasse Livre" num domínio
+            autoradarpy.com (achado pelo Gustavo em 16/10/2026).
+            ★ A versão "escuro" é a de TEXTO escuro, para fundo claro. A
+            `logo-autoradar.png` do topbar é branca e sumiria no cartão. */}
+        <img src="/logo-autoradar-escuro.png" alt="AutoRadarPy" className="login-logo" />
         <h1 className="visualmente-oculto">{titulo}</h1>
         <p className="login-subtitulo">{subtitulo}</p>
         {children}

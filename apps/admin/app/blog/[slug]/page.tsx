@@ -60,7 +60,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
     publisher: {
       "@type": "Organization",
       name: "Repasse Livre",
-      logo: { "@type": "ImageObject", url: `${URL_BASE_SITE}/logo.svg` },
+      logo: { "@type": "ImageObject", url: `${URL_BASE_SITE}/logo-autoradar-escuro.png` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
   };

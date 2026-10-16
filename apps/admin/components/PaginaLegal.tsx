@@ -21,7 +21,7 @@ export function PaginaLegal({
       <header className="pagina-legal-topo">
         <Link href="/" className="pagina-legal-logo-link" aria-label="Ir para a página inicial">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Repasse Livre" className="pagina-legal-logo" />
+          <img src="/logo-autoradar-escuro.png" alt="AutoRadarPy" className="pagina-legal-logo" />
         </Link>
         <Link href="/" className="pagina-legal-voltar">
           ← Início
