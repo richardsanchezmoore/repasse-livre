@@ -95,6 +95,16 @@ async function lerLivro(mes: string): Promise<ObservacaoLivro[]> {
        * categoria, não uma tabela só mais tolerante.
        */
       .eq("categoria", "carro")
+      /**
+       * ⚠️⚠️ SÓ PARAGUAI — migração 0099.
+       *
+       * A praça "Concepción" apontava para a Concepción do CHILE e pôs 1.704
+       * anúncios em pesos chilenos no livro, com mediana de ₲11,5 milhões
+       * contra ₲40 a 58 milhões de todas as outras praças. Tirar os anúncios
+       * da vitrine não bastava: a mediana sai DAQUI, e o livro sobrevive ao
+       * anúncio de propósito.
+       */
+      .eq("pais", "PY")
       .range(de, de + PAGINA - 1);
     if (error) throw new Error(`livro: ${error.message}`);
     const lote = (data ?? []) as ObservacaoLivro[];
