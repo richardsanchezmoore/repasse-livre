@@ -9372,7 +9372,7 @@ button.bemvindo-secundario {
    ⚠️ ROLAGEM HORIZONTAL EM TODAS AS LARGURAS, não só no celular. A fileira
    tem 14 modelos: no desktop, "quebrar em grade" empurraria a listagem —
    que é o que o visitante veio ver — para baixo da dobra. */
-/* ★★ HISTÓRICO DESTA FAIXA, em três rodadas — vale guardar porque a mesma
+/* ★★ HISTÓRICO DESTA FAIXA, em quatro rodadas — vale guardar porque a mesma
    necessidade voltou por caminhos diferentes:
    1. 14/10 — fundo azul-claro, porque *"fica com cara de anúncios e na
       verdade é um link de modelo"*: cartão branco sobre fundo cinza é
@@ -9383,10 +9383,20 @@ button.bemvindo-secundario {
       *"você está inserindo no div global deles, e deve ser no card"*. A
       faixa larga pintava o vazio à direita do último cartão e brigava com a
       listagem; a cor tem de estar no objeto, não no espaço em volta.
-   ★ A lição: o problema era real nas três vezes, e o que estava errado era
-   onde eu pintava — e, antes disso, a cor. */
+   4. 16/10 — fecha como PAINEL: #ffefd1, canto de 6px, padding 20 e sombra
+      de 1px. ★ A lição: o problema era real nas quatro vezes; o que estava
+      errado era onde eu pintava e com que formato. */
+/* ★★ A seção é um PAINEL, não uma faixa — regra fechada pelo Gustavo em
+   16/10/2026, na quarta rodada deste mesmo bloco (ver o histórico acima).
+   A diferença para a tentativa que ele reprovou está no formato: antes era
+   fundo sangrando de ponta a ponta, que pintava o vazio à direita do último
+   cartão; agora é caixa com canto, respiro e sombra de 1px. */
 .explora-modelos {
   margin: 4px 0 20px;
+  background: #ffefd1;
+  border-radius: 6px;
+  padding: 20px;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
 }
 .explora-modelos-cabecalho {
   display: flex;
@@ -9466,6 +9476,11 @@ button.bemvindo-secundario {
    outra, e o olho não separava as duas seções. O bege quente contra o branco
    dos cartões de anúncio faz a separação sem precisar de régua nem título
    maior. */
+/* ★★ CARTÃO BRANCO SOBRE O PAINEL ÂMBAR — regra do Gustavo, 16/10/2026, e é
+   o inverso do que eu tinha tentado. Funciona melhor: a cor fica no painel
+   (que é o que precisa se separar da listagem) e o cartão volta a ser o
+   objeto neutro que carrega a foto. Sem borda; quem desenha o contorno é a
+   sombra de 1px, igual à do painel. */
 .modelo-card {
   flex: 0 0 206px;
   scroll-snap-align: start;
@@ -9473,27 +9488,26 @@ button.bemvindo-secundario {
   flex-direction: column;
   gap: 3px;
   padding: 10px 10px 12px;
-  border: 1px solid #ffdfa7;
-  border-radius: 12px;
-  background: #ffebc4;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  transition: box-shadow 0.15s, transform 0.15s;
 }
 .modelo-card:hover {
-  border-color: var(--marca-azul);
-  box-shadow: 0 4px 14px rgba(0, 59, 159, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 59, 159, 0.14);
   transform: translateY(-1px);
 }
 .modelo-card-foto {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
-  /* ⚠️ O vazio da foto acompanha o bege, senão aparece um retângulo azul
-     dentro de um cartão quente toda vez que o anúncio não tem imagem. */
-  background: #f7dcae;
+  /* ⚠️ O vazio da foto é NEUTRO: o cartão voltou a branco, e um retângulo
+     âmbar aqui dentro competiria com o painel. */
+  background: #f1f3f6;
   margin-bottom: 6px;
 }
 .modelo-card-foto img {
