@@ -9728,3 +9728,60 @@ button.bemvindo-secundario {
   border-radius: 2px;
   box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.1);
 }
+
+/* ★★★ TOPBAR NO CELULAR — "tá uma bagunça no modo responsivo" (Gustavo,
+   16/10/2026). Medido no próprio site, a 375px:
+
+     .top-bar          375px
+     .logo-link        x=52,  largura 247   → termina em 299
+     .top-bar-acoes    x=107, largura 256   → position: absolute
+
+   Ou seja: as ações estavam DESENHADAS POR CIMA do logo, de 107 a 299. Não é
+   um ajuste de espaçamento — é falta de espaço, resolvida com `absolute`, que
+   não resolve nada: só esconde a colisão do layout e a mostra na tela.
+
+   A conta não fecha de jeito nenhum com o wordmark inteiro:
+     48 (hambúrguer) + 247 (logo) + 256 (ações) = 551 num aparelho de 375.
+
+   ★ DUAS MUDANÇAS, e as duas são estruturais:
+
+   1. O LOGO VIRA A MARCA. A faixa recorta o wordmark e deixa só o "A"
+      vermelho — é o que identifica a marca nesse tamanho, e é o que todo app
+      faz no celular. Recorte por CSS, sem gerar outro arquivo: um ativo a
+      mais é um ativo a mais para esquecer de atualizar.
+
+   2. AS AÇÕES VOLTAM AO FLUXO (`position: static` + `margin-left: auto`).
+      Assim é o flexbox que garante que nada encoste no logo — se um dia
+      entrar mais um botão, ele aperta o espaçamento em vez de atropelar a
+      marca em silêncio. */
+@media (max-width: 560px) {
+  .logo-link {
+    width: 56px;
+    overflow: hidden;
+    flex: 0 0 56px;
+    margin-right: 2px;
+  }
+  .logo-img {
+    height: 36px;
+    max-width: none;
+  }
+
+  .top-bar-acoes {
+    position: static;
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  /* ⚠️ Sem isto o bloco do logo reivindica a largura toda e empurra as ações
+     para fora da tela — o mesmo problema de antes, só que sem sobreposição. */
+  .top-bar-linha-principal {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  /* A barra fica com a altura do conteúdo, sem a reserva do botão absoluto. */
+  .top-bar {
+    padding-right: 10px;
+    gap: 4px;
+  }
+}
