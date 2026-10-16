@@ -254,18 +254,39 @@ export async function PaginaOportunidade({
               )}
             </dd>
           </div>
-          <div className="pagina-oportunidade-ficha-item">
-            <dt>
-              <Calendar size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="anoRotulo" />
-            </dt>
-            <dd>{oportunidade.ano ?? "—"}</dd>
-          </div>
-          <div className="pagina-oportunidade-ficha-item">
-            <dt>
-              <Gauge size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="kmRotulo" />
-            </dt>
-            <dd>{formatarKm(oportunidade.km)}</dd>
-          </div>
+          {/* ★★ ÍNDICE VAZIO NÃO ENTRA — Gustavo, 16/10/2026: *"se não
+              conseguirmos ter as informações como KM e ANO, não vamos mostrar
+              índice vazio"*.
+              Um "Año —" ao lado de um "KM —" não informa nada e ainda faz o
+              anúncio parecer quebrado. O Facebook muitas vezes não traz esses
+              campos, e a honestidade aqui é omitir, não mostrar o travessão. */}
+          {oportunidade.ano != null && (
+            <div className="pagina-oportunidade-ficha-item">
+              <dt>
+                <Calendar size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="anoRotulo" />
+              </dt>
+              <dd>{oportunidade.ano}</dd>
+            </div>
+          )}
+          {oportunidade.km != null && (
+            <div className="pagina-oportunidade-ficha-item">
+              <dt>
+                <Gauge size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="kmRotulo" />
+              </dt>
+              <dd>{formatarKm(oportunidade.km)}</dd>
+            </div>
+          )}
+          {/* ★ Sem km, mas "recién importado": o anúncio está dizendo algo
+              sobre rodagem, e no Paraguai isso vale como "praticamente zero".
+              Mostramos a FRASE, nunca o número — ver kmParaguai. */}
+          {oportunidade.km == null && atributos.recem_importado && (
+            <div className="pagina-oportunidade-ficha-item">
+              <dt>
+                <Gauge size={13} strokeWidth={1.75} className="icone-inline" /> <Texto chave="kmRotulo" />
+              </dt>
+              <dd className="pagina-oportunidade-ficha-nota"><Texto chave="recemImportadoRotulo" /></dd>
+            </div>
+          )}
           {oportunidade.cambio && (
             <div className="pagina-oportunidade-ficha-item">
               <dt>

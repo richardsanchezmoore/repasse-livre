@@ -383,6 +383,47 @@ export function extrairAno(texto: string): number | null {
 }
 
 /**
+ * ★★ O ANO ESTÁ NA DESCRIÇÃO, E ÀS VEZES COM DOIS DÍGITOS E EM PAR.
+ *
+ * ⚠️ Caso real apontado pelo Gustavo em 16/10/2026: um Hilux Surf cujo título
+ * não traz ano nenhum e cuja descrição diz **"SERIE SSRX LIMITED AÑO 96,97"**.
+ * A ficha mostrava "Año —" num carro que informa o ano em letras garrafais.
+ *
+ * ★ E ele deu a regra do par: *"quando estivermos assim usamos o último, pois
+ * é o modelo que importa na tabela"*. "96,97" é o intervalo de produção da
+ * série; o carro é um 97 para efeito de geração e de preço.
+ *
+ * ⚠️⚠️ DOIS DÍGITOS SÓ COM A PALAVRA "AÑO" COLADA. Número de dois dígitos é a
+ * coisa mais comum de uma descrição — cuotas, motor, polegadas, telefone. Sem
+ * essa âncora, "12 cuotas" viraria um carro 2012. Por isso o padrão de dois
+ * dígitos exige o rótulo, enquanto o de quatro dígitos pode andar solto.
+ */
+const RX_ANO_ROTULADO_CURTO = /\ba[nñ]o\s*:?\s*(\d{2})(?:\s*[,/y\-–]\s*(\d{2}))?\b/i;
+
+export function extrairAnoDaDescricao(descricao: string | null | undefined): number | null {
+  const t = String(descricao ?? "");
+  if (!t) return null;
+
+  // 1) Quatro dígitos em qualquer lugar — mesmo critério do título.
+  const deQuatro = extrairAno(t);
+  if (deQuatro) return deQuatro;
+
+  // 2) Dois dígitos, mas só atrás de "año". O par devolve o MAIOR.
+  const m = RX_ANO_ROTULADO_CURTO.exec(t);
+  if (!m) return null;
+  const expandir = (d: string): number | null => {
+    const n = Number(d);
+    if (!Number.isFinite(n)) return null;
+    const limite = new Date().getFullYear() + 1 - 2000;
+    if (n >= 90 && n <= 99) return 1900 + n;
+    if (n >= 0 && n <= limite) return 2000 + n;
+    return null;
+  };
+  const candidatos = [expandir(m[1]), m[2] ? expandir(m[2]) : null].filter((x): x is number => x !== null);
+  return candidatos.length ? Math.max(...candidatos) : null;
+}
+
+/**
  * Extrai marca, modelo e versão de um título paraguaio.
  *
  * ⚠️ Devolve `modelo: null` quando não reconhece — DE PROPÓSITO. Chutar o
@@ -392,7 +433,9 @@ export function extrairAno(texto: string): number | null {
  * suposição.
  */
 export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, descricao?: string | null): VeiculoPY {
-  const ano = extrairAno(titulo);
+  // ★ O título manda; a descrição é rede. Ver `extrairAnoDaDescricao`: cobre o
+  //   "AÑO 96,97" que o título não traz, e no par fica o maior.
+  const ano = extrairAno(titulo) ?? extrairAnoDaDescricao(descricao);
   let limpo = limparRuidoPY(titulo);
   // ⚠️ Guarda o texto COM os números antes de apagá-los: é nele que o modelo
   // numérico da Peugeot ainda existe (ver MODELOS_NUMERICOS).

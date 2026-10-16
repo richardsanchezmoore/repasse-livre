@@ -125,15 +125,39 @@ function Resultado({
   linha: LinhaReferencia;
 }) {
   const tx = useTextos();
-
-  // ★ O rótulo de escopo: contra o que este número foi calculado.
+  /**
+   * ★★ O rótulo de escopo: contra o que este número foi calculado.
+   *
+   * ⚠️ A linha da geração passou a se identificar como GERAÇÃO, com o código —
+   * "Generación T260 · 2007–2021" em vez de "referencia 2007–2021". Ver a nota
+   * em `idioma.ts` (geracaoCodigo): o número sempre esteve certo, o rótulo é
+   * que parecia prometer um preço válido de 2007 a 2021.
+   */
   const escopo =
     linha.escopo === "geracao"
-      ? linha.intervalo_anos ? `${tx("referenciaDe")} ${linha.intervalo_anos}` : tx("referenciaGeracao")
+      ? linha.intervalo_anos
+        ? `${tx("geracaoCodigo")} ${linha.chave} · ${linha.intervalo_anos}`
+        : `${tx("geracaoCodigo")} ${linha.chave}`
       : linha.anos_agrupados
         ? (() => { const a = linha.anos_agrupados.split("+"); return `${tx("referenciaAgrupada")} ${a[0]}–${a[a.length - 1]}`; })()
         : `${tx("referenciaDe")} ${linha.chave}`;
 
+  /**
+   * ⚠️ E quando a geração é LARGA, o aviso é obrigatório. Um Allion T260 cobre
+   * 2007 a 2021: a mediana da geração é informação boa, mas não é o preço de
+   * um 2010, e o leitor tem direito de saber disso na mesma tela.
+   *
+   * ★ Seis anos é o corte: até aí a depreciação dentro da geração ainda cabe
+   * na faixa interquartil que mostramos logo abaixo. Acima, não cabe.
+   */
+  const MAX_ANOS_SEM_AVISO = 6;
+  const larguraGeracao = (() => {
+    if (linha.escopo !== "geracao" || !linha.intervalo_anos) return 0;
+    const [de, ate] = String(linha.intervalo_anos).split("–");
+    const ini = Number(de);
+    const fim = /^\d{4}$/.test(String(ate)) ? Number(ate) : new Date().getUTCFullYear();
+    return Number.isFinite(ini) && Number.isFinite(fim) ? fim - ini + 1 : 0;
+  })();
   return (
     <section className="tabela-resultado">
       <p className="tabela-resultado-carro">
@@ -143,6 +167,9 @@ function Resultado({
       <p className="tabela-resultado-rotulo">{tx("precoReferencia")}</p>
       <p className="tabela-resultado-valor">{formatarNaMoeda(linha.mediana, linha.moeda)}</p>
       <p className="tabela-resultado-escopo">{escopo}</p>
+      {larguraGeracao > MAX_ANOS_SEM_AVISO && (
+        <p className="tabela-aviso-geracao">{tx("semAmostraDoAno")}</p>
+      )}
 
       {/* ★★ A FAIXA É O QUE NOS SEPARA DO CARDEN. Ele publica a "média" de UM
           anúncio como se fosse mercado. Mostrar onde mora o miolo diz, sem

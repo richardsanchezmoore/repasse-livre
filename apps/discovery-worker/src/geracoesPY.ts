@@ -138,12 +138,12 @@ export const GERACOES: Record<string, Geracao[]> = {
     { codigo: "E150", de: 2006, ate: 2012, confianca: "estimado" },
     { codigo: "E180", de: 2012, ate: 2018, confianca: "estimado" },
   ],
-  "corolla runx": [{ codigo: "E120", de: 2001, ate: 2006, confianca: "estimado", nota: "geração única" }],
+  "runx": [{ codigo: "E120", de: 2001, ate: 2006, confianca: "estimado", nota: "geração única" }],
   ist: [
     { codigo: "XP60", de: 2002, ate: 2007, confianca: "estimado" },
     { codigo: "XP110", de: 2007, ate: 2016, confianca: "estimado" },
   ],
-  "corolla axio": [
+  "axio": [
     { codigo: "E140", de: 2006, ate: 2012, confianca: "estimado" },
     { codigo: "E160", de: 2012, ate: 2021, confianca: "estimado" },
   ],

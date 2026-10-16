@@ -9652,3 +9652,20 @@ button.bemvindo-secundario {
   min-width: 0;
   justify-content: flex-end;
 }
+
+/* ⚠️ Aviso de geração larga na tela da tabela — ver NavegadorTabela.
+   Discreto de propósito: é ressalva, não erro. */
+.tabela-aviso-geracao {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--texto-fraco, #6b7280);
+  max-width: 34em;
+}
+
+/* ★ "Recién importado" no lugar do KM: é frase, não número — fica em itálico
+   discreto para não se passar por dado medido. */
+.pagina-oportunidade-ficha-nota {
+  font-style: italic;
+  color: var(--texto-fraco, #6b7280);
+}

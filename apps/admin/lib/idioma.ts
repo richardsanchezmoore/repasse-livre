@@ -154,6 +154,22 @@ const PT = {
   referenciaDe: "referência",
   referenciaAgrupada: "referência agrupada",
   referenciaGeracao: "referência da geração",
+  /**
+   * ★★ "REFERENCIA 2007–2021" EMBAIXO DE UM PREÇO LIA ERRADO — Gustavo,
+   * 16/10/2026: *"me parece um tanto incoerente a faixa de preço como
+   * referência: referência 2007–2021... isso é uma discrepância de ano"*.
+   *
+   * Ele tem razão, e o defeito era de RÓTULO, não de cálculo: a linha da
+   * geração é legítima (no Paraguai quase todo ano tem amostra pequena demais,
+   * e agrupar por geração deu +96% de cobertura), mas escrita daquele jeito
+   * parecia dizer que ₲53 milhões é o preço de um carro de 2007 a 2021.
+   *
+   * ★ Dizer o CÓDIGO da geração resolve: "Generación T260 · 2007–2021" é
+   * obviamente outra coisa que um preço de ano, e ainda ensina o comprador a
+   * raciocinar por geração — que é como o mercado japonês de usado funciona.
+   */
+  geracaoCodigo: "Geração",
+  semAmostraDoAno: "Ainda sem amostra suficiente deste ano — o valor cobre a geração inteira.",
   compartilhar: "Compartilhar",
   hoje: "Hoje",
   hojeAs: "Hoje às",
@@ -198,6 +214,8 @@ const PT = {
   cidadeRotulo: "Cidade",
   anoRotulo: "Ano",
   kmRotulo: "KM",
+  /** ★ Ocupa o lugar do KM quando o anúncio não informa — ver kmParaguai. */
+  recemImportadoRotulo: "Recém-importado",
   cambioRotulo: "Câmbio",
   descricaoRotulo: "Descrição",
   anunciadoEmRotulo: "Anunciado em",
@@ -329,6 +347,8 @@ const ES: { [K in keyof typeof PT]: string } = {
   referenciaDe: "referencia",
   referenciaAgrupada: "referencia agrupada",
   referenciaGeracao: "referencia de la generación",
+  geracaoCodigo: "Generación",
+  semAmostraDoAno: "Todavía sin muestra suficiente de este año — el valor cubre la generación entera.",
   compartilhar: "Compartir",
   hoje: "Hoy",
   hojeAs: "Hoy a las",
@@ -369,6 +389,7 @@ const ES: { [K in keyof typeof PT]: string } = {
   cidadeRotulo: "Ciudad",
   anoRotulo: "Año",
   kmRotulo: "KM",
+  recemImportadoRotulo: "Recién importado",
   cambioRotulo: "Caja",
   descricaoRotulo: "Descripción",
   anunciadoEmRotulo: "Publicado el",

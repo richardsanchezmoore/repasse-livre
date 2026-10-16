@@ -161,7 +161,21 @@ export const CATALOGO_JDM: ModeloJdm[] = [
   // ─────────────────────────── sedãs médios ────────────────────────────────
   { nomes: ["allion"], segmento: "sedan", motores: ["1.5", "1.8", "2.0"], nota: "Gêmeo do Premio, focado em conforto urbano. Exclusivo do Japão." },
   { nomes: ["premio"], segmento: "sedan", motores: ["1.5", "1.8", "2.0"], nota: "Gêmeo do Allion, acabamento mais clássico e cromado." },
-  { nomes: ["corolla axio", "axio"], segmento: "sedan", motores: ["1.5"], nota: "⚠️ NÃO agrupar com Corolla: é outro carro, menor e mais estreito, e o comprador sabe disso." },
+  /**
+   * ★★ O NOME CANÔNICO É "AXIO", NÃO "COROLLA AXIO" — corrigido pelo Gustavo
+   * em 16/10/2026, e é conhecimento de praça que nenhuma fonte dá:
+   *
+   * > *"não usam aqui com o nome Corolla antes... Corolla é corolla, e Axio e
+   * > Runx na cabeça do povo é modelo diferente — e de fato é. Nem diz na
+   * > tampa do porta-malas Corolla, somente Axio e Runx, por isso ninguém
+   * > fala."*
+   *
+   * ⚠️ Não é cosmética: o chip "Corolla Axio" ao lado de "Corolla" sugere que
+   * um é versão do outro, que é exatamente a confusão que a nota abaixo manda
+   * evitar. O alias longo continua aceito na LEITURA do anúncio; o que muda é
+   * o nome que a gente EXIBE e agrupa.
+   */
+  { nomes: ["axio", "corolla axio"], segmento: "sedan", motores: ["1.5"], nota: "⚠️ NÃO agrupar com Corolla: é outro carro, menor e mais estreito, e o comprador sabe disso." },
   { nomes: ["belta"], segmento: "sedan", motores: ["1.0", "1.3"], nota: "Sedã da família Vitz." },
   { nomes: ["platz"], segmento: "sedan", motores: ["1.0", "1.3", "1.5"], nota: "Sedã derivado do Vitz." },
 
@@ -199,7 +213,8 @@ export const CATALOGO_JDM: ModeloJdm[] = [
   { nomes: ["ist"], segmento: "hatch", motores: ["1.3", "1.5"], nota: "Suspensão mais alta, visual robusto." },
   { nomes: ["aqua"], segmento: "hatch", motores: ["1.5 Híbrido"], nota: "Híbrido puro, sistema do Prius. Consumo baixíssimo." },
   { nomes: ["passo"], segmento: "hatch", motores: ["1.0", "1.3"], nota: "O menor da lista, mini-hatch urbano." },
-  { nomes: ["corolla runx", "runx", "allex"], segmento: "hatch", motores: ["1.5", "1.8"], nota: "Hatchback do Corolla japonês dos anos 2000. Allex é o gêmeo." },
+  // ★★ "RUNX", não "Corolla Runx" — mesma razão do Axio logo acima.
+  { nomes: ["runx", "corolla runx", "allex"], segmento: "hatch", motores: ["1.5", "1.8"], nota: "Hatchback do Corolla japonês dos anos 2000. Allex é o gêmeo." },
 
   // ────────────────────────── SUVs e jipes ─────────────────────────────────
   // ⚠⚠⚠ "land cruiser" SAIU daqui — era a causa raiz. Com ele nesta ficha,

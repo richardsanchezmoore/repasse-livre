@@ -56,7 +56,7 @@ import { conferirAnoModelo } from "./anoModeloPY.js";
 import { geracaoDoAno } from "./geracoesPY.js";
 import { precoImplausivel } from "./limitePrecoPY.js";
 import { conferirNaoEhVeiculo } from "./naoEhVeiculoPY.js";
-import { lerKm } from "./kmParaguai.js";
+import { lerKm, recemImportado } from "./kmParaguai.js";
 import {
   buscarIdsVistosFacebook,
   lerConfig,
@@ -989,6 +989,14 @@ async function main() {
               // que o vendedor digitou para passar da validação, e quem for
               // filtrar por km um dia precisa saber a diferença.
               confianca_km: { label: "Confiança do km", value: leituraKm.confianca },
+              /**
+               * ★ "Recién importado" no lugar do km que o anúncio não trouxe.
+               * Ver `recemImportado` em kmParaguai: guarda-se o FATO, nunca um
+               * `km = 0`, que entraria em toda média e ordenação.
+               */
+              ...(leituraKm.km == null && recemImportado(contexto)
+                ? { recem_importado: { label: "Recém-importado", value: "sim" } }
+                : {}),
             },
             anunciante_profissional: a.sellerType === "DEALER" ? true : a.sellerType === "PRIVATE_SELLER" ? false : null,
             ultimo_visto: new Date().toISOString(),

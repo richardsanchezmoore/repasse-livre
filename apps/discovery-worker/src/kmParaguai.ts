@@ -133,3 +133,28 @@ export function lerKm(campoFacebook: number | null | undefined, texto: string): 
     ? { km: campo, confianca: "duvidoso", origem: "campo" }
     : { km: campo, confianca: "informado", origem: "campo" };
 }
+
+/**
+ * ★★ "RECIÉN IMPORTADO" OCUPA O LUGAR DO KM — observação do Gustavo,
+ * 16/10/2026, olhando um Hilux Surf sem quilometragem:
+ *
+ * > *"quando disser 'recém importado' e não informarem KM, podemos usar isso
+ * > no campo do KM, pois aqui eles aceitam como se fosse zero"*
+ *
+ * É informação de mercado: no Paraguai o carro recém-desembarcado do Japão é
+ * vendido como se a quilometragem não contasse, e o comprador entende assim.
+ *
+ * ⚠️⚠️ MAS NÃO SE GRAVA `km = 0`. Zero é um NÚMERO e entraria em toda média,
+ * faixa e ordenação por quilometragem — e KM é eixo da nossa tabela. O que se
+ * guarda é o FATO ("o anúncio diz recém-importado"), e quem decide como
+ * mostrar isso é a tela.
+ *
+ * ⚠️ Só vale quando NÃO HÁ km. Anúncio que diz recém-importado E informa
+ * 80.000 km está dizendo as duas coisas, e o número manda.
+ */
+const RX_RECEM_IMPORTADO =
+  /\b(reci[eé]n\s+importad[oa]|rec[eé]m\s+importad[oa]|importad[oa]\s+reci[eé]n|acabad[oa]\s+de\s+importar|sin\s+rodar\s+en\s+paraguay)\b/i;
+
+export function recemImportado(texto: string): boolean {
+  return RX_RECEM_IMPORTADO.test(String(texto ?? ""));
+}

@@ -46,11 +46,11 @@ export const ANOS_MODELO: Record<string, FaixaAno> = {
   premio:          { de: 2001, ate: 2021, confianca: "firme" },
 
   // ── estimados (conhecimento geral; refinar com o dado da praça) ─────────
-  "corolla axio":  { de: 2006, ate: 2024, confianca: "estimado" },
+  "axio":          { de: 2006, ate: 2024, confianca: "estimado" },
   ist:             { de: 2002, ate: 2016, confianca: "estimado" },
   probox:          { de: 2002, ate: null, confianca: "estimado" },
   succeed:         { de: 2002, ate: 2020, confianca: "estimado" },
-  "corolla runx":  { de: 2001, ate: 2006, confianca: "estimado" },
+  "runx":          { de: 2001, ate: 2006, confianca: "estimado" },
   spacio:          { de: 1997, ate: 2007, confianca: "estimado" },
   noah:            { de: 2001, ate: null, confianca: "estimado" },
   voxy:            { de: 2001, ate: null, confianca: "estimado" },
