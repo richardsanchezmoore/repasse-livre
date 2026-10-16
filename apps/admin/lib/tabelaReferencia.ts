@@ -167,6 +167,39 @@ export function posicaoNaTabela(
   if (linha.confianca !== "boa") return null;
   // ⚠️ Referência larga demais não vira selo — ver MAX_ANOS_PARA_SELO.
   if (larguraEmAnos(linha) > MAX_ANOS_PARA_SELO) return null;
+  /**
+   * ⚠️⚠️⚠️ PREÇO FORA DA CERCA NÃO É OPORTUNIDADE, É ANÚNCIO RUIM.
+   *
+   * Caso do Gustavo (15/10/2026): "Toyota Vitz 2014 · 66,7% por debajo de la
+   * tabla · REFERENCIA 2014", a ₲20.000.000. Fui ao dado e a tabela estava
+   * CERTA — Vitz 2014 tem n=10, mediana ₲60 milhões, q1 ₲53,5M, e SETE dos
+   * nove anúncios da vitrine ficam entre ₲53 e ₲68 milhões. Os dois de ₲20 e
+   * ₲21 milhões, ambos em Asunción e ambos sem km, é que são a anomalia —
+   * entrada de financiamento com quase toda a certeza.
+   *
+   * ★★ Ou seja: o selo estava matematicamente correto e COMUNICANDO ERRADO.
+   * Dizer "66,7% abaixo" num card verde é prometer a melhor compra do site
+   * justamente onde o preço não é o preço do carro. O estrago é de confiança:
+   * quem clicar e descobrir que é entrada passa a duvidar dos outros selos.
+   *
+   * ★ A CERCA DE TUKEY (q1 − 1,5×IQR) é o instrumento certo e já temos os
+   * quartis na linha. Ela se adapta a cada modelo e ano em vez de fixar um
+   * percentual arbitrário: para o Vitz 2014 a cerca cai em ₲37,4 milhões, e
+   * os ₲20M ficam muito abaixo. Num modelo de preços mais espalhados a mesma
+   * fórmula aceita desconto maior, porque ali ele é plausível.
+   *
+   * ⚠️ Só a cerca de BAIXO. Preço muito acima pode ser blindado, zero-km ou
+   * raridade — e achar esses é parte do produto. É a mesma assimetria que o
+   * limitePrecoPY já adota: piso sim, teto não.
+   *
+   * ⚠️ E isto NÃO esconde o anúncio: ele continua na vitrine com o preço que
+   * o vendedor publicou. O que sai é a AFIRMAÇÃO nossa por cima dele.
+   */
+  if (linha.q1 != null && linha.q3 != null && linha.q3 > linha.q1) {
+    const cercaDeBaixo = linha.q1 - 1.5 * (linha.q3 - linha.q1);
+    if (preco < cercaDeBaixo) return null;
+  }
+
   const percentual = ((preco - linha.mediana) / linha.mediana) * 100;
   const faixa =
     linha.q1 != null && preco < linha.q1 ? "abaixo" : linha.q3 != null && preco > linha.q3 ? "acima" : "no_miolo";
