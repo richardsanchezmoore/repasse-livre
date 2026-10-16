@@ -419,10 +419,33 @@ export function lerPrecoComContexto(
     if (RX_DIZ_DOLAR.test(descricao) && valorAmb >= FAIXA.USD.min && valorAmb <= FAIXA.USD.max) {
       return { ok: true, valor: valorAmb, moeda: "USD", confianca: "descricao", corrigido: "moeda_trocada" };
     }
-    // A descrição fala em milhões: o vendedor digitou o valor em milhares de
-    // guarani ("25.000" querendo dizer ₲25.000.000).
-    if (RX_DIZ_GUARANI.test(descricao) && valorAmb * 1_000 <= FAIXA.PYG.max) {
-      return { ok: true, valor: valorAmb * 1_000, moeda: "PYG", confianca: "descricao", corrigido: "moeda_trocada" };
+    /**
+     * ★★★ A DESCRIÇÃO FALA EM GUARANI: o vendedor cortou zeros.
+     *
+     * ⚠️⚠️ ESTE RESGATE SÓ OLHAVA O TETO — e por isso era a outra fábrica de
+     * preço abaixo do piso. Medido em 16/10/2026 numa bateria de regressão:
+     *
+     *   "40" + "Vendo en 40 millones"            → ₲40.000      (eram ₲40 MI)
+     *   "1"  + "Crown Athlete, entrega 36 mill." → ₲1.000       (é ISCA)
+     *
+     * O primeiro perde o anúncio; o SEGUNDO é pior, porque ressuscita a isca
+     * de dígito redondo que o resgate de "millones" lá embaixo já tinha
+     * aprendido a barrar. A guarda estava escrita num lugar e faltava no
+     * outro, para o mesmo erro.
+     *
+     * ★ Duas hipóteses, nesta ordem: com "mill" no texto o número está em
+     * MILHÕES; sem "mill", em MILHARES. E as duas passam pelos DOIS lados da
+     * faixa — é o lado de baixo que separa resgate de isca.
+     */
+    if (RX_DIZ_GUARANI.test(descricao)) {
+      const hipoteses = /mill/i.test(descricao)
+        ? [valorAmb * 1_000_000, valorAmb * 1_000]
+        : [valorAmb * 1_000];
+      for (const c of hipoteses) {
+        if (c >= pisoPyg && c <= FAIXA.PYG.max) {
+          return { ok: true, valor: c, moeda: "PYG", confianca: "descricao", corrigido: "moeda_trocada" };
+        }
+      }
     }
     return direto;
   }
@@ -441,7 +464,11 @@ export function lerPrecoComContexto(
   if (dizDolar !== dizGuarani) {
     const moeda: MoedaPY = dizDolar ? "USD" : "PYG";
     const faixa = FAIXA[moeda];
-    if (valor >= faixa.min && valor <= faixa.max) return { ok: true, valor, moeda, confianca: "descricao" };
+    // ⚠️ MOTO TEM PISO PRÓPRIO — `FAIXA.PYG.min` é piso de CARRO (₲5 milhões)
+    // e reprovaria uma Kenton de ₲3 milhões, que é moto de verdade e preço de
+    // verdade. Ver PISO_PYG_MOTO.
+    const piso = moeda === "PYG" ? pisoPyg : faixa.min;
+    if (valor >= piso && valor <= faixa.max) return { ok: true, valor, moeda, confianca: "descricao" };
     // A descrição diz uma coisa e a grandeza diz outra. "40 millones" com o
     // número 40 é o caso clássico: o vendedor escreveu o valor por extenso.
     //
@@ -457,12 +484,44 @@ export function lerPrecoComContexto(
     // sentido quando o resultado é preço CRÍVEL de carro, então ele tem que
     // passar pelos DOIS lados da faixa: ₲40 → ₲40.000.000 entra; ₲1 → ₲1.000.000
     // não, porque ₲1 milhão não é carro em lugar nenhum.
-    if (moeda === "PYG" && valor < faixa.min && /mill/i.test(ctx)) {
-      const emMilhoes = valor * 1_000_000;
-      if (emMilhoes >= faixa.min && emMilhoes <= faixa.max) {
-        return { ok: true, valor: emMilhoes, moeda: "PYG", confianca: "descricao" };
+    /**
+     * ★★★ "35.000" COM A DESCRIÇÃO DIZENDO GUARANI são ₲35.000.000.
+     *
+     * ⚠️⚠️ ESTA É A FÁBRICA DOS PREÇOS ABAIXO DO PISO — 26 anúncios achados na
+     * vitrine em 16/10/2026, "Kia Sportage 2011 a ₲75.000", "Toyota Allion
+     * 2005 a ₲36.000". O resgate aqui exigia a palavra "millones"; sem ela o
+     * caminho seguia até o Degrau 3 e o número virava DÓLAR por grandeza.
+     *
+     * ★ O vendedor paraguaio corta os três zeros o tempo todo — "35.000" num
+     * anúncio que diz "gs" é taquigrafia de milhares, não é dólar. E ele não
+     * precisa escrever "millones" para isso: escreve "Gs 35.000" e pronto.
+     *
+     * ⚠️ As duas hipóteses convivem e a ordem importa: com "mill" no texto o
+     * valor está em MILHÕES ("40 millones" = ₲40.000.000); sem "mill", está em
+     * MILHARES. Ambas passam pelos DOIS lados da faixa, que é o que impede o
+     * ₲1 de isca do Crown Athlete de virar carro.
+     */
+    if (moeda === "PYG" && valor < piso) {
+      const hipoteses = /mill/i.test(ctx) ? [valor * 1_000_000, valor * 1_000] : [valor * 1_000];
+      for (const c of hipoteses) {
+        if (c >= piso && c <= faixa.max) {
+          return { ok: true, valor: c, moeda: "PYG", confianca: "descricao", corrigido: "moeda_trocada" };
+        }
       }
     }
+
+    /**
+     * ⚠️⚠️ A DESCRIÇÃO JÁ DISSE GUARANI — não cair no palpite de dólar.
+     *
+     * Sem este corte, "₲9.000" num Santa Fe seguia até o Degrau 3 e saía como
+     * **US$ 9.000**, que é preço plausível de Santa Fe e por isso passava sem
+     * levantar suspeita nenhuma. Palpite de grandeza existe para quando não há
+     * pista; havendo pista contrária, ele não tem o que fazer ali.
+     *
+     * ★ Recusar devolve o anúncio ao banco SEM preço, que é o estado honesto:
+     * não contamina a mediana e segue disponível para o corretor reler.
+     */
+    if (moeda === "PYG") return { ok: false, motivo: "fora_de_faixa", valorBruto: valor };
   }
 
   // Degrau 3: grandeza. Só resolve fora da zona cinzenta.
