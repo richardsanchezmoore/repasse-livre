@@ -9379,23 +9379,14 @@ button.bemvindo-secundario {
       exatamente o que a listagem usa logo abaixo.
    2. 14/10 — fundo REMOVIDO: *"a cor de fundo no slider não ficou muito
       legal"*. O azul resolvia o problema certo de um jeito feio.
-   3. 16/10 — volta em BEGE: *"deixaria o card com leve fundo puxando pro
-      begezinho... a categoria de outra cor diferencia dos últimos anúncios"*.
-   ★ A lição: o problema era real nas três vezes; o que estava errado era a
-   cor. Quente contra o branco dos anúncios separa sem competir com o azul da
-   marca. */
-/* ★★ A SEÇÃO INTEIRA GANHA UMA FAIXA QUENTE — Gustavo, 16/10/2026:
-   *"acho que a categoria de outra cor diferencia dos últimos anúncios"*.
-   Sem isso, "Explorá por modelo" e "Últimos anuncios" eram duas fileiras
-   brancas coladas, e o olho lia tudo como uma lista só. A faixa sangra para
-   fora da coluna (margin negativa + padding igual) para parecer seção, não
-   caixa. */
+   3. 16/10 — volta em BEGE, mas eu pintei a SEÇÃO, e ele corrigiu na hora:
+      *"você está inserindo no div global deles, e deve ser no card"*. A
+      faixa larga pintava o vazio à direita do último cartão e brigava com a
+      listagem; a cor tem de estar no objeto, não no espaço em volta.
+   ★ A lição: o problema era real nas três vezes, e o que estava errado era
+   onde eu pintava — e, antes disso, a cor. */
 .explora-modelos {
-  margin: 4px -16px 20px;
-  padding: 14px 16px 16px;
-  background: linear-gradient(180deg, #fdfbf7 0%, #faf6ee 100%);
-  border-top: 1px solid #f0e9dc;
-  border-bottom: 1px solid #f0e9dc;
+  margin: 4px 0 20px;
 }
 .explora-modelos-cabecalho {
   display: flex;
@@ -9482,9 +9473,9 @@ button.bemvindo-secundario {
   flex-direction: column;
   gap: 3px;
   padding: 10px 10px 12px;
-  border: 1px solid #ece4d6;
+  border: 1px solid #ffdfa7;
   border-radius: 12px;
-  background: #fbf7f0;
+  background: #ffebc4;
   text-decoration: none;
   color: inherit;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
@@ -9502,7 +9493,7 @@ button.bemvindo-secundario {
   overflow: hidden;
   /* ⚠️ O vazio da foto acompanha o bege, senão aparece um retângulo azul
      dentro de um cartão quente toda vez que o anúncio não tem imagem. */
-  background: #f1e9db;
+  background: #f7dcae;
   margin-bottom: 6px;
 }
 .modelo-card-foto img {
@@ -9512,7 +9503,7 @@ button.bemvindo-secundario {
   display: block;
 }
 .modelo-card-nome {
-  font-size: 15.5px;
+  font-size: 16.5px;
   font-weight: 700;
   line-height: 1.2;
   /* ⚠️ Duas linhas no máximo: "Toyota Land Cruiser" não cabe numa, e deixar
@@ -9536,7 +9527,7 @@ button.bemvindo-secundario {
   color: #4b5563;
 }
 .modelo-card-ref {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--kpi-azul-icone);
   display: flex;
@@ -9857,9 +9848,9 @@ button.bemvindo-secundario {
 }
 .publicar-argumento {
   padding: 18px 16px;
-  border: 1px solid #ece4d6;
+  border: 1px solid #ffdfa7;
   border-radius: 12px;
-  background: #fbf7f0;
+  background: #ffebc4;
 }
 .publicar-argumento-icone {
   display: inline-flex;
