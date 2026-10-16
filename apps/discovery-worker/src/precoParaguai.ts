@@ -125,6 +125,29 @@ const RX_VALOR_DE_ENTRADA =
 const RX_ENTRADA_DE_VALOR =
   /\b(entrega|entrada|anticipo|refuerzo)\s+(?:de\s+)?([\d][\d.,]{3,})/i;
 
+/**
+ * ★★★ "ENTREGA DE 36 MILLONES" — a entrada escrita POR EXTENSO.
+ *
+ * ⚠️⚠️ As duas regex acima exigem `[\d][\d.,]{3,}`, isto é cinco dígitos. "36"
+ * tem dois, então a guarda de entrada simplesmente NÃO DISPARAVA nesta forma.
+ *
+ * Achado em 16/10/2026, e no MESMO anúncio que já tinha derrubado o resgate de
+ * "millones" em 08/10: *"✅Toyota crown 2014 hibrido! ✅Financio ✅Entrega de 36
+ * millones!"*, com ₲1 de isca no campo. Depois que `precoDeclarado` aprendeu a
+ * ler "contado", ele passou a ler TAMBÉM esse "36 millones" — e ofereceu ₲36
+ * milhões como preço do carro. O guarda de plausibilidade deixaria passar,
+ * porque ₲36 milhões É preço crível de Crown.
+ *
+ * ★ Ler melhor a descrição AUMENTA a necessidade desta guarda: quanto mais
+ * número a gente consegue extrair, mais importa saber qual deles é preço.
+ *
+ * ⚠️ Compara contra os DOIS lados da expansão (36 e 36.000.000) porque o
+ * número cru e o número já multiplicado chegam aqui por caminhos diferentes,
+ * e exigir um só deixa o outro passar.
+ */
+const RX_ENTRADA_EM_MILHOES =
+  /\b(?:entrega|entrada|anticipo|refuerzo)\s+(?:de\s+)?(\d{1,4})\s*mill[oó]n|(\d{1,4})\s*mill[oó]n\w*\s*(?:gs\.?|₲)?\s*(?:de\s+)?(?:entrega|entrada|anticipo|refuerzo)\b/i;
+
 /** Acima disto, "dólar" quase certamente é guarani digitado no campo errado. */
 const TETO_DOLAR_CRIVEL = 300_000;
 
@@ -400,7 +423,14 @@ export function lerPrecoComContexto(
     const mA = RX_VALOR_DE_ENTRADA.exec(ctxInicial);
     const mB = RX_ENTRADA_DE_VALOR.exec(ctxInicial);
     const numEntrada = numeroPY(mA?.[1] ?? mB?.[2] ?? "");
-    if (numEntrada !== null && numEntrada === valorCru) {
+    // ★ "Entrega de 36 millones" — ver RX_ENTRADA_EM_MILHOES.
+    const mC = RX_ENTRADA_EM_MILHOES.exec(ctxInicial);
+    const entradaEmMilhoes = numeroPY(mC?.[1] ?? mC?.[2] ?? "");
+    const ehEntrada =
+      (numEntrada !== null && numEntrada === valorCru) ||
+      (entradaEmMilhoes !== null &&
+        (entradaEmMilhoes === valorCru || entradaEmMilhoes * 1_000_000 === valorCru));
+    if (ehEntrada) {
       return { ok: false, motivo: "entrada_financiamento", valorBruto: valorCru, moedaBruta: "PYG" };
     }
   }
