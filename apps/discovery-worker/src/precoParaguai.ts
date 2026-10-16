@@ -58,6 +58,29 @@ const FAIXA = {
 const GRANDEZA_USD = { min: 1_500, max: 250_000 } as const;
 
 /**
+ * ★★★ A MOTO VIVE NUMA FAIXA DE PREÇO OUTRA — e isso quebra a leitura.
+ *
+ * Medido na base em 15/10/2026: mediana da moto ₲7,5 milhões contra ₲34,8
+ * milhões do carro. Mas o número que importa aqui é o PISO: `FAIXA.PYG.min`
+ * é ₲5.000.000, calibrado com *"₲5 milhões é um carro muito velho"*. Para
+ * moto, ₲5 milhões é uma Kenton 150cc em bom estado — e uma usada de ₲3
+ * milhões, que é comuníssima, cai abaixo do piso, escorrega para a faixa de
+ * dólar e vira "US$ 3.000.000", que nenhuma guarda pega porque já está fora
+ * de tudo.
+ *
+ * ⚠️ Não é teoria: das 27 motos que já estavam na base por acidente, várias
+ * têm preço absurdo justamente por isso — "Skua USD 379.000", "Kenton Bull
+ * USD 460.000", "Kenton Blitz USD 299.000". Todos são guaranis.
+ *
+ * ⚠️⚠️ SÓ O PISO DO GUARANI MUDA. O teto do dólar (250 mil, da grandeza) já
+ * recusa esses casos; e mexer em mais coisa sem medir seria trocar um erro
+ * conhecido por um desconhecido. Quando houver massa de moto, a faixa dela se
+ * refina com o próprio dado, como foi com o carro.
+ */
+const PISO_PYG_MOTO = 1_000_000;
+
+
+/**
  * ★★ CELULAR PARAGUAIO LIDO COMO PREÇO — achado em 05/10/2026.
  *
  * Um anúncio "Cars sur automores" entrou com ₲992.363.005. O Gustavo reconheceu
@@ -197,7 +220,12 @@ function desescapar(s: string): string {
     : s;
 }
 
-export function lerPreco(bruto: string): LeituraPreco {
+/**
+ * ⚠️ `pisoPyg` é parâmetro e não constante porque a MOTO vive numa faixa
+ * outra — ver PISO_PYG_MOTO. O padrão continua sendo o do carro, que é a base
+ * inteira de hoje; quem passa outro valor é só quem sabe que está lendo moto.
+ */
+export function lerPreco(bruto: string, pisoPyg: number = FAIXA.PYG.min): LeituraPreco {
   const texto = desescapar(bruto ?? "");
   if (!texto) return { ok: false, motivo: "sem_preco" };
 
@@ -232,7 +260,7 @@ export function lerPreco(bruto: string): LeituraPreco {
   // dólares: é valor em guarani digitado no campo de dólar. Corrigir é melhor
   // que descartar, porque o anúncio em si é legítimo — só o rótulo está errado.
   if (ehDolar && !ehGuarani && valor > TETO_DOLAR_CRIVEL) {
-    if (valor >= FAIXA.PYG.min && valor <= FAIXA.PYG.max) {
+    if (valor >= pisoPyg && valor <= FAIXA.PYG.max) {
       return { ok: true, valor, moeda: "PYG", corrigido: "moeda_trocada" };
     }
     return { ok: false, motivo: "fora_de_faixa", valorBruto: valor, moedaBruta: "USD" };
@@ -265,7 +293,7 @@ export function lerPreco(bruto: string): LeituraPreco {
 
     // Entre a faixa ambígua e o piso do guarani (₲500 mil a ₲5 milhões) não
     // existe carro: são R$420 a R$4.200. Nem dólar digitado, nem guarani real.
-    if (valor < FAIXA.PYG.min) {
+    if (valor < pisoPyg) {
       return { ok: false, motivo: "fora_de_faixa", valorBruto: valor, moedaBruta: "PYG" };
     }
 
@@ -279,7 +307,7 @@ export function lerPreco(bruto: string): LeituraPreco {
 
   // Sem símbolo nenhum: a grandeza decide. Sete dígitos ou mais só faz sentido
   // em guarani; abaixo disso, só em dólar.
-  if (valor >= FAIXA.PYG.min) return { ok: true, valor, moeda: "PYG" };
+  if (valor >= pisoPyg) return { ok: true, valor, moeda: "PYG" };
 
   /**
    * ⚠️⚠️⚠️ A FAIXA DA GRANDEZA É MAIS APERTADA QUE A DO SÍMBOLO — e isto é
@@ -351,9 +379,12 @@ const RX_DIZ_GUARANI = /(guaran[ií]|\bgs\b|mill[oó]n|millones|\bmil[lh][oó]es
 
 export function lerPrecoComContexto(
   textoPreco: string,
-  descricao = ""
+  descricao = "",
+  categoria: "carro" | "moto" = "carro"
 ): LeituraPreco & { confianca?: ConfiancaMoeda } {
-  const direto = lerPreco(textoPreco);
+  // ★ A moto tem piso de guarani proprio — ver PISO_PYG_MOTO.
+  const pisoPyg = categoria === "moto" ? PISO_PYG_MOTO : FAIXA.PYG.min;
+  const direto = lerPreco(textoPreco, pisoPyg);
   const ctxInicial = `${textoPreco} ${descricao}`;
 
   // ★★ GUARDAS DE FORMA — rodam ANTES de qualquer interpretação de moeda,

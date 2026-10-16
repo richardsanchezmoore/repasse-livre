@@ -251,6 +251,29 @@ const MODO = (process.env.PY_MODO ?? "faixa").toLowerCase();
  * depois que o backlog entrou, a rolagem rende pouco, porque o que chega
  * depois cabe na primeira carga.
  */
+/**
+ * ★★★ CARRO OU MOTO — `PY_CATEGORIA=moto` varre a outra categoria.
+ *
+ * ⚠️ Autorizado pelo Gustavo em 16/10/2026. A sonda (`sondarMotosPY`) já tinha
+ * confirmado que `/motos/` responde nas 11 praças: a URL da praça traz
+ * `/carros/`, que é um slug de CATEGORIA do Marketplace, e trocá-lo basta.
+ *
+ * ★★ TUDO O MAIS É REUSADO — praças, rodízio de metade, faixas, dedup, hash
+ * de foto, motor de reanúncio, livro de observações. A categoria não é um
+ * segundo motor; é um parâmetro do mesmo.
+ *
+ * ⚠️⚠️ O QUE NÃO PODE SER COMPARTILHADO É A MEDIANA: medido em 15/10/2026, a
+ * mediana da moto é ₲7,5 milhões contra ₲34,8 milhões do carro. Por isso a
+ * coluna `categoria` (migração 0097) e o piso de guarani próprio
+ * (PISO_PYG_MOTO, em precoParaguai).
+ *
+ * ⚠️ MODO TERMO NÃO SERVE PARA MOTO: os 176 termos vêm do catálogo JDM, que é
+ * de carro. Buscar "corolla" na categoria moto devolve nada, e gastaria a
+ * sessão para descobrir isso 176 vezes. Enquanto não houver catálogo de moto,
+ * a varredura de moto é por FAIXA.
+ */
+const CATEGORIA: "carro" | "moto" = process.env.PY_CATEGORIA === "moto" ? "moto" : "carro";
+
 const AUTOLOAD = process.env.PY_AUTOLOAD === "1";
 
 /**
@@ -436,6 +459,22 @@ async function main() {
     ? paraguaias.filter((_, i) => i % 2 === fase)
     : paraguaias;
 
+  /**
+   * ⚠️⚠️ MODO TERMO NAO SERVE PARA MOTO, e falhar aqui e barato.
+   *
+   * Os 176 termos vem do catalogo JDM, que e de carro. Buscar "corolla" na
+   * categoria moto devolve nada — e gastaria 176 buscas na sessao para
+   * descobrir isso, com a conta exposta o tempo todo e nenhum anuncio no fim.
+   * Enquanto nao houver catalogo de moto, a varredura de moto e por FAIXA.
+   */
+  if (CATEGORIA === "moto" && MODO === "termo") {
+    log("❌ PY_MODO=termo com PY_CATEGORIA=moto: os termos sao do catalogo de CARRO.");
+    log("   Use faixa (sem PY_MODO) ate existir catalogo de moto.");
+    soltarTrava();
+    process.exitCode = 2;
+    return;
+  }
+
   if (!regioes.length) {
     log("nenhuma praça paraguaia" + (alvo ? ` com slug "${alvo}"` : "") + " no painel.");
     return;
@@ -519,6 +558,10 @@ async function main() {
 
     // ★ A ÚNICA coisa que muda entre os dois modos é a lista de URLs; dedup,
     // livro-razão, abertura do anúncio, preço, foto e gravação são os mesmos.
+    // ⚠️ A troca do slug acontece AQUI e nao na config: a praca e a mesma,
+    // o raio e o mesmo, o locale e o mesmo — so a categoria muda. Duplicar as
+    // 11 pracas na config criaria duas listas para manter em sincronia.
+    const urlRegiao = CATEGORIA === "moto" ? regiao.url.replace("/carros/", "/motos/") : regiao.url;
     const local = localDaRegiao(regiao.url);
     const buscas: Busca[] =
       MODO === "termo" && local
@@ -535,7 +578,7 @@ async function main() {
         : faixas.map((faixa) => ({
             rotulo: `faixa ${faixa.min.toLocaleString("pt-BR")}–${faixa.max.toLocaleString("pt-BR")}`,
             url: montarUrlBuscaFacebook(
-              regiao.url,
+              urlRegiao,
               { ...filtros, minPreco: String(faixa.min), maxPreco: String(faixa.max) },
               regiao.raio ?? "60",
             ),
@@ -674,7 +717,7 @@ async function main() {
           detalhe.indexOf('"redacted_description"') + 9000
         );
         const textoPreco = win.match(/"formatted_price":\{"text":"([^"]+)"/)?.[1] ?? String(a.precoCampo ?? "");
-        const preco = lerPrecoComContexto(textoPreco, contexto);
+        const preco = lerPrecoComContexto(textoPreco, contexto, CATEGORIA);
 
         // ★★★ ANTES DE DESCARTAR, PROCURAR O PREÇO NA DESCRIÇÃO — 09/10/2026.
         //
@@ -883,6 +926,7 @@ async function main() {
             ano_suspeito: conf.problema === "antes_de_existir" || conf.problema === "depois_do_fim",
             versao: a.versaoTexto ?? a.motor,
             ano: a.ano,
+            categoria: CATEGORIA,
             cambio: a.cambio,
             /**
              * ★★ O KM VEM DO CAMPO **E** DO TEXTO — ligado em 15/10/2026.
