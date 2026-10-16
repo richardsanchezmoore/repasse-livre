@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   formatarNaMoeda,
+  normalizarMoeda,
   formatarLeitura,
   lerMoedaEscolhida,
   parDaMoeda,
@@ -11,7 +12,8 @@ import {
   type CodigoMoeda,
   type Cotacao,
 } from "@/lib/moeda";
-import { useTextos } from "@/lib/useIdioma";
+import { useIdioma, useTextos } from "@/lib/useIdioma";
+import { BandeiraDaMoeda } from "@/components/Bandeira";
 
 /**
  * PREÇO DO ANÚNCIO — o fato em destaque, as leituras embaixo, cada uma rotulada.
@@ -73,6 +75,7 @@ export function PrecoAnuncio({
   className?: string;
 }) {
   const tx = useTextos();
+  const idioma = useIdioma();
   const [cotacao, setCotacao] = useState<Cotacao | null>(null);
   // ⚠️ Começa sem moeda extra e só lê a escolha DEPOIS de montar: no servidor
   // não existe localStorage, e ler ali daria divergência de hidratação.
@@ -91,6 +94,23 @@ export function PrecoAnuncio({
   const par = parDaMoeda(moeda);
   const precisaCotacao = valor != null;
 
+  /**
+   * ★★★ O REAL APARECE SOZINHO PARA QUEM LÊ EM PORTUGUÊS — Gustavo, 16/10/2026:
+   *
+   * > *"também mostrarmos o real, pois vamos atrair um bom público brasileiro;
+   * > se eles baterem o olho e verem o real... temos mais de 300 mil
+   * > brasileiros aqui"*
+   *
+   * ⚠️ Mas NÃO para todo mundo: três moedas em cada cartão é ruído para o
+   * paraguaio, que compra em guarani ou dólar e nunca em real. Amarrar ao
+   * IDIOMA resolve os dois lados — quem chega pelo /pt vê o real sem precisar
+   * descobrir a caixinha, e a raiz em espanhol continua com o par da praça.
+   *
+   * ⚠️ A escolha explícita na caixinha continua mandando: se ele escolheu peso
+   * argentino, é peso que aparece, mesmo em português.
+   */
+  const extraEfetiva: CodigoMoeda | null =
+    extra ?? (idioma === "pt" && par !== "BRL" ? "BRL" : null);
   useEffect(() => {
     if (!precisaCotacao) return;
     let vivo = true;
@@ -99,24 +119,30 @@ export function PrecoAnuncio({
   }, [precisaCotacao]);
 
   const leituraPar = formatarLeitura(valor, moeda, cotacao, par);
-  const leituraExtra = extra ? formatarLeitura(valor, moeda, cotacao, extra) : null;
+  const leituraExtra = extraEfetiva ? formatarLeitura(valor, moeda, cotacao, extraEfetiva) : null;
   const quando = dataDaCotacao(cotacao);
   const nome = (c: CodigoMoeda) => NOME_CURTO[c];
 
   return (
     <span className={className}>
       <span className="preco-moeda-rotulo">{tx("moedaAnunciada")}</span>
-      <span className="preco-origem">{formatarNaMoeda(valor, moeda)}</span>
+      {/* ★★ A BANDEIRA ENTRA AQUI, colada no valor grande. É a moeda DO
+          ANÚNCIO — o fato — e é a que o olho precisa distinguir de relance
+          numa listagem onde um vendedor pediu em guarani e o outro em dólar. */}
+      <span className="preco-origem">
+        <BandeiraDaMoeda codigo={normalizarMoeda(moeda)} tamanho={18} />
+        {formatarNaMoeda(valor, moeda)}
+      </span>
       {leituraPar && (
         <span className="preco-leitura" title={quando ? `${tx("cambioDe")} ${quando} — ${tx("cambioAviso")}` : undefined}>
-          <span className="preco-leitura-rotulo">{tx("em")} {nome(par)}</span>
+          <span className="preco-leitura-rotulo"><BandeiraDaMoeda codigo={par} tamanho={14} /> {tx("em")} {nome(par)}</span>
           {leituraPar}
           {quando ? <span className="preco-leitura-data"> · {tx("cambioDe")} {quando}</span> : null}
         </span>
       )}
-      {leituraExtra && extra && (
+      {leituraExtra && extraEfetiva && (
         <span className="preco-leitura preco-leitura-extra">
-          <span className="preco-leitura-rotulo">{tx("em")} {nome(extra)}</span>
+          <span className="preco-leitura-rotulo"><BandeiraDaMoeda codigo={extraEfetiva} tamanho={14} /> {tx("em")} {nome(extraEfetiva)}</span>
           {leituraExtra}
         </span>
       )}

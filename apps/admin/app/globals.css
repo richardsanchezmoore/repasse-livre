@@ -9372,18 +9372,30 @@ button.bemvindo-secundario {
    ⚠️ ROLAGEM HORIZONTAL EM TODAS AS LARGURAS, não só no celular. A fileira
    tem 14 modelos: no desktop, "quebrar em grade" empurraria a listagem —
    que é o que o visitante veio ver — para baixo da dobra. */
-/* ★★ A SEÇÃO TEM FUNDO PRÓPRIO — pedido do Gustavo (14/10/2026): *"fica com
-   cara de anúncios e na verdade é um link de modelo"*. E ele está certo: card
-   branco sobre fundo cinza é exatamente o que a listagem de anúncios usa logo
-   abaixo, então o olho lia a fileira como "mais carros à venda" em vez de
-   navegação. A faixa azul-clara separa as duas coisas sem precisar de rótulo. */
-/* ⚠️⚠️ O FUNDO AZUL SAIU (Gustavo, 14/10/2026): *"a cor de fundo no slider
-   não ficou muito legal, deixe fora que vou pensar em algo"*. A faixa resolvia
-   o problema que ele mesmo tinha apontado — a fileira parecer listagem de
-   anúncio — mas resolvia feio. O que separa as duas coisas agora é o TAMANHO
-   do cartão e o formato do bloco, não a cor. Fica em aberto para ele decidir. */
+/* ★★ HISTÓRICO DESTA FAIXA, em três rodadas — vale guardar porque a mesma
+   necessidade voltou por caminhos diferentes:
+   1. 14/10 — fundo azul-claro, porque *"fica com cara de anúncios e na
+      verdade é um link de modelo"*: cartão branco sobre fundo cinza é
+      exatamente o que a listagem usa logo abaixo.
+   2. 14/10 — fundo REMOVIDO: *"a cor de fundo no slider não ficou muito
+      legal"*. O azul resolvia o problema certo de um jeito feio.
+   3. 16/10 — volta em BEGE: *"deixaria o card com leve fundo puxando pro
+      begezinho... a categoria de outra cor diferencia dos últimos anúncios"*.
+   ★ A lição: o problema era real nas três vezes; o que estava errado era a
+   cor. Quente contra o branco dos anúncios separa sem competir com o azul da
+   marca. */
+/* ★★ A SEÇÃO INTEIRA GANHA UMA FAIXA QUENTE — Gustavo, 16/10/2026:
+   *"acho que a categoria de outra cor diferencia dos últimos anúncios"*.
+   Sem isso, "Explorá por modelo" e "Últimos anuncios" eram duas fileiras
+   brancas coladas, e o olho lia tudo como uma lista só. A faixa sangra para
+   fora da coluna (margin negativa + padding igual) para parecer seção, não
+   caixa. */
 .explora-modelos {
-  margin: 4px 0 20px;
+  margin: 4px -16px 20px;
+  padding: 14px 16px 16px;
+  background: linear-gradient(180deg, #fdfbf7 0%, #faf6ee 100%);
+  border-top: 1px solid #f0e9dc;
+  border-bottom: 1px solid #f0e9dc;
 }
 .explora-modelos-cabecalho {
   display: flex;
@@ -9457,16 +9469,22 @@ button.bemvindo-secundario {
 
 /* ⚠️ 206px e não 148: no print do Gustavo as fotos ficavam pequenas demais
    para reconhecer o carro, que é a única razão de a foto estar ali. */
+/* ★★ FUNDO BEGE E TIPOGRAFIA MAIOR — pedido do Gustavo em 16/10/2026.
+   A razão é de leitura, não de gosto: a fileira de modelos e a grade de
+   "Últimos anuncios" ficavam brancas, do mesmo tamanho e uma embaixo da
+   outra, e o olho não separava as duas seções. O bege quente contra o branco
+   dos cartões de anúncio faz a separação sem precisar de régua nem título
+   maior. */
 .modelo-card {
   flex: 0 0 206px;
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   padding: 10px 10px 12px;
-  border: 1px solid #e6e9ef;
+  border: 1px solid #ece4d6;
   border-radius: 12px;
-  background: #fff;
+  background: #fbf7f0;
   text-decoration: none;
   color: inherit;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
@@ -9482,7 +9500,9 @@ button.bemvindo-secundario {
   aspect-ratio: 4 / 3;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--kpi-azul-fundo);
+  /* ⚠️ O vazio da foto acompanha o bege, senão aparece um retângulo azul
+     dentro de um cartão quente toda vez que o anúncio não tem imagem. */
+  background: #f1e9db;
   margin-bottom: 6px;
 }
 .modelo-card-foto img {
@@ -9492,23 +9512,31 @@ button.bemvindo-secundario {
   display: block;
 }
 .modelo-card-nome {
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   /* ⚠️ Duas linhas no máximo: "Toyota Land Cruiser" não cabe numa, e deixar
-     estourar desalinharia a altura de toda a fileira. */
+     estourar desalinharia a altura de toda a fileira.
+     ★ min-height 2em (e não 2.5) para o cartão de nome curto não ficar com
+     um buraco embaixo do título — pedido direto do Gustavo. */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 2.5em;
+  min-height: 2em;
 }
 .modelo-card-n {
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
 }
+/* ★ O NÚMERO em negrito, a palavra não: é o número que se compara entre
+   cartões, e emboldar a frase inteira anularia o contraste. */
+.modelo-card-n strong {
+  font-weight: 700;
+  color: #4b5563;
+}
 .modelo-card-ref {
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--kpi-azul-icone);
   display: flex;
@@ -9517,14 +9545,14 @@ button.bemvindo-secundario {
   flex-wrap: wrap;
 }
 .modelo-card-anos {
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #9aa3b2;
 }
 .modelo-card-ref-vazia {
   color: #9aa3b2;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 11.5px;
 }
 
 @media (max-width: 640px) {
@@ -9668,4 +9696,35 @@ button.bemvindo-secundario {
 .pagina-oportunidade-ficha-nota {
   font-style: italic;
   color: var(--texto-fraco, #6b7280);
+}
+
+/* ★ Linha de contexto dentro de um KPI (ex.: o acervo total ao lado dos novos
+   em 72h). Pequena de propósito: é contexto, não um segundo número grande
+   competindo pela atenção. */
+.kpi-card-complemento {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+.kpi-card-complemento strong {
+  font-weight: 800;
+  color: #374151;
+}
+
+/* ★★ Bandeira colada no preço — ver PrecoAnuncio e Bandeira.
+   `vertical-align` em vez de flex para não quebrar a linha do valor grande,
+   que precisa continuar sendo um bloco de texto só. */
+.preco-origem .bandeira {
+  vertical-align: baseline;
+  margin-right: 6px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.12);
+}
+.preco-leitura-rotulo .bandeira {
+  vertical-align: -1px;
+  margin-right: 4px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.1);
 }

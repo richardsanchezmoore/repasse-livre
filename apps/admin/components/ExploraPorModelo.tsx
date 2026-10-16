@@ -124,7 +124,9 @@ export async function ExploraPorModelo({
             </span>
             <span className="modelo-card-nome">{m.rotulo}</span>
             <span className="modelo-card-n">
-              {m.n} {tx("anunciosCurto")}
+              {/* ★ O número em negrito, a palavra não: é o número que se
+                  compara entre cartões. Pedido do Gustavo, 16/10/2026. */}
+              <strong>{m.n}</strong> {tx("anunciosCurto")}
             </span>
             {m.referencia ? (
               <span className="modelo-card-ref">

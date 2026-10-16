@@ -95,3 +95,36 @@ const contarCidadesCache = unstable_cache(contarCidades, ["py-cidades-cobertas"]
 export async function buscarCidadesCobertas(): Promise<number> {
   return contarCidadesCache();
 }
+
+/**
+ * ★★ O TOTAL DE VEÍCULOS MAPEADOS — Gustavo, 16/10/2026: *"podemos adicionar
+ * em texto pequeno, no máximo em negrito, no KPI da varredura das 72h, o total
+ * de veículos mapeados"*.
+ *
+ * ★ Faz sentido junto do "novos em 72h": sozinho, 685 não diz se o acervo é
+ * grande ou se a varredura acabou de começar. Com o total ao lado, o cartão
+ * conta uma história ("o acervo tem N, e N' entraram esta semana").
+ *
+ * ⚠️⚠️ CONTA AS MESMAS TRÊS CONDIÇÕES DA VITRINE. Já errei isto uma vez: o
+ * cartão prometia 82 e a listagem entregava 62, porque o cartão contava os
+ * vivos e a vitrine exige sem reanúncio, com foto e com cidade. Número de KPI
+ * que a própria página desmente é pior que KPI nenhum.
+ */
+async function contarVitrine(): Promise<number> {
+  const { count, error } = await supabaseAdmin
+    .from("opportunities")
+    .select("id", { count: "exact", head: true })
+    .eq("pais", PAIS_DO_SITE)
+    .eq("status", "aprovada")
+    .is("duplicata_de", null)
+    .not("foto_principal", "is", null)
+    .not("cidade", "is", null)
+    .not("modelo", "is", null);
+  return error ? 0 : count ?? 0;
+}
+
+const contarVitrineCache = unstable_cache(contarVitrine, ["py-total-vitrine"], { revalidate: 1800 });
+
+export async function buscarTotalVitrine(): Promise<number> {
+  return contarVitrineCache();
+}

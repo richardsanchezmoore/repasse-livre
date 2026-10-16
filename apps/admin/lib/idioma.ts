@@ -227,6 +227,7 @@ const PT = {
   // ─── a faixa de valor do topo ───
   kpiNovosRotulo: "anúncios novos em 72h",
   kpiNovosFrase: "O mercado se move todo dia. A gente acompanha.",
+  kpiTotalMapeados: "veículos mapeados no total",
   kpiMonitorRotulo: "preços monitorados",
   kpiMonitorFrase: "Varredura contínua nas praças do Paraguai.",
   kpiCidadesRotulo: "cidades monitoradas",
@@ -401,6 +402,7 @@ const ES: { [K in keyof typeof PT]: string } = {
   // neutro soa a tradução, e o site inteiro perde quando isso aparece.
   kpiNovosRotulo: "anuncios nuevos en 72h",
   kpiNovosFrase: "El mercado se mueve todos los días. Nosotros lo seguimos.",
+  kpiTotalMapeados: "vehículos mapeados en total",
   kpiMonitorRotulo: "precios monitoreados",
   kpiMonitorFrase: "Barrido continuo en las plazas del Paraguay.",
   kpiCidadesRotulo: "ciudades monitoreadas",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Radar, Table2, Clock, MapPin, ArrowRight } from "lucide-react";
-import { buscarKpisTopo, buscarCidadesCobertas } from "@/lib/kpisTopo";
+import { buscarKpisTopo, buscarCidadesCobertas, buscarTotalVitrine } from "@/lib/kpisTopo";
 import { buscarTabelaReferencia } from "@/lib/tabelaReferencia";
 import { t, IDIOMA_PADRAO, type Idioma } from "@/lib/idioma";
 
@@ -27,7 +27,7 @@ function milhar(n: number): string {
  */
 export async function KpisTopo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } = {}) {
   const tx = t(idioma);
-  const [k, tabela, cidades] = await Promise.all([buscarKpisTopo(), buscarTabelaReferencia(), buscarCidadesCobertas()]);
+  const [k, tabela, cidades, totalVitrine] = await Promise.all([buscarKpisTopo(), buscarTabelaReferencia(), buscarCidadesCobertas(), buscarTotalVitrine()]);
 
   // ⚠️ Modelos DISTINTOS, não linhas: a tabela tem linha por ano e por geração,
   // então contar linhas inflaria o número sem significar mais cobertura.
@@ -59,6 +59,12 @@ export async function KpisTopo({ idioma = IDIOMA_PADRAO }: { idioma?: Idioma } =
           <span className="kpi-card-valor">{milhar(k.novos)}</span>
           <span className="kpi-card-rotulo">{tx("kpiNovosRotulo")}</span>
           <span className="kpi-card-frase">{tx("kpiNovosFrase")}</span>
+          {/* ★ O acervo total ao lado dos novos — ver buscarTotalVitrine.
+              Pequeno e com o número em negrito: é contexto para o 685, não
+              um segundo KPI competindo com ele. */}
+          <span className="kpi-card-complemento">
+            <strong>{milhar(totalVitrine)}</strong> {tx("kpiTotalMapeados")}
+          </span>
         </div>
         <span className="kpi-card-icone" aria-hidden>
           <Clock size={22} strokeWidth={2} />
