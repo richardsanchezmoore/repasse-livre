@@ -324,6 +324,14 @@ export async function registrarObservacaoPreco(o: {
   moeda: string;
   cidade: string | null;
   confianca: string | null;
+  /**
+   * ⚠️ A CATEGORIA VIAJA COM A OBSERVAÇÃO — migração 0098.
+   *
+   * Medido em 16/10/2026: mediana da moto ₲7,5 milhões, do carro ₲34,8
+   * milhões. Não é ruído em torno da mesma média, são dois mercados; misturar
+   * estraga as duas tabelas ao mesmo tempo.
+   */
+  categoria?: "carro" | "moto";
 }): Promise<void> {
   const agora = new Date();
   const mes = `${agora.getUTCFullYear()}-${String(agora.getUTCMonth() + 1).padStart(2, "0")}-01`;
@@ -338,6 +346,7 @@ export async function registrarObservacaoPreco(o: {
       moeda: o.moeda,
       cidade: o.cidade,
       confianca: o.confianca,
+      categoria: o.categoria ?? "carro",
     },
     { onConflict: "item_id,mes", ignoreDuplicates: true },
   );

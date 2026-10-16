@@ -83,6 +83,18 @@ async function lerLivro(mes: string): Promise<ObservacaoLivro[]> {
       .from("py_observacoes_preco")
       .select("modelo, geracao, ano, preco, moeda, cidade")
       .eq("mes", mes)
+      /**
+       * ⚠️⚠️ SÓ CARRO — migração 0098.
+       *
+       * A tabela publicada é a de carro, e a moto tem mediana de outra ordem
+       * (₲7,5 milhões contra ₲34,8 milhões, medido em 16/10/2026). Sem este
+       * filtro a mesma consulta produziria uma mediana que não descreve
+       * nenhum dos dois mercados.
+       *
+       * ★ Quando /motos existir, isto vira parâmetro — uma tabela por
+       * categoria, não uma tabela só mais tolerante.
+       */
+      .eq("categoria", "carro")
       .range(de, de + PAGINA - 1);
     if (error) throw new Error(`livro: ${error.message}`);
     const lote = (data ?? []) as ObservacaoLivro[];

@@ -44,6 +44,26 @@ export async function publicarDescobertasPendentes(limite = 300): Promise<{ sele
     .from("opportunities")
     .select("id")
     .eq("status", "descoberta")
+    /**
+     * ★★★ MOTO NÃO ENTRA NA VITRINE DE CARRO — e este é o único portão.
+     *
+     * ⚠️⚠️ A coluna `categoria` existe desde a migração 0097 justamente para
+     * separar as duas, e em 16/10/2026 eu descobri que NINGUÉM a lia: nem a
+     * vitrine, nem a tabela de referência, nem as contagens. As 40 motos da
+     * base estavam aprovadas e misturadas aos carros — uma Kenton de ₲6,5
+     * milhões no mesmo mural de um Prado.
+     *
+     * ★ É o quarto caso do mesmo padrão nesta base: mecanismo pronto que o
+     * motor não chama não existe. Por isso o portão fica AQUI, no funil por
+     * onde todo anúncio passa para virar público, e não espalhado em trinta
+     * consultas — que foi exatamente como a separação não aconteceu.
+     *
+     * ⚠️ Elas continuam sendo capturadas e ficam em `descoberta`: o dado é
+     * bom e vai alimentar /motos. O que não pode é aparecer como carro.
+     * Quando /motos existir, este `.neq` sai e a separação passa a ser por
+     * rota — nunca por apagar dado.
+     */
+    .neq("categoria", "moto")
     .order("data_captura", { ascending: true })
     .limit(limite);
   if (error) {

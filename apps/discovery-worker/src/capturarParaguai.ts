@@ -1027,6 +1027,7 @@ async function main() {
             moeda: moedaFinal,
             cidade: a.cidade ?? null,
               confianca: confiancaFinal,
+              categoria: CATEGORIA,
             });
           }
           log(`  ✓ ${(a.titulo ?? "").slice(0, 40).padEnd(40)} ${moedaFinal} ${valorFinal.toLocaleString("es-PY")} [${confiancaFinal}]`);
