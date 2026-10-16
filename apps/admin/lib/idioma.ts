@@ -228,6 +228,30 @@ const PT = {
   kpiNovosRotulo: "anúncios novos em 72h",
   kpiNovosFrase: "O mercado se move todo dia. A gente acompanha.",
   kpiTotalMapeados: "veículos mapeados no total",
+  /**
+   * ★★★ A PÁGINA DE ANUNCIAR — argumento do Gustavo, 16/10/2026, e é bom
+   * porque é verdadeiro: no Facebook o carro some no meio de sofá e celular,
+   * e aqui ele entra numa vitrine organizada por marca, modelo e ano, ao lado
+   * da tabela de preços que o comprador veio consultar.
+   */
+  publicarTitulo: "A maior vitrine organizada de veículos do Paraguai",
+  publicarSub: "Seu carro no lugar onde as pessoas procuram carro — e não no meio de sofá, celular e bicicleta.",
+  publicarNumVeiculos: "veículos na vitrine",
+  publicarNumCidades: "cidades cobertas",
+  publicarCta: "Publicar meu veículo",
+  publicarGratis: "Publicar é grátis. Você precisa de uma conta para poder editar e tirar do ar quando vender.",
+  publicarArg1Titulo: "No Facebook, seu carro se perde",
+  publicarArg1Texto:
+    "O Marketplace mistura tudo na mesma lista e não entende de carro: não separa por geração, não corrige o ano e não sabe se o preço está em guarani ou em dólar. Quem procura um Vitz 2012 não acha o seu.",
+  publicarArg2Titulo: "Aqui ele entra organizado",
+  publicarArg2Texto:
+    "Marca, modelo, geração, ano, cidade e moeda. Seu anúncio aparece na página do modelo, no filtro da cidade e ao lado do preço de referência — exatamente onde o comprador daquele carro está olhando.",
+  publicarArg3Titulo: "O público já veio comprar",
+  publicarArg3Texto:
+    "Quem entra aqui veio pesquisar quanto vale um carro no Paraguai. Não é curioso passando: é alguém decidindo preço antes de fechar negócio.",
+  publicarFechamento: "Leva dois minutos e você pode tirar do ar quando vender.",
+  publicarTabelaDica: "Quer saber quanto pedir?",
+  publicarTabelaLink: "Consulte a tabela de preços",
   kpiMonitorRotulo: "preços monitorados",
   kpiMonitorFrase: "Varredura contínua nas praças do Paraguai.",
   kpiCidadesRotulo: "cidades monitoradas",
@@ -403,6 +427,24 @@ const ES: { [K in keyof typeof PT]: string } = {
   kpiNovosRotulo: "anuncios nuevos en 72h",
   kpiNovosFrase: "El mercado se mueve todos los días. Nosotros lo seguimos.",
   kpiTotalMapeados: "vehículos mapeados en total",
+  publicarTitulo: "La mayor vitrina organizada de vehículos del Paraguay",
+  publicarSub: "Su auto donde la gente busca autos — y no entre sillones, celulares y bicicletas.",
+  publicarNumVeiculos: "vehículos en la vitrina",
+  publicarNumCidades: "ciudades cubiertas",
+  publicarCta: "Publicar mi vehículo",
+  publicarGratis: "Publicar es gratis. Necesita una cuenta para poder editarlo y bajarlo cuando venda.",
+  publicarArg1Titulo: "En Facebook su auto se pierde",
+  publicarArg1Texto:
+    "El Marketplace mezcla todo en la misma lista y no entiende de autos: no separa por generación, no corrige el año y no sabe si el precio está en guaraníes o en dólares. Quien busca un Vitz 2012 no encuentra el suyo.",
+  publicarArg2Titulo: "Acá entra ordenado",
+  publicarArg2Texto:
+    "Marca, modelo, generación, año, ciudad y moneda. Su aviso aparece en la página del modelo, en el filtro de la ciudad y al lado del precio de referencia — justo donde está mirando el comprador de ese auto.",
+  publicarArg3Titulo: "El público ya vino a comprar",
+  publicarArg3Texto:
+    "Quien entra acá vino a averiguar cuánto vale un auto en Paraguay. No es curioso de paso: es alguien definiendo precio antes de cerrar trato.",
+  publicarFechamento: "Lleva dos minutos y puede bajarlo cuando venda.",
+  publicarTabelaDica: "¿Quiere saber cuánto pedir?",
+  publicarTabelaLink: "Consulte la tabla de precios",
   kpiMonitorRotulo: "precios monitoreados",
   kpiMonitorFrase: "Barrido continuo en las plazas del Paraguay.",
   kpiCidadesRotulo: "ciudades monitoreadas",

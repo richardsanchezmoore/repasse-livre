@@ -121,10 +121,17 @@ export function TopBar({
   }
 
   const podeSelecionarVarios = usuario?.role === "admin" && aba !== "favoritos";
-  // Anunciar grátis é perk de PRO/admin → /enviar. Todo o resto (deslogado OU
-  // não-PRO) vai DIRETO pro produto pago /vender — sem passar por login (a conta
-  // nasce no pagamento). Ver project_repasse_livre_low_ticket_vender_anuncio.
-  const hrefAnunciar = usuario?.premium || usuario?.role === "admin" ? "/enviar" : "/vender";
+  /**
+   * ★★ O BOTÃO "PUBLICAR" LEVAVA PARA A PÁGINA BRASILEIRA — achado pelo
+   * Gustavo em 16/10/2026. `/vender` é a landing da era Repasse Livre: fala de
+   * FIPE, está em português e vende a inserção paga. Um paraguaio clicando em
+   * "Publicar" caía nisso.
+   *
+   * ★ Agora quem já tem conta vai direto ao formulário, e quem não tem passa
+   * por `/publicar`, que explica por que vale a pena. *"Por ora não precisamos
+   * vender a inserção"* — a página não cobra nada.
+   */
+  const hrefAnunciar = usuario ? "/enviar" : "/publicar";
 
   return (
     <div className="top-bar">

@@ -9785,3 +9785,121 @@ button.bemvindo-secundario {
     gap: 4px;
   }
 }
+
+/* ★★ /publicar — a página de anunciar do Paraguai (ver PaginaPublicar).
+   Coluna estreita de propósito: é página de argumento, e texto largo demais
+   em tela grande é o que faz ninguém ler. */
+.publicar {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px 0 40px;
+}
+.publicar-topo {
+  text-align: center;
+  padding: 24px 0 28px;
+}
+.publicar-titulo {
+  font-size: clamp(26px, 5vw, 40px);
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--marca-azul);
+  margin: 0 0 12px;
+}
+.publicar-sub {
+  font-size: clamp(15px, 2.4vw, 18px);
+  line-height: 1.5;
+  color: #4b5563;
+  margin: 0 auto 20px;
+  max-width: 34em;
+}
+.publicar-numeros {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  margin-bottom: 22px;
+  font-size: 14px;
+  color: #6b7280;
+}
+.publicar-numeros strong {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+  margin-right: 4px;
+}
+.publicar-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: 10px;
+  background: var(--marca-verde);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.publicar-cta:hover {
+  background: var(--marca-verde-escuro);
+}
+.publicar-gratis {
+  margin: 12px auto 0;
+  font-size: 12.5px;
+  color: #6b7280;
+  max-width: 30em;
+}
+.publicar-argumentos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin: 8px 0 32px;
+}
+.publicar-argumento {
+  padding: 18px 16px;
+  border: 1px solid #ece4d6;
+  border-radius: 12px;
+  background: #fbf7f0;
+}
+.publicar-argumento-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--kpi-azul-fundo);
+  color: var(--kpi-azul-icone);
+  margin-bottom: 10px;
+}
+.publicar-argumento h2 {
+  font-size: 15.5px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+.publicar-argumento p {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #4b5563;
+  margin: 0;
+}
+.publicar-rodape-cta {
+  text-align: center;
+  padding: 22px 0 0;
+  border-top: 1px solid #e6e9ef;
+}
+.publicar-rodape-cta p {
+  font-size: 15px;
+  color: #4b5563;
+  margin: 0 0 14px;
+}
+.publicar-tabela-dica {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 16px !important;
+}
+.publicar-tabela-dica a {
+  color: var(--marca-azul);
+  font-weight: 600;
+}
