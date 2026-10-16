@@ -25,6 +25,12 @@ import { geracaoDoAno } from "./geracoesPY.js";
  * da referência". Quando não há referência para o modelo, NÃO MEXE: trocar sem
  * árbitro é jogar moeda com o dado do Gustavo.
  */
+/** O mês da tabela publicada, no mesmo formato do worker. */
+function mesCorrente(): string {
+  const d = new Date();
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
+}
+
 const mediana = (v: number[]) => {
   const s = [...v].sort((a, b) => a - b);
   return s.length ? s[Math.floor(s.length / 2)] : 0;
@@ -55,17 +61,42 @@ const distancia = (preco: number, ref: number) => Math.max(preco, ref) / Math.mi
  * às cegas.
  */
 const APLICAR = process.env.PY_APLICAR === "1";
-const FATOR = Number(process.env.PY_FATOR ?? 5);
+
+/**
+ * ⚠️⚠️ O LIMIAR CAIU DE 5× PARA 1,5× — e isto é conserto de um caso real.
+ *
+ * Gustavo, 15/10/2026, com o anúncio na tela: "Toyota Vitz 2014" publicado a
+ * ₲20.000.000, com a descrição dizendo *"por solo Gs 52.000.000"*. A razão é
+ * 2,6× — passava longe do portão de 5× e o campo vencia sem nem chegar ao
+ * árbitro. A mediana da tabela para Vitz 2014 é ₲60 milhões: ₲52M é o carro,
+ * ₲20M é a entrada.
+ *
+ * ★★ E o portão alto era uma precaução que o ÁRBITRO JÁ TORNA DESNECESSÁRIA.
+ * Ele existia de quando "a descrição vence o campo" era a regra, e aí um
+ * limiar frouxo trocaria preço bom por lixo. Hoje quem decide é a distância à
+ * referência — e se a descrição estiver pior, o campo fica. O portão só
+ * precisa ser alto o bastante para não gastar trabalho com divergência de
+ * desconto ("precio contado 11.890.000 / precio crédito 11.590.000", 1,03×).
+ */
+const FATOR = Number(process.env.PY_FATOR ?? 1.5);
 
 async function main() {
-  const { data, error } = await supabase
-    .from("opportunities")
-    .select("id, veiculo, modelo, ano, preco, moeda, descricao")
-    .eq("pais", "PY")
-    .not("preco", "is", null)
-    .limit(5000);
-  if (error) throw new Error(error.message);
-  const linhas = data ?? [];
+  // ⚠️⚠️ PAGINA DE 1.000 EM 1.000. Estava `.limit(5000)`, que NAO vence o teto
+  // do PostgREST: ele devolve 1.000 em silencio. Com 7 mil anuncios na base, o
+  // corretor olhava um setimo dela e dizia que tinha terminado.
+  const linhas: any[] = [];
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("id, veiculo, modelo, ano, preco, moeda, descricao")
+      .eq("pais", "PY")
+      .not("preco", "is", null)
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) throw new Error(error.message);
+    linhas.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
 
   // ─── 1) a referência, montada do que já temos ───
   //
@@ -82,6 +113,53 @@ async function main() {
     if (g) add(`${m}|${g.codigo}|${o.moeda}`);
     if (o.ano) add(`${m}|${o.ano}|${o.moeda}`);
   }
+  /**
+   * ★★★ O ÁRBITRO PREFERENCIAL É A TABELA PUBLICADA, não a média crua.
+   *
+   * ⚠️ A referência montada aqui a partir dos próprios preços tem um defeito
+   * de nascença: ela inclui os preços errados que deveria julgar. Num modelo
+   * onde metade dos anúncios é entrada de financiamento, a "mediana" puxa para
+   * baixo e absolve o erro.
+   *
+   * ★ A `py_tabela_referencia` não tem esse problema: ela já passou por corte
+   * de outliers, exige n mínimo e carrega `confianca`. É o instrumento que o
+   * produto inteiro existe para construir — usar outra coisa como árbitro,
+   * tendo ela, seria desperdiçar o ativo.
+   *
+   * ⚠️ A média crua FICA como segunda opção: a tabela só cobre os modelos com
+   * massa, e para o resto é melhor um árbitro imperfeito que árbitro nenhum.
+   * Quando nem uma nem outra existe, NÃO MEXE — trocar sem árbitro é jogar
+   * moeda com o preço de um anúncio publicado.
+   */
+  const { data: tabela } = await supabase
+    .from("py_tabela_referencia")
+    .select("modelo, escopo, chave, moeda, mediana, confianca")
+    .eq("mes", mesCorrente())
+    .eq("confianca", "boa")
+    .limit(1000);
+
+  const porTabela = new Map<string, number>();
+  for (const l of tabela ?? []) {
+    porTabela.set(`${String(l.modelo).toLowerCase()}|${l.chave}|${l.moeda}`, Number(l.mediana));
+  }
+
+  const refDaTabela = (modelo: string | null, ano: unknown, moeda: unknown): number | null => {
+    if (!modelo) return null;
+    // ★ A tabela publicada vence a média crua — ver o bloco acima.
+    const daTabela = refDaTabela(modelo, ano, moeda);
+    if (daTabela) return daTabela;
+    const m = String(modelo).toLowerCase();
+    const g = geracaoDoAno(m, ano == null ? null : Number(ano));
+    // ⚠️ Ano antes de geração: é a referência mais estreita e portanto a mais
+    // confiável para arbitrar um anúncio individual.
+    for (const chave of [ano ? String(ano) : null, g ? g.codigo : null]) {
+      if (!chave) continue;
+      const v = porTabela.get(`${m}|${chave}|${moeda}`);
+      if (v) return v;
+    }
+    return null;
+  };
+
   const refDe = (modelo: string | null, ano: unknown, moeda: unknown): number | null => {
     if (!modelo) return null;
     const m = String(modelo).toLowerCase();
@@ -97,7 +175,7 @@ async function main() {
   };
 
   const trocas: { id: string; veiculo: string; de: number; para: number; moeda: string; razao: number; ref: number }[] = [];
-  let semArbitro = 0, campoVenceu = 0;
+  let semArbitro = 0, campoVenceu = 0, foraDeOrdem = 0;
 
   for (const o of linhas) {
     if (!o.descricao) continue;
@@ -113,12 +191,29 @@ async function main() {
     // ★ Vence quem está mais perto da referência — não quem veio da descrição.
     if (distancia(d.valor, ref) >= distancia(atual, ref)) { campoVenceu++; continue; }
 
+    /**
+     * ⚠️⚠️ O VENCEDOR AINDA PRECISA SER PLAUSIVEL — e esta guarda faltava.
+     *
+     * O arbitro responde "qual das duas esta mais perto", nao "alguma das
+     * duas presta". Medido em 15/10/2026: um Jetour X90 2024 ia de ₲6,8M para
+     * ₲16,99M com referencia de ₲110 MILHOES, e uma Hilux 2024 de ₲8M para
+     * ₲25,5M com referencia de ₲290 milhoes. Nos dois casos AS DUAS leituras
+     * sao entrada de financiamento; trocar uma pela outra nao conserta nada e
+     * ainda da aparencia de corrigido a um anuncio que segue errado.
+     *
+     * ★ 2x e folgado de proposito: a referencia e mediana de mercado, e carro
+     * com pouca rodagem ou versao cheia legitimamente foge dela. O que a
+     * guarda barra e a ordem de grandeza, que e onde mora o erro.
+     */
+    if (distancia(d.valor, ref) > 2) { foraDeOrdem++; continue; }
+
     trocas.push({ id: String(o.id), veiculo: String(o.veiculo), de: atual, para: d.valor, moeda: String(o.moeda), razao, ref });
   }
 
   console.log(`${linhas.length} anúncios · ${trocas.length} em que a DESCRIÇÃO está mais perto da referência`);
   console.log(`  ${campoVenceu} em que o CAMPO venceu (a descrição seria pior)`);
   console.log(`  ${semArbitro} sem referência no modelo — NÃO mexidos, por falta de árbitro\n`);
+  console.log(`  ${foraDeOrdem} em que AS DUAS leituras estão longe da referência — NÃO mexidos`);
   for (const t of trocas.slice(0, 40)) {
     console.log(
       `  ${t.veiculo.slice(0, 32).padEnd(32)} ${t.moeda} ${t.de.toLocaleString("es-PY").padStart(12)} → ${t.para.toLocaleString("es-PY").padStart(12)}   ref ${t.ref.toLocaleString("es-PY")}`,

@@ -60,6 +60,24 @@ while [ ! -f "$PARAR" ]; do
   npx tsx src/publicarTabelaPY.ts --gravar >> "$LOG" 2>&1
   echo "  saiu com $?" >> "$LOG"
 
+  [ -f "$PARAR" ] && break
+
+  # ★★ O CORRETOR DE PREÇO ENTRA AQUI, DEPOIS DA TABELA — e a ordem é a razão
+  # de ele estar neste laço e não em outro: ele usa a mediana publicada como
+  # ÁRBITRO para decidir se o preço do campo ou o da descrição é o verdadeiro.
+  # Rodar antes da tabela seria julgar com a referência da volta passada.
+  #
+  # ⚠️ Pedido do Gustavo (15/10/2026): *"devemos revisar várias assim,
+  # considerando o que tem média já verificada... e definirmos um comportamento
+  # de extração da descrição e conferência com a mediana"*. É exatamente o que
+  # este script faz — e ele existia desde 09/10 sem nunca ser chamado.
+  #
+  # ⚠️ Não raspa nada: as descrições já estão no banco. Custo zero de exposição
+  # da conta, que é o recurso escasso aqui.
+  marca "preço incoerente (descrição × campo, arbitrado pela tabela)"
+  PY_APLICAR=1 npx tsx src/corrigirPrecoIncoerentePY.ts >> "$LOG" 2>&1
+  echo "  saiu com $?" >> "$LOG"
+
   # ⚠️ 20 min é o teto de vida de um duplicado na vitrine. Mais curto que isso
   # só gastaria leitura do bucket sem ganho visível: o ciclo não entrega
   # anúncio novo mais rápido que isso.
