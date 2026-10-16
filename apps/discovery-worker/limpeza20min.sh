@@ -39,7 +39,13 @@ trap 'rm -f "$TRAVA_LACO"' EXIT
 
 LOG=/c/claude/limpeza.log
 PARAR=/c/claude/ciclo24h.parar
+
+# ⚠️ Mesma regra do ciclo24h.sh: guarda o anterior antes de zerar, senão o
+# reinício apaga a pista do que derrubou o laço.
+[ -s "$LOG" ] && mv -f "$LOG" "${LOG%.log}-anterior.log"
 : > "$LOG"
+
+echo "[$(date '+%d/%m %H:%M:%S')] limpeza SUBIU (pid $$)" >> /c/claude/varredura-guarda.log
 
 marca() { echo "" >> "$LOG"; echo "═══ $(date '+%d/%m %H:%M:%S') · $* ═══" >> "$LOG"; }
 

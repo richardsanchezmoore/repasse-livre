@@ -58,8 +58,23 @@ trap 'rm -f "$TRAVA_LACO"' EXIT
 
 LOG=/c/claude/ciclo24h.log
 PARAR=/c/claude/ciclo24h.parar
+
+# ⚠️⚠️ O LOG ANTERIOR É GUARDADO, NÃO APAGADO — e isto custou um diagnóstico.
+#
+# Na madrugada de 16/10 o ciclo morreu e o vigia o religou às 23:31, que é
+# exatamente o que ele existe para fazer. Só que o novo ciclo ZEROU o log e,
+# com ele, a única pista do que tinha matado o anterior. O mecanismo funcionou
+# e apagou a prova de por que precisou funcionar.
+#
+# ⚠️ Guarda apenas o ÚLTIMO: manter um por reinício encheria o disco em
+# silêncio, e o que interessa é sempre o imediatamente anterior.
+[ -s "$LOG" ] && mv -f "$LOG" "${LOG%.log}-anterior.log"
 : > "$LOG"
 rm -f "$PARAR"
+
+# ★ Registra no log do VIGIA que subiu de fato — antes só havia a linha de
+# "já vivo, nada a fazer", então uma intervenção real do vigia era invisível.
+echo "[$(date '+%d/%m %H:%M:%S')] ciclo SUBIU (pid $$)" >> /c/claude/varredura-guarda.log
 
 # ★★ A QUEDA DE REDE DAS 03:21 MATOU O CICLO. Duas etapas sairam com
 # "TypeError: fetch failed" (nao alcancavam o Supabase) e o laco nao sobreviveu.
