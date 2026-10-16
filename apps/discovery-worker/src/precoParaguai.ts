@@ -55,7 +55,9 @@ const FAIXA = {
  * Land Cruiser 300 a US$ 165.000. Abaixo de US$ 1.500 nao ha carro de rua no
  * Paraguai — ha peca, entrada de financiamento e isca.
  */
-const GRANDEZA_USD = { min: 1_500, max: 250_000 } as const;
+// ⚠️ SUBSTITUÍDO por GRANDEZA_POR_CATEGORIA (16/10/2026): a mesma faixa não
+// serve para carro e moto — ver a nota lá embaixo. Mantido o comentário acima
+// porque a MEDIÇÃO que o originou continua válida para o carro.
 
 /**
  * ★★★ A MOTO VIVE NUMA FAIXA DE PREÇO OUTRA — e isso quebra a leitura.
@@ -77,7 +79,45 @@ const GRANDEZA_USD = { min: 1_500, max: 250_000 } as const;
  * conhecido por um desconhecido. Quando houver massa de moto, a faixa dela se
  * refina com o próprio dado, como foi com o carro.
  */
-const PISO_PYG_MOTO = 1_000_000;
+const PISO_PYG_MOTO = 800_000;
+
+/**
+ * ★★★ A CALIBRAGEM POR CATEGORIA — e esta é a correção mais importante que a
+ * moto trouxe (16/10/2026).
+ *
+ * ⚠️⚠️ A medição de moto deu "mínimo ₲5.200.000" na base inteira, e isso NÃO
+ * é o mercado: é a zona cinzenta do CARRO cortando a moto fora. O Gustavo
+ * conhece a praça e disse o número certo:
+ *
+ * > *"elas vivem entre 800.000 e 15.000.000 a grande massa, e depois alguns
+ * > valores raros vão até 50.000.000 no máximo"*
+ *
+ * Com `ZONA_CINZENTA` em 500 mil–5 milhões, TODA moto de ₲800.000 a ₲5
+ * milhões era recusada por "fora de faixa". Era a maior parte do mercado
+ * caindo num guarda escrito para outro veículo.
+ *
+ * ★ Por que a zona cinzenta existe e por que ela encolhe na moto: ela marca o
+ * intervalo onde o número é implausível NAS DUAS moedas — ₲3.000.000 é barato
+ * demais para carro e US$ 3.000.000 é caro demais, então não dá para chutar.
+ * Para moto, ₲3.000.000 (uns US$ 400) é preço comum. A ambiguidade
+ * simplesmente não existe ali.
+ *
+ * ⚠️ E o teto de dólar por grandeza também muda: US$ 1.500 é o piso de um
+ * carro de rua, mas é o PREÇO INTEIRO de uma Kenton. Com o mínimo do carro,
+ * toda moto anunciada em dólar sem símbolo caía fora.
+ */
+type Grandeza = { usdMin: number; usdMax: number; cinzaMin: number; cinzaMax: number };
+
+const GRANDEZA_POR_CATEGORIA: Record<"carro" | "moto", Grandeza> = {
+  carro: { usdMin: 1_500, usdMax: 250_000, cinzaMin: 500_000, cinzaMax: 5_000_000 },
+  /**
+   * ⚠️ `cinzaMax` igual ao piso da moto: acima do piso o guarani já é
+   * plausível, então não há zona cinzenta nenhuma a defender.
+   * `usdMin: 200` cobre a moto chinesa usada; `usdMax: 60.000` cobre a
+   * Harley topo de linha, que a imprensa local põe perto de US$ 60 mil.
+   */
+  moto: { usdMin: 200, usdMax: 60_000, cinzaMin: 300_000, cinzaMax: PISO_PYG_MOTO },
+};
 
 
 /**
@@ -248,7 +288,7 @@ function desescapar(s: string): string {
  * outra — ver PISO_PYG_MOTO. O padrão continua sendo o do carro, que é a base
  * inteira de hoje; quem passa outro valor é só quem sabe que está lendo moto.
  */
-export function lerPreco(bruto: string, pisoPyg: number = FAIXA.PYG.min): LeituraPreco {
+export function lerPreco(bruto: string, pisoPyg: number = FAIXA.PYG.min, cal: Grandeza = GRANDEZA_POR_CATEGORIA.carro): LeituraPreco {
   const texto = desescapar(bruto ?? "");
   if (!texto) return { ok: false, motivo: "sem_preco" };
 
@@ -357,7 +397,7 @@ export function lerPreco(bruto: string, pisoPyg: number = FAIXA.PYG.min): Leitur
    * desses que vai dizer quando a nossa tabela tem massa para arbitrar a
    * escala sozinha, como o comentário do capturarParaguai já previa.
    */
-  if (valor >= GRANDEZA_USD.min && valor <= GRANDEZA_USD.max) {
+  if (valor >= cal.usdMin && valor <= cal.usdMax) {
     return { ok: true, valor, moeda: "USD" };
   }
   return { ok: false, motivo: "escala_ambigua", valorBruto: valor };
@@ -406,8 +446,10 @@ export function lerPrecoComContexto(
   categoria: "carro" | "moto" = "carro"
 ): LeituraPreco & { confianca?: ConfiancaMoeda } {
   // ★ A moto tem piso de guarani proprio — ver PISO_PYG_MOTO.
+  // ★ A calibragem de grandeza é da CATEGORIA — ver GRANDEZA_POR_CATEGORIA.
+  const cal = GRANDEZA_POR_CATEGORIA[categoria];
   const pisoPyg = categoria === "moto" ? PISO_PYG_MOTO : FAIXA.PYG.min;
-  const direto = lerPreco(textoPreco, pisoPyg);
+  const direto = lerPreco(textoPreco, pisoPyg, cal);
   const ctxInicial = `${textoPreco} ${descricao}`;
 
   // ★★ GUARDAS DE FORMA — rodam ANTES de qualquer interpretação de moeda,
@@ -554,8 +596,14 @@ export function lerPrecoComContexto(
     if (moeda === "PYG") return { ok: false, motivo: "fora_de_faixa", valorBruto: valor };
   }
 
-  // Degrau 3: grandeza. Só resolve fora da zona cinzenta.
-  if (valor > ZONA_CINZENTA.max && valor <= FAIXA.PYG.max) return { ok: true, valor, moeda: "PYG", confianca: "grandeza" };
+  // Degrau 3: grandeza. A partir do PISO DA CATEGORIA o guarani é plausível e
+  // não há mais ambiguidade a defender — ver GRANDEZA_POR_CATEGORIA.
+  //
+  // ⚠️ `>= pisoPyg`, e não `> cinzaMax`: com o estritamente-maior, um valor
+  // EXATAMENTE no piso caía fora. Medido na moto, onde o piso é ₲800.000 — um
+  // redondo que o vendedor digita o tempo todo: `lerPreco` aceitava e este
+  // degrau recusava o mesmo número.
+  if (valor >= pisoPyg && valor <= FAIXA.PYG.max) return { ok: true, valor, moeda: "PYG", confianca: "grandeza" };
 
   // ⚠️⚠️ TETO MAIS APERTADO QUANDO A MOEDA É PALPITE — achado em 08/10/2026.
   //
@@ -572,16 +620,15 @@ export function lerPrecoComContexto(
   // como 450 mil dólares. Erro de mil vezes, e punha uma Luv desmontada como o
   // carro mais caro do Paraguai.
   //
-  // ★ Acima de US$ 150 mil, guarani é MUITO mais provável que dólar: carro de
-  // US$ 150 mil no Paraguai é raridade de leilão, enquanto ₲150.000 é preço de
-  // peça e aparece o tempo todo. Quando o palpite fica arriscado, recusar é a
-  // resposta certa — o anúncio continua no banco sem preço, e não contamina a
-  // mediana carregando uma moeda inventada.
-  const TETO_DOLAR_POR_PALPITE = 150_000;
-  if (valor >= FAIXA.USD.min && valor <= TETO_DOLAR_POR_PALPITE && valor < ZONA_CINZENTA.min) {
+  // ★ Acima do teto da categoria, guarani é MUITO mais provável que dólar:
+  // carro de US$ 150 mil no Paraguai é raridade de leilão, enquanto ₲150.000 é
+  // preço de peça e aparece o tempo todo. Quando o palpite fica arriscado,
+  // recusar é a resposta certa — o anúncio continua no banco sem preço, e não
+  // contamina a mediana carregando uma moeda inventada.
+  const tetoDolarPorPalpite = categoria === "moto" ? cal.usdMax : 150_000;
+  if (valor >= cal.usdMin && valor <= tetoDolarPorPalpite && valor < cal.cinzaMin) {
     return { ok: true, valor, moeda: "USD", confianca: "grandeza" };
   }
-
   // Dentro da zona cinzenta ninguém sabe. Recusar é melhor que chutar: um
   // palpite errado aqui entra na mediana e não dá sinal nenhum de que entrou.
   return { ok: false, motivo: "fora_de_faixa", valorBruto: valor };

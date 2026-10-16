@@ -846,7 +846,8 @@ async function main() {
         const tituloCru = montarVeiculoPadrao(a) || a.titulo || "";
         // ★ A descrição entra como ÚLTIMO recurso: anunciante que põe só o ano
         // no título costuma escrever o carro no corpo. Ver modeloParaguai.
-        const norm = normalizarVeiculoPY(tituloCru, null, a.descricao);
+        // ★ A categoria escolhe o DICIONÁRIO — ver catalogoMotoParaguai.
+        const norm = normalizarVeiculoPY(tituloCru, null, a.descricao, CATEGORIA);
 
         // ★★ O DICIONÁRIO ENCOSTA NO DADO AQUI — ligado em 08/10/2026.
         //

@@ -33,6 +33,7 @@
 
 /** Tira acento e baixa a caixa, para comparar sem susto. */
 import { NOMES_JDM, NOMES_JDM_POR_MARCA, canonicoJdm, segmentoJdm, marcaJdm, type SegmentoPY } from "./catalogoJdmParaguai.js";
+import { MARCAS_MOTO, MARCA_MOTO_CORRIGIDA } from "./catalogoMotoParaguai.js";
 
 const chave = (s: string): string =>
   String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -326,7 +327,10 @@ const MARCA_CORRIGIDA: Record<string, string> = {
  * ⚠️ A letra final minúscula em "C220d" é de propósito: é assim que a Mercedes
  * escreve o diesel, e é como aparece no anúncio paraguaio.
  */
-const SIGLAS_SOLTAS = new Set(["gt", "gl", "gls", "glx", "gti", "gtr", "rs", "amg", "dmi", "phev", "hev", "cdi", "crdi", "tdi", "4x4"]);
+const SIGLAS_SOLTAS = new Set(["gt", "gl", "gls", "glx", "gti", "gtr", "rs", "amg", "dmi", "phev", "hev", "cdi", "crdi", "tdi", "4x4",
+  // ★ Siglas de MOTO (ver catalogoMotoParaguai): o mercado escreve CBR, YBR,
+  // XTZ e XRE em caixa alta, e "Cbr" parece erro de digitação.
+  "cbr", "ybr", "xtz", "xre", "lp", "rx4", "tr5"]);
 
 export function exibirModelo(nome: string): string {
   return nome
@@ -432,7 +436,19 @@ export function extrairAnoDaDescricao(descricao: string | null | undefined): num
  * da tabela e aparece no relatório para a lista crescer com dado, não com
  * suposição.
  */
-export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, descricao?: string | null): VeiculoPY {
+export function normalizarVeiculoPY(
+  titulo: string,
+  marcaBruta?: string | null,
+  descricao?: string | null,
+  /**
+   * ★★ A CATEGORIA troca o DICIONÁRIO, não o algoritmo. Ver
+   * `catalogoMotoParaguai`: sem isto, "Honda CB" competiria com modelo de
+   * carro na mesma busca por maior casamento, e a separação carro/moto — que
+   * custou a migração 0097 e um portão na publicação — voltaria a vazar pelo
+   * dicionário.
+   */
+  categoria: "carro" | "moto" = "carro",
+): VeiculoPY {
   // ★ O título manda; a descrição é rede. Ver `extrairAnoDaDescricao`: cobre o
   //   "AÑO 96,97" que o título não traz, e no par fica o maior.
   const ano = extrairAno(titulo) ?? extrairAnoDaDescricao(descricao);
@@ -448,14 +464,18 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, 
   // marca: a declarada, ou deduzida do próprio texto
   let marca = marcaBruta ? String(marcaBruta).trim() : "";
   if (chave(marca) === "moto") marca = "";                       // "Moto Kenton" → a marca é Kenton
+  // ★ As correções de grafia também são da categoria: "Star Motorcycles" →
+  //   Star, "Harley Davidson" → Harley-Davidson. Ver catalogoMotoParaguai.
+  const CORRECOES = categoria === "moto" ? { ...MARCA_CORRIGIDA, ...MARCA_MOTO_CORRIGIDA } : MARCA_CORRIGIDA;
   if (!marca) {
-    for (const [padrao, correta] of Object.entries(MARCA_CORRIGIDA)) {
+    for (const [padrao, correta] of Object.entries(CORRECOES)) {
       if (k.startsWith(padrao + " ") || k === padrao) { marca = correta; break; }
     }
   }
   if (!marca) {
     const primeira = k.split(" ")[0] ?? "";
-    const achou = Object.keys(MODELOS).find((m) => m === primeira || m.startsWith(primeira + " "));
+    const base = categoria === "moto" ? MARCAS_MOTO : MODELOS;
+    const achou = Object.keys(base).find((m) => m === primeira || m.startsWith(primeira + " "));
     if (achou) marca = achou;
   }
   const marcaK = chave(marca).replace(/\s+/g, " ");
@@ -466,9 +486,11 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, 
   // marca ("Camaro 2ss 2018") ou a enterra em lixo ("15.500 000 0994810323
   // Mitsubishi pajerito"), o modelo encontrado é quem revela a marca. Antes eu
   // exigia as duas e descartava o registro — perdia dado por formalidade.
-  const candidatas: [string, string[]][] = MODELOS[marcaK]
-    ? [[marcaK, MODELOS[marcaK]]]
-    : Object.entries(MODELOS);
+  // ★ O dicionário é o da CATEGORIA — ver catalogoMotoParaguai.
+  const DICIONARIO = categoria === "moto" ? MARCAS_MOTO : MODELOS;
+  const candidatas: [string, string[]][] = DICIONARIO[marcaK]
+    ? [[marcaK, DICIONARIO[marcaK]]]
+    : Object.entries(DICIONARIO);
   let modelo: string | null = null;
   const procurar = (pares: [string, string[]][]): readonly [string, string] | null => {
     for (const [nomeMarca, lista] of pares) {
@@ -494,7 +516,7 @@ export function normalizarVeiculoPY(titulo: string, marcaBruta?: string | null, 
    * modelo e aparecer no relatório — não sair procurando nome em outra marca.
    */
   if (!modelo && !marcaBruta && marca) {
-    const emTodas = procurar(Object.entries(MODELOS).filter(([m]) => m !== marcaK));
+    const emTodas = procurar(Object.entries(DICIONARIO).filter(([m]) => m !== marcaK));
     if (emTodas) { modelo = emTodas[0]; marca = emTodas[1]; }
   }
 
