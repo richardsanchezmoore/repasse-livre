@@ -9,7 +9,8 @@ import { PaginaPublicar } from "@/components/PaginaPublicar";
 export const revalidate = 1800;
 
 export const metadata: Metadata = {
-  title: "Publicar su vehículo — AutoRadarPy",
+  // ⚠️ SEM "— AutoRadarPy": o layout raiz já aplica o template "%s — AutoRadarPy".
+  title: "Publicar su vehículo",
   description:
     "Publique su auto en la mayor vitrina organizada de vehículos del Paraguay: por marca, modelo, generación y año, al lado del precio de referencia que el comprador vino a consultar.",
   alternates: { languages: { es: "/publicar", "pt-BR": "/pt/publicar", "x-default": "/publicar" }, canonical: "/publicar" },
