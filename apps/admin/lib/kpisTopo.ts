@@ -95,7 +95,6 @@ const contarCidadesCache = unstable_cache(contarCidades, ["py-cidades-cobertas"]
 export async function buscarCidadesCobertas(): Promise<number> {
   return contarCidadesCache();
 }
-
 /**
  * ★★ O TOTAL DE VEÍCULOS MAPEADOS — Gustavo, 16/10/2026: *"podemos adicionar
  * em texto pequeno, no máximo em negrito, no KPI da varredura das 72h, o total
@@ -105,10 +104,15 @@ export async function buscarCidadesCobertas(): Promise<number> {
  * grande ou se a varredura acabou de começar. Com o total ao lado, o cartão
  * conta uma história ("o acervo tem N, e N' entraram esta semana").
  *
- * ⚠️⚠️ CONTA AS MESMAS TRÊS CONDIÇÕES DA VITRINE. Já errei isto uma vez: o
- * cartão prometia 82 e a listagem entregava 62, porque o cartão contava os
- * vivos e a vitrine exige sem reanúncio, com foto e com cidade. Número de KPI
- * que a própria página desmente é pior que KPI nenhum.
+ * ⚠️⚠️ CONTA EXATAMENTE O QUE A LISTAGEM CONTA, e isto já me pegou DUAS vezes:
+ *   1ª — o cartão de modelo prometia 82 e a página entregava 62;
+ *   2ª — este mesmo KPI nasceu com 3.975 enquanto a listagem logo abaixo
+ *        dizia "4.167 resultados", porque eu copiei as condições do cartão de
+ *        modelo (que exige `cidade` e `modelo`) em vez das da VITRINE.
+ *
+ * ★ A regra, agora escrita: número de KPI copia a consulta da página de
+ * destino, nunca de um vizinho parecido. As condições da vitrine estão em
+ * `DiscoveriesBoard` (aba "aprovadas"): com foto e sem reanúncio.
  */
 async function contarVitrine(): Promise<number> {
   const { count, error } = await supabaseAdmin
@@ -117,9 +121,7 @@ async function contarVitrine(): Promise<number> {
     .eq("pais", PAIS_DO_SITE)
     .eq("status", "aprovada")
     .is("duplicata_de", null)
-    .not("foto_principal", "is", null)
-    .not("cidade", "is", null)
-    .not("modelo", "is", null);
+    .not("foto_principal", "is", null);
   return error ? 0 : count ?? 0;
 }
 

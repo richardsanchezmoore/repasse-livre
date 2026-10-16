@@ -9903,3 +9903,18 @@ button.bemvindo-secundario {
   color: var(--marca-azul);
   font-weight: 600;
 }
+
+/* ⚠️⚠️ O BOTÃO DE BUSCA ERA UM QUADRADO BRANCO VAZIO no celular — visto na
+   captura do próprio site. A regra base dá `background: #fff` e a regra da
+   identidade azul, mais abaixo no arquivo, pinta o ícone de `#fff`: lupa
+   branca sobre fundo branco. Nenhuma das duas está errada sozinha, e é por
+   isso que passou.
+   ★ No topbar azul ele segue o mesmo tratamento do irmão `.botao-selecionar-
+   varios`: vidro translúcido, borda discreta, ícone branco. */
+.top-bar .busca-icone-botao {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.top-bar .busca-icone-botao:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
