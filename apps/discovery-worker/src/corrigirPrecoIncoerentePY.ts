@@ -145,9 +145,6 @@ async function main() {
 
   const refDaTabela = (modelo: string | null, ano: unknown, moeda: unknown): number | null => {
     if (!modelo) return null;
-    // ★ A tabela publicada vence a média crua — ver o bloco acima.
-    const daTabela = refDaTabela(modelo, ano, moeda);
-    if (daTabela) return daTabela;
     const m = String(modelo).toLowerCase();
     const g = geracaoDoAno(m, ano == null ? null : Number(ano));
     // ⚠️ Ano antes de geração: é a referência mais estreita e portanto a mais
@@ -162,6 +159,23 @@ async function main() {
 
   const refDe = (modelo: string | null, ano: unknown, moeda: unknown): number | null => {
     if (!modelo) return null;
+    /**
+     * ★★★ A TABELA PUBLICADA VEM PRIMEIRO — e esta linha estava NO LUGAR
+     * ERRADO desde que foi escrita (achado em 16/10/2026).
+     *
+     * ⚠️⚠️ Ela tinha sido colada dentro do próprio `refDaTabela`, que portanto
+     * chamava A SI MESMO na primeira instrução: recursão infinita. Nunca
+     * estourou a pilha por um motivo pior — `refDe` jamais chamava
+     * `refDaTabela`, então a função inteira era CÓDIGO MORTO e o árbitro real
+     * do corretor era a média crua, exatamente a que o comentário lá em cima
+     * diz que não serve por incluir os preços errados que deveria julgar.
+     *
+     * ★ Terceiro caso do mesmo padrão nesta base: mecanismo pronto que o motor
+     * não chama não existe. A diferença é que aqui o mecanismo também estava
+     * quebrado, e as duas falhas se escondiam uma na outra.
+     */
+    const daTabela = refDaTabela(modelo, ano, moeda);
+    if (daTabela) return daTabela;
     const m = String(modelo).toLowerCase();
     const g = geracaoDoAno(m, ano == null ? null : Number(ano));
     for (const k of [g ? `${m}|${g.codigo}|${moeda}` : null, ano ? `${m}|${ano}|${moeda}` : null]) {

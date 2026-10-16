@@ -573,7 +573,15 @@ export function precoEhEntrega(descricao: string, titulo: string, preco: number)
  */
 export function precoDeclarado(descricao: string): LeituraPreco | null {
   if (!descricao) return null;
-  const t = desescapar(descricao).replace(/\+/g, " ");
+  /**
+   * ⚠️ "65.000.000 DE GS" — o "de" no meio separa o número da moeda, e o
+   * recorte de `primeiroValor` só cola moeda que esteja encostada no número.
+   * Sem isto o rótulo se perde e a MAGNITUDE decide sozinha — que é o sinal
+   * mais fraco que temos. Tirar o "de" devolve a leitura ao terreno firme.
+   */
+  const t = desescapar(descricao)
+    .replace(/\+/g, " ")
+    .replace(/(\d)\s+de\s+(gs\.?|₲|guaran|d[oó]lar|us\$|usd)/gi, "$1 $2");
   const padroes = [
     // ⚠️ O ponto NÃO pode entrar na classe de exclusão: "Precio: 80.000.000"
     // seria cortado no primeiro ponto e viraria "80".
@@ -587,7 +595,41 @@ export function precoDeclarado(descricao: string): LeituraPreco | null {
     // ★ Quem digita no celular usa o que estiver à mão — ";", "-", "=", "→".
     // Aceitar a pontuação é mais barato que perder o anúncio.
     /precio\s*[:;=\-–—>]*\s*([^\n;]{2,40})/i,
-    /valor\s*[:;=\-–—>]*\s*([^\n.;]{2,40})/i,
+    /**
+     * ⚠️⚠️ O PONTO SAIU DA CLASSE DE EXCLUSÃO — 16/10/2026.
+     *
+     * Este padrão era `([^\n.;]{2,40})`, com ponto excluído, e no Paraguai
+     * TODO preço tem ponto de milhar. Medido: "Valor 85.000.000 gs" recortava
+     * só o "85" e entrava como **₲85.000**; "Valor: 12.500 dólares" e
+     * "VALOR 7.800 usd" simplesmente não entravam. Exatamente o mesmo estrago
+     * das seis Suzuki GSX-R gravadas a ₲65.000, por outra porta.
+     *
+     * ★ Quem corta o trecho é `primeiroValor`, não a classe de caracteres —
+     * foi para isso que ele foi escrito. O irmão `precio` logo acima já usa
+     * `[^\n;]`; este ficou para trás.
+     */
+    /valor\s*[:;=\-–—>]*\s*([^\n;]{2,40})/i,
+    /**
+     * ★★ "CONTADO 65.000.000 DE GS!" — o jeito paraguaio de dizer o preço à
+     * vista, e que não traz a palavra "precio" nem "valor" em lugar nenhum.
+     *
+     * ⚠️ Achado em 16/10/2026 medindo o estoque de moto: a MESMA Suzuki GSX-R
+     * 750 apareceu oito vezes, SEIS delas gravadas a **₲65.000** — o campo de
+     * preço do Facebook trazia esse número e a descrição, que dizia
+     * "Contado 65.000.000 de gs!", não casava com padrão nenhum. As outras
+     * duas ficaram certas só porque nelas o campo veio bom.
+     *
+     * ★ E não é coisa de moto: "PRECIO CONTADO: $11.890.000 / PRECIO CRÉDITO:
+     * $11.490.000" já tinha aparecido em anúncio de carro. "Contado" é o termo
+     * da praça para a venda à vista — e é justamente o preço que interessa,
+     * porque o outro é financiamento.
+     *
+     * ⚠️ Exige dígito colado ao separador (`\s*`, sem buraco para texto no
+     * meio): "vendo al contado o financiado, año 2015" não casa, senão o ano
+     * viraria preço — o mesmo tropeço que já custou caro em `pareceAno`.
+     */
+    /contado\s*[:;=\-–—>]*\s*([\d][\d.,]{3,}[^\n.;]{0,12})/i,
+    /(?:al\s+)?efectivo\s*[:;=\-–—>]*\s*([\d][\d.,]{3,}[^\n.;]{0,12})/i,
     /(?:^|\s)(?:gs\.?|₲|us\$|usd)\s*[\d.,]{4,}/i,
     /([\d.,]{2,})\s*mill[oó]n(?:es)?/i,
   ];
