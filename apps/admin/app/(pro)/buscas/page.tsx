@@ -25,7 +25,7 @@ const FMT_RECEBIDO = new Intl.DateTimeFormat("pt-BR", {
 /** Campos do anúncio que o card de recebido + o link precisam. */
 type AnuncioRecebido = Pick<
   Oportunidade,
-  "id" | "veiculo" | "versao" | "ano" | "cidade" | "estado" | "origem_tipo" | "preco" | "fipe_valor" | "margem_percentual" | "foto_principal"
+  "id" | "veiculo" | "versao" | "ano" | "cidade" | "estado" | "origem_tipo" | "preco" | "moeda" | "fipe_valor" | "margem_percentual" | "foto_principal"
 >;
 
 export default async function BuscasPage() {
@@ -40,7 +40,7 @@ export default async function BuscasPage() {
     buscarListaCidades(),
     supabaseAdmin
       .from("buscas_salvas")
-      .select("id, nome, marca, modelo, preco_min, preco_max, estado, ano_min, ano_max, km_max, margem_min, frequencia, ativo, criado_em")
+      .select("id, nome, marca, modelo, preco_min, preco_max, moeda, cidade, estado, ano_min, ano_max, km_max, margem_min, frequencia, ativo, criado_em")
       .eq("user_id", usuario.id)
       .order("criado_em", { ascending: false }),
     // Alertas RECEBIDOS = pares já enviados (enviado_em preenchido), das buscas DESTE
@@ -73,7 +73,7 @@ export default async function BuscasPage() {
     const oppIds = [...new Set(enviados.map((e) => e.opportunity_id))];
     const { data: ads } = await supabaseAdmin
       .from("opportunities")
-      .select("id, veiculo, versao, ano, cidade, estado, origem_tipo, preco, fipe_valor, margem_percentual, foto_principal")
+      .select("id, veiculo, versao, ano, cidade, estado, origem_tipo, preco, moeda, fipe_valor, margem_percentual, foto_principal")
       .in("id", oppIds);
     const porId = new Map((ads ?? []).map((a) => [a.id as string, a as AnuncioRecebido]));
     recebidos = enviados
@@ -87,6 +87,7 @@ export default async function BuscasPage() {
           cidade: a.cidade,
           estado: a.estado,
           preco: a.preco,
+          moeda: a.moeda ?? null,
           fipeValor: a.fipe_valor,
           margem: a.margem_percentual,
           foto: a.foto_principal,

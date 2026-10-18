@@ -20,6 +20,9 @@ export interface BuscaSalvaRow {
   preco_min: number | null;
   preco_max: number;
   estado: string | null;
+  /** ★ Moeda e cidade do alerta — migração 0100. */
+  moeda: string | null;
+  cidade: string | null;
   ano_min: number | null;
   ano_max: number | null;
   km_max: number | null;
@@ -37,6 +40,8 @@ export interface AlertaRecebidoRow {
   cidade: string | null;
   estado: string | null;
   preco: number;
+  /** ★ A moeda do ANÚNCIO — ver valorNaMoeda. */
+  moeda: string | null;
   fipeValor: number | null;
   margem: number | null;
   foto: string | null;
@@ -51,8 +56,14 @@ function mascararMilhar(digitos: string): string {
   const so = digitos.replace(/\D/g, "");
   return so ? FMT_MILHAR.format(Number(so)) : "";
 }
-function reais(n: number | null): string {
-  return n != null ? `R$ ${FMT_MILHAR.format(n)}` : "";
+/**
+ * ⚠️ ERA `R$` CHUMBADO — o resumo do alerta mostrava reais num site cujos
+ * anúncios estão em guarani (74%) e dólar (26%). O símbolo agora vem da moeda
+ * do próprio alerta. Ver a migração 0100.
+ */
+function valorNaMoeda(n: number | null, moeda: string | null): string {
+  if (n == null) return "";
+  return `${(moeda ?? "PYG").toUpperCase() === "USD" ? "US$" : "₲"} ${FMT_MILHAR.format(n)}`;
 }
 /**
  * "Adiciona os zeros" pro usuário cru: num campo de PREÇO DE CARRO, um valor abaixo
@@ -132,8 +143,7 @@ export function GerenciadorBuscas({
         <div>
           <h1 className="buscas-titulo">Alertas de Mercado</h1>
           <p className="buscas-sub">
-            Diga o carro que você procura. Quando um anúncio novo bater com a busca, avisamos por e-mail —
-            antes da concorrência.
+            Decinos qué vehículo buscás. Cuando entre un aviso que coincida, te avisamos por correo — antes que la competencia.
           </p>
         </div>
       </header>
@@ -147,14 +157,14 @@ export function GerenciadorBuscas({
           onClick={() => setCriarAberto((v) => !v)}
         >
           <span className="buscas-accordion-titulo">
-            <BellPlus size={17} strokeWidth={2.2} /> Criar Novo Alerta
+            <BellPlus size={17} strokeWidth={2.2} /> Crear Nuevo Alerta
           </span>
           <ChevronDown size={20} className={`buscas-accordion-seta ${criarAberto ? "aberto" : ""}`} />
         </button>
         {criarAberto && (
         <form key={formKey} action={acao} className="buscas-form buscas-accordion-corpo">
           {estado.erro && <p className="buscas-erro">{estado.erro}</p>}
-          {estado.sucesso && <p className="buscas-ok">Alerta criado! Você será avisado quando entrar um carro assim.</p>}
+          {estado.sucesso && <p className="buscas-ok">¡Alerta creado! Te avisamos cuando entre un vehículo así.</p>}
 
           <div className="buscas-grid">
             {/* Marca — obrigatória */}
@@ -303,7 +313,7 @@ export function GerenciadorBuscas({
 
           {/* Frequência */}
           <fieldset className="buscas-freq">
-            <legend className="buscas-label">Como quer ser avisado?</legend>
+            <legend className="buscas-label">¿Cómo querés que te avisemos?</legend>
             <div className="buscas-freq-opcoes">
               <label className={`buscas-freq-op ${frequencia === "na_hora" ? "buscas-freq-op-sel" : ""}`}>
                 <input
@@ -314,9 +324,9 @@ export function GerenciadorBuscas({
                   onChange={() => setFrequencia("na_hora")}
                 />
                 <span className="buscas-freq-topo">
-                  <Zap size={16} strokeWidth={2.2} /> Na hora
+                  <Zap size={16} strokeWidth={2.2} /> Al instante
                 </span>
-                <span className="buscas-freq-desc">Ideal pra contactar o mais rápido e não perder o carro.</span>
+                <span className="buscas-freq-desc">Ideal para contactar primero y no perder el vehículo.</span>
               </label>
 
               <label className={`buscas-freq-op ${frequencia === "diario" ? "buscas-freq-op-sel" : ""}`}>
@@ -328,10 +338,10 @@ export function GerenciadorBuscas({
                   onChange={() => setFrequencia("diario")}
                 />
                 <span className="buscas-freq-topo">
-                  <CalendarClock size={16} strokeWidth={2.2} /> Resumo diário
+                  <CalendarClock size={16} strokeWidth={2.2} /> Resumen diario
                 </span>
                 <span className="buscas-freq-desc">
-                  Veículos comuns entram várias vezes por dia; junte tudo num e-mail só.
+                  Los modelos comunes entran varias veces por día; juntá todo en un solo correo.
                 </span>
               </label>
             </div>
@@ -358,11 +368,11 @@ export function GerenciadorBuscas({
         </button>
         {listaAberta &&
           (buscas.length === 0 ? (
-            <p className="buscas-vazio buscas-accordion-corpo">Você ainda não tem alertas. Crie o primeiro acima. 👆</p>
+            <p className="buscas-vazio buscas-accordion-corpo">Todavía no tenés alertas. Creá el primero arriba. 👆</p>
           ) : (
             <ul className="buscas-lista">
               {buscas.map((b) => (
-                <ItemBusca key={b.id} busca={b} reais={reais} />
+                <ItemBusca key={b.id} busca={b} />
               ))}
             </ul>
           ))}
@@ -385,12 +395,12 @@ export function GerenciadorBuscas({
         {recebidosAberto &&
           (recebidos.length === 0 ? (
             <p className="buscas-vazio buscas-accordion-corpo">
-              Nenhum aviso ainda. Quando um carro bater com um dos seus alertas, ele aparece aqui — e no seu e-mail.
+              Ningún aviso todavía. Cuando un vehículo coincida con alguno de tus alertas, aparece acá — y en tu correo.
             </p>
           ) : (
             <ul className="buscas-recebidos">
               {recebidos.map((r) => (
-                <ItemRecebido key={`${r.id}-${r.recebidoEm}`} rec={r} reais={reais} />
+                <ItemRecebido key={`${r.id}-${r.recebidoEm}`} rec={r} />
               ))}
             </ul>
           ))}
@@ -399,7 +409,7 @@ export function GerenciadorBuscas({
   );
 }
 
-function ItemRecebido({ rec, reais }: { rec: AlertaRecebidoRow; reais: (n: number | null) => string }) {
+function ItemRecebido({ rec }: { rec: AlertaRecebidoRow }) {
   const local = [rec.cidade, rec.estado].filter(Boolean).join(" - ");
   return (
     <li className="buscas-rec">
@@ -417,8 +427,10 @@ function ItemRecebido({ rec, reais }: { rec: AlertaRecebidoRow; reais: (n: numbe
             {local}
           </span>
           <span className="buscas-rec-precos">
-            <strong>{reais(rec.preco)}</strong>
-            {rec.fipeValor != null && <span className="buscas-rec-fipe">FIPE {reais(rec.fipeValor)}</span>}
+            <strong>{valorNaMoeda(rec.preco, rec.moeda)}</strong>
+            {/* ⚠️ FIPE não existe no Paraguai e `fipe_valor` está nulo em 100% da base;
+                a linha some sozinha, mas fica o aviso para quem reencontrar o campo. */}
+            {rec.fipeValor != null && <span className="buscas-rec-fipe">FIPE {valorNaMoeda(rec.fipeValor, rec.moeda)}</span>}
             {rec.margem != null && (
               <span className="buscas-rec-margem">{rec.margem.toFixed(1)}% abaixo</span>
             )}
@@ -432,16 +444,18 @@ function ItemRecebido({ rec, reais }: { rec: AlertaRecebidoRow; reais: (n: numbe
   );
 }
 
-function ItemBusca({ busca: b, reais }: { busca: BuscaSalvaRow; reais: (n: number | null) => string }) {
+function ItemBusca({ busca: b }: { busca: BuscaSalvaRow }) {
   const [pendente, iniciar] = useTransition();
 
   const chips: string[] = [];
-  if (b.preco_min != null) chips.push(`de ${reais(b.preco_min)}`);
-  chips.push(`até ${reais(b.preco_max)}`);
-  chips.push(b.estado ?? "Brasil");
+  if (b.preco_min != null) chips.push(`desde ${valorNaMoeda(b.preco_min, b.moeda)}`);
+  chips.push(`hasta ${valorNaMoeda(b.preco_max, b.moeda)}`);
+  // ★ Cidade, não departamento: ver a migração 0100.
+  chips.push(b.cidade ?? b.estado ?? "Todo el Paraguay");
   if (b.ano_min != null || b.ano_max != null) chips.push(`${b.ano_min ?? "…"}–${b.ano_max ?? "…"}`);
   if (b.km_max != null) chips.push(`≤ ${new Intl.NumberFormat("pt-BR").format(b.km_max)} km`);
-  if (b.margem_min != null) chips.push(`≥ ${b.margem_min}% FIPE`);
+  // ★ A margem passou a ser contra a NOSSA tabela — ver matching.ts.
+  if (b.margem_min != null) chips.push(`≥ ${b.margem_min}% abajo de la tabla`);
 
   return (
     <li className={`buscas-item ${b.ativo ? "" : "buscas-item-off"}`}>
@@ -475,9 +489,9 @@ function ItemBusca({ busca: b, reais }: { busca: BuscaSalvaRow; reais: (n: numbe
           type="button"
           className="buscas-apagar"
           disabled={pendente}
-          aria-label="Apagar alerta"
+          aria-label="Borrar alerta"
           onClick={() => {
-            if (confirm("Apagar esta busca salva?")) iniciar(() => apagarBuscaSalva(b.id));
+            if (confirm("¿Borrar este alerta?")) iniciar(() => apagarBuscaSalva(b.id));
           }}
         >
           <Trash2 size={16} strokeWidth={2} />
