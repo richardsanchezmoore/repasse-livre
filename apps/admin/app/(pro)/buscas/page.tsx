@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { GerenciadorBuscas, type BuscaSalvaRow, type AlertaRecebidoRow } from "@/components/GerenciadorBuscas";
 import { buscarMarcasComContagem } from "@/lib/marcas";
-import { UFS } from "@/lib/mascaras";
+import { buscarListaCidades, buscarListaModelos } from "@/lib/kpisTopo";
 import { caminhoOportunidade } from "@/lib/site";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
@@ -32,10 +32,12 @@ export default async function BuscasPage() {
   const usuario = await obterUsuarioAtual();
   if (!usuario) return null; // guarda real (premium/admin) em app/(pro)/layout.tsx
 
-  const [contagens, estadosDisponiveis, marcas, buscasResp, enviadosResp] = await Promise.all([
+  const [contagens, estadosDisponiveis, marcas, modelos, cidades, buscasResp, enviadosResp] = await Promise.all([
     contarOportunidades(usuario),
     buscarEstadosDisponiveis(),
     buscarMarcasComContagem(),
+    buscarListaModelos(),
+    buscarListaCidades(),
     supabaseAdmin
       .from("buscas_salvas")
       .select("id, nome, marca, modelo, preco_min, preco_max, estado, ano_min, ano_max, km_max, margem_min, frequencia, ativo, criado_em")
@@ -102,7 +104,7 @@ export default async function BuscasPage() {
         <div className="layout">
           <Sidebar abaAtiva="aprovadas" contagens={contagens} role={usuario.role} usuarioLogado={true} />
           <main className="conteudo">
-            <GerenciadorBuscas buscas={buscas} marcas={nomesMarcas} estados={UFS} recebidos={recebidos} />
+            <GerenciadorBuscas buscas={buscas} marcas={nomesMarcas} modelos={modelos} cidades={cidades} recebidos={recebidos} />
           </main>
         </div>
       </SelecaoMultiplaProvider>

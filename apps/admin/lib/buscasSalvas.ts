@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { obterUsuarioAtual } from "@/lib/supabase-server";
-import { UFS } from "@/lib/mascaras";
+import { buscarListaCidades } from "@/lib/kpisTopo";
 
 export interface ResultadoBusca {
   erro: string | null;
@@ -50,33 +50,54 @@ export async function criarBuscaSalva(
   formData: FormData,
 ): Promise<ResultadoBusca> {
   const usuario = await obterUsuarioAtual();
-  if (!usuario) return { erro: "Sessão expirada. Faça login de novo.", sucesso: false };
+  if (!usuario) return { erro: "Sesión expirada. Ingresá de nuevo.", sucesso: false };
   if (!usuario.premium && usuario.role !== "admin") {
-    return { erro: "Buscas salvas são um recurso do plano PRO.", sucesso: false };
+    return { erro: "Los alertas son un recurso del plan PRO.", sucesso: false };
   }
 
   const marca = String(formData.get("marca") ?? "").trim();
-  if (!marca) return { erro: "Escolha a marca do carro que você procura.", sucesso: false };
+  if (!marca) return { erro: "Elegí la marca del vehículo que buscás.", sucesso: false };
 
   const preco_max = inteiroOpcional(formData.get("preco_max"));
   if (!preco_max || preco_max <= 0) {
-    return { erro: "Informe o preço máximo que você pagaria.", sucesso: false };
+    return { erro: "Indicá el precio máximo que pagarías.", sucesso: false };
   }
 
   const preco_min = inteiroOpcional(formData.get("preco_min"));
   if (preco_min != null && preco_min > preco_max) {
-    return { erro: "O preço mínimo não pode ser maior que o máximo.", sucesso: false };
+    return { erro: "El precio mínimo no puede ser mayor que el máximo.", sucesso: false };
   }
+
+  /**
+   * ★★ A MOEDA DO ALERTA — ver a migração 0100 e o matching.
+   *
+   * ⚠️ Sem ela o número era comparado cru contra anúncios em duas moedas, e
+   * um alerta de "até ₲50.000.000" casava um carro de "US$ 9.000".
+   */
+  const moedaRaw = String(formData.get("moeda") ?? "PYG").toUpperCase();
+  const moeda = moedaRaw === "USD" ? "USD" : "PYG";
 
   const ano_min = anoOpcional(formData.get("ano_min"));
   const ano_max = anoOpcional(formData.get("ano_max"));
   if (ano_min != null && ano_max != null && ano_min > ano_max) {
-    return { erro: "O ano inicial não pode ser maior que o final.", sucesso: false };
+    return { erro: "El año inicial no puede ser mayor que el final.", sucesso: false };
   }
 
-  const estado = textoOpcional(formData.get("estado"));
-  if (estado != null && !UFS.includes(estado)) {
-    return { erro: "Estado inválido.", sucesso: false };
+  /**
+   * ⚠️⚠️ A VALIDAÇÃO ERA CONTRA `UFS`, que são as siglas BRASILEIRAS. Qualquer
+   * departamento paraguaio ("PY-ASU") era recusado como "Estado inválido" —
+   * o campo simplesmente não podia ser usado aqui.
+   *
+   * ★ Agora o filtro é por CIDADE, validada contra a lista real da vitrine:
+   * oferecer uma cidade onde não há anúncio é prometer um alerta que nunca
+   * dispara.
+   */
+  const cidade = textoOpcional(formData.get("cidade"));
+  if (cidade != null) {
+    const cidades = await buscarListaCidades();
+    if (!cidades.includes(cidade)) {
+      return { erro: "Ciudad no disponible.", sucesso: false };
+    }
   }
 
   const frequenciaRaw = String(formData.get("frequencia") ?? "na_hora");
@@ -88,7 +109,7 @@ export async function criarBuscaSalva(
     .select("id", { count: "exact", head: true })
     .eq("user_id", usuario.id);
   if ((count ?? 0) >= LIMITE_BUSCAS) {
-    return { erro: `Você atingiu o limite de ${LIMITE_BUSCAS} buscas. Apague uma para criar outra.`, sucesso: false };
+    return { erro: `Llegaste al límite de ${LIMITE_BUSCAS} alertas. Borrá uno para crear otro.`, sucesso: false };
   }
 
   const { error } = await supabaseAdmin.from("buscas_salvas").insert({
@@ -98,7 +119,8 @@ export async function criarBuscaSalva(
     modelo: textoOpcional(formData.get("modelo")),
     preco_min,
     preco_max,
-    estado,
+    moeda,
+    cidade,
     ano_min,
     ano_max,
     km_max: inteiroOpcional(formData.get("km_max")),
@@ -108,7 +130,7 @@ export async function criarBuscaSalva(
   });
   if (error) {
     console.error("[buscas] falha ao criar:", error.message);
-    return { erro: "Não foi possível salvar a busca. Tente de novo.", sucesso: false };
+    return { erro: "No pudimos guardar el alerta. Probá de nuevo.", sucesso: false };
   }
 
   revalidatePath("/buscas");

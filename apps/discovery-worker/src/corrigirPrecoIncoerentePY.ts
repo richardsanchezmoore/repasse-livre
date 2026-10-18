@@ -143,15 +143,62 @@ async function main() {
     porTabela.set(`${String(l.modelo).toLowerCase()}|${l.chave}|${l.moeda}`, Number(l.mediana));
   }
 
+  /**
+   * ★★★ ANO EXATO → ANO VIZINHO → GERAÇÃO, nessa ordem.
+   *
+   * ⚠️⚠️ O degrau do meio nasceu de um caso real que o Gustavo achou em
+   * 18/10/2026: um "Toyota Premio 2007" publicado a **₲20.000.000** com a
+   * descrição dizendo *"POR SOLO GS. 64.000.000"*. O corretor leu as duas
+   * certas e MESMO ASSIM não trocou — por 0,002 de diferença:
+   *
+   *     referência usada (geração T240): ₲35.750.000
+   *     distância de ₲64.000.000 → 1,790
+   *     distância de ₲20.000.000 → 1,788   ← o campo "venceu"
+   *
+   * ★ O problema não é o desempate, é a RÉGUA. A T240 cobre 2001–2007 e a
+   * tabela mostra a inclinação dentro dela (2003 ₲34,5M · 2004 ₲38M · 2005
+   * ₲41,5M · 2008 ₲47M). Usar a mediana da geração inteira para julgar o ano
+   * MAIS NOVO dela subestima de forma sistemática — e aí um preço absurdo e
+   * um preço alto empatam.
+   *
+   * Com o ano vizinho (2008 → ₲47M) o empate some: 64 fica a 1,36 e 20 fica
+   * a 2,35. A descrição ganha, que é o certo — ₲20 milhões é US$ 2.800 num
+   * Premio 2007.
+   *
+   * ⚠️ Vizinhança de 2 anos, não mais: carro usado deprecia rápido e um
+   * vizinho distante vira a mesma régua torta da geração. E o mais PRÓXIMO
+   * vence o mais barato: não se escolhe referência por conveniência.
+   */
+  const JANELA_ANOS_VIZINHOS = 2;
+
   const refDaTabela = (modelo: string | null, ano: unknown, moeda: unknown): number | null => {
     if (!modelo) return null;
     const m = String(modelo).toLowerCase();
-    const g = geracaoDoAno(m, ano == null ? null : Number(ano));
-    // ⚠️ Ano antes de geração: é a referência mais estreita e portanto a mais
-    // confiável para arbitrar um anúncio individual.
-    for (const chave of [ano ? String(ano) : null, g ? g.codigo : null]) {
-      if (!chave) continue;
-      const v = porTabela.get(`${m}|${chave}|${moeda}`);
+    const n = ano == null ? null : Number(ano);
+
+    // 1) o ano exato, que é a afirmação mais estreita que temos
+    if (n) {
+      const exato = porTabela.get(`${m}|${n}|${moeda}`);
+      if (exato) return exato;
+    }
+
+    // 2) o ano vizinho mais próximo dentro da janela
+    if (n && Number.isFinite(n)) {
+      let melhor: { dist: number; valor: number } | null = null;
+      for (let d = 1; d <= JANELA_ANOS_VIZINHOS; d++) {
+        for (const candidato of [n - d, n + d]) {
+          const v = porTabela.get(`${m}|${candidato}|${moeda}`);
+          if (v && (!melhor || d < melhor.dist)) melhor = { dist: d, valor: v };
+        }
+        if (melhor) break; // achou na distância menor: não procura mais longe
+      }
+      if (melhor) return melhor.valor;
+    }
+
+    // 3) a geração, que é a rede — larga, mas melhor que nada
+    const g = geracaoDoAno(m, n);
+    if (g) {
+      const v = porTabela.get(`${m}|${g.codigo}|${moeda}`);
       if (v) return v;
     }
     return null;

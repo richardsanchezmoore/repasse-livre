@@ -85,15 +85,20 @@ function BotaoCriar() {
 export function GerenciadorBuscas({
   buscas,
   marcas,
-  estados,
+  modelos,
+  cidades,
   recebidos,
 }: {
   buscas: BuscaSalvaRow[];
   marcas: string[];
-  estados: string[];
+  /** ★ Modelos da BASE — ver a nota do formulário. */
+  modelos: string[];
+  /** ★ Cidades da vitrine, não praças cadastradas: ver buscarListaCidades. */
+  cidades: string[];
   recebidos: AlertaRecebidoRow[];
 }) {
   const [estado, acao] = useFormState(criarBuscaSalva, ESTADO_INICIAL);
+  const [moeda, setMoeda] = useState<"PYG" | "USD">("PYG");
   const [precoMax, setPrecoMax] = useState("");
   const [precoMin, setPrecoMin] = useState("");
   const [kmMax, setKmMax] = useState("");
@@ -152,7 +157,7 @@ export function GerenciadorBuscas({
           {estado.sucesso && <p className="buscas-ok">Alerta criado! Você será avisado quando entrar um carro assim.</p>}
 
           <div className="buscas-grid">
-            {/* Marca — obrigatório */}
+            {/* Marca — obrigatória */}
             <label className="buscas-campo">
               <span className="buscas-label">
                 Marca <em className="buscas-obrig">*</em>
@@ -161,7 +166,7 @@ export function GerenciadorBuscas({
                 name="marca"
                 list="lista-marcas"
                 required
-                placeholder="Ex.: Renault"
+                placeholder="Ej.: Toyota"
                 className="buscas-input"
                 autoComplete="off"
               />
@@ -172,26 +177,55 @@ export function GerenciadorBuscas({
               </datalist>
             </label>
 
-            {/* Modelo — opcional */}
+            {/* ★★ Modelo com SUGESTÃO da base. Antes era campo livre com
+                "Ex.: Duster" — um modelo brasileiro que não existe aqui, e
+                qualquer coisa digitada errada virava um alerta que nunca
+                dispara. A lista vem dos modelos que o normalizador reconhece,
+                então o que o usuário escolhe é o que a base tem. */}
             <label className="buscas-campo">
               <span className="buscas-label">Modelo</span>
-              <input name="modelo" placeholder="Ex.: Duster (opcional)" className="buscas-input" autoComplete="off" />
+              <input
+                name="modelo"
+                list="lista-modelos"
+                placeholder="Ej.: Vitz (opcional)"
+                className="buscas-input"
+                autoComplete="off"
+              />
+              <datalist id="lista-modelos">
+                {modelos.map((m) => (
+                  <option key={m} value={m} />
+                ))}
+              </datalist>
+            </label>
+
+            {/* ★★★ MOEDA — ver a migração 0100. Sem ela, "50.000.000" era
+                comparado cru contra anúncios em dólar. */}
+            <label className="buscas-campo">
+              <span className="buscas-label">Moneda</span>
+              <select
+                name="moeda"
+                className="buscas-input"
+                value={moeda}
+                onChange={(e) => setMoeda(e.target.value === "USD" ? "USD" : "PYG")}
+              >
+                <option value="PYG">Guaraníes (₲)</option>
+                <option value="USD">Dólares (US$)</option>
+              </select>
             </label>
 
             {/* Preço máx — obrigatório */}
             <label className="buscas-campo">
               <span className="buscas-label">
-                Preço máximo <em className="buscas-obrig">*</em>
+                Precio máximo <em className="buscas-obrig">*</em>
               </span>
               <div className="buscas-prefixo">
-                <span>R$</span>
+                <span>{moeda === "USD" ? "US$" : "₲"}</span>
                 <input
                   inputMode="numeric"
                   required
                   value={mascararMilhar(precoMax)}
                   onChange={(e) => setPrecoMax(e.target.value)}
-                  onBlur={() => setPrecoMax(assumirMilhares(precoMax))}
-                  placeholder="80.000"
+                  placeholder={moeda === "USD" ? "12.000" : "60.000.000"}
                   className="buscas-input"
                 />
               </div>
@@ -200,14 +234,13 @@ export function GerenciadorBuscas({
 
             {/* Preço mín — opcional */}
             <label className="buscas-campo">
-              <span className="buscas-label">Preço mínimo</span>
+              <span className="buscas-label">Precio mínimo</span>
               <div className="buscas-prefixo">
-                <span>R$</span>
+                <span>{moeda === "USD" ? "US$" : "₲"}</span>
                 <input
                   inputMode="numeric"
                   value={mascararMilhar(precoMin)}
                   onChange={(e) => setPrecoMin(e.target.value)}
-                  onBlur={() => setPrecoMin(assumirMilhares(precoMin))}
                   placeholder="opcional"
                   className="buscas-input"
                 />
@@ -215,14 +248,15 @@ export function GerenciadorBuscas({
               <input type="hidden" name="preco_min" value={precoMin.replace(/\D/g, "")} />
             </label>
 
-            {/* Estado — opcional (vazio = Brasil) */}
+            {/* ★ CIDADE, não "estado". O select antigo listava UFs brasileiras
+                e a ação recusava qualquer valor paraguaio. */}
             <label className="buscas-campo">
-              <span className="buscas-label">Estado</span>
-              <select name="estado" className="buscas-input" defaultValue="">
-                <option value="">Brasil inteiro</option>
-                {estados.map((uf) => (
-                  <option key={uf} value={uf}>
-                    {uf}
+              <span className="buscas-label">Ciudad</span>
+              <select name="cidade" className="buscas-input" defaultValue="">
+                <option value="">Todo el Paraguay</option>
+                {cidades.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
                   </option>
                 ))}
               </select>
@@ -230,16 +264,16 @@ export function GerenciadorBuscas({
 
             {/* Ano — opcional */}
             <label className="buscas-campo">
-              <span className="buscas-label">Ano (de / até)</span>
+              <span className="buscas-label">Año (de / hasta)</span>
               <div className="buscas-dupla">
-                <input name="ano_min" inputMode="numeric" maxLength={4} placeholder="2015" className="buscas-input" />
+                <input name="ano_min" inputMode="numeric" maxLength={4} placeholder="2010" className="buscas-input" />
                 <input name="ano_max" inputMode="numeric" maxLength={4} placeholder="2024" className="buscas-input" />
               </div>
             </label>
 
             {/* KM máx — opcional */}
             <label className="buscas-campo">
-              <span className="buscas-label">KM máximo</span>
+              <span className="buscas-label">Kilometraje máximo</span>
               <input
                 inputMode="numeric"
                 value={mascararMilhar(kmMax)}
@@ -248,15 +282,22 @@ export function GerenciadorBuscas({
                 className="buscas-input"
               />
               <input type="hidden" name="km_max" value={kmMax.replace(/\D/g, "")} />
+              {/* ⚠️ MEDIDO: só 32% dos anúncios trazem quilometragem — o
+                  Facebook raramente preenche o campo. Um filtro de km descarta
+                  os outros 68% em silêncio, e é melhor avisar antes que deixar
+                  o usuário concluir que o alerta não funciona. */}
+              <span className="buscas-dica">Solo 1 de cada 3 avisos informa el kilometraje; filtrar por él deja los demás afuera.</span>
             </label>
 
-            {/* Margem mín — opcional */}
+            {/* ★★★ MARGEM CONTRA A NOSSA TABELA — era "% abaixo da FIPE", que
+                no Paraguai não existe e nunca casava nada. Ver matching.ts. */}
             <label className="buscas-campo">
-              <span className="buscas-label">Margem mínima</span>
+              <span className="buscas-label">Debajo de la tabla</span>
               <div className="buscas-sufixo">
                 <input name="margem_min" inputMode="decimal" placeholder="opcional" className="buscas-input" />
-                <span>% abaixo da FIPE</span>
+                <span>% abajo de la referencia</span>
               </div>
+              <span className="buscas-dica">Nuestra tabla de precios del mercado paraguayo — no una tabla extranjera.</span>
             </label>
           </div>
 

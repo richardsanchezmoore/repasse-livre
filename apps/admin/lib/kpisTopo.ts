@@ -130,3 +130,69 @@ const contarVitrineCache = unstable_cache(contarVitrine, ["py-total-vitrine"], {
 export async function buscarTotalVitrine(): Promise<number> {
   return contarVitrineCache();
 }
+
+/**
+ * ★★ A LISTA das cidades da vitrine — para o formulário de alertas e para
+ * validar o que ele manda de volta.
+ *
+ * ⚠️ `buscarCidadesCobertas` devolve a CONTAGEM e serve ao KPI; aqui é preciso
+ * o conjunto. Separado de propósito: o KPI só precisa do número e paginar a
+ * base inteira para contar já é o custo que ele paga.
+ *
+ * ⚠️ Cidade da VITRINE, não praça cadastrada no painel: praça que não rendeu
+ * anúncio não é opção de alerta — seria oferecer um filtro que nunca casa.
+ */
+async function listarCidades(): Promise<string[]> {
+  const cidades = new Set<string>();
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabaseAdmin
+      .from("opportunities")
+      .select("cidade")
+      .eq("pais", PAIS_DO_SITE)
+      .eq("status", "aprovada")
+      .not("cidade", "is", null)
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) break;
+    for (const r of data ?? []) if (r.cidade) cidades.add(String(r.cidade));
+    if (!data || data.length < 1000) break;
+  }
+  return [...cidades].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+const listarCidadesCache = unstable_cache(listarCidades, ["py-lista-cidades"], { revalidate: 1800 });
+
+export async function buscarListaCidades(): Promise<string[]> {
+  return listarCidadesCache();
+}
+
+/**
+ * ★★ OS MODELOS da base, para o alerta sugerir o que existe de fato.
+ *
+ * ⚠️ O campo de modelo era livre com placeholder "Ex.: Duster" — um carro
+ * brasileiro que não circula aqui. Qualquer grafia diferente da nossa gerava
+ * um alerta que nunca dispara, e o usuário não tinha como saber.
+ */
+async function listarModelos(): Promise<string[]> {
+  const modelos = new Set<string>();
+  for (let de = 0; ; de += 1000) {
+    const { data, error } = await supabaseAdmin
+      .from("opportunities")
+      .select("modelo")
+      .eq("pais", PAIS_DO_SITE)
+      .eq("status", "aprovada")
+      .not("modelo", "is", null)
+      .order("id", { ascending: true })
+      .range(de, de + 999);
+    if (error) break;
+    for (const r of data ?? []) if (r.modelo) modelos.add(String(r.modelo));
+    if (!data || data.length < 1000) break;
+  }
+  return [...modelos].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+const listarModelosCache = unstable_cache(listarModelos, ["py-lista-modelos"], { revalidate: 1800 });
+
+export async function buscarListaModelos(): Promise<string[]> {
+  return listarModelosCache();
+}
