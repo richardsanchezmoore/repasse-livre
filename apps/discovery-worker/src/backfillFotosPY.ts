@@ -74,29 +74,41 @@ function soltarTrava(): void {
 
 async function main() {
   if (!tomarTrava()) return;
+  /**
+   * ★★★ O FILTRO VAI NA CONSULTA, NÃO DEPOIS DELA — e esta é a causa raiz de
+   * o catálogo viver sem foto (achada em 18/10/2026).
+   *
+   * ⚠️⚠️ Antes era `.order(data_captura desc).limit(400)` e SÓ ENTÃO um
+   * `.filter()` em memória escolhia quem precisava. Ou seja: o backfill
+   * olhava sempre os 400 anúncios MAIS NOVOS da base inteira — justamente os
+   * que ainda têm o link do fbcdn vivo — e os que já tinham quebrado, que são
+   * por definição os mais velhos, **nunca entravam na janela**.
+   *
+   * O mecanismo rodava toda volta, 400 por vez, e o backlog não baixava nunca.
+   * Medido: 3.420 anúncios com link morto enquanto a fase 3/3 do ciclo
+   * trabalhava feliz nos recém-capturados.
+   *
+   * ★ Agora quem precisa é selecionado no BANCO (`.or(...)`), e o limite se
+   * aplica a esse conjunto. Cada rodada reduz a fila de verdade.
+   *
+   * ⚠️ Ordem: mais recentes PRIMEIRO dentro dos que precisam. Anúncio velho
+   * tem mais chance de já ter saído do ar, e aí a ida ao Facebook não rende
+   * nada — gasta conta para nada.
+   */
   const { data, error } = await supabase
     .from("opportunities")
     .select("id, link_origem, veiculo, foto_principal, preco, moeda, ano")
     .eq("pais", "PY")
     .like("link_origem", "%/marketplace/item/%")   // post de grupo não tem página de anúncio
+    .or("foto_principal.is.null,foto_principal.like.%fbcdn%,foto_principal.like.%chuvlvwctwkeviencfuy%")
     .order("data_captura", { ascending: false })
     .limit(LIMITE);
   if (error) throw new Error(error.message);
 
-  // ⚠️ Só os que precisam: foto nula, ou apontando para o bucket MORTO.
+  // ⚠️ O filtro em memória FICA como rede: `like` no PostgREST não cobre todas
+  // as grafias de host do fbcdn, e um falso positivo aqui só custa uma visita.
   const precisam = (data ?? []).filter((o) => {
     const f = o.foto_principal as string | null;
-    // ⚠️⚠️ LINK CRU DO FBCDN TAMBÉM PRECISA — e esta linha quase virou uma
-    // bomba-relógio em 09/10/2026.
-    //
-    // A captação rápida (PY_SEM_FOTO=1) passou a gravar o link cru do Facebook
-    // para o anúncio já nascer com imagem. Só que o teste antigo era "foto
-    // nula", e link cru NÃO é nulo — esses anúncios ficariam invisíveis para o
-    // backfill, e o fbcdn CADUCA em poucos dias (tem `oe=` com validade).
-    //
-    // O resultado seria o pior possível: anúncio que parece ter foto hoje e
-    // amanhã mostra imagem quebrada, sem ninguém ser avisado, porque o
-    // mecanismo de conserto não o enxergava.
     const cru = Boolean(f && /fbcdn\.net|\.fbcdn\./i.test(f));
     return !f || cru || f.includes("chuvlvwctwkeviencfuy");
   });
