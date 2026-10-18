@@ -12,7 +12,7 @@ import {
   type CodigoMoeda,
   type Cotacao,
 } from "@/lib/moeda";
-import { useIdioma, useTextos } from "@/lib/useIdioma";
+import { useTextos } from "@/lib/useIdioma";
 import { BandeiraDaMoeda } from "@/components/Bandeira";
 
 /**
@@ -75,7 +75,6 @@ export function PrecoAnuncio({
   className?: string;
 }) {
   const tx = useTextos();
-  const idioma = useIdioma();
   const [cotacao, setCotacao] = useState<Cotacao | null>(null);
   // ⚠️ Começa sem moeda extra e só lê a escolha DEPOIS de montar: no servidor
   // não existe localStorage, e ler ali daria divergência de hidratação.
@@ -101,16 +100,27 @@ export function PrecoAnuncio({
    * > se eles baterem o olho e verem o real... temos mais de 300 mil
    * > brasileiros aqui"*
    *
-   * ⚠️ Mas NÃO para todo mundo: três moedas em cada cartão é ruído para o
-   * paraguaio, que compra em guarani ou dólar e nunca em real. Amarrar ao
-   * IDIOMA resolve os dois lados — quem chega pelo /pt vê o real sem precisar
-   * descobrir a caixinha, e a raiz em espanhol continua com o par da praça.
+   * ★★★ E EM 18/10/2026 ELE FECHOU: o real é FIXO, não depende do idioma.
+   * *"devemos apresentar a moeda brasileira também, lembra?"* — olhando a
+   * página em espanhol, onde a minha versão anterior escondia o real.
    *
-   * ⚠️ A escolha explícita na caixinha continua mandando: se ele escolheu peso
-   * argentino, é peso que aparece, mesmo em português.
+   * ⚠️ Eu tinha amarrado ao idioma achando que três moedas seriam ruído para
+   * o paraguaio. Ele conhece o público: são mais de 300 mil brasileiros no
+   * Paraguai, e muitos navegam em espanhol. Esconder o real deles para
+   * "limpar" a tela custa o leitor que a gente mais quer atrair.
+   *
+   * ★ Então o real virou LINHA FIXA, ao lado do par da praça, e a caixinha de
+   * escolher moeda volta a servir só ao peso argentino — que é de fato
+   * minoritário e pode ficar atrás de uma escolha.
    */
+  const SEMPRE_EM_REAL: CodigoMoeda = "BRL";
+  const mostrarReal = par !== SEMPRE_EM_REAL && normalizarMoeda(moeda) !== SEMPRE_EM_REAL;
+
+  /** A opcional da caixinha, se ela não repetir nenhuma das três já exibidas. */
   const extraEfetiva: CodigoMoeda | null =
-    extra ?? (idioma === "pt" && par !== "BRL" ? "BRL" : null);
+    extra && extra !== par && extra !== normalizarMoeda(moeda) && !(mostrarReal && extra === SEMPRE_EM_REAL)
+      ? extra
+      : null;
   useEffect(() => {
     if (!precisaCotacao) return;
     let vivo = true;
@@ -120,6 +130,7 @@ export function PrecoAnuncio({
 
   const leituraPar = formatarLeitura(valor, moeda, cotacao, par);
   const leituraExtra = extraEfetiva ? formatarLeitura(valor, moeda, cotacao, extraEfetiva) : null;
+  const leituraReal = mostrarReal ? formatarLeitura(valor, moeda, cotacao, SEMPRE_EM_REAL) : null;
   const quando = dataDaCotacao(cotacao);
   const nome = (c: CodigoMoeda) => NOME_CURTO[c];
 
@@ -138,6 +149,14 @@ export function PrecoAnuncio({
           <span className="preco-leitura-rotulo"><BandeiraDaMoeda codigo={par} tamanho={14} /> {tx("em")} {nome(par)}</span>
           {leituraPar}
           {quando ? <span className="preco-leitura-data"> · {tx("cambioDe")} {quando}</span> : null}
+        </span>
+      )}
+      {/* ★ O REAL, linha fixa — ver a nota acima. Sem a data do câmbio: ela já
+          aparece na linha do par e repetir em três linhas vira ruído. */}
+      {mostrarReal && leituraReal && (
+        <span className="preco-leitura">
+          <span className="preco-leitura-rotulo"><BandeiraDaMoeda codigo={SEMPRE_EM_REAL} tamanho={14} /> {tx("em")} {nome(SEMPRE_EM_REAL)}</span>
+          {leituraReal}
         </span>
       )}
       {leituraExtra && extraEfetiva && (

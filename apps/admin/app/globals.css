@@ -8659,6 +8659,13 @@ button.bemvindo-secundario {
 
 /* O FATO: o que o vendedor pediu, na moeda em que pediu. */
 .preco-origem {
+  /* ★ FLEX, não inline — a bandeira ficava "alinhada em cima" (Gustavo,
+     18/10/2026). `vertical-align: baseline` alinha pela base do TEXTO, e num
+     número de 24px com uma bandeira de 18px isso joga a bandeira para o alto.
+     Centralizar no eixo é o que o olho espera de um selo ao lado do valor. */
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: clamp(19px, 2.2vw, 24px);
   font-weight: 800;
   line-height: 1.15;
@@ -9719,11 +9726,13 @@ button.bemvindo-secundario {
 }
 
 /* ★★ Bandeira colada no preço — ver PrecoAnuncio e Bandeira.
-   `vertical-align` em vez de flex para não quebrar a linha do valor grande,
-   que precisa continuar sendo um bloco de texto só. */
+   ⚠️ Começou com `vertical-align` e NÃO funcionou: ele alinha pela base do
+   texto, e num número de 24px a bandeira de 18px subia. O pai virou flex. */
 .preco-origem .bandeira {
-  vertical-align: baseline;
-  margin-right: 6px;
+  /* ⚠️ `vertical-align` saiu: o pai virou flex e o alinhamento é dele agora.
+     `flex-shrink: 0` impede que a bandeira seja espremida quando o número é
+     longo (₲ 215.000.000 num cartão estreito). */
+  flex-shrink: 0;
   border-radius: 2px;
   box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.12);
 }
