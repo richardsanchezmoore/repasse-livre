@@ -70,7 +70,19 @@ const CATEGORIA_VEICULOS = "546583916084032";
  * voltaria 24 (página cheia) e a nossa escada de faixas — que é como
  * enumeramos o estoque — pararia de funcionar em silêncio.
  */
-const FAIXA = { min: 30_000_000, max: 35_000_000 };
+/**
+ * ⚠️⚠️ A FAIXA TEM QUE SER COMPROVADAMENTE RALA, senão o teste segue cego.
+ *
+ * Primeira tentativa: ₲30–35 milhões. Deu 24 em TODOS os casos — mas 24 é o
+ * teto da página, e essa faixa tem 475 anúncios na nossa base. Com a faixa
+ * cheia, "obedeceu" e "ignorou" produzem o MESMO número, e o teste não
+ * distingue nada. Terceira vez que caio no teto de 24 medindo isto.
+ *
+ * ★ ₲300 milhões para cima tem 18 anúncios no PARAGUAI INTEIRO (medido na
+ * nossa base). Numa praça só, é garantidamente menos que o teto — então se
+ * a busca voltar 24, só pode ser porque IGNOROU o filtro.
+ */
+const FAIXA = { min: 300_000_000, max: 2_000_000_000 };
 
 function url(forma: "carros" | "search", raio: number, comFaixa: boolean): string {
   const base = `https://www.facebook.com/marketplace/${ID}`;
@@ -128,7 +140,9 @@ async function main() {
   for (const forma of ["carros", "search"] as const) {
     const sem = n(`${forma}  SEM faixa  r10`);
     const com = n(`${forma}  COM faixa  r10`);
-    const veredito = com >= 24 ? "IGNOROU (página cheia)" : com < sem ? "OBEDECEU" : "inconclusivo";
+    // ⚠️ Página cheia NÃO prova que ignorou: prova que não dá para saber. A
+    //   faixa precisa ser rala o bastante para o total ficar abaixo do teto.
+    const veredito = com >= 24 ? "INCONCLUSIVO (página cheia)" : com < sem ? "OBEDECEU" : "obedeceu? (igual ao sem faixa)";
     console.log(`  ${forma.padEnd(7)} sem faixa=${String(sem).padStart(3)} · com faixa=${String(com).padStart(3)} → ${veredito}`);
   }
 

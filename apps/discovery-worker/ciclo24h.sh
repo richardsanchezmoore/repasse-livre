@@ -141,15 +141,24 @@ while [ ! -f "$PARAR" ]; do
 
   marca "VOLTA $volta · 2/3 FAIXAS (autoload)"
   esperarTrava
-  # ⚠️⚠️ ERA `PY_FAIXAS=12`, que NÃO cria 12 faixas: o formato é
-  # min-max,min-max,… e um número solto virava UMA faixa de ₲12 ao teto. A
-  # telemetria confirmou — a fase registrava uma única busca 12–2.000.000.000
-  # por praça, ou seja, a escada estava desligada e sobrava só a rolagem.
+  # ⚠️⚠️ UMA FAIXA, e isto é conclusão MEDIDA — não preguiça.
   #
-  # ★ As 12 de verdade, mantendo as DUAS escadas separadas (dólar e guarani),
-  # porque elas não se fundem através da moeda. São as 23 do painel agrupadas:
-  # 5 no dólar, 7 no guarani.
-  PY_AUTOLOAD=1 PY_FAIXAS="1000-25000,25000-35000,35000-50000,50000-100000,100000-500000,5000000-12500000,12500000-17500000,17500000-22500000,22500000-30000000,30000000-45000000,45000000-70000000,70000000-2000000000" PY_SEM_FOTO=1 \
+  # Em 20/10 eu achei que a escada estava "desligada" (`PY_FAIXAS=12` virava
+  # uma faixa só) e que ligá-la destravaria a cobertura. A telemetria de
+  # 07/10, quando as 23 faixas REALMENTE rodaram em Ciudad del Este, desmente:
+  #
+  #   escada do DÓLAR    → 0 a 2 ids por faixa, conjuntos distintos (funciona)
+  #   escada do GUARANI  → 13 ids, IDÊNTICOS em SEIS faixas seguidas
+  #                        (22,5M · 25M · 30M · 45M · 55M · 90M+)
+  #
+  # Carro de ₲25 milhões não cabe na faixa de ₲90 milhões: acima de ~₲22M o
+  # filtro não é aplicado, e 13 é o teto da categoria que já tínhamos medido.
+  # Ou seja: a escada NÃO abre alcance onde está 74% do mercado, e 12 faixas
+  # seriam 12x mais buscas e 12x mais exposição da conta por nada.
+  #
+  # ★ Quem traz volume aqui é o AUTOLOAD (rolagem): na mesma volta, Luque deu
+  # 90 ids com 1 faixa + rolagem, contra os 13 da escada inteira em CDE.
+  PY_AUTOLOAD=1 PY_FAIXAS="1000-2000000000" PY_SEM_FOTO=1 \
     PY_ROLAGENS=25 PY_PAUSA_ROLAGEM=2200 PY_PACING=1200 \
     comRede npx tsx src/capturarParaguai.ts
 
