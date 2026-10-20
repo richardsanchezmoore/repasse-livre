@@ -45,7 +45,20 @@ const PAUSA_MS = Number(process.env.FOTOS_PAUSA_MS ?? 4000);
  * ★ Acima de 50 a rodada não rende e ainda expõe a conta, que é o recurso
  * que o Gustavo pediu para cuidar. 40 é abaixo do joelho da curva.
  */
-const LIMITE = Number(process.env.FOTOS_LIMITE ?? 40);
+const TETO_POR_RODADA = 40;
+/**
+ * ⚠️⚠️ O TETO É IMPOSTO AQUI, não no chamador — e a razão é operacional.
+ *
+ * O `ciclo24h.sh` roda num laço `while` que o bash leu UMA VEZ, em 18/10.
+ * Editar o .sh com ele rodando não muda o laço em execução (e, pior, mexer
+ * num script que o bash está lendo já corrompeu arquivo aqui antes). Então o
+ * ciclo segue passando FOTOS_LIMITE=400 até ser reiniciado.
+ *
+ * ★ Com o teto no CÓDIGO, a próxima invocação já obedece: o `npx tsx` carrega
+ * este arquivo do zero toda vez. O env continua podendo DIMINUIR a rodada
+ * (útil para teste), nunca aumentá-la além do que a medição suporta.
+ */
+const LIMITE = Math.min(Number(process.env.FOTOS_LIMITE ?? TETO_POR_RODADA), TETO_POR_RODADA);
 
 /**
  * ⚠️⚠️ ESPERA DA PÁGINA — 2.000ms estavam MATANDO anúncio vivo.

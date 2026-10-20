@@ -94,9 +94,31 @@ export async function PaginaOportunidade({
   // Dedupe defensivo: oportunidades antigas podem ter `fotos_secundarias`
   // sem link de fato (ex.: repetindo a foto principal) — sem isso, o
   // slider mostraria "fotos" repetidas em vez de só a foto captada.
-  const fotos = [...new Set(
+  const todasAsFotos = [...new Set(
     [oportunidade.foto_principal, ...oportunidade.fotos_secundarias].filter((url): url is string => !!url)
   )];
+
+  /**
+   * ★★★ SLIDE QUE GIRA E FICA CINZA — relatado pelo Gustavo em 20/10/2026:
+   * *"estamos trabalhando com re-hospedagem de 3 imagens e as demais seguem,
+   * e no slider de fotos ele segue tentando puxar os links quebrados"*.
+   *
+   * ⚠️ A re-hospedagem salva as PRIMEIRAS fotos no nosso bucket; as extras
+   * ficam com a URL crua do fbcdn, que caduca em poucos dias. Quando isso
+   * acontece, cada extra vira um slide que mostra o spinner, falha, e deixa
+   * um retângulo cinza — pior que não existir, porque promete uma foto.
+   *
+   * ★ A regra: SE a principal já está no nosso bucket, as fbcdn que sobraram
+   * são restos daquela captura e não se pode confiar nelas. Mostra só o que é
+   * permanente.
+   *
+   * ⚠️ Mas se NADA foi re-hospedado (captura recente, principal ainda fbcdn),
+   * mostra tudo: ali os links estão vivos e são as únicas fotos que temos.
+   * Esconder seria trocar um defeito por outro.
+   */
+  const ehCrua = (url: string) => /fbcdn.net|.fbcdn./i.test(url);
+  const principalPermanente = Boolean(oportunidade.foto_principal && !ehCrua(oportunidade.foto_principal));
+  const fotos = principalPermanente ? todasAsFotos.filter((u) => !ehCrua(u)) : todasAsFotos;
   // ★ Mesma regra do card: a moldura FIPE só existe onde há FIPE.
   const comFipe = temReferenciaFipe(oportunidade);
   const classificacao = oportunidade.classificacao as Classificacao | null;
