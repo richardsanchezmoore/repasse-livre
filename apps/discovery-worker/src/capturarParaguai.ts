@@ -104,7 +104,34 @@ interface FaixaPreco { min: number; max: number }
  */
 function parseFaixas(raw: string | null | undefined, piso: number, teto: number): FaixaPreco[] {
   if (!raw?.trim()) return [{ min: piso, max: teto }];
-  const faixas = raw.split(",").map((seg) => {
+
+  /**
+   * ⚠️⚠️ UM NÚMERO SOLTO NÃO É UMA FAIXA — e isso desligou a escada inteira
+   * sem ninguém notar (achado em 20/10/2026).
+   *
+   * O ciclo passava `PY_FAIXAS=12` com o comentário ao lado dizendo "12
+   * faixas = 55min". Mas o formato é `min-max,min-max,…`, então "12" virava
+   * UMA faixa de ₲12 até o teto — e a telemetria confirma: a fase de autoload
+   * registrava uma única busca `12–2.000.000.000` por praça.
+   *
+   * ★ A escada existe porque a busca do Facebook tem teto por página; sem ela
+   * sobra só a rolagem, e o estoque fora do alcance da rolagem fica invisível.
+   * Era a diferença entre enumerar a praça e raspar a superfície dela.
+   *
+   * ⚠️ Agora um segmento sem "-" é RECUSADO e o valor inteiro cai no padrão
+   * do painel. Falhar barulhento é melhor que uma faixa gigante que parece
+   * estar funcionando.
+   */
+  const segmentos = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  if (segmentos.some((seg) => !seg.includes("-"))) {
+    console.warn(
+      `[faixas] ⚠️ "${raw}" não está no formato min-max,min-max — IGNORADO. ` +
+        `Usando a faixa única ${piso}–${teto}. Uma faixa por segmento, com hífen.`,
+    );
+    return [{ min: piso, max: teto }];
+  }
+
+  const faixas = segmentos.map((seg) => {
     const [a, b] = seg.split("-").map((x) => x.trim());
     return { min: Number(a || 0) || piso, max: b ? Number(b) : teto };
   }).filter((f) => Number.isFinite(f.min) && Number.isFinite(f.max) && f.max > f.min);

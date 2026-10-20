@@ -141,7 +141,15 @@ while [ ! -f "$PARAR" ]; do
 
   marca "VOLTA $volta · 2/3 FAIXAS (autoload)"
   esperarTrava
-  PY_AUTOLOAD=1 PY_FAIXAS=12 PY_SEM_FOTO=1 \
+  # ⚠️⚠️ ERA `PY_FAIXAS=12`, que NÃO cria 12 faixas: o formato é
+  # min-max,min-max,… e um número solto virava UMA faixa de ₲12 ao teto. A
+  # telemetria confirmou — a fase registrava uma única busca 12–2.000.000.000
+  # por praça, ou seja, a escada estava desligada e sobrava só a rolagem.
+  #
+  # ★ As 12 de verdade, mantendo as DUAS escadas separadas (dólar e guarani),
+  # porque elas não se fundem através da moeda. São as 23 do painel agrupadas:
+  # 5 no dólar, 7 no guarani.
+  PY_AUTOLOAD=1 PY_FAIXAS="1000-25000,25000-35000,35000-50000,50000-100000,100000-500000,5000000-12500000,12500000-17500000,17500000-22500000,22500000-30000000,30000000-45000000,45000000-70000000,70000000-2000000000" PY_SEM_FOTO=1 \
     PY_ROLAGENS=25 PY_PAUSA_ROLAGEM=2200 PY_PACING=1200 \
     comRede npx tsx src/capturarParaguai.ts
 
