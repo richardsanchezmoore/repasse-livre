@@ -47,6 +47,7 @@ export function FiltroClassificacao({
   anunciante,
   fonte,
   marca,
+  moeda,
   marcas = [],
   piso,
   proximidadeDisponivel = false,
@@ -61,6 +62,8 @@ export function FiltroClassificacao({
   anunciante?: "profissional" | "particular";
   fonte?: string;
   marca?: string;
+  /** Moeda da faixa de preço — ver moedaLocal. */
+  moeda?: string;
   marcas?: MarcaContagem[];
   piso: number;
   proximidadeDisponivel?: boolean;
@@ -80,6 +83,17 @@ export function FiltroClassificacao({
   const [anuncianteLocal, setAnuncianteLocal] = useState(anunciante);
   const [fonteLocal, setFonteLocal] = useState(fonte);
   const [marcaLocal, setMarcaLocal] = useState(marca);
+  /**
+   * ★★★ A MOEDA DA FAIXA DE PREÇO — medido em 19/10/2026, a base é 74%
+   * guarani e 26% dólar, e a faixa comparava número cru:
+   *
+   *   faixa "₲20M a ₲60M"        → 2.147 em guarani +   0 em dólar
+   *   faixa "US$ 5.000 a 15.000" →     4 em guarani + 277 em dólar
+   *
+   * Ou seja: filtrar por preço SUMIA com um quarto do acervo, em silêncio.
+   * Agora a moeda viaja junto e o board aplica `eq(moeda)` com a faixa.
+   */
+  const [moedaLocal, setMoedaLocal] = useState<"PYG" | "USD">(moeda === "USD" ? "USD" : "PYG");
   const [modalMarcasAberto, setModalMarcasAberto] = useState(false);
   const [chipsAbertos, setChipsAbertos] = useState(false);
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
@@ -158,6 +172,9 @@ export function FiltroClassificacao({
       anunciante: anuncianteLocal,
       fonte: fonteLocal,
       marca: marcaLocal,
+      // ⚠️ Só viaja quando há faixa: sem preço, a moeda não filtra nada e só
+      //   sujaria a URL.
+      moeda: minDigitos || maxDigitos ? moedaLocal : undefined,
     });
     registrarEvento("busca", { filtro: "painel", aba });
     setFiltrosAbertos(false);
@@ -171,6 +188,7 @@ export function FiltroClassificacao({
     setAnuncianteLocal(undefined);
     setFonteLocal(undefined);
     setMarcaLocal(undefined);
+    setMoedaLocal("PYG");
     atualizarParams({
       precoMin: undefined,
       precoMax: undefined,
@@ -179,6 +197,7 @@ export function FiltroClassificacao({
       anunciante: undefined,
       fonte: undefined,
       marca: undefined,
+      moeda: undefined,
     });
   }
 
@@ -289,7 +308,7 @@ export function FiltroClassificacao({
         <div className="painel-filtros-corpo">
           {marcas.length > 0 && (
             <>
-              <p className="icon-dropdown-titulo">Marca</p>
+              <p className="icon-dropdown-titulo">{tx("marcaRotulo")}</p>
               <div className="painel-filtros-opcoes">
                 <button
                   type="button"
@@ -310,18 +329,37 @@ export function FiltroClassificacao({
                 ))}
               </div>
               <button type="button" className="filtro-marca-vertodas" onClick={() => setModalMarcasAberto(true)}>
-                Ver todas as marcas <ChevronRight size={15} strokeWidth={2.25} />
+                {tx("verTodasMarcas")} <ChevronRight size={15} strokeWidth={2.25} />
               </button>
             </>
           )}
 
-          <p className={`icon-dropdown-titulo${marcas.length > 0 ? " icon-dropdown-secao" : ""}`}>Faixa de Preço</p>
+          <p className={`icon-dropdown-titulo${marcas.length > 0 ? " icon-dropdown-secao" : ""}`}>{tx("faixaDePreco")}</p>
+          {/* ★★ O seletor de moeda vem ANTES dos campos: é ele que dá sentido
+              aos números. Sem isso a faixa comparava guarani com dólar — ver
+              a nota em moedaLocal. */}
+          <div className="filtro-moeda-opcoes">
+            <button
+              type="button"
+              className={`filtro-moeda-chip ${moedaLocal === "PYG" ? "filtro-moeda-chip-ativo" : ""}`}
+              onClick={() => setMoedaLocal("PYG")}
+            >
+              ₲ Guaraníes
+            </button>
+            <button
+              type="button"
+              className={`filtro-moeda-chip ${moedaLocal === "USD" ? "filtro-moeda-chip-ativo" : ""}`}
+              onClick={() => setMoedaLocal("USD")}
+            >
+              US$ Dólares
+            </button>
+          </div>
           <div className="icon-dropdown-faixa">
             <input
               id="preco-min"
               type="text"
               inputMode="numeric"
-              placeholder="Min."
+              placeholder={tx("minimo")}
               value={formatarMoeda(minDigitos)}
               onChange={(evento) => setMinDigitos(apenasDigitos(evento.target.value))}
             />
@@ -330,19 +368,19 @@ export function FiltroClassificacao({
               id="preco-max"
               type="text"
               inputMode="numeric"
-              placeholder="Max."
+              placeholder={tx("maximo")}
               value={formatarMoeda(maxDigitos)}
               onChange={(evento) => setMaxDigitos(apenasDigitos(evento.target.value))}
             />
           </div>
 
-          <p className="icon-dropdown-titulo icon-dropdown-secao">Faixa de Ano</p>
+          <p className="icon-dropdown-titulo icon-dropdown-secao">{tx("faixaDeAno")}</p>
           <div className="icon-dropdown-faixa">
             <input
               id="ano-min"
               type="text"
               inputMode="numeric"
-              placeholder="Do ano"
+              placeholder={tx("doAno")}
               maxLength={4}
               value={anoMinDigitos}
               onChange={(evento) => setAnoMinDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
@@ -352,64 +390,36 @@ export function FiltroClassificacao({
               id="ano-max"
               type="text"
               inputMode="numeric"
-              placeholder="Até ano"
+              placeholder={tx("ateAno")}
               maxLength={4}
               value={anoMaxDigitos}
               onChange={(evento) => setAnoMaxDigitos(apenasDigitos(evento.target.value).slice(0, 4))}
             />
           </div>
 
-          <p className="icon-dropdown-titulo icon-dropdown-secao">Tipo de anunciante</p>
-          <div className="painel-filtros-opcoes">
-            <button
-              type="button"
-              className={`icon-dropdown-opcao ${!anuncianteLocal ? "icon-dropdown-opcao-ativa" : ""}`}
-              onClick={() => selecionarAnunciante(undefined)}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              className={`icon-dropdown-opcao ${anuncianteLocal === "particular" ? "icon-dropdown-opcao-ativa" : ""}`}
-              onClick={() => selecionarAnunciante("particular")}
-            >
-              Particular
-            </button>
-            <button
-              type="button"
-              className={`icon-dropdown-opcao ${anuncianteLocal === "profissional" ? "icon-dropdown-opcao-ativa" : ""}`}
-              onClick={() => selecionarAnunciante("profissional")}
-            >
-              Profissional
-            </button>
-          </div>
+          {/* ⚠️⚠️ "TIPO DE ANUNCIANTE" E "FONTES" SAÍRAM — medido em 19/10/2026
+              nos 5.653 aprovados do Paraguai:
 
-          <p className="icon-dropdown-titulo icon-dropdown-secao">Fontes</p>
-          <div className="filtro-fontes">
-            {FONTES.map((f) => (
-              <button
-                key={f.valor}
-                type="button"
-                className={`filtro-fonte-chip ${
-                  fonteLocal === f.valor
-                    ? "filtro-fonte-chip-ativo"
-                    : fonteLocal
-                      ? "filtro-fonte-chip-inativo"
-                      : ""
-                }`}
-                onClick={() => selecionarFonte(f.valor)}
-              >
-                {f.rotulo}
-              </button>
-            ))}
-          </div>
+                anunciante_profissional = true  →     0
+                anunciante_profissional = false → 1.011
+                NULO                            → 4.642
+                fontes                          → só FACEBOOK
+
+              Clicar em "Profissional" devolvia lista VAZIA, sempre: o filtro
+              não parecia inútil, parecia o site quebrado. E "Particular"
+              escondia em silêncio os 82% sem marcação. Um filtro de fonte com
+              uma fonte só é ruído.
+
+              ★ Voltam quando houver dado: o Facebook marca o vendedor em parte
+              dos anúncios, e uma segunda fonte (ClasiPar) traria a outra. O
+              que não pode é oferecer agora. */}
         </div>
             <footer className="painel-filtros-rodape">
               <button type="button" className="painel-filtros-limpar" onClick={limparFiltros}>
-                Limpar Filtros
+                {tx("limparFiltros")}
               </button>
               <button type="button" className="painel-filtros-aplicar" onClick={aplicarFiltros}>
-                Aplicar
+                {tx("aplicar")}
               </button>
             </footer>
             </aside>

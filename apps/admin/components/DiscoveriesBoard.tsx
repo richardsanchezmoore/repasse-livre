@@ -50,6 +50,17 @@ export interface FiltrosBoard {
   estadoBR?: boolean;
   precoMin?: number;
   precoMax?: number;
+  /**
+   * ★★★ A MOEDA DA FAIXA DE PREÇO. Medido em 19/10/2026: a base é 74%
+   * guarani e 26% dólar, e comparar `preco` com número cru fazia a faixa
+   * "₲20M a ₲60M" devolver 2.147 anúncios em guarani e ZERO em dólar — um
+   * quarto do acervo sumia em silêncio.
+   *
+   * ⚠️ Filtra por IGUALDADE de moeda em vez de converter: a cotação do dia
+   * numa consulta de listagem mudaria o resultado de hora em hora, e quem
+   * pediu "até ₲60 milhões" quer ver preço em guarani.
+   */
+  moeda?: string;
   /** Faixa de ano do modelo (texto de 4 dígitos — comparação lexicográfica = numérica). */
   anoMin?: string;
   anoMax?: string;
@@ -185,6 +196,9 @@ async function buscarOportunidades(
       const cidades = cidadesDaRegiao(filtros.regiao, filtros.estado);
       if (cidades && cidades.length > 0) consultaFavoritos = consultaFavoritos.or(cidades.map((c) => `cidade.ilike.${c}`).join(","));
     }
+    if (filtros.moeda && (filtros.precoMin !== undefined || filtros.precoMax !== undefined)) {
+      consultaFavoritos = consultaFavoritos.eq("moeda", filtros.moeda);
+    }
     if (filtros.precoMin !== undefined) consultaFavoritos = consultaFavoritos.gte("preco", filtros.precoMin);
     if (filtros.precoMax !== undefined) consultaFavoritos = consultaFavoritos.lte("preco", filtros.precoMax);
     if (filtros.anoMin) consultaFavoritos = consultaFavoritos.gte("ano", filtros.anoMin);
@@ -297,6 +311,10 @@ const COLUNAS_LISTAGEM =
   } else if (filtros.regiao && filtros.estado) {
     const cidades = cidadesDaRegiao(filtros.regiao, filtros.estado);
     if (cidades && cidades.length > 0) consulta = consulta.or(cidades.map((c) => `cidade.ilike.${c}`).join(","));
+  }
+  // ★ A moeda acompanha a faixa — ver FiltrosBoard.moeda.
+  if (filtros.moeda && (filtros.precoMin !== undefined || filtros.precoMax !== undefined)) {
+    consulta = consulta.eq("moeda", filtros.moeda);
   }
   if (filtros.precoMin !== undefined) {
     consulta = consulta.gte("preco", filtros.precoMin);
@@ -747,6 +765,7 @@ export async function Board({
         anunciante={filtros.anunciante}
         fonte={filtros.fonte}
         marca={filtros.marca}
+        moeda={filtros.moeda}
         marcas={marcasDisponiveis}
         piso={pisoMargem}
         proximidadeDisponivel={proximidadeDisponivel}

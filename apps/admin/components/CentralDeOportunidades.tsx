@@ -60,6 +60,7 @@ export async function CentralDeOportunidades({
     busca?: string;
     estado?: string;
     precoMin?: string;
+    moeda?: string;
     precoMax?: string;
     anoMin?: string;
     anoMax?: string;
@@ -73,7 +74,7 @@ export async function CentralDeOportunidades({
     pagina?: string;
   }>;
 }) {
-  const { aba, classificacao, busca, estado, precoMin, precoMax, anoMin, anoMax, ordem, anunciante, fonte, marca, modelo, regiao, cidade, pagina } =
+  const { aba, classificacao, busca, estado, precoMin, precoMax, moeda, anoMin, anoMax, ordem, anunciante, fonte, marca, modelo, regiao, cidade, pagina } =
     await searchParams;
   const usuario = await obterUsuarioAtual();
   const ABAS_VALIDAS: Aba[] = ["descobertas", "enviadas", "aprovadas", "rejeitadas", "favoritos"];
@@ -124,6 +125,8 @@ export async function CentralDeOportunidades({
     busca: busca || undefined,
     estado: estadoAtivo,
     estadoBR: estadoExplicito === null,
+    // ★ Só vale com faixa — ver FiltrosBoard.moeda.
+    moeda: moeda === "USD" || moeda === "PYG" ? moeda : undefined,
     precoMin: paraNumero(precoMin),
     precoMax: paraNumero(precoMax),
     anoMin: anoMinAtivo,

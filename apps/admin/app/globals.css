@@ -9943,3 +9943,32 @@ button.bemvindo-secundario {
   width: 100%;
   max-width: 170px;
 }
+
+/* ★★ Seletor de moeda da faixa de preço, no painel de Filtros.
+   Vem ANTES dos campos porque é ele que dá sentido aos números: sem moeda, a
+   faixa comparava guarani com dólar e sumia com 26% do acervo em silêncio. */
+.filtro-moeda-opcoes {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 10px;
+}
+.filtro-moeda-chip {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #e0e3e7;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.filtro-moeda-chip:hover {
+  border-color: #c3cfe4;
+}
+.filtro-moeda-chip-ativo {
+  border-color: var(--marca-verde);
+  background: #eafaf0;
+  color: #14683c;
+}
