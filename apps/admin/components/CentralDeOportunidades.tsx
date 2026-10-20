@@ -9,7 +9,7 @@ import {
   type FiltrosBoard,
   type Ordem,
 } from "@/components/DiscoveriesBoard";
-import { buscarMarcasComContagem } from "@/lib/marcas";
+import { buscarMarcasComContagem, buscarModelosComContagem } from "@/lib/marcas";
 import { buscarPisoMargem } from "@/lib/configWorker";
 import { BoardArea } from "@/components/BoardArea";
 import { buscarCidadesDisponiveis } from "@/components/DiscoveriesBoard";
@@ -152,11 +152,12 @@ export async function CentralDeOportunidades({
     lng: ordemAtiva === "proximidade" ? coordsUsuario?.lng : undefined,
   };
 
-  const [contagens, estadosDisponiveis, marcasDisponiveis, pisoMargem, cidadesDoEstado, cidadesDisponiveis] =
+  const [contagens, estadosDisponiveis, marcasDisponiveis, modelosDisponiveis, pisoMargem, cidadesDoEstado, cidadesDisponiveis] =
     await Promise.all([
       contarOportunidades(usuario),
       buscarEstadosDisponiveis(abaAtiva, usuario),
       buscarMarcasComContagem(),
+      buscarModelosComContagem(),
       buscarPisoMargem(),
       estadoAtivo ? buscarCidadesDoEstado(estadoAtivo) : Promise.resolve([] as string[]),
       buscarCidadesDisponiveis(),
@@ -197,6 +198,7 @@ export async function CentralDeOportunidades({
                 estadosDisponiveis={estadosDisponiveis}
                 cidadesDoEstado={cidadesDoEstado}
                 marcasDisponiveis={marcasDisponiveis}
+                modelosDisponiveis={modelosDisponiveis}
                 pisoMargem={pisoMargem}
                 proximidadeDisponivel={proximidadeDisponivel}
               />

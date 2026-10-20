@@ -11,7 +11,7 @@ import { IconDropdown } from "./IconDropdown";
 import { ModalMarcas } from "./ModalMarcas";
 import { useNavegacao } from "./NavegacaoProvider";
 import type { Aba, Ordem } from "./DiscoveriesBoard";
-import type { MarcaContagem } from "@/lib/marcas";
+import type { MarcaContagem, ModeloContagem } from "@/lib/marcas";
 import { PRACA_TEM_TABELA_PRONTA } from "@/lib/site";
 import { useTextos } from "@/lib/useIdioma";
 
@@ -47,6 +47,8 @@ export function FiltroClassificacao({
   anunciante,
   fonte,
   marca,
+  modelo: modeloAtivo,
+  modelos = [],
   moeda,
   marcas = [],
   piso,
@@ -62,6 +64,9 @@ export function FiltroClassificacao({
   anunciante?: "profissional" | "particular";
   fonte?: string;
   marca?: string;
+  /** Modelo aplicado hoje (vem da URL) — os chips do topo. */
+  modelo?: string;
+  modelos?: ModeloContagem[];
   /** Moeda da faixa de preço — ver moedaLocal. */
   moeda?: string;
   marcas?: MarcaContagem[];
@@ -210,8 +215,73 @@ export function FiltroClassificacao({
   const topMarcas = marcas.slice(0, TOP_MARCAS).map((m) => m.marca);
   const marcasGrid = marcaLocal && !topMarcas.includes(marcaLocal) ? [marcaLocal, ...topMarcas].slice(0, TOP_MARCAS) : topMarcas;
 
+  /**
+   * ★★★ OS CHIPS DO TOPO — pedido do Gustavo, 20/10/2026: *"temos que
+   * implementar os filtros de modelo e preço no topo do site, na área dos
+   * chips"*.
+   *
+   * ★ A faixa ficou VAZIA no Paraguai quando os chips de margem FIPE saíram
+   * (eles filtravam para lista vazia aqui). O espaço é bom: é o primeiro
+   * lugar onde o olho bate e não exige abrir o painel.
+   *
+   * ⚠️ MODELO e não marca: o chip de marca já existe dentro do painel, e no
+   * Paraguai quem procura sabe o MODELO ("Vitz", "Ractis") — a frota é
+   * japonesa importada e o modelo é o que identifica o carro.
+   */
+  const TOP_MODELOS_CHIP = 8;
+  const modelosChip = modelos.slice(0, TOP_MODELOS_CHIP).map((m) => m.modelo);
+
+  /**
+   * ⚠️ Faixas em GUARANI, que é a moeda de 74% dos anúncios. Clicar manda
+   * `moeda=PYG` junto — sem isso a faixa compararia número cru contra
+   * anúncio em dólar, que foi o defeito do painel inteiro.
+   */
+  const FAIXAS_CHIP: { rotulo: string; min?: number; max?: number }[] = [
+    { rotulo: "até ₲30 mill.", max: 30_000_000 },
+    { rotulo: "₲30–50 mill.", min: 30_000_000, max: 50_000_000 },
+    { rotulo: "₲50–80 mill.", min: 50_000_000, max: 80_000_000 },
+    { rotulo: "₲80 mill.+", min: 80_000_000 },
+  ];
+  const faixaAtiva = (f: { min?: number; max?: number }) =>
+    (f.min ?? undefined) === (precoMin ?? undefined) && (f.max ?? undefined) === (precoMax ?? undefined);
+
+  function aplicarFaixaChip(f: { min?: number; max?: number }) {
+    const jaEstava = faixaAtiva(f);
+    atualizarParams({
+      precoMin: jaEstava ? undefined : f.min != null ? String(f.min) : undefined,
+      precoMax: jaEstava ? undefined : f.max != null ? String(f.max) : undefined,
+      moeda: jaEstava ? undefined : "PYG",
+    });
+  }
+
   return (
     <div className="filtro-classificacao">
+      {/* ★ A faixa de chips do Paraguai: modelo e preço, sem abrir o painel. */}
+      {!PRACA_TEM_TABELA_PRONTA && (modelosChip.length > 0 || true) && (
+        <div className="filtro-chips filtro-chips-py">
+          {modelosChip.map((m) => (
+            <button
+              key={m}
+              type="button"
+              className={`filtro-chip ${marca === undefined && modeloAtivo === m ? "filtro-chip-ativo" : ""}`}
+              onClick={() => atualizarParams({ modelo: modeloAtivo === m ? undefined : m })}
+            >
+              {m}
+            </button>
+          ))}
+          <span className="filtro-chips-separador" aria-hidden />
+          {FAIXAS_CHIP.map((f) => (
+            <button
+              key={f.rotulo}
+              type="button"
+              className={`filtro-chip filtro-chip-preco ${faixaAtiva(f) ? "filtro-chip-ativo" : ""}`}
+              onClick={() => aplicarFaixaChip(f)}
+            >
+              {f.rotulo}
+            </button>
+          ))}
+        </div>
+      )}
       {/* ★ Sem as faixas de margem sobra só o chip "Todas", que não filtra
           nada — e um botão que abre uma fileira de um item só. Os dois somem
           juntos: o painel de Filtros e a ordenação continuam. */}

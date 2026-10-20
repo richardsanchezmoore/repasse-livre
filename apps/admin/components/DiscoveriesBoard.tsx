@@ -8,7 +8,7 @@ import { MONETIZACAO_ATIVA } from "@/lib/site";
 import { semParecer } from "@/lib/copilotoResumo";
 import { extrairMarca, extrairModeloSeo } from "@/lib/marca";
 import { sanitizarCardBloqueado } from "@/lib/sanitizarCard";
-import type { MarcaContagem } from "@/lib/marcas";
+import type { MarcaContagem, ModeloContagem } from "@/lib/marcas";
 import { dividirSlugCidade, gerarSlugEstado, slugify } from "@/lib/slug";
 import { cidadesDaRegiao } from "@/lib/regioes";
 import type { Oportunidade, OrigemTipo, StatusOportunidade } from "@/lib/types";
@@ -692,6 +692,7 @@ export async function Board({
   estadosDisponiveis = [],
   cidadesDoEstado = [],
   marcasDisponiveis = [],
+  modelosDisponiveis = [],
   pisoMargem = MARGEM_MINIMA_PADRAO,
   proximidadeDisponivel = false,
 }: {
@@ -702,6 +703,8 @@ export async function Board({
   estadosDisponiveis?: string[];
   cidadesDoEstado?: string[];
   marcasDisponiveis?: MarcaContagem[];
+  /** ★ Chips de modelo no topo — ver FiltroClassificacao. */
+  modelosDisponiveis?: ModeloContagem[];
   pisoMargem?: number;
   proximidadeDisponivel?: boolean;
 }) {
@@ -766,6 +769,8 @@ export async function Board({
         fonte={filtros.fonte}
         marca={filtros.marca}
         moeda={filtros.moeda}
+        modelo={filtros.modelo}
+        modelos={modelosDisponiveis}
         marcas={marcasDisponiveis}
         piso={pisoMargem}
         proximidadeDisponivel={proximidadeDisponivel}

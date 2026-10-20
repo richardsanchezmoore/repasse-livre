@@ -9972,3 +9972,33 @@ button.bemvindo-secundario {
   background: #eafaf0;
   color: #14683c;
 }
+
+/* ★★ A faixa de chips do Paraguai: modelo e preço, sem abrir o painel.
+   O espaço ficou livre quando os chips de margem FIPE saíram (eles filtravam
+   para lista vazia aqui) — e é o primeiro lugar onde o olho bate. */
+.filtro-chips-py {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.filtro-chips-py::-webkit-scrollbar { display: none; }
+/* ⚠️ `flex-shrink: 0` em cada chip: sem isso o flex espreme os rótulos e
+   "até ₲30 mill." vira "até ₲30 mi…" antes de a rolagem entrar em ação. */
+.filtro-chips-py .filtro-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+/* O traço que separa "que carro" de "quanto custa" — são duas perguntas. */
+.filtro-chips-separador {
+  flex-shrink: 0;
+  width: 1px;
+  height: 20px;
+  background: #e0e3e7;
+  margin: 0 2px;
+}
+.filtro-chip-preco {
+  font-variant-numeric: tabular-nums;
+}
