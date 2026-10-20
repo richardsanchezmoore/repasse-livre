@@ -561,7 +561,25 @@ async function main() {
     // ⚠️ A troca do slug acontece AQUI e nao na config: a praca e a mesma,
     // o raio e o mesmo, o locale e o mesmo — so a categoria muda. Duplicar as
     // 11 pracas na config criaria duas listas para manter em sincronia.
-    const urlRegiao = CATEGORIA === "moto" ? regiao.url.replace("/carros/", "/motos/") : regiao.url;
+    /**
+     * ⚠️⚠️ `locale=es_LA` É OBRIGATÓRIO e não pode depender de quem digitou a
+     * URL no painel.
+     *
+     * Achado em 20/10/2026: a praça de Capiatá foi trocada para a forma
+     * `/search/?query=Vehículos&category_id=…` copiada do Google, e essa URL
+     * NÃO traz locale. O `montarUrlBuscaFacebook` também não acrescenta — ele
+     * só preserva o que já estava.
+     *
+     * ★ Sem locale, a página volta no idioma da CONTA, e foi assim que o
+     * `query` chegou em português ("Veículos") sem ninguém notar. Pior: o
+     * preço renderiza no formato do idioma, e quem lê preço é o nosso parser.
+     * Deixar isso por conta do que foi colado no painel é apostar.
+     */
+    const comLocale = (u: string) =>
+      /[?&]locale=/.test(u) ? u : `${u}${u.includes("?") ? "&" : "?"}locale=es_LA`;
+    const urlRegiao = comLocale(
+      CATEGORIA === "moto" ? regiao.url.replace("/carros/", "/motos/") : regiao.url,
+    );
     const local = localDaRegiao(regiao.url);
     const buscas: Busca[] =
       MODO === "termo" && local
