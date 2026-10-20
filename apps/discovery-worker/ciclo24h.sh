@@ -150,8 +150,11 @@ while [ ! -f "$PARAR" ]; do
 
   marca "VOLTA $volta · 3/3 FOTOS"
   esperarTrava
-  # ★ 400 por volta: sobraram 335 sem foto e o ciclo ja roda poucas voltas/dia.
-  FOTOS_LIMITE=400 FOTOS_PAUSA_MS=1500 \
+  # ⚠️⚠️ 40 POR VOLTA, não 400 — medido em 20/10/2026: acima da posição ~50 o
+  # Facebook estrangula a sessão e o aproveitamento cai de 20% para 0,6%
+  # (30 sucessos em 5.055 tentativas). Rodada maior não rende e expõe a conta.
+  # Ver o cabeçalho de backfillFotosPY.ts para a curva completa.
+  FOTOS_LIMITE=40 FOTOS_PAUSA_MS=2500 \
     comRede npx tsx src/backfillFotosPY.ts
 
   # ⚠⚠ HASH, REANÚNCIO E TABELA SAÍRAM DAQUI (11/10/2026).

@@ -27,7 +27,25 @@ import { precoImplausivel } from "./limitePrecoPY.js";
  * a sessão cair, em vez de insistir e chamar atenção.
  */
 const PAUSA_MS = Number(process.env.FOTOS_PAUSA_MS ?? 4000);
-const LIMITE = Number(process.env.FOTOS_LIMITE ?? 400);
+/**
+ * ★★★ 40 POR RODADA, não 400 — medido em 20/10/2026 nos 5.850 registros da
+ * fase de fotos deste ciclo:
+ *
+ *     posição 1 a 3    → 49% de sucesso
+ *     posição 4 a 10   → 28%
+ *     posição 11 a 50  → 20%
+ *     posição ACIMA DE 50 → 0,6%   (30 sucessos em 5.055 tentativas)
+ *
+ * ⚠️⚠️ Não são anúncios mortos: é o Facebook ESTRANGULANDO a sessão depois de
+ * ~50 visitas seguidas. A página volta sem as fotos e a gente concluía
+ * "vendido/removido" — exatamente o erro que o cabeçalho deste arquivo já
+ * registrava uma vez (de 20 marcados como fora do ar, ZERO estavam removidos
+ * e 12 estavam vivos com foto).
+ *
+ * ★ Acima de 50 a rodada não rende e ainda expõe a conta, que é o recurso
+ * que o Gustavo pediu para cuidar. 40 é abaixo do joelho da curva.
+ */
+const LIMITE = Number(process.env.FOTOS_LIMITE ?? 40);
 
 /**
  * ⚠️⚠️ ESPERA DA PÁGINA — 2.000ms estavam MATANDO anúncio vivo.
@@ -91,9 +109,21 @@ async function main() {
    * ★ Agora quem precisa é selecionado no BANCO (`.or(...)`), e o limite se
    * aplica a esse conjunto. Cada rodada reduz a fila de verdade.
    *
-   * ⚠️ Ordem: mais recentes PRIMEIRO dentro dos que precisam. Anúncio velho
-   * tem mais chance de já ter saído do ar, e aí a ida ao Facebook não rende
-   * nada — gasta conta para nada.
+   * ⚠️⚠️ ORDEM INVERTIDA EM 20/10/2026 — e o erro anterior era MEU.
+   *
+   * Eu tinha posto `descending: true` raciocinando que anúncio velho tem mais
+   * chance de ter saído do ar. O efeito medido foi o oposto do pretendido:
+   *
+   *   cabeça da fila (mais NOVOS, que o backfill atacava) → 6/6 com foto VIVA
+   *   fim da fila    (mais VELHOS, nunca alcançados)      → 0/6 com foto viva
+   *
+   * Ou seja: o orçamento inteiro ia para anúncios cujo link está intacto, e
+   * os realmente quebrados nunca eram alcançados. A fila CRESCIA (3.807 →
+   * 4.025) enquanto o mecanismo rodava toda volta.
+   *
+   * ★ Agora drena pelos MAIS VELHOS, que são por definição os quebrados. O
+   * risco que eu temia (anúncio fora do ar) é real mas secundário: se não
+   * tentar, a foto está perdida de qualquer jeito.
    */
   const { data, error } = await supabase
     .from("opportunities")
@@ -101,7 +131,7 @@ async function main() {
     .eq("pais", "PY")
     .like("link_origem", "%/marketplace/item/%")   // post de grupo não tem página de anúncio
     .or("foto_principal.is.null,foto_principal.like.%fbcdn%,foto_principal.like.%chuvlvwctwkeviencfuy%")
-    .order("data_captura", { ascending: false })
+    .order("data_captura", { ascending: true })
     .limit(LIMITE);
   if (error) throw new Error(error.message);
 
