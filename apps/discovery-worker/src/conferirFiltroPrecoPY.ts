@@ -86,11 +86,23 @@ async function main() {
   }
   const dentroTotal = conhecidos.filter((o) => o.moeda === "PYG" && Number(o.preco) >= FAIXA.min).length;
   console.log(`\n★ ${dentroTotal} de ${conhecidos.length} estão DENTRO da faixa pedida.`);
-  console.log(
-    dentroTotal === conhecidos.length
-      ? "→ o filtro de preço FOI respeitado."
-      : "→ ⚠️ o filtro de preço NÃO valeu: voltou carro fora da faixa.",
-  );
+  /**
+   * ⚠️⚠️ ZERO CONHECIDOS NÃO É "respeitado" — é INCONCLUSIVO, e a primeira
+   * versão disto imprimia "FOI respeitado" com `0 de 0`. Verdade vazia.
+   *
+   * ★ Quarta vez nesta sessão que o rótulo do MEU instrumento afirma mais do
+   * que o dado permite. A regra: todo veredito começa checando se havia
+   * amostra para julgar.
+   */
+  if (conhecidos.length === 0) {
+    console.log("→ INCONCLUSIVO: nenhum dos ids devolvidos está na nossa base, não há preço para conferir.");
+  } else {
+    console.log(
+      dentroTotal === conhecidos.length
+        ? "→ o filtro de preço FOI respeitado."
+        : "→ ⚠️ o filtro de preço NÃO valeu: voltou carro fora da faixa.",
+    );
+  }
 }
 
 main().catch((e) => { console.error(e); soltarTrava(); process.exit(1); });
