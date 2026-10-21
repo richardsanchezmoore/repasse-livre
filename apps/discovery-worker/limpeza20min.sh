@@ -39,6 +39,11 @@ trap 'rm -f "$TRAVA_LACO"' EXIT
 
 LOG=/c/claude/limpeza.log
 PARAR=/c/claude/ciclo24h.parar
+# ★ Segundo sinal: PARE E SUBA DE NOVO (o vigia consome o arquivo e religa).
+#   Serve para aplicar mudanca neste .sh, que o bash so le quando o laco
+#   comeca. ⚠️ Usar o `.parar` para isso deixou tudo 23h30 fora do ar.
+REINICIAR=/c/claude/ciclo24h.reiniciar
+parou() { [ -f "$PARAR" ] || [ -f "$REINICIAR" ]; }
 
 # ⚠️ Mesma regra do ciclo24h.sh: guarda o anterior antes de zerar, senão o
 # reinício apaga a pista do que derrubou o laço.
@@ -49,24 +54,24 @@ echo "[$(date '+%d/%m %H:%M:%S')] limpeza SUBIU (pid $$)" >> /c/claude/varredura
 
 marca() { echo "" >> "$LOG"; echo "═══ $(date '+%d/%m %H:%M:%S') · $* ═══" >> "$LOG"; }
 
-while [ ! -f "$PARAR" ]; do
+while ! parou; do
   marca "hash das fotos novas"
   npx tsx src/backfillHashPY.ts >> "$LOG" 2>&1
   echo "  saiu com $?" >> "$LOG"
 
-  [ -f "$PARAR" ] && break
+  parou && break
 
   marca "reanúncios"
   npx tsx src/marcarDuplicatasPY.ts --aplicar >> "$LOG" 2>&1
   echo "  saiu com $?" >> "$LOG"
 
-  [ -f "$PARAR" ] && break
+  parou && break
 
   marca "tabela de referência"
   npx tsx src/publicarTabelaPY.ts --gravar >> "$LOG" 2>&1
   echo "  saiu com $?" >> "$LOG"
 
-  [ -f "$PARAR" ] && break
+  parou && break
 
   # ★★ O CORRETOR DE PREÇO ENTRA AQUI, DEPOIS DA TABELA — e a ordem é a razão
   # de ele estar neste laço e não em outro: ele usa a mediana publicada como

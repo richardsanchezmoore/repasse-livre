@@ -58,6 +58,11 @@ trap 'rm -f "$TRAVA_LACO"' EXIT
 
 LOG=/c/claude/ciclo24h.log
 PARAR=/c/claude/ciclo24h.parar
+# ★ Segundo sinal: PARE E SUBA DE NOVO (o vigia consome o arquivo e religa).
+#   Serve para aplicar mudanca neste .sh, que o bash so le quando o laco
+#   comeca. ⚠️ Usar o `.parar` para isso deixou tudo 23h30 fora do ar.
+REINICIAR=/c/claude/ciclo24h.reiniciar
+parou() { [ -f "$PARAR" ] || [ -f "$REINICIAR" ]; }
 
 # ⚠️⚠️ O LOG ANTERIOR É GUARDADO, NÃO APAGADO — e isto custou um diagnóstico.
 #
@@ -121,7 +126,7 @@ esperarTrava() {
 }
 
 volta=0
-while [ ! -f "$PARAR" ]; do
+while ! parou; do
   volta=$((volta + 1))
 
   marca "VOLTA $volta · 1/3 CATÁLOGO (busca por termo)"
@@ -136,7 +141,7 @@ while [ ! -f "$PARAR" ]; do
     PY_ESPERA_ITEM=1500 PY_PACING=1200 \
     comRede npx tsx src/capturarParaguai.ts
 
-  [ -f "$PARAR" ] && break
+  parou && break
   sleep 120
 
   marca "VOLTA $volta · 2/3 FAIXAS (autoload)"
@@ -162,7 +167,7 @@ while [ ! -f "$PARAR" ]; do
     PY_ROLAGENS=25 PY_PAUSA_ROLAGEM=2200 PY_PACING=1200 \
     comRede npx tsx src/capturarParaguai.ts
 
-  [ -f "$PARAR" ] && break
+  parou && break
   sleep 120
 
   marca "VOLTA $volta · 3/3 FOTOS"
